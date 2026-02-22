@@ -1,0 +1,269 @@
+<!doctype html>
+<html lang="ms">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Resit Trade In — Emas Amir</title>
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+<style>
+body{background:#fff}
+.sheet{max-width:900px;margin:24px auto;padding:24px;border:1px solid #eee;border-radius:12px}
+.h-logo{font-weight:800;font-size:20px}
+.muted{color:#6b7280}
+.table-sm td,.table-sm th{padding:.4rem .5rem}
+.mono{font-family:ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,"Liberation Mono","Courier New",monospace}
+@media print{.no-print{display:none!important}.sheet{border:none;margin:0;padding:0}}
+</style>
+</head>
+<body>
+
+<div class="sheet">
+  <div class="d-flex justify-content-between">
+    <div>
+      <div class="h-logo">Emas Amir Sdn Bhd (202301019252)</div>
+      <div class="small muted">+60168055916 • perniagaanemasamir@gmail.com</div>
+      <div class="small muted">3H Jalan Belibis Taman Tunku Putra 09000 Kulim Kedah</div>
+    </div>
+    <div class="text-end">
+      <div class="fw-bold">RESIT TRADE-IN</div>
+      <div class="small" id="resitNo">No Resit: –</div>
+      <div class="small" id="resitDate">Tarikh: –</div>
+      <div class="small mono" id="resitId">ID: –</div>
+    </div>
+  </div>
+
+  <hr>
+
+  <div class="row mb-3">
+    <div class="col">
+      <div class="fw-semibold">Pelanggan</div>
+      <div id="custName">–</div>
+      <div class="small muted">Telefon: <span class="mono" id="custPhone">–</span></div>
+      <div class="small muted">Alamat: <span id="custAddr">–</span></div>
+      <div class="small muted">Rujukan J916: <span class="mono" id="custRef">–</span></div>
+
+      <!-- ✅ NEW: JENIS TRADE -->
+      <div class="small muted">Jenis trade: <span class="fw-semibold" id="tradeKind">–</span></div>
+
+      <div class="mt-2">
+        <div class="small muted">Kaedah bayaran: <span class="fw-semibold" id="payMethod">–</span></div>
+        <div id="bankWrap" style="display:none">
+          <div class="small muted">Bank: <span class="fw-semibold" id="bankName">–</span></div>
+          <div class="small muted">Nama akaun: <span class="fw-semibold" id="bankAccName">–</span></div>
+          <div class="small muted">No akaun: <span class="fw-semibold mono" id="bankAccNo">–</span></div>
+        </div>
+      </div>
+
+      <div class="small muted mt-2">Nota: <span id="adminNote">–</span></div>
+    </div>
+    <div class="col text-end no-print">
+      <button class="btn btn-outline-secondary btn-sm" onclick="window.print()">Cetak</button>
+    </div>
+  </div>
+
+  <table class="table table-sm align-middle">
+    <thead class="table-light">
+      <tr>
+        <th>#</th>
+        <!-- ✅ NEW: kolum jenis trade -->
+        <th>Jenis trade</th>
+        <th>Jenis</th>
+        <th>Barang</th>
+        <th class="text-end">Berat (g)</th>
+        <th class="text-end">Harga (RM/g)</th>
+        <th class="text-end">Jumlah (RM)</th>
+      </tr>
+    </thead>
+    <tbody id="tbBody">
+      <tr><td colspan="7" class="text-muted">Memuatkan…</td></tr>
+    </tbody>
+    <tfoot>
+      <tr>
+        <th colspan="6" class="text-end">Jumlah Keseluruhan</th>
+        <th class="text-end h5" id="tvTotal">RM 0.00</th>
+      </tr>
+    </tfoot>
+  </table>
+
+  <div class="small muted mt-3">* Resit ini dijana secara automatik oleh sistem Emas Amir.</div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script>
+/* =========================
+   Supabase
+   ========================= */
+const SB_URL="https://dduizetstqqjrpsezbpi.supabase.co";
+const SB_KEY="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRkdWl6ZXRzdHFxanJwc2V6YnBpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTg3MzI0ODQsImV4cCI6MjA3NDMwODQ4NH0.CrlHXrmHtKgR9qc2192U6quRb5lpFEeOSgwG0Lb8KRM";
+const sb = window.supabase.createClient(SB_URL, SB_KEY);
+
+/* =========================
+   Helpers
+   ========================= */
+const $=id=>document.getElementById(id);
+const money=n=>'RM '+Number(n||0).toFixed(2);
+
+function esc(s){
+  return String(s ?? '').replace(/[&<>"']/g, m=>({ "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;" }[m]));
+}
+
+function normalizePhoneVariants(msisdn){
+  if (!msisdn) return [];
+  let x = (''+msisdn).replace(/\D/g,'');
+  const set = new Set();
+  if (x) set.add(x);
+  if (x.startsWith('60') && x.length > 2) set.add('0'+x.slice(2));
+  if (x.startsWith('0') && x.length >= 10 && x.length <= 11){
+    set.add(x);
+    set.add('60'+x.slice(1));
+  }
+  return Array.from(set);
+}
+
+function resitNo(id, createdAt){
+  const d = createdAt ? new Date(createdAt) : new Date();
+  const ymd = d.getFullYear()+String(d.getMonth()+1).padStart(2,'0')+String(d.getDate()).padStart(2,'0');
+  return `EA-TI-${ymd}-${String(id).slice(0,4).toUpperCase()}`;
+}
+
+function setText(id, val, fallback='-'){
+  const el=$(id);
+  if(el) el.textContent = (val!=null && String(val).trim()!=='') ? String(val) : fallback;
+}
+
+function labelTradeKind(v){
+  const x = String(v||'').toUpperCase().trim();
+  if(x === 'T_CASH') return 'T Cash (jual sahaja)';
+  if(x === 'TRADEIN') return 'Trade In';
+  if(x === 'MIXED') return 'MIXED (campur)';
+  return '-';
+}
+
+function pickHeadTradeKind(head, items){
+  const hv = String(head?.trade_kind || '').toUpperCase().trim();
+  if(hv) return hv;
+
+  const kinds = (Array.isArray(items)?items:[])
+    .map(x=>String(x?.trade_kind||'').toUpperCase().trim())
+    .filter(Boolean);
+
+  if(!kinds.length) return '';
+  const uniq = Array.from(new Set(kinds));
+  if(uniq.length === 1) return uniq[0];
+  return 'MIXED';
+}
+
+/* =========================
+   Boot
+   ========================= */
+(async()=>{
+  try{
+    const qs=new URLSearchParams(location.search);
+    const id=(qs.get('id')||'').trim() || (localStorage.getItem('tradein_last_id')||'').trim();
+    if(!id){
+      $('tbBody').innerHTML='<tr><td colspan="7" class="text-danger">ID tiada. Sila buka resit dengan URL: <code>?id=TRADEIN_ID</code></td></tr>';
+      return;
+    }
+
+    // head
+    const h = await sb.from('tradein_txn').select('*').eq('id',id).maybeSingle();
+    if(h.error) throw h.error;
+    const head = h.data;
+    if(!head){
+      $('tbBody').innerHTML='<tr><td colspan="7" class="text-danger">Rekod trade-in tidak dijumpai.</td></tr>';
+      return;
+    }
+
+    // items
+    const it = await sb.from('tradein_items').select('*').eq('tradein_id',id).order('created_at',{ascending:true});
+    if(it.error) throw it.error;
+    const items = Array.isArray(it.data) ? it.data : [];
+
+    // header
+    $('resitId').textContent='ID: '+id;
+    $('resitDate').textContent='Tarikh: '+new Date(head.created_at).toLocaleString('ms-MY',{hour12:false});
+    $('resitNo').textContent='No Resit: '+resitNo(id, head.created_at);
+
+    setText('custName', head.customer_name);
+    setText('custPhone', head.customer_phone);
+    setText('custAddr', head.customer_address);
+    setText('custRef', head.ref_j916);
+    setText('adminNote', head.admin_note);
+
+    // ✅ trade kind (header)
+    const headTK = pickHeadTradeKind(head, items);
+    setText('tradeKind', labelTradeKind(headTK), '-');
+
+    const pm = String(head.pay_method || '').toUpperCase() || 'CASH';
+    setText('payMethod', pm);
+
+    // bank info (only if TRANSFER)
+    const bankWrap = $('bankWrap');
+    if(pm === 'TRANSFER'){
+      let bank = { bank_name:'', bank_account_name:'', bank_account_no:'' };
+
+      const variants = normalizePhoneVariants(head.customer_phone);
+      if(variants.length){
+        const qc = await sb.from('customers')
+          .select('bank_name,bank_account_name,bank_account_no')
+          .in('phone', variants)
+          .limit(1);
+        if(!qc.error && qc.data && qc.data[0]){
+          bank = {
+            bank_name: qc.data[0].bank_name || '',
+            bank_account_name: qc.data[0].bank_account_name || '',
+            bank_account_no: qc.data[0].bank_account_no || ''
+          };
+        }
+      }
+
+      if(bankWrap) bankWrap.style.display = '';
+      setText('bankName', bank.bank_name);
+      setText('bankAccName', bank.bank_account_name);
+      setText('bankAccNo', bank.bank_account_no);
+    }else{
+      if(bankWrap) bankWrap.style.display = 'none';
+    }
+
+    // table
+    if(!items.length){
+      $('tbBody').innerHTML='<tr><td colspan="7" class="text-muted">Tiada item.</td></tr>';
+    }else{
+      let totalItems = 0;
+      $('tbBody').innerHTML = items.map((r,i)=>{
+        const amt = Number(r.amount_rm||0);
+        totalItems += amt;
+
+        const wt = Number(r.weight_g||0);
+        const pr = Number(r.price_rm_g||0);
+
+        const rowTK = labelTradeKind(r.trade_kind || headTK);
+
+        return `<tr>
+          <td>${i+1}</td>
+          <td>${esc(rowTK)}</td>
+          <td>${esc(r.gold_type||'-')}</td>
+          <td>${esc(r.item_name||'-')}</td>
+          <td class="text-end mono">${wt.toFixed(4)}</td>
+          <td class="text-end mono">${money(pr)}</td>
+          <td class="text-end mono">${money(amt)}</td>
+        </tr>`;
+      }).join('');
+
+      // total: utamakan head.subtotal_rm kalau ada
+      const headTotal = (head.subtotal_rm != null) ? Number(head.subtotal_rm) : null;
+      const total = Number((headTotal!=null ? headTotal : totalItems).toFixed(2));
+      $('tvTotal').textContent = money(total);
+    }
+
+    // simpan last id (nice-to-have)
+    try{ localStorage.setItem('tradein_last_id', id); }catch(_){}
+
+  }catch(e){
+    console.error(e);
+    $('tbBody').innerHTML = '<tr><td colspan="7" class="text-danger">Ralat muat resit: '+esc(e?.message||e)+'</td></tr>';
+  }
+})();
+</script>
+</body>
+</html>

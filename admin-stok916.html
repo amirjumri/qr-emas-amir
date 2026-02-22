@@ -1,0 +1,535 @@
+<!doctype html>
+<html lang="ms">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Admin • Stok Report 916 — Emas Amir</title>
+
+  <!-- Libs -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="auth.js?v=13.1"></script>
+  <script src="admin-guard.js?v=1"></script>
+
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+
+  <style>
+    body{background:#fff}
+    .container-narrow{max-width:1200px}
+    .auth-pill{border:1px solid #e5e7eb;border-radius:999px;padding:.2rem .6rem;background:#fafafa;color:#555}
+    .btn-chip{border:1px solid #e5e7eb;background:#f8fafc;padding:6px 10px;border-radius:999px;font-size:.9rem}
+    .btn-chip.btn-primary{background:#0d6efd;color:#fff;border-color:#0d6efd}
+    .mono{font-family:ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,"Liberation Mono","Courier New",monospace}
+    .small-note{font-size:12px;color:#6b7280}
+    .card{border-radius:14px}
+    .kpi{font-size:26px;font-weight:900}
+    .kpi-sm{font-size:16px;font-weight:800}
+    .pill{display:inline-flex;align-items:center;gap:8px;padding:6px 10px;border-radius:999px;background:#eef1f4;font-size:12px;color:#495057}
+    .table-sticky thead th{position:sticky;top:0;background:#fff;z-index:5}
+    .muted{color:#6b7280}
+    .warn{color:#b45309}
+    .badge-soft{border:1px solid #e5e7eb;background:#fafafa;color:#374151}
+    .table td, .table th{vertical-align:middle}
+  </style>
+
+  <!-- PRINT A4 -->
+  <style>
+    @media print{
+      @page { size: A4 portrait; margin: 10mm; }
+      body{background:#fff}
+      .no-print{display:none !important}
+      .print-title{display:block !important}
+      .card{border:1px solid #ddd !important}
+      .table{font-size:11px}
+      .table-sticky thead th{position:static !important}
+    }
+    .print-title{display:none}
+  </style>
+</head>
+
+<body>
+<div class="container container-narrow py-3">
+
+  <!-- TOP BAR -->
+  <div class="d-flex justify-content-between align-items-center mb-2 no-print">
+    <div class="small auth-pill" id="authStatus">Memuatkan…</div>
+    <div class="d-flex flex-wrap gap-2">
+      <a class="btn btn-outline-secondary btn-chip" href="index.html">Halaman Utama</a>
+      <a class="btn btn-outline-secondary btn-chip" href="admin.html">Admin</a>
+      <a class="btn btn-outline-secondary btn-chip" href="admin-report.html">Admin Report</a>
+      <a class="btn btn-outline-secondary btn-chip" href="admin-j916.html">Admin 916</a>
+      <a class="btn btn-outline-secondary btn-chip" href="admin-stok-j916.html">Admin Stok 916</a>
+      <a class="btn btn-outline-secondary btn-chip" href="account.html">Akaun</a>
+      <button id="btnLogin"  class="btn btn-outline-secondary btn-chip" type="button">Log masuk</button>
+      <button id="btnLogout" class="btn btn-outline-secondary btn-chip" type="button" style="display:none">Log keluar</button>
+    </div>
+  </div>
+  <hr class="mb-3 no-print">
+
+  <div class="d-flex align-items-center justify-content-between gap-2 flex-wrap">
+    <div>
+      <h1 class="h4 m-0">Admin • Stok Report 916</h1>
+      <div class="small text-muted">
+        Tujuan: semak stok semasa (AVAILABLE / PENDING / SOLD), jumlah gram, dan jumlah upah override.
+      </div>
+      <div class="small-note mt-1">
+        Nota: Report ini baca terus dari table stok 916 (item-level) — sesuai untuk audit & print.
+      </div>
+    </div>
+
+    <div class="d-flex gap-2 flex-wrap no-print">
+      <button class="btn btn-outline-secondary" id="btnLoad" type="button">Load</button>
+      <button class="btn btn-outline-secondary" id="btnPrint" type="button" disabled>Print A4</button>
+    </div>
+  </div>
+
+  <!-- PRINT HEADER -->
+  <div class="print-title mt-3">
+    <div class="text-center">
+      <div class="fw-bold" style="font-size:18px">EMAS AMIR SDN BHD(202301019252)</div>
+      <div class="text-muted">Stok Report 916</div>
+      <div class="text-muted small" id="printLine">—</div>
+    </div>
+    <hr>
+  </div>
+
+  <!-- FILTERS -->
+  <div class="card mt-3 no-print">
+    <div class="card-body">
+      <div class="row g-2 align-items-end">
+        <div class="col-md-3">
+          <label class="form-label">Status</label>
+          <select id="statusPick" class="form-select">
+            <option value="ALL">Semua</option>
+            <option value="AVAILABLE" selected>AVAILABLE</option>
+            <option value="PENDING">PENDING</option>
+            <option value="SOLD">SOLD</option>
+            <option value="PAID">PAID</option>
+          </select>
+          <div class="small-note mt-1">Default: AVAILABLE. (PAID disediakan sebab ada dalam data Amir)</div>
+        </div>
+
+        <div class="col-md-3">
+          <label class="form-label">Aktif sahaja</label>
+          <select id="activePick" class="form-select">
+            <option value="YES" selected>Ya (is_active = true)</option>
+            <option value="NO">Tidak (is_active = false)</option>
+            <option value="ALL">Semua</option>
+          </select>
+          <div class="small-note mt-1">Cadangan guna “Ya” untuk stok semasa.</div>
+        </div>
+
+        <div class="col-md-3">
+          <label class="form-label">Cari (code / design_id / RFID EPC)</label>
+          <input id="q" class="form-control" placeholder="Contoh: RT0018593 / abdb... / EPC...">
+          <div class="small-note mt-1">Tip: paste EPC untuk cari cepat.</div>
+        </div>
+
+        <div class="col-md-3">
+          <label class="form-label">Had data (limit)</label>
+          <select id="limitPick" class="form-select">
+            <option value="200">200</option>
+            <option value="500">500</option>
+            <option value="1000">1000</option>
+            <option value="5000" selected>5000</option>
+          </select>
+          <div class="small-note mt-1">Kalau stok banyak, naikkan limit.</div>
+        </div>
+
+        <div class="col-md-3 mt-2">
+          <label class="form-label">Susun ikut</label>
+          <select id="sortPick" class="form-select">
+            <option value="created_at_desc" selected>created_at (baru → lama)</option>
+            <option value="created_at_asc">created_at (lama → baru)</option>
+            <option value="updated_at_desc">updated_at (baru → lama)</option>
+            <option value="weight_desc">weight_g (besar → kecil)</option>
+            <option value="weight_asc">weight_g (kecil → besar)</option>
+            <option value="code_asc">code (A → Z)</option>
+          </select>
+        </div>
+
+        <div class="col-md-9 mt-2">
+          <div class="d-flex flex-wrap gap-2">
+            <span class="pill">Table: <span class="mono" id="pillTable">j916_items</span></span>
+            <span class="pill">Tarikh Print: <span class="mono" id="pillNow">—</span></span>
+          </div>
+          <div class="small-note mt-2 warn" id="warnBox" style="display:none"></div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+  <!-- KPI SUMMARY -->
+  <div class="row g-3 mt-1">
+    <div class="col-lg-4">
+      <div class="card">
+        <div class="card-body">
+          <div class="text-muted small">Ringkasan</div>
+
+          <div class="d-flex justify-content-between align-items-end mt-2">
+            <div>Bil Item</div>
+            <div class="kpi" id="kpiCount">0</div>
+          </div>
+
+          <div class="d-flex justify-content-between">
+            <div>Total Berat (g)</div>
+            <div class="kpi-sm" id="kpiWeight">0.000 g</div>
+          </div>
+
+          <div class="d-flex justify-content-between">
+            <div>Total Upah Override (RM)</div>
+            <div class="kpi-sm" id="kpiUpah">RM 0.00</div>
+          </div>
+
+          <hr>
+
+          <div class="small-note">
+            Nota:
+            <span class="mono">upah_override_rm</span> ialah override upah item.
+            Kalau kosong → 0.
+          </div>
+
+          <div class="mt-3 d-flex flex-wrap gap-2">
+            <span class="badge badge-soft px-2 py-1">AVAILABLE: <span class="mono" id="cntAvailable">0</span></span>
+            <span class="badge badge-soft px-2 py-1">PENDING: <span class="mono" id="cntPending">0</span></span>
+            <span class="badge badge-soft px-2 py-1">SOLD: <span class="mono" id="cntSold">0</span></span>
+            <span class="badge badge-soft px-2 py-1">PAID: <span class="mono" id="cntPaid">0</span></span>
+            <span class="badge badge-soft px-2 py-1">LAIN: <span class="mono" id="cntOther">0</span></span>
+          </div>
+
+          <div class="small-note mt-2">
+            “LAIN” termasuk status selain AVAILABLE/PENDING/SOLD/PAID.
+          </div>
+        </div>
+      </div>
+
+      <div class="card mt-3">
+        <div class="card-body">
+          <div class="fw-semibold mb-2">Info Filter (untuk print)</div>
+          <div class="small-note" id="filterSummary">—</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- DETAIL TABLE -->
+    <div class="col-lg-8">
+      <div class="card">
+        <div class="card-body">
+          <div class="fw-semibold">Senarai Stok 916</div>
+          <div class="small text-muted">
+            Papar kolum penting: code, design_id, weight_g, size, upah_override_rm, status, aktif, tarikh.
+          </div>
+
+          <div class="table-responsive mt-3">
+            <table class="table table-sm align-middle table-sticky">
+              <thead>
+                <tr>
+                  <th>Code</th>
+                  
+                  <th class="text-end">Berat (g)</th>
+                  <th class="text-end">Panjang (cm)</th>
+                  <th class="text-end">Lebar (cm)</th>
+                  <th class="text-end">Upah Override (RM)</th>
+                  <th>Status</th>
+                  <th>Aktif</th>
+                  <th class="text-end">Created</th>
+                  <th class="text-end">Sold</th>
+                  <th class="mono">RFID EPC</th>
+                </tr>
+              </thead>
+              <tbody id="tbody">
+                <tr><td colspan="11" class="text-center text-muted py-3">Belum load…</td></tr>
+              </tbody>
+            </table>
+          </div>
+
+          <div class="small-note mt-2">
+            Tip audit: Print A4 (AVAILABLE) untuk semak stok fizikal satu-satu.
+          </div>
+
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+/* ========================== Supabase Config ========================== */
+const SB_URL = "https://dduizetstqqjrpsezbpi.supabase.co";
+const SB_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRkdWl6ZXRzdHFxanJwc2V6YnBpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTg3MzI0ODQsImV4cCI6MjA3NDMwODQ4NH0.CrlHXrmHtKgR9qc2192U6quRb5lpFEeOSgwG0Lb8KRM";
+window.sb = window.sb || window.supabase.createClient(SB_URL, SB_KEY);
+const sb = window.sb;
+
+/* ========================== TABLE ========================== */
+/* ✅ Table sebenar stok 916 Amir (berdasarkan screenshot) */
+const TABLE_STOCK_916 = 'j916_items';
+
+/* ========================== Helpers ========================== */
+const $ = (id)=>document.getElementById(id);
+function safeStr(x){ return (x==null?'':String(x)); }
+function n2(x){ const n=Number(x||0); return Number.isFinite(n)?n:0; }
+function money(x){ const n=n2(x); return 'RM ' + n.toFixed(2); }
+function g3(x){ const n=n2(x); return n.toFixed(3); }
+function cm2(x){ const n=n2(x); return n.toFixed(2); }
+function boolText(x){ return x ? 'Ya' : 'Tidak'; }
+function fmtDT(x){
+  if(!x) return '';
+  try{
+    const d = new Date(x);
+    return d.toLocaleString('ms-MY',{hour12:false});
+  }catch(_){
+    return safeStr(x);
+  }
+}
+function nowLine(){
+  return new Date().toLocaleString('ms-MY',{hour12:false});
+}
+function showWarn(msg){
+  const box = $('warnBox');
+  if(!msg){
+    box.style.display='none';
+    box.textContent='';
+    return;
+  }
+  box.style.display='';
+  box.textContent=msg;
+}
+
+/* ========================== Topbar auth ========================== */
+(function(){
+  const pill=$('authStatus'),login=$('btnLogin'),logout=$('btnLogout');
+  try{
+    const a=(window.auth_get&&window.auth_get())||null;
+    if(a){
+      pill.textContent='Log masuk (admin) — '+(a.phone||a.msisdn||'');
+      login.style.display='none'; logout.style.display='';
+      logout.onclick=()=>{window.auth_clear&&window.auth_clear();location.reload();};
+    }else{
+      pill.textContent='Tidak log masuk';
+      login.style.display=''; logout.style.display='none';
+      login.onclick=()=>location.href='login.html#login';
+    }
+  }catch(_){}
+})();
+
+/* ========================== Admin guard ========================== */
+async function requireAdmin(){
+  if(window.adminGuard && typeof adminGuard.require==='function'){
+    return await adminGuard.require({
+      onChecking:()=> $('authStatus').textContent="Mengesahkan akses…",
+      onDenied:()=> $('authStatus').textContent="Akses ditolak",
+      onAllowed:(p)=> $('authStatus').textContent="Log masuk (admin) — "+p
+    });
+  }
+  const a=(window.auth_get&&window.auth_get())||null;
+  if(!a){ location.href="login.html#login"; return false; }
+  return true;
+}
+
+/* ========================== Query Builder ========================== */
+function buildSort(){
+  const v = $('sortPick').value;
+  if(v === 'created_at_asc') return { col:'created_at', asc:true };
+  if(v === 'created_at_desc') return { col:'created_at', asc:false };
+  if(v === 'updated_at_desc') return { col:'updated_at', asc:false };
+  if(v === 'weight_desc') return { col:'weight_g', asc:false };
+  if(v === 'weight_asc') return { col:'weight_g', asc:true };
+  if(v === 'code_asc') return { col:'code', asc:true };
+  return { col:'created_at', asc:false };
+}
+
+function filterSummaryText(){
+  const st = $('statusPick').value;
+  const act = $('activePick').value;
+  const q = safeStr($('q').value).trim();
+  const lim = $('limitPick').value;
+  const s = $('sortPick').value;
+
+  const parts = [];
+  parts.push(`Status: ${st}`);
+  parts.push(`Aktif: ${act}`);
+  parts.push(`Carian: ${q ? q : '-'}`);
+  parts.push(`Limit: ${lim}`);
+  parts.push(`Sort: ${s}`);
+
+  return parts.join(' | ');
+}
+
+/* ========================== Render ========================== */
+function renderRows(rows){
+  const tb = $('tbody');
+  if(!rows || !rows.length){
+    tb.innerHTML = `<tr><td colspan="11" class="text-center text-muted py-3">Tiada data.</td></tr>`;
+    return;
+  }
+
+  tb.innerHTML = rows.map(r=>{
+    const code = safeStr(r.code);
+    
+    const w = g3(r.weight_g);
+    const len = cm2(r.length_cm);
+    const wid = cm2(r.width_cm);
+    const upah = money(n2(r.upah_override_rm));
+    const status = safeStr(r.status || '');
+    const aktif = boolText(!!r.is_active);
+    const created = fmtDT(r.created_at);
+    const sold = fmtDT(r.sold_at);
+    const epc = safeStr(r.rfid_epc);
+
+    return `
+      <tr>
+        <td class="mono">${code}</td>
+        
+        <td class="text-end mono">${w}</td>
+        <td class="text-end mono">${len}</td>
+        <td class="text-end mono">${wid}</td>
+        <td class="text-end mono">${upah}</td>
+        <td><span class="badge badge-soft">${status}</span></td>
+        <td>${aktif}</td>
+        <td class="text-end">${created}</td>
+        <td class="text-end">${sold}</td>
+        <td class="mono">${epc}</td>
+      </tr>
+    `;
+  }).join('');
+}
+
+function computeKpi(rows){
+  let count = 0;
+  let totalW = 0;
+  let totalUpah = 0;
+
+  let cAvail = 0, cPending = 0, cSold = 0, cPaid = 0, cOther = 0;
+
+  for(const r of (rows||[])){
+    count += 1;
+    totalW += n2(r.weight_g);
+    totalUpah += n2(r.upah_override_rm);
+
+    const st = safeStr(r.status).toUpperCase().trim();
+    if(st === 'AVAILABLE') cAvail += 1;
+    else if(st === 'PENDING') cPending += 1;
+    else if(st === 'SOLD') cSold += 1;
+    else if(st === 'PAID') cPaid += 1;
+    else cOther += 1;
+  }
+
+  $('kpiCount').textContent = String(count);
+  $('kpiWeight').textContent = `${g3(totalW)} g`;
+  $('kpiUpah').textContent = money(totalUpah);
+
+  $('cntAvailable').textContent = String(cAvail);
+  $('cntPending').textContent = String(cPending);
+  $('cntSold').textContent = String(cSold);
+  $('cntPaid').textContent = String(cPaid);
+  $('cntOther').textContent = String(cOther);
+}
+
+/* ========================== Main Load ========================== */
+async function doLoad(){
+  $('btnLoad').disabled = true;
+  $('btnLoad').textContent = 'Loading…';
+  $('btnPrint').disabled = true;
+  showWarn('');
+
+  try{
+    $('pillTable').textContent = TABLE_STOCK_916;
+    $('pillNow').textContent = nowLine();
+    $('filterSummary').textContent = filterSummaryText();
+
+    const statusPick = $('statusPick').value;
+    const activePick = $('activePick').value;
+    const q = safeStr($('q').value).trim();
+    const limit = Number($('limitPick').value || 500);
+    const sort = buildSort();
+
+    const sel = [
+      'id',
+      'code',
+      
+      'weight_g',
+      'length_cm',
+      'width_cm',
+      'upah_override_rm',
+      'status',
+      'is_active',
+      'created_at',
+      'sold_at',
+      'updated_at',
+      'rfid_epc'
+    ].join(',');
+
+    let query = sb.from(TABLE_STOCK_916).select(sel).limit(limit);
+
+    if(statusPick && statusPick !== 'ALL'){
+      query = query.eq('status', statusPick);
+    }
+
+    if(activePick === 'YES'){
+      query = query.eq('is_active', true);
+    }else if(activePick === 'NO'){
+      query = query.eq('is_active', false);
+    }
+
+    if(q){
+      const qLike = `%${q}%`;
+      query = query.or(`code.ilike.${qLike},design_id.ilike.${qLike},rfid_epc.ilike.${qLike}`);
+    }
+
+    query = query.order(sort.col, { ascending: !!sort.asc });
+
+    const r = await query;
+    if(r.error) throw r.error;
+
+    const rows = Array.isArray(r.data) ? r.data : [];
+    renderRows(rows);
+    computeKpi(rows);
+
+    $('printLine').textContent = `Stok Report 916 | ${filterSummaryText()} | Printed: ${nowLine()}`;
+
+    $('btnPrint').disabled = false;
+
+  }catch(e){
+    console.error(e);
+    showWarn('Ralat load: ' + (e?.message || e));
+    $('tbody').innerHTML = `<tr><td colspan="11" class="text-center text-danger py-3">Ralat load data.</td></tr>`;
+  }finally{
+    $('btnLoad').disabled = false;
+    $('btnLoad').textContent = 'Load';
+  }
+}
+
+function doPrint(){
+  window.print();
+}
+
+/* ========================== Wire ========================== */
+$('btnLoad').addEventListener('click', doLoad);
+$('btnPrint').addEventListener('click', doPrint);
+
+$('statusPick').addEventListener('change', doLoad);
+$('activePick').addEventListener('change', doLoad);
+$('limitPick').addEventListener('change', doLoad);
+$('sortPick').addEventListener('change', doLoad);
+
+let _qTimer = null;
+$('q').addEventListener('input', ()=>{
+  clearTimeout(_qTimer);
+  _qTimer = setTimeout(doLoad, 350);
+});
+
+(async ()=>{
+  const ok = await requireAdmin();
+  if(!ok) return;
+
+  $('pillTable').textContent = TABLE_STOCK_916;
+  $('pillNow').textContent = nowLine();
+  $('filterSummary').textContent = filterSummaryText();
+
+  await doLoad();
+})();
+</script>
+</body>
+</html>

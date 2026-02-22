@@ -1,0 +1,1537 @@
+<!doctype html>
+<html lang="ms">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Tabung Emas – Emas Amir</title>
+
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css">
+
+  <style>
+    body{background:#f6f7f9}
+    .wrap{max-width:980px;margin:16px auto;padding:12px}
+    .card{border-radius:16px}
+    .box{background:#fff;border:1px solid #e9ecef;border-radius:16px;padding:16px}
+    .muted{color:#6c757d}
+    .pill{display:inline-flex;align-items:center;gap:8px;padding:6px 10px;border-radius:999px;background:#eef1f4;font-size:12px;color:#495057}
+    .price-lg{font-size:28px;font-weight:800}
+    .balance{font-size:30px;font-weight:900}
+    .xsmall{font-size:.8rem}
+    hr.my-3{border-top:1px dashed #e5e7eb;}
+
+    /* Minimal topbar */
+    .topbar{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap}
+    .top-left{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+    .brand-title{font-weight:900;font-size:18px;letter-spacing:.2px}
+    .icon-btn{border-radius:12px}
+
+    /* Action list */
+    .action-list{display:grid;gap:10px}
+    .action-item{
+      display:flex;align-items:center;justify-content:space-between;gap:10px;
+      padding:14px 14px;border:1px solid #e9ecef;border-radius:14px;background:#fff;
+      cursor:pointer;
+      transition: transform .06s ease, box-shadow .06s ease;
+    }
+    .action-item:active{transform:scale(.995)}
+    .action-left{display:flex;align-items:center;gap:12px}
+    .action-ico{
+      width:38px;height:38px;border-radius:12px;display:flex;align-items:center;justify-content:center;
+      background:#f3f4f6;font-size:18px;
+    }
+    .action-title{font-weight:800}
+    .action-sub{font-size:12px;color:#6b7280;margin-top:2px}
+    .chev{color:#9ca3af;font-weight:700}
+
+    /* Panels */
+    .panel{border:1px solid #e9ecef;border-radius:16px;background:#fff}
+    .panel .panel-h{padding:14px 14px;border-bottom:1px solid #eef1f4;display:flex;align-items:center;justify-content:space-between;gap:10px}
+    .panel .panel-b{padding:14px}
+    .btn-lgx{padding:.85rem 1rem;font-weight:700;border-radius:12px}
+
+    /* History table */
+    .table-sm td,.table-sm th{padding:.55rem .6rem}
+    .pager{display:flex;gap:6px;flex-wrap:wrap;align-items:center;justify-content:flex-end;margin-top:8px}
+    .pager .page{padding:.25rem .6rem;border:1px solid #dee2e6;border-radius:8px;background:#fff;cursor:pointer}
+    .pager .page.active{background:#0d6efd;color:#fff;border-color:#0d6efd}
+    .pager .page.disabled{opacity:.5;pointer-events:none}
+
+    /* Offcanvas */
+    .offcanvas .btn{border-radius:12px}
+    .mono{font-family:ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace}
+
+    /* ================== iOS Wheel Picker (Alarm style) ================== */
+    .picker-modal .modal-content{
+      border-radius:18px;
+      overflow:hidden;
+    }
+    .picker-modal .modal-header{
+      border-bottom:0;
+      padding:14px 14px 10px;
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+    }
+    .picker-title{
+      font-weight:800;
+      font-size:16px;
+      margin:0;
+    }
+    .picker-btn{
+      border:0;
+      background:transparent;
+      font-size:22px;
+      line-height:1;
+      padding:8px 10px;
+      border-radius:999px;
+    }
+    .picker-btn:active{transform:scale(.97)}
+    .picker-btn.ok{
+      background:#f59e0b;
+      color:#111;
+      width:44px;height:44px;
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+      border-radius:999px;
+      font-weight:900;
+    }
+    .picker-body{
+      padding:10px 14px 18px;
+    }
+    .wheel-wrap{
+      position:relative;
+      height:210px;
+      border-radius:18px;
+      background:#0b0b0c;
+      overflow:hidden;
+    }
+    .wheel{
+      height:210px;
+      overflow-y:auto;
+      -webkit-overflow-scrolling:touch;
+      scroll-snap-type:y mandatory;
+      padding:72px 0;
+    }
+    .wheel::-webkit-scrollbar{display:none}
+    .wheel-item{
+      height:44px;
+      scroll-snap-align:center;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      color:#b9b9bb;
+      font-size:24px;
+      letter-spacing:.5px;
+      user-select:none;
+    }
+    .wheel-item.active{
+      color:#fff;
+      font-weight:900;
+    }
+    .wheel-highlight{
+      position:absolute;
+      left:0; right:0;
+      top:50%;
+      transform:translateY(-50%);
+      height:44px;
+      border-top:1px solid rgba(255,255,255,.14);
+      border-bottom:1px solid rgba(255,255,255,.14);
+      pointer-events:none;
+      background:linear-gradient(to bottom, rgba(255,255,255,.06), rgba(255,255,255,.02), rgba(255,255,255,.06));
+    }
+    .wheel-fade-top{
+      position:absolute; left:0; right:0; top:0; height:70px;
+      background:linear-gradient(to bottom, rgba(11,11,12,1), rgba(11,11,12,.0));
+      pointer-events:none;
+    }
+    .wheel-fade-bot{
+      position:absolute; left:0; right:0; bottom:0; height:70px;
+      background:linear-gradient(to top, rgba(11,11,12,1), rgba(11,11,12,.0));
+      pointer-events:none;
+    }
+    .picker-note{
+      margin-top:10px;
+      color:#6b7280;
+      font-size:12px;
+    }
+.balance-main{
+  font-size:48px;
+  font-weight:900;
+  line-height:1;
+  letter-spacing:-1px;
+}
+
+.balance-unit{
+  font-size:22px;
+  font-weight:700;
+  margin-left:4px;
+}
+
+.balance-box{
+  min-width:160px;   /* bagi ruang supaya tak sempit */
+}
+
+  </style>
+
+  <!-- ❗❗ Gantikan dgn domain production (untuk link WhatsApp biru) -->
+  <script>window.BASE_HOST='https://emasamir.app';</script>
+</head>
+
+<body>
+<div class="wrap">
+
+  <!-- TOPBAR MINIMAL -->
+  <div class="topbar mb-3">
+    <div class="top-left">
+      <a href="index.html" class="btn btn-outline-secondary icon-btn">🏠</a>
+      <div>
+        <div class="brand-title">💰 Tabung Emas</div>
+        <div class="muted xsmall">Simpan • Keluar fizikal • Jual balik</div>
+      </div>
+      <span id="loginStatus" class="pill">Memuatkan…</span>
+    </div>
+
+    <div class="d-flex gap-2">
+      <button class="btn btn-outline-secondary icon-btn" type="button" data-bs-toggle="offcanvas" data-bs-target="#menuCanvas" aria-controls="menuCanvas">
+        ☰ Menu
+      </button>
+      <button id="btnLogout" class="btn btn-outline-secondary icon-btn" type="button" style="display:none">Log keluar</button>
+    </div>
+  </div>
+
+  <!-- PRICE + BALANCE -->
+  <div class="grid mb-3">
+    <div class="box">
+      <div class="d-flex justify-content-between align-items-start gap-2 flex-wrap">
+        <div class="fw-semibold">Harga Semasa</div>
+        <div class="muted xsmall" id="priceTime">Memuatkan…</div>
+      </div>
+
+      <div class="mt-2">
+        <div class="d-flex align-items-baseline gap-2 flex-wrap">
+          <div>1g (999.9):</div>
+          <div class="price-lg" id="p1g">-</div>
+        </div>
+        <div class="mt-1">Harga beli 0.1g: <b id="p01g_buy">-</b></div>
+        <div class="mt-1">Harga <u>jual balik</u> 0.1g: <b id="p01g_sell">-</b></div>
+        <div class="mt-1 muted">Upah kad (default): <span id="cardFee">RM 15.00</span></div>
+
+        <hr class="my-3">
+
+        <div class="d-flex align-items-start gap-2">
+          <div aria-hidden="true" style="font-size:20px;line-height:1.1">🏪</div>
+          <div>
+            <div class="fw-semibold">Stok Kedai (untuk tabung)</div>
+            <div class="small">
+              <span id="stockUnits">-</span> unit • <span id="stockGrams">-</span> g
+              <span class="text-muted ms-1" data-bs-toggle="tooltip"
+                    title="Jumlah emas fizikal untuk Tabung Emas (semua pelanggan). Ini bukan baki akaun anda.">ℹ️</span>
+            </div>
+            <div class="text-muted xsmall">Bukan baki anda.</div>
+          </div>
+        </div>
+
+        <hr class="my-3">
+
+        
+    <div class="fw-semibold">👤 Baki Tabung Saya</div>
+    <div class="muted xsmall">(0.1g = 1 unit)</div>
+  </div>
+
+  <div class="balance-box text-center">
+    <div class="balance-main">
+      <span id="balGram">0.0</span><span class="balance-unit"> g</span>
+    </div>
+    <div class="muted">
+      <span id="balUnit">0</span> unit × 0.1g
+    </div>
+  </div>
+</div>
+            
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ACTION LIST -->
+  <div class="box mb-3">
+    <div class="fw-semibold mb-2">Tindakan</div>
+
+    <div class="action-list">
+      <div class="action-item" data-open="panelBuy">
+        <div class="action-left">
+          <div class="action-ico">🛒</div>
+          <div>
+            <div class="action-title">Beli</div>
+            <div class="action-sub">Tambah gram / beli unit 0.1g</div>
+          </div>
+        </div>
+        <div class="chev">›</div>
+      </div>
+
+      <div class="action-item" data-open="panelOut">
+        <div class="action-left">
+          <div class="action-ico">📦</div>
+          <div>
+            <div class="action-title">Keluar Fizikal</div>
+            <div class="action-sub">Pilih berat / cash-out fizikal</div>
+          </div>
+        </div>
+        <div class="chev">›</div>
+      </div>
+
+      <div class="action-item" data-open="panelSell">
+        <div class="action-left">
+          <div class="action-ico">💸</div>
+          <div>
+            <div class="action-title">Jual</div>
+            <div class="action-sub">Jualkan baki tabung emas</div>
+          </div>
+        </div>
+        <div class="chev">›</div>
+      </div>
+
+      <div class="action-item" data-open="panelHist">
+        <div class="action-left">
+          <div class="action-ico">🕘</div>
+          <div>
+            <div class="action-title">Sejarah</div>
+            <div class="action-sub">Lihat rekod transaksi tabung</div>
+          </div>
+        </div>
+        <div class="chev">›</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- PANELS (collapsed) -->
+  <div class="collapse mb-3" id="panelBuy">
+    <div class="panel">
+      <div class="panel-h">
+        <div class="fw-semibold">🛒 Beli</div>
+        <button class="btn btn-sm btn-outline-secondary" type="button" data-bs-toggle="collapse" data-bs-target="#panelBuy">Tutup</button>
+      </div>
+      <div class="panel-b">
+        <div class="muted mb-2">Min 1 unit (0.1g). Gandaan 1.</div>
+
+        <div class="row g-2 align-items-end">
+          <div class="col-sm-6">
+            <label class="form-label">Unit (0.1g)</label>
+            <input type="number" step="1" min="1" id="buyUnit" class="form-control" value="1" readonly inputmode="none">
+          </div>
+          <div class="col-sm-6">
+            <div class="fw-semibold">Jumlah</div>
+            <div id="buyTotal" class="mt-1">RM 0.00</div>
+          </div>
+        </div>
+
+        <button id="btnBuy" class="btn btn-success w-100 btn-lgx mt-3">Beli</button>
+        <div id="buyMsg" class="small muted mt-2"></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="collapse mb-3" id="panelOut">
+    <div class="panel">
+      <div class="panel-h">
+        <div class="fw-semibold">📦 Keluar Fizikal</div>
+        <button class="btn btn-sm btn-outline-secondary" type="button" data-bs-toggle="collapse" data-bs-target="#panelOut">Tutup</button>
+      </div>
+      <div class="panel-b">
+        <div class="row g-2">
+          <div class="col-md-6">
+            <label class="form-label">Berat</label>
+            <select id="outWeight" class="form-select">
+              <option value="0.5">0.5 g (5 unit)</option>
+              <option value="1">1 g (10 unit)</option>
+              <option value="1.5">1.5 g (15 unit)</option>
+              <option value="2.5">2.5 g (25 unit)</option>
+              <option value="5">5 g (50 unit)</option>
+              <option value="10">10 g (100 unit)</option>
+            </select>
+          </div>
+
+          <div class="col-md-6">
+            <label class="form-label">Upah Kad (RM)</label>
+            <input type="number" id="outFee" class="form-control" value="15" readonly>
+            <div class="form-text">0.5g–2.5g = RM15, 5g & 10g = RM20</div>
+          </div>
+        </div>
+
+        <div class="mt-2">Bayaran: <b id="outTotal">RM 15.00</b></div>
+        <button id="btnOut" class="btn btn-warning w-100 btn-lgx mt-3">Keluar Fizikal</button>
+        <div id="outMsg" class="small muted mt-2"></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="collapse mb-3" id="panelSell">
+    <div class="panel">
+      <div class="panel-h">
+        <div class="fw-semibold">💸 Jual</div>
+        <button class="btn btn-sm btn-outline-secondary" type="button" data-bs-toggle="collapse" data-bs-target="#panelSell">Tutup</button>
+      </div>
+      <div class="panel-b">
+        <div class="row g-2">
+          <div class="col-md-6">
+            <label class="form-label">Unit (0.1g)</label>
+            <input type="number" step="1" min="1" max="0" id="sellUnit" class="form-control" value="1" readonly inputmode="none">
+          </div>
+          <div class="col-md-6">
+            <div class="fw-semibold">Dibayar kepada pelanggan</div>
+            <div class="mt-1"><b id="sellTotal">RM 0.00</b></div>
+          </div>
+          <div class="col-12">
+            <label class="form-label mt-1">No. Akaun Bank (untuk bayaran)</label>
+            <input type="text" id="sellBank" class="form-control" placeholder="cth: Maybank 1234567890">
+          </div>
+        </div>
+
+        <button id="btnSell" class="btn btn-danger w-100 btn-lgx mt-3">Jual</button>
+        <div id="sellMsg" class="small muted mt-2"></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="collapse mb-2" id="panelHist">
+    <div class="panel">
+      <div class="panel-h">
+        <div>
+          <div class="fw-semibold">🕘 Sejarah Transaksi</div>
+          <div class="muted xsmall">Transaksi PENDING direkod selepas admin sahkan.</div>
+        </div>
+        <button class="btn btn-sm btn-outline-secondary" type="button" data-bs-toggle="collapse" data-bs-target="#panelHist">Tutup</button>
+      </div>
+      <div class="panel-b">
+        <div class="d-flex justify-content-between flex-wrap align-items-center mb-2 gap-2">
+          <div class="btn-group btn-group-sm" role="group" aria-label="Penapis status">
+            <button type="button" class="btn btn-outline-secondary active" id="fltAll">Semua</button>
+            <button type="button" class="btn btn-outline-success"  id="fltPaid">PAID</button>
+            <button type="button" class="btn btn-outline-secondary" id="fltPending">PENDING</button>
+          </div>
+          <button class="btn btn-sm btn-outline-secondary" id="btnRefreshHist" type="button">Refresh</button>
+        </div>
+
+        <div class="table-responsive">
+          <table class="table table-sm align-middle">
+            <thead class="table-light">
+              <tr>
+                <th>Tarikh</th>
+                <th>Jenis</th>
+                <th class="text-end">Unit (0.1g)</th>
+                <th class="text-end">Harga/Unit</th>
+                <th class="text-end">Upah</th>
+                <th class="text-end">Jumlah (RM)</th>
+                <th>Status</th>
+                <th>Catatan</th>
+              </tr>
+            </thead>
+            <tbody id="histBody">
+              <tr><td colspan="8" class="muted">Sejarah belum dibuka…</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <div id="histPager" class="pager"></div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<!-- OFFCANVAS MENU -->
+<div class="offcanvas offcanvas-end" tabindex="-1" id="menuCanvas" aria-labelledby="menuCanvasLabel">
+  <div class="offcanvas-header">
+    <h5 class="offcanvas-title" id="menuCanvasLabel">Menu</h5>
+    <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Tutup"></button>
+  </div>
+  <div class="offcanvas-body">
+    <div class="d-grid gap-2">
+      <a href="index.html" class="btn btn-outline-secondary">🏠 Halaman Utama</a>
+      <a href="goldbar-coin.html" class="btn btn-outline-secondary">GoldBar/Coin Fizikal</a>
+      <a href="j916.html" class="btn btn-outline-secondary">Barang Kemas 916</a>
+      <a href="jual-emas.html" class="btn btn-outline-secondary">Jual Emas</a>
+      <a href="policy.html" class="btn btn-outline-secondary">Polisi</a>
+      <a id="btnAccount" href="account.html" class="btn btn-outline-secondary">Akaun</a>
+      <hr>
+      <div class="muted xsmall">Tip: Tekan “Beli / Keluar Fizikal / Jual / Sejarah” untuk buka panel.</div>
+    </div>
+  </div>
+</div>
+
+<!-- MODALS (confirm/result/payinfo) -->
+<div class="modal fade" id="confirmModal" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog"><div class="modal-content">
+    <div class="modal-header">
+      <h5 class="modal-title" id="confirmTitle">Sahkan Tindakan</h5>
+      <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Tutup"></button>
+    </div>
+    <div class="modal-body" id="confirmBody">-</div>
+    <div class="modal-footer">
+      <button type="button" class="btn btn-outline-secondary" id="confirmCancelBtn" data-bs-dismiss="modal">Batal</button>
+      <button type="button" class="btn btn-success" id="confirmProceedBtn">Teruskan</button>
+    </div>
+  </div></div>
+</div>
+
+<div class="modal fade" id="resultModal" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog"><div class="modal-content">
+    <div class="modal-header">
+      <h5 class="modal-title" id="resultTitle">Makluman</h5>
+      <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Tutup"></button>
+    </div>
+    <div class="modal-body" id="resultBody">-</div>
+    <div class="modal-footer">
+      <button type="button" class="btn btn-primary" data-bs-dismiss="modal">Tutup</button>
+    </div>
+  </div></div>
+</div>
+
+<div class="modal fade" id="payInfoModal" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered"><div class="modal-content">
+    <div class="modal-header">
+      <h5 class="modal-title">Makluman pembayaran</h5>
+      <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Tutup"></button>
+    </div>
+    <div class="modal-body">
+      <p class="mb-2">Jika di <b>Sejarah Transaksi</b> status masih <b>PENDING</b> → pembayaran belum berjaya.</p>
+      <p class="mb-2">Jika status <b>PAID</b> → pembayaran berjaya ✅</p>
+      <p class="mb-0">Selepas berjaya, admin akan sahkan & asingkan tabungan anda dan anda akan dapat WhatsApp admin maklumat belian.</p>
+    </div>
+    <div class="modal-footer">
+      <button type="button" class="btn btn-success" id="payProceedBtn">Teruskan ke pembayaran</button>
+    </div>
+  </div></div>
+</div>
+
+<!-- ================== iOS Wheel Picker Modal (Alarm style) ================== -->
+<div class="modal fade picker-modal" id="numberPickerModal" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header">
+        <button type="button" class="picker-btn" id="pickerCancelBtn" aria-label="Tutup">✕</button>
+        <h5 class="picker-title" id="pickerTitle">Pilih Unit</h5>
+        <button type="button" class="picker-btn ok" id="pickerOkBtn" aria-label="Simpan">✓</button>
+      </div>
+      <div class="picker-body">
+        <div class="wheel-wrap">
+          <div class="wheel-fade-top"></div>
+          <div class="wheel" id="pickerWheel"></div>
+          <div class="wheel-highlight"></div>
+          <div class="wheel-fade-bot"></div>
+        </div>
+        <div class="picker-note" id="pickerNote">Scroll naik/turun untuk pilih nombor.</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+<script src="agent-ref.js?v=1"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="auth.js?v=13.1"></script>
+
+<script>
+document.querySelectorAll('[data-bs-toggle="tooltip"]').forEach(el=>{
+  try{ new bootstrap.Tooltip(el); }catch{}
+});
+
+/* ================== Helpers & Config ================== */
+function baseURL(){ const b=(window.BASE_HOST&&String(window.BASE_HOST))||location.origin; return b.replace(/\/$/,""); }
+function confirmURL(type,id){ return `${baseURL()}/tabung-confirm?type=${encodeURIComponent(type)}&id=${encodeURIComponent(id)}`; }
+
+const money = n => "RM " + (Number(n||0)).toFixed(2);
+const fmtDT = iso => { try{ return new Date(iso).toLocaleString("ms-MY",{dateStyle:"medium", timeStyle:"short"}); }catch{return iso;} };
+const $ = id => document.getElementById(id);
+const normalizeMsisdn = s => {
+  const d = String(s||"").replace(/\D/g,"");
+  if (d.startsWith("60")) return d;
+  if (/^[1-9]/.test(d))   return "6"+d;
+  return d;
+};
+
+/* OnSend */
+const ADMIN_WA = "601113230198";
+const ONSEND_BASE  = "https://onsend.io/api/v1";
+const ONSEND_TOKEN = "76a6f98cfc6e009e5d824e47acd98b9b59a6e5177e14b072fd210276309d91f6";
+async function sendWA(msisdn, text){
+  const phone_number = String(msisdn||"").replace(/\D/g,"").replace(/^0/,"60").replace(/^6(?=[1-9])/,"60");
+  try{
+    const r = await fetch(ONSEND_BASE + "/send",{
+      method:"POST",
+      headers:{ "Accept":"application/json","Content-Type":"application/json","Authorization":"Bearer "+ONSEND_TOKEN },
+      body: JSON.stringify({ phone_number, message:text, type:"text" })
+    });
+    const j = await r.json().catch(()=>({}));
+    console.log("[OnSend]", r.status, j);
+    return r.ok && j.success===true;
+  }catch(e){ console.warn("OnSend error:", e); return false; }
+}
+
+// ===== Helper WhatsApp: retry 3x + normalisasi =====
+async function waNotify(to, text, label=""){
+  const msisdn = normalizeMsisdn(to || "");
+  for (let i = 0; i < 3; i++){
+    const ok = await sendWA(msisdn, text);
+    console.log(`[WA ${label}] try ${i+1} =>`, ok);
+    if (ok) return true;
+    await new Promise(r => setTimeout(r, 1500));
+  }
+  return false;
+}
+
+/* Supabase */
+const SUPABASE_URL = "https://dduizetstqqjrpsezbpi.supabase.co";
+const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRkdWl6ZXRzdHFxanJwc2V6YnBpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTg3MzI0ODQsImV4cCI6MjA3NDMwODQ4NH0.CrlHXrmHtKgR9qc2192U6quRb5lpFEeOSgwG0Lb8KRM";
+
+window.sb = window.sb || window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
+  auth: {
+    persistSession: true,
+    autoRefreshToken: true,
+    detectSessionInUrl: true,
+    storage: window.localStorage
+  }
+});
+const sb = window.sb;
+
+/* ===== DEBUG: Supabase & Auth (fix) ===== */
+console.log("[auth_js] v13.1 start");
+console.log("[auth_js] Supabase client ready ✅");
+(async () => {
+  try {
+    console.log("[auth_js] ready ▶️ hasSB:", !!window.sb);
+
+    let uid = null;
+    try { const r = await window.sb.auth.getUser(); uid = r?.data?.user?.id || null; } catch {}
+
+    console.log("AUTH ID =", uid || "(tiada)");
+
+    const ag = (window.auth_get && window.auth_get()) || null;
+    if (ag) console.log("[DEBUG] auth =", ag); else console.log("[DEBUG] auth_get tiada");
+
+    try {
+      const merged = await (typeof getUidGabungan === "function" ? getUidGabungan() : null);
+      console.log("[DEBUG] uid_gabungan =", merged || "(tiada)");
+    } catch (e) {
+      console.warn("[DEBUG] getUidGabungan error:", e);
+    }
+  } catch (e) {
+    console.warn("[auth_js] init debug error (ignored):", e);
+  }
+})();
+
+// --- UID Gabungan (v_auth_ident) ---
+async function getUidGabungan(){
+  try {
+    const r = await sb.auth.getUser();
+    const authId = r?.data?.user?.id || null;
+    if (authId) return authId;
+  } catch {}
+
+  const a = (window.auth_get && window.auth_get()) || {};
+  const ids = [a.id, a.customer_id].filter(Boolean);
+  if (!ids.length) return null;
+
+  const { data, error } = await sb
+    .from("v_auth_ident")
+    .select("uid_gabungan")
+    .or(`auth_uid.in.(${ids.join(",")}),customer_id.in.(${ids.join(",")})`)
+    .limit(1);
+
+  if (error) { console.warn("[getUidGabungan]", error); return null; }
+  return data?.[0]?.uid_gabungan || null;
+}
+
+// --- AUTH UID ---
+async function getAuthUid(){
+  try{
+    const r = await sb.auth.getUser();
+    return r?.data?.user?.id || null;
+  }catch{ return null; }
+}
+
+async function requireAuthUid(){
+  const id = await getAuthUid();
+  if (id) return id;
+  alert("Sesi tamat. Sila log masuk semula.");
+  location.href = "login.html?next="+encodeURIComponent("tabung.html")+"#login";
+  throw new Error("NOT_AUTH");
+}
+
+/* Endpoint Billplz */
+const CREATE_BILL_URL = "https://dduizetstqqjrpsezbpi.functions.supabase.co/functions/v1/create-bill";
+const REDIRECT_URL = baseURL() + '/tabung';
+const BILLPLZ_FIXED_FEE = 1.10;
+
+let buyPrice01 = 0, sellPrice01 = 0;
+if (typeof window.myUnits === 'undefined') window.myUnits = 0;
+function getMyUnits(){ return Number(window.myUnits||0) | 0; }
+
+/* =============== Boot (Auth + UI) =============== */
+const auser = (window.auth_get && window.auth_get()) || null;
+
+(function renderAuth(){
+  const a  = auser;
+  const ph = normalizeMsisdn(a?.phone || a?.msisdn || "");
+  $("loginStatus").textContent = a ? ("Log masuk sebagai " + (a.name || ph || "pengguna")) : "Tidak log masuk";
+
+  const btnLogout = $("btnLogout");
+  if (a && btnLogout){
+    btnLogout.style.display = "";
+    btnLogout.onclick = async () => {
+      try { await sb.auth.signOut(); } catch {}
+      Object.keys(localStorage).forEach(k => { if (k.startsWith("sb-")) localStorage.removeItem(k); });
+      sessionStorage.clear();
+      localStorage.removeItem("tabung_uid_gabungan");
+      if (window.auth_clear) window.auth_clear();
+      location.href = "login.html#login";
+    };
+  }
+})();
+
+if (!auser) {
+  alert("Sila log masuk terlebih dahulu.");
+  location.href = "login.html?next=" + encodeURIComponent("tabung.html") + "#login";
+}
+
+/* ================== Core Data ================== */
+async function ensureSBSessionOrLogin(){
+  try{
+    try{
+      const { data } = await sb.auth.getUser();
+      if (data?.user?.id) return true;
+    }catch{}
+    const s1 = await sb.auth.getSession();
+    if (s1?.data?.session) return true;
+    await sb.auth.refreshSession();
+    const s2 = await sb.auth.getSession();
+    if (s2?.data?.session) return true;
+  }catch(e){ console.warn("[ensureSBSessionOrLogin] warn:", e); }
+
+  const a = (window.auth_get && window.auth_get()) || null;
+  if (a?.id || a?.customer_id) return true;
+  return false;
+}
+
+async function getCustomer(){
+  const raw = auser?.phone || auser?.msisdn || auser?.username || "";
+  const phone = normalizeMsisdn(raw);
+  if (!phone) return null;
+  const { data, error } = await sb.from("customers")
+    .select("id,name,phone,bank_account_name,bank_account_no,bank_name")
+    .eq("phone", phone).single();
+  if (error) return null;
+  return { id:data.id, name:data.name, phone:data.phone, bankName:data.bank_name||"", bankNo:data.bank_account_no||"", bankHolder:data.bank_account_name||"" };
+}
+
+async function prefillBank(){
+  const c = await getCustomer();
+  if (!c) return;
+  const el = $("sellBank");
+  if (el && !el.value) {
+    const text = [c.bankName, c.bankNo].filter(Boolean).join(" ");
+    if (text) el.value = text;
+  }
+}
+
+let currentStockUnits = 0;
+
+async function loadStock(){
+  try{
+    const { data, error } = await sb.rpc('tabung_stock_available');
+    if (error) throw error;
+    const units = Number(data?.[0]?.units ?? data?.units ?? 0);
+    currentStockUnits = units;
+    $('stockUnits').textContent = units.toString();
+    $('stockGrams').textContent = (units/10).toFixed(1);
+  }catch(e){
+    currentStockUnits = 0;
+    $('stockUnits').textContent = '0';
+    $('stockGrams').textContent = '0.0';
+  }
+}
+
+async function loadPrices(){
+  const a = await sb.from("gold_prices").select("ddate, price_9999").order("ddate",{ascending:false}).limit(1);
+  if (a.error) throw a.error;
+  const latest = a.data?.[0] || null;
+  const p1g = Number(latest?.price_9999 || 0);
+  buyPrice01 = p1g/10;
+  $("p1g").textContent = money(p1g);
+  $("p01g_buy").textContent  = money(buyPrice01);
+  $("priceTime").textContent = latest ? fmtDT(latest.ddate) : "-";
+
+  const b = await sb.from("gold_sell_prices").select("ddate, price_9999").order("ddate",{ascending:false}).limit(1);
+  if (b.error) throw b.error;
+  const sell = b.data?.[0] || null;
+  sellPrice01 = Number(sell?.price_9999 || 0);
+  $("p01g_sell").textContent = money(sellPrice01);
+}
+
+async function loadBalance(){
+  const uid = await getUidGabungan();
+  if (!uid){
+    window.myUnits = 0;
+    $("balUnit").textContent = 0;
+    $("balGram").textContent = "0.0";
+
+    const su = $("sellUnit");
+    const btnSell = $("btnSell");
+    if (su){
+      su.max = "0";
+      su.value = "1";
+    }
+    if (btnSell) btnSell.disabled = true;
+
+    return;
+  }
+
+  const { data, error } = await sb
+    .from("v_tabung_units_by_uid")
+    .select("total_units")
+    .eq("auth_uid", uid)
+    .single();
+
+  if (error && error.code !== "PGRST116") throw error;
+
+  const units = Number(data?.total_units || 0);
+  window.myUnits = units;
+  $("balUnit").textContent = units;
+  $("balGram").textContent = (units/10).toFixed(1);
+
+  // ✅ clamp & limit untuk JUAL ikut baki
+  const su = $("sellUnit");
+  const btnSell = $("btnSell");
+  if (su){
+    su.max = String(units);
+
+    let v = Math.max(1, Number(su.value || 1) | 0);
+    if (units <= 0) v = 1;
+    if (v > units) v = units;
+
+    su.value = String(v);
+  }
+  if (btnSell) btnSell.disabled = (units <= 0);
+
+  // refresh kiraan
+  try { recalc(); } catch {}
+}
+
+/* ================== iOS Wheel Picker Logic ================== */
+let _pickerTargetInput = null;
+let _pickerMin = 1;
+let _pickerMax = 999;
+let _pickerValue = 1;
+let _pickerOnApply = null;
+let _pickerModal = null;
+let _pickerWheel = null;
+let _pickerSnapTimer = null;
+
+function clampInt(v, min, max){
+  v = Number(v||0) | 0;
+  if (v < min) v = min;
+  if (v > max) v = max;
+  return v;
+}
+
+function buildWheel(min, max, current){
+  const wheel = $("pickerWheel");
+  wheel.innerHTML = "";
+  const frag = document.createDocumentFragment();
+  for (let i=min; i<=max; i++){
+    const d = document.createElement("div");
+    d.className = "wheel-item";
+    d.dataset.val = String(i);
+    d.textContent = String(i);
+    frag.appendChild(d);
+  }
+  wheel.appendChild(frag);
+
+  // Scroll to current
+  requestAnimationFrame(()=>{
+    const itemH = 44;
+    const idx = (current - min);
+    wheel.scrollTop = idx * itemH;
+    updateWheelActive(min, max);
+  });
+}
+
+function updateWheelActive(min, max){
+  const wheel = $("pickerWheel");
+  const itemH = 44;
+  const top = wheel.scrollTop;
+  const idx = Math.round(top / itemH);
+  const val = clampInt(min + idx, min, max);
+  _pickerValue = val;
+
+  // mark active
+  wheel.querySelectorAll(".wheel-item").forEach(el=>{
+    el.classList.toggle("active", Number(el.dataset.val) === val);
+  });
+}
+
+function snapWheelAfterScroll(min, max){
+  const wheel = $("pickerWheel");
+  const itemH = 44;
+  const idx = Math.round(wheel.scrollTop / itemH);
+  wheel.scrollTo({ top: idx * itemH, behavior: "smooth" });
+
+  // after snap, update active
+  setTimeout(()=> updateWheelActive(min, max), 80);
+}
+
+function openNumberPicker({ title="Pilih Nombor", note="Scroll naik/turun untuk pilih nombor.", inputEl, min=1, max=999, value=1, onApply=null }){
+  _pickerTargetInput = inputEl || null;
+  _pickerMin = min;
+  _pickerMax = max;
+  _pickerValue = clampInt(value, min, max);
+  _pickerOnApply = (typeof onApply === "function") ? onApply : null;
+
+  $("pickerTitle").textContent = title;
+  $("pickerNote").textContent = note;
+
+  buildWheel(_pickerMin, _pickerMax, _pickerValue);
+
+  if (!_pickerModal) _pickerModal = new bootstrap.Modal(document.getElementById("numberPickerModal"));
+  _pickerModal.show();
+
+  // bind scroll
+  if (!_pickerWheel) _pickerWheel = $("pickerWheel");
+  _pickerWheel.onscroll = () => {
+    updateWheelActive(_pickerMin, _pickerMax);
+    if (_pickerSnapTimer) clearTimeout(_pickerSnapTimer);
+    _pickerSnapTimer = setTimeout(()=> snapWheelAfterScroll(_pickerMin, _pickerMax), 120);
+  };
+}
+
+function closePicker(){
+  try{ _pickerModal && _pickerModal.hide(); }catch{}
+}
+
+$("pickerCancelBtn").onclick = () => closePicker();
+
+$("pickerOkBtn").onclick = () => {
+  const val = clampInt(_pickerValue, _pickerMin, _pickerMax);
+  if (_pickerTargetInput){
+    _pickerTargetInput.value = String(val);
+  }
+  if (_pickerOnApply) {
+    try{ _pickerOnApply(val); }catch(e){ console.warn("picker apply error:", e); }
+  }
+  closePicker();
+};
+
+function attachPickerToInput(inputId, getRangeFn, title, note){
+  const el = $(inputId);
+  if (!el) return;
+
+  el.setAttribute("readonly", "readonly");
+  el.setAttribute("inputmode", "none");
+
+  const open = (evt) => {
+    try{ evt && evt.preventDefault && evt.preventDefault(); }catch{}
+    try{ evt && evt.stopPropagation && evt.stopPropagation(); }catch{}
+    el.blur();
+
+    const rng = (typeof getRangeFn === "function" ? getRangeFn() : null) || {};
+    const min = clampInt(rng.min ?? 1, 1, 999999);
+    const max = clampInt(rng.max ?? 999, min, 999999);
+    const cur = clampInt(el.value || 1, min, max);
+
+    openNumberPicker({
+      title: title || "Pilih Nombor",
+      note: note || "Scroll naik/turun untuk pilih nombor.",
+      inputEl: el,
+      min,
+      max,
+      value: cur,
+      onApply: () => { try{ recalc(); }catch{} }
+    });
+  };
+
+  el.addEventListener("click", open, { passive:false });
+  el.addEventListener("focus", open, { passive:false });
+
+  // prevent keyboard long-press
+  el.addEventListener("keydown", (e)=>{ e.preventDefault(); });
+}
+
+/* ================== ACTION LIST -> PANELS ================== */
+let _panels = {};
+let _historyLoadedOnce = false;
+
+function initPanels(){
+  _panels = {
+    panelBuy:  document.getElementById("panelBuy"),
+    panelOut:  document.getElementById("panelOut"),
+    panelSell: document.getElementById("panelSell"),
+    panelHist: document.getElementById("panelHist")
+  };
+
+  document.querySelectorAll(".action-item[data-open]").forEach(el=>{
+    el.addEventListener("click", async ()=>{
+      const id = el.getAttribute("data-open");
+      await openPanel(id);
+    });
+  });
+}
+
+async function openPanel(id){
+  // close others
+  Object.keys(_panels).forEach(pid=>{
+    if (pid !== id){
+      try{
+        const inst = bootstrap.Collapse.getOrCreateInstance(_panels[pid], { toggle:false });
+        inst.hide();
+      }catch{}
+    }
+  });
+
+  // open target
+  const el = _panels[id];
+  if (!el) return;
+
+  try{
+    const inst = bootstrap.Collapse.getOrCreateInstance(el, { toggle:false });
+    inst.show();
+  }catch{
+    el.classList.add("show");
+  }
+
+  // lazy history load
+  if (id === "panelHist" && !_historyLoadedOnce){
+    _historyLoadedOnce = true;
+    await loadHistory();
+  }
+
+  // scroll to it (nice)
+  setTimeout(()=>{
+    try{ el.scrollIntoView({ behavior:"smooth", block:"start" }); }catch{}
+  }, 150);
+}
+
+/* ================== Sejarah + pagination ================== */
+let currentFilter = "ALL", allRows=[], pageSize=5, currentPage=1;
+
+async function fetchHistory(){
+  const authUid = await getAuthUid();
+  if (!authUid) throw new Error("Sesi tamat.");
+
+  const { data, error } = await sb.rpc("tabung_history", {
+    p_user_id: authUid,
+    p_paid_only: false
+  });
+  if (error) throw error;
+
+  const KIND_MAP = { BUY:'BELI', SELL:'JUAL', WITHDRAW:'KELUAR FIZIKAL', BELI:'BELI', JUAL:'JUAL', 'KELUAR FIZIKAL':'KELUAR FIZIKAL' };
+
+  return (Array.isArray(data) ? data : []).map(x => {
+    const rawKind = (x.kind || x.type || '').toUpperCase();
+    const kind = KIND_MAP[rawKind] || rawKind;
+    return {
+      created_at: x.created_at,
+      kind,
+      status: (x.status || '').toUpperCase(),
+      units: Number(x.units || 0),
+      price_per_unit: Number(x.price_per_unit || 0),
+      fee: Number(x.fee || 0),
+      total: Number(x.total || 0),
+      notes: x.notes || ''
+    };
+  });
+}
+
+function renderPager(total, page, size){
+  const pager = $("histPager");
+  const pages = Math.max(1, Math.ceil(total / size));
+  if (page > pages) page = pages;
+  const btn = (label, target, disabled=false, active=false) =>
+    `<span class="page ${disabled?'disabled':''} ${active?'active':''}" data-page="${target}">${label}</span>`;
+  let html = "";
+  html += btn("←", Math.max(1, page-1), page===1);
+  const windowSize = 3;
+  const start = Math.max(1, page - windowSize);
+  const end   = Math.min(pages, page + windowSize);
+  for(let p=start; p<=end; p++) html += btn(String(p), p, false, p===page);
+  html += btn("→", Math.min(pages, page+1), page===pages);
+  pager.innerHTML = html;
+  pager.querySelectorAll(".page").forEach(el=>{
+    if (!el.classList.contains("disabled")){
+      el.onclick = ()=>{ currentPage = Number(el.dataset.page); renderHistory(); };
+    }
+  });
+}
+
+function renderHistory(){
+  let rows = [...allRows];
+  if (currentFilter !== "ALL"){
+    rows = rows.filter(x => (x.status||"").toUpperCase() === currentFilter);
+  }
+  const body = $("histBody");
+  if (!rows.length){
+    body.innerHTML = `<tr><td colspan="8" class="muted">Tiada transaksi.</td></tr>`;
+    $("histPager").innerHTML = "";
+    return;
+  }
+  rows.sort((a,b)=> new Date(b.created_at) - new Date(a.created_at));
+  const total = rows.length;
+  const start = (currentPage-1)*pageSize;
+  const pageRows = rows.slice(start, start+pageSize);
+  renderPager(total, currentPage, pageSize);
+
+  body.innerHTML = pageRows.map(x => {
+    const kind = (x.kind || x.type || "").toUpperCase();
+    const status = (x.status || "").toUpperCase();
+    const statusHtml = (() => {
+      if (status === "PAID" && kind === "BELI")           return '<span class="text-success fw-bold">PAID</span>';
+      if (status === "APPROVED" && kind === "JUAL")       return '<span class="text-danger fw-bold">APPROVED</span>';
+      if (status === "APPROVED" && kind === "KELUAR FIZIKAL") return '<span class="text-warning fw-bold">APPROVED</span>';
+      if (status === "PENDING")                           return '<span class="text-secondary fw-bold">PENDING</span>';
+      return `<span class="fw-bold">${status}</span>`;
+    })();
+    return `
+      <tr>
+        <td>${fmtDT(x.created_at)}</td>
+        <td>${kind}</td>
+        <td class="text-end">${x.units}</td>
+        <td class="text-end">${money(x.price_per_unit || 0)}</td>
+        <td class="text-end">${money(x.fee || 0)}</td>
+        <td class="text-end">${money(x.total || 0)}</td>
+        <td>${statusHtml}</td>
+        <td class="small">${x.notes || ""}</td>
+      </tr>`;
+  }).join("");
+}
+
+async function loadHistory(){
+  try{
+    $("histBody").innerHTML = `<tr><td colspan="8" class="muted">Memuatkan…</td></tr>`;
+    allRows = await fetchHistory();
+    currentPage = 1;
+    renderHistory();
+  }catch(e){
+    $("histBody").innerHTML = `<tr><td colspan="8" class="text-danger">Ralat: ${e.message||e}</td></tr>`;
+    $("histPager").innerHTML = "";
+  }
+}
+
+/* UI kecil */
+function recalc(){
+  const bu = Math.max(1, Number($("buyUnit").value||1)|0);
+  $("buyUnit").value = bu;
+
+  // --- BELI: subtotal + caj Billplz + grand total
+  const subtotal = bu * buyPrice01;
+  const grand    = subtotal + BILLPLZ_FIXED_FEE;
+  $("buyTotal").innerHTML = `${money(subtotal)} <span class="text-muted small">(+ caj Billplz ${money(BILLPLZ_FIXED_FEE)} = <b>${money(grand)}</b>)</span>`;
+
+  // --- KELUAR FIZIKAL
+  const w = Number($("outWeight").value);
+  const fee = (w >= 5 ? 20 : 15);
+  $("outFee").value = fee;
+  $("outTotal").textContent = money(fee);
+
+  // --- JUAL (ikut baki tabung)
+  const maxSell = Math.max(0, Number(window.myUnits || 0) | 0);
+  let su = Math.max(1, Number($("sellUnit").value || 1) | 0);
+
+  if (maxSell <= 0) su = 1;
+  if (su > maxSell && maxSell > 0) su = maxSell;
+
+  $("sellUnit").max = String(maxSell);
+  $("sellUnit").value = String(su);
+
+  $("sellTotal").textContent = money(su * sellPrice01);
+
+  // optional: disable bila tiada baki
+  const btnSell = $("btnSell");
+  if (btnSell) btnSell.disabled = (maxSell <= 0);
+}
+["outWeight"].forEach(id => $(id).addEventListener("input", recalc));
+
+/* Modal helpers */
+function openConfirm({ title, html, proceedText="Teruskan", cancelText="Batal" }){
+  return new Promise(resolve=>{
+    const m = new bootstrap.Modal(document.getElementById('confirmModal'));
+    $('confirmTitle').textContent = title || "Sahkan Tindakan";
+    $('confirmBody').innerHTML    = html  || "-";
+    $('confirmProceedBtn').textContent = proceedText;
+    $('confirmCancelBtn').textContent  = cancelText;
+    const okBtn = $('confirmProceedBtn');
+    const cancelBtn = $('confirmCancelBtn');
+    const onOk = ()=>{ cleanup(); resolve(true); };
+    const onCancel = ()=>{ cleanup(); resolve(false); };
+    function cleanup(){ okBtn.removeEventListener('click', onOk); cancelBtn.removeEventListener('click', onCancel); m.hide(); }
+    okBtn.addEventListener('click', onOk);
+    cancelBtn.addEventListener('click', onCancel);
+    m.show();
+  });
+}
+function showResult({ title, html }){
+  $('resultTitle').textContent = title || "Makluman";
+  $('resultBody').innerHTML    = html || "-";
+  new bootstrap.Modal(document.getElementById('resultModal')).show();
+}
+
+/* ================== Actions ================== */
+/* BELI → Billplz (WA dihantar selepas PAID) */
+$("btnBuy").onclick = async () => {
+  await ensureSBSessionOrLogin();
+  const units = Math.max(1, Number($("buyUnit").value || 1) | 0);
+
+  if (units > currentStockUnits) {
+    $("buyMsg").textContent = "❌ Stok Tabung tidak mencukupi. Sila tunggu admin tambah stok.";
+    return;
+  }
+
+  const ok = await openConfirm({
+    title: "Sahkan Pembelian",
+    html: (() => {
+      const subtotal = units * buyPrice01;
+      const grand    = subtotal + BILLPLZ_FIXED_FEE;
+      return `
+        Betulkah anda ingin <b>membeli emas 999.9 (Tabung)</b>?<br>
+        Unit: <b>${units}</b> (0.1g) = <b>${(units/10).toFixed(1)} g</b><br>
+        Subtotal: <b>${money(subtotal)}</b><br>
+        Caj Billplz: <b>${money(BILLPLZ_FIXED_FEE)}</b><br>
+        Jumlah dibayar: <b>${money(grand)}</b><br>
+        <span class="text-muted small">Nota: Caj Billplz ialah caj platform FPX dan tidak mengubah harga emas.</span>
+      `;
+    })(),
+    proceedText: "Teruskan Bayaran",
+    cancelText: "Batal"
+  });
+  if (!ok) return;
+
+  const btn = $("btnBuy");
+  btn.disabled = true;
+  $("buyMsg").textContent = "Menyediakan bil Billplz…";
+
+  try {
+    const cust = await getCustomer();
+    if (!cust) throw new Error("Profil pelanggan belum lengkap. Sila lengkapkan nombor telefon dalam Akaun (format 60…).");
+
+    const authId = await getAuthUid();
+    if (!authId) {
+      alert("Sesi tamat. Sila log masuk semula.");
+      location.href = "login.html?next=" + encodeURIComponent("tabung.html") + "#login";
+      return;
+    }
+
+    const prep = await sb.rpc("tabung_buy_prepare_v3", {
+      p_user_id: authId,
+      p_units: units,
+      p_price_per_unit: buyPrice01
+    });
+    if (prep.error) throw prep.error;
+
+    const raw = prep.data;
+    let reference = null;
+    if (typeof raw === "string") reference = raw;
+    else if (Array.isArray(raw)) { const r0 = raw[0]||{}; reference = r0.reference || r0.reference_1 || r0.ref || r0.txn_id || r0.id || null; }
+    else if (raw && typeof raw==="object") { reference = raw.reference || raw.reference_1 || raw.ref || raw.txn_id || raw.id || null; }
+    if (!reference) throw new Error("Tiada reference dari server.");
+
+    // jumlah untuk ledger (emas) & jumlah untuk Billplz (emas + caj)
+    const subtotalRM = Number((units * buyPrice01).toFixed(2));
+    if (!Number.isFinite(subtotalRM) || subtotalRM <= 0) throw new Error("Nilai jumlah tidak sah.");
+
+    const amountToBill = Number((subtotalRM + BILLPLZ_FIXED_FEE).toFixed(2));
+
+    const payload = {
+      txn_id: reference,
+      amount: amountToBill,
+      user_id: auser?.id || cust.id,
+      units: units,
+      name: cust.name || auser?.name || "Pelanggan",
+      phone: cust.phone || "",
+      email: auser?.email || "",
+      description: `Tabung emas ${units} unit (0.1g) — termasuk caj Billplz RM ${BILLPLZ_FIXED_FEE.toFixed(2)}`,
+      redirect_url: REDIRECT_URL
+    };
+
+    const res = await fetch(CREATE_BILL_URL, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": "Bearer " + SUPABASE_ANON_KEY
+      },
+      body: JSON.stringify(payload)
+    });
+
+    let j = {}; try { j = await res.json(); } catch {}
+    if (!res.ok || !j?.ok) {
+      console.error("create-bill error:", j);
+      throw new Error(j?.error || j?.message || "Billplz ralat.");
+    }
+
+    const billUrl = j.bill_url || j.url;
+    if (!billUrl) throw new Error("Billplz ralat (tiada pautan bil).");
+
+    try { await sb.rpc("tabung_attach_bill", { p_reference: reference, p_bill_id_text: j.bill_id || "" }); } catch {}
+
+    sessionStorage.setItem("billplz_expect", "1");
+    sessionStorage.setItem("bill_expect_ref", reference || "");
+    sessionStorage.setItem("bill_expect_id", j.bill_id || "");
+    sessionStorage.removeItem("paid_wa_sent");
+
+    const proceedBtn = document.getElementById('payProceedBtn');
+    proceedBtn.onclick = () => { window.location.href = billUrl; };
+    new bootstrap.Modal(document.getElementById('payInfoModal')).show();
+
+  } catch (err) {
+    const msg = (err?.message || err || "").toString();
+    $("buyMsg").textContent = "❌ " + msg;
+    if (msg.toLowerCase().includes("not authenticated")) {
+      alert("Sesi tamat. Sila log masuk semula.");
+      location.href = "login.html?next="+encodeURIComponent("tabung.html")+"#login";
+      return;
+    }
+    btn.disabled = false;
+  }
+};
+
+/* JUAL → permohonan + WhatsApp */
+$("btnSell").onclick = async () => {
+  await ensureSBSessionOrLogin();
+
+  const units = Math.max(1, Number($("sellUnit").value || 1) | 0);
+  const bank  = String(($("sellBank").value || "")).trim();
+  const total = units * sellPrice01;
+
+  if (units > (Number(window.myUnits||0)|0)) { $("sellMsg").textContent = "❌ Baki tidak mencukupi."; return; }
+  if (!bank)           { $("sellMsg").textContent = "❌ Sila masukkan / sahkan no. akaun bank."; return; }
+
+  const ok = await openConfirm({
+    title: "Sahkan Jualan",
+    html: `Anda akan <b>menjual balik</b> sebanyak <b>${(units/10).toFixed(1)} g</b> (${units} unit).<br>
+           Jumlah dibayar kepada anda: <b>${money(total)}</b><br>
+           Akaun bank: <span class="mono">${bank}</span>`,
+    proceedText: "Teruskan", cancelText: "Batal"
+  });
+  if (!ok) return;
+
+  $("sellMsg").textContent = "Menghantar permohonan…";
+
+  try {
+    const cust = await getCustomer();
+    if (!cust) throw new Error("Profil pelanggan belum lengkap.");
+
+    let authId = await getAuthUid();
+    if (!authId) { try { const r = await sb.auth.getUser(); authId = r?.data?.user?.id || null; } catch{} }
+    if (!authId && window.auth_get) authId = window.auth_get().id;
+    if (!authId) { alert("Sesi tamat. Sila log masuk semula."); location.href = "login.html?next=" + encodeURIComponent("tabung.html") + "#login"; return; }
+
+    const cName  = cust?.name  || "-";
+    const cPhone = cust?.phone || "-";
+
+    const resp = await sb.rpc("tabung_request_sell_v3", {
+      p_user_id: authId,
+      p_units: units,
+      p_price_per_unit: sellPrice01,
+      p_bank: bank,
+      p_name: cName,
+      p_phone: cPhone,
+      p_notes: null
+    });
+    if (resp.error) throw resp.error;
+
+    const refId = resp.data?.id || resp.data?.request_id || (typeof resp.data === "string" ? resp.data : null);
+    if (!refId) throw new Error("Server tidak pulangkan id transaksi.");
+
+    const link = confirmURL("sell", refId);
+    const msgAdmin = [
+      "*Permohonan Jual Tabung*",
+      `ID: ${refId}`,
+      `Nama: ${cName}`,
+      `No: ${cPhone}`,
+      `Baki tabung: ${((Number(window.myUnits||0)/10)).toFixed(1)} g (${Number(window.myUnits||0)} unit)`,
+      `Jual: ${(units/10).toFixed(1)} g (${units} unit)`,
+      `Jumlah dibayar: ${money(total)}`,
+      `Akaun bank: ${bank}`,
+      "",
+      "✅ Sahkan di:",
+      link,
+      ""
+    ].join("\n");
+
+    const msgCust = [
+      "Permohonan jual tabung anda diterima.",
+      `ID: ${refId}`,
+      `Jual: ${(units/10).toFixed(1)} g (${units} unit)`,
+      `Anggaran bayaran: ${money(total)}`,
+      "Admin akan hubungi anda sebentar lagi. Terima kasih."
+    ].join("\n");
+
+    const okA = await waNotify(ADMIN_WA, msgAdmin, "ADMIN SELL");
+    const okC = await waNotify(cPhone,    msgCust,  "CUST SELL");
+
+    $("sellMsg").textContent = (okA || okC) ? "✅ Permohonan dihantar." : "❌ Gagal hantar mesej.";
+
+    if (_historyLoadedOnce) await loadHistory();
+    await loadBalance();
+
+  } catch (e) {
+    $("sellMsg").textContent = "❌ " + (e.message || e);
+  }
+};
+
+/* KELUAR FIZIKAL → permohonan + WhatsApp */
+$("btnOut").onclick = async () => {
+  await ensureSBSessionOrLogin();
+
+  try {
+    const weightG = Number(($("outWeight")?.value || 0.5).toString().replace(",", "."));
+    const units   = Math.round(weightG * 10);
+    const fee     = Number($("outFee")?.value || (weightG >= 5 ? 20 : 15));
+
+    if (units <= 0)      { $("outMsg").textContent = "❌ Berat tidak sah."; return; }
+    if (units > (Number(window.myUnits||0)|0)) { $("outMsg").textContent = "❌ Baki tidak mencukupi."; return; }
+
+    const ok = await openConfirm({
+      title: "Sahkan Keluar Fizikal",
+      html: `Keluar fizikal: <b>${weightG} g</b> (${units} unit).<br>
+             Upah kad: <b>RM ${Number(fee).toFixed(2)}</b>`,
+      proceedText: "Teruskan", cancelText: "Batal"
+    });
+    if (!ok) return;
+
+    $("outMsg").textContent = "Menghantar permohonan…";
+
+    const cust = await getCustomer();
+    if (!cust) throw new Error("Profil pelanggan belum lengkap.");
+
+    let authId = await getAuthUid();
+    if (!authId) { try { const r = await sb.auth.getUser(); authId = r?.data?.user?.id || null; } catch{} }
+    if (!authId && window.auth_get) authId = window.auth_get().id;
+    if (!authId) { alert("Sesi tamat. Sila log masuk semula."); location.href = "login.html?next=" + encodeURIComponent("tabung.html") + "#login"; return; }
+
+    const cName  = cust?.name  || "-";
+    const cPhone = cust?.phone || "-";
+
+    const resp = await sb.rpc("tabung_request_withdraw_v3", {
+      p_user_id: authId,
+      p_units: units,
+      p_fee: fee,
+      p_name: cName,
+      p_phone: cPhone,
+      p_notes: null
+    });
+    if (resp.error) throw resp.error;
+
+    const refId = resp.data?.id || resp.data?.request_id || (typeof resp.data === "string" ? resp.data : null);
+    if (!refId) throw new Error("Server tidak pulangkan id transaksi.");
+
+    const link = confirmURL("withdraw", refId);
+    const msgAdmin = [
+      "*Permohonan Keluar Fizikal*",
+      `ID: ${refId}`,
+      `Nama: ${cName}`,
+      `No: ${cPhone}`,
+      `Berat: ${weightG} g (${units} unit)`,
+      `Upah kad: RM ${Number(fee).toFixed(2)}`,
+      "",
+      "✅ Sahkan & lihat:",
+      link,
+      ""
+    ].join("\n");
+
+    const msgCust = [
+      "Permohonan keluar fizikal diterima.",
+      `ID: ${refId}`,
+      `Berat dimohon: ${weightG} g (${units} unit)`,
+      `Upah kad: RM ${Number(fee).toFixed(2)}`,
+      "Admin akan hubungi anda untuk pengesahan & temujanji."
+    ].join("\n");
+
+    const okA = await waNotify(ADMIN_WA, msgAdmin, "ADMIN WD");
+    const okC = await waNotify(cPhone,    msgCust,  "CUST WD");
+
+    $("outMsg").textContent = (okA || okC) ? "✅ Permohonan dihantar." : "❌ Gagal hantar mesej.";
+
+    if (_historyLoadedOnce) await loadHistory();
+    await loadBalance();
+
+  } catch (err) {
+    $("outMsg").textContent = "❌ " + (err?.message || err);
+  }
+};
+
+/* ================== Realtime + Filters ================== */
+async function initRealtime() {
+  const authUid = await getAuthUid();
+  if (!authUid) return;
+
+  const bumpMine = () => {
+    loadBalance().catch(console.error);
+    if (_historyLoadedOnce) loadHistory().catch(console.error);
+  };
+
+  const ch1 = sb.channel('rt-txns')
+    .on('postgres_changes', { event: '*', schema: 'public', table: 'tabung_txn' },
+      (p) => {
+        const row = p.new || p.old || {};
+        if (row.user_id === authUid) bumpMine();
+        loadStock().catch(console.error);
+      })
+    .subscribe();
+
+  const ch2 = sb.channel('rt-stock')
+    .on('postgres_changes', { event: '*', schema: 'public', table: 'tabung_stock_adjust' },
+      () => loadStock().catch(console.error))
+    .subscribe();
+
+  window.addEventListener('beforeunload', () => { sb.removeChannel(ch1); sb.removeChannel(ch2); });
+}
+
+function bindFilters(){
+  const btnAll = $("fltAll"), btnPaid = $("fltPaid"), btnPending = $("fltPending");
+  const setActive = (b)=>[btnAll,btnPaid,btnPending].forEach(x=>x.classList.toggle("active", x===b));
+  btnAll.onclick     = ()=>{ currentFilter="ALL";    currentPage=1; setActive(btnAll);     renderHistory(); };
+  btnPaid.onclick    = ()=>{ currentFilter="PAID";   currentPage=1; setActive(btnPaid);    renderHistory(); };
+  btnPending.onclick = ()=>{ currentFilter="PENDING";currentPage=1; setActive(btnPending); renderHistory(); };
+}
+
+/* ================== Init ================== */
+(async ()=>{
+  try{
+    initPanels();
+    bindFilters();
+
+    $("btnRefreshHist").addEventListener("click", async ()=>{
+      if (!_historyLoadedOnce){
+        _historyLoadedOnce = true;
+      }
+      await loadHistory();
+    });
+
+    await loadPrices();
+    await loadBalance();
+    await prefillBank();
+    await loadStock();
+    recalc();
+    initRealtime();
+
+    // ✅ attach wheel picker (Alarm style) untuk Unit
+    attachPickerToInput(
+      "buyUnit",
+      () => ({ min: 1, max: Math.max(1, Number(currentStockUnits||0)|0) }),
+      "Pilih Unit",
+      "Beli: min 1 unit. Max ikut stok tabung."
+    );
+
+    attachPickerToInput(
+      "sellUnit",
+      () => ({ min: 1, max: Math.max(1, Number(window.myUnits||0)|0) }),
+      "Pilih Unit",
+      "Jual: max ikut baki tabung anda."
+    );
+
+  }catch(e){
+    alert("Ralat memuat data: " + (e.message || e));
+  }
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,368 @@
+<!doctype html>
+<html lang="ms">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Resit Split J916 — Emas Amir</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+  <style>
+    body{background:#fff}
+    .sheet{max-width:980px;margin:24px auto;padding:24px;border:1px solid #eee;border-radius:14px}
+    .h-logo{font-weight:900;font-size:20px}
+    .muted{color:#6b7280}
+    .mono{font-family:ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,"Liberation Mono","Courier New",monospace}
+    .pill{display:inline-block;padding:3px 10px;border:1px solid #e5e7eb;border-radius:999px;background:#fafafa;font-size:12px}
+    .card-soft{border:1px solid #e5e7eb;border-radius:14px;padding:14px}
+    .table-sm td,.table-sm th{padding:.42rem .5rem}
+    .big{font-size:18px;font-weight:900}
+    .tot{font-size:22px;font-weight:900}
+    .warn{background:#fff1f2;border:1px solid #fecdd3;color:#9f1239;border-radius:12px;padding:12px}
+    @media print{
+      .no-print{display:none!important}
+      .sheet{border:none;margin:0;padding:0}
+      a[href]:after{content:""}
+    }
+  </style>
+</head>
+<body>
+
+<div class="sheet">
+  <div class="d-flex justify-content-between align-items-start gap-3 flex-wrap">
+    <div>
+      <div class="h-logo">Emas Amir Sdn Bhd (202301019252)</div>
+      <div class="small muted">+60168055916 • perniagaanemasamir@gmail.com</div>
+      <div class="small muted">3H Jalan Belibis Taman Tunku Putra 09000 Kulim Kedah</div>
+      <div class="mt-2"><span class="pill">RESIT SPLIT/POTONG J916</span></div>
+    </div>
+
+    <div class="text-end">
+      <div class="fw-bold">RESIT</div>
+      <div class="small" id="resitNo">No Resit: –</div>
+      <div class="small" id="resitDate">Tarikh: –</div>
+      <div class="small">Rujukan: <span class="mono" id="resitRef">–</span></div>
+      <div class="mt-2 no-print">
+        <button class="btn btn-outline-secondary btn-sm" onclick="window.print()">Cetak</button>
+      </div>
+    </div>
+  </div>
+
+  <hr>
+
+  <div id="warnBox" class="warn mb-3" style="display:none"></div>
+
+  <div class="row g-2 mb-3">
+    <!-- Pelanggan -->
+    <div class="col-12 col-lg-6">
+      <div class="card-soft">
+        <div class="fw-semibold mb-1">Pelanggan</div>
+        <div id="custName">–</div>
+        <div class="small muted">Telefon: <span class="mono" id="custPhone">–</span></div>
+        <div class="small muted">Alamat: <span id="custAddr">–</span></div>
+
+        <div class="mt-2">
+          <div class="small muted">
+            Kaedah bayar balik:
+            <span class="fw-semibold" id="methodText">–</span>
+          </div>
+
+          <!-- Bank info (hanya bila TRANSFER) -->
+          <div id="bankWrap" style="display:none" class="mt-1">
+            <div class="small muted">Bank: <span class="fw-semibold" id="bankName">–</span></div>
+            <div class="small muted">Nama akaun: <span class="fw-semibold" id="bankAccName">–</span></div>
+            <div class="small muted">No akaun: <span class="fw-semibold mono" id="bankAccNo">–</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Catatan -->
+    <div class="col-12 col-lg-6">
+      <div class="card-soft">
+        <div class="fw-semibold mb-1">Catatan</div>
+        <div class="small muted">Split code: <span class="mono" id="splitCode">–</span></div>
+        <div class="small muted">Sale: <span class="mono" id="saleOrder">–</span></div>
+        <div class="small muted">Ref: <span class="mono" id="refText">–</span></div>
+        <div class="small muted">Nota: <span id="noteText">–</span></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Ringkasan -->
+  <div class="row g-2 mb-3">
+    <div class="col-12 col-lg-6">
+      <div class="card-soft">
+        <div class="fw-semibold mb-2">Asal (customer dah bayar)</div>
+        <table class="table table-sm mb-0">
+          <tbody>
+            <tr><td class="muted">Jumlah asal dibayar</td><td class="text-end tot mono" id="paidTotal">RM 0.00</td></tr>
+            <tr><td class="muted">Berat asal</td><td class="text-end mono" id="origWeight">–</td></tr>
+            <tr><td class="muted">Panjang asal</td><td class="text-end mono" id="origLen">–</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="col-12 col-lg-6">
+      <div class="card-soft">
+        <div class="fw-semibold mb-2">Selepas potong</div>
+        <table class="table table-sm mb-0">
+          <tbody>
+            <tr><td class="muted">Harga baru</td><td class="text-end tot mono" id="newTotal">RM 0.00</td></tr>
+            <tr><td class="muted">Berat baru</td><td class="text-end mono" id="newWeight">–</td></tr>
+            <tr><td class="muted">Panjang baru</td><td class="text-end mono" id="newLen">–</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- Refund -->
+  <div class="card-soft">
+    <div class="d-flex justify-content-between align-items-center flex-wrap gap-2">
+      <div class="big">REFUND (asal - baru)</div>
+      <div class="tot mono" id="refundTotal">RM 0.00</div>
+    </div>
+    <div class="muted mt-1" id="refundHint">–</div>
+  </div>
+
+  <div class="small muted mt-3">* Resit ini dijana automatik oleh sistem Emas Amir.</div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script>
+/* ========================= Supabase ========================= */
+const SB_URL="https://dduizetstqqjrpsezbpi.supabase.co";
+const SB_KEY="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRkdWl6ZXRzdHFxanJwc2V6YnBpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTg3MzI0ODQsImV4cCI6MjA3NDMwODQ4NH0.CrlHXrmHtKgR9qc2192U6quRb5lpFEeOSgwG0Lb8KRM";
+const sb = window.supabase.createClient(SB_URL, SB_KEY);
+
+/* ========================= Helpers ========================= */
+const $=id=>document.getElementById(id);
+const money=n=>'RM '+Number(n||0).toFixed(2);
+const fmtMY=(s)=> s ? new Date(s).toLocaleString('ms-MY',{hour12:false}) : '-';
+function esc(s){ return String(s ?? '').replace(/[&<>"']/g, m=>({ "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;" }[m])); }
+function setText(id, val, fb='-'){ const el=$(id); if(el) el.textContent = (val!=null && String(val).trim()!=='') ? String(val) : fb; }
+const digitsOnly = (v)=> String(v||'').replace(/\D/g,'');
+function normalizePhoneVariants(msisdn){
+  if (!msisdn) return [];
+  let x = digitsOnly(msisdn);
+  const set = new Set();
+  if (x) set.add(x);
+  if (x.startsWith('60') && x.length > 2) set.add('0'+x.slice(2));
+  if (x.startsWith('0') && x.length >= 10 && x.length <= 11){
+    set.add(x);
+    set.add('60'+x.slice(1));
+  }
+  if (String(msisdn||'').trim().startsWith('+')) set.add(digitsOnly(msisdn));
+  return Array.from(set);
+}
+function warn(msg){
+  const w = $('warnBox');
+  if (!w) return;
+  w.style.display = '';
+  w.innerHTML = msg;
+}
+function resitNo(splitCode, createdAt){
+  const d = createdAt ? new Date(createdAt) : new Date();
+  const ymd =
+    d.getFullYear() +
+    String(d.getMonth()+1).padStart(2,'0') +
+    String(d.getDate()).padStart(2,'0');
+  const sc = (splitCode || 'SPLIT').toUpperCase();
+  return `EA-SPLIT-${ymd}-${sc}`;
+}
+
+/* ========================= Boot ========================= */
+(async()=>{
+  try{
+    const qs=new URLSearchParams(location.search);
+    const sid = (qs.get('sid')||'').trim();
+
+    // preview mode (query + localStorage)
+    let sale = (qs.get('sale')||'').trim();
+    let note = (qs.get('note')||'').trim();
+    let ref  = (qs.get('ref')||'').trim();
+    let method = (qs.get('method')||'').trim();
+
+    let splitRow = null;
+
+    if(sid){
+      const st = await sb.from('j916_split_txn')
+        .select('*')
+        .eq('id', sid)
+        .maybeSingle();
+      if(st.error) throw st.error;
+      splitRow = st.data;
+
+      if(!splitRow){
+        warn(`<b>Split tidak dijumpai.</b><br>SID: <span class="mono">${esc(sid)}</span>`);
+        return;
+      }
+
+      sale   = splitRow.sale_order_code || sale;
+      note   = (splitRow.note ?? note) || '';
+      ref    = (splitRow.ref ?? ref) || '';
+      method = (splitRow.cashout_method ?? method) || '';
+
+      $('resitDate').textContent = 'Tarikh: ' + fmtMY(splitRow.created_at);
+      $('resitNo').textContent   = 'No Resit: ' + resitNo(splitRow.split_code, splitRow.created_at);
+      setText('resitRef', ref || '-', '-');
+    }
+
+    // fallback localStorage for preview
+    if(!splitRow){
+      try{
+        const raw = localStorage.getItem('split_preview');
+        if(raw){
+          const j = JSON.parse(raw);
+          // kalau sale sama, guna payload preview
+          if(!sale || (j.sale_order_code && j.sale_order_code === sale)){
+            splitRow = {
+              id: null,
+              created_at: j.at || new Date().toISOString(),
+              sale_order_code: j.sale_order_code || sale,
+              split_code: j.split_code || '(PREVIEW)',
+              customer_phone: j.customer_phone || '',
+              customer_name: j.customer_name || '',
+              original_paid_rm: Number(j.original_paid_rm||0),
+              original_weight_g: j.original_weight_g,
+              original_length_cm: j.original_length_cm,
+              new_weight_g: j.new_weight_g,
+              new_length_cm: j.new_length_cm,
+              new_amount_rm: Number(j.new_amount_rm||0),
+              refund_rm: Number(j.refund_rm||0),
+              cashout_method: j.cashout_method || method || '',
+              ref: j.ref || ref || '',
+              note: j.note || note || ''
+            };
+          }
+        }
+      }catch(_){}
+    }
+
+    if(!splitRow || !splitRow.sale_order_code){
+      warn(
+        `<b>Param tak cukup.</b><br>
+         Buka ikut format:<br>
+         <span class="mono">resit-split-j916.html?sid=SPLIT_ID</span><br>
+         atau (preview):<br>
+         <span class="mono">resit-split-j916.html?sale=ORDER_CODE</span>`
+      );
+      return;
+    }
+
+    // header for preview
+    if(!sid){
+      const baseDate = splitRow.created_at || new Date().toISOString();
+      $('resitDate').textContent = 'Tarikh: ' + fmtMY(baseDate);
+      $('resitNo').textContent   = 'No Resit: ' + resitNo(splitRow.split_code, baseDate);
+      setText('resitRef', splitRow.ref || ref || '-', '-');
+    }
+
+    // set main texts
+    setText('splitCode', splitRow.split_code || '-');
+    setText('saleOrder', splitRow.sale_order_code || '-');
+    setText('refText', splitRow.ref || ref || '-', '-');
+    setText('noteText', splitRow.note || note || '-', '-');
+    setText('methodText', (splitRow.cashout_method || method || '-').toUpperCase());
+
+    // fetch sale row (for customer data if missing)
+    const s = await sb.from('j916_orders')
+  .select('order_code,created_at,status,pay_method,customer_name,phone,checkout_group')
+  .eq('order_code', splitRow.sale_order_code)
+  .in('status', ['PAID','COMPLETED'])
+  .maybeSingle();
+if(s.error) throw s.error;
+
+const saleRow = s.data || null;;
+
+let saleRow = s.data || null;
+
+// fallback: kalau tak jumpa walaupun order_code betul, cuba tanpa filter status
+if(!saleRow){
+  const s2 = await sb.from('j916_orders')
+    .select('order_code,created_at,status,pay_method,customer_name,phone,checkout_group')
+    .eq('order_code', splitRow.sale_order_code)
+    .maybeSingle();
+  if(!s2.error) saleRow = s2.data || null;
+}
+
+    const custName = splitRow.customer_name || saleRow?.customer_name || '-';
+    const custPhone = splitRow.customer_phone || saleRow?.phone || '-';
+    setText('custName', custName);
+    setText('custPhone', custPhone);
+
+    // address + bank from customers
+    let addr = '-';
+    let bank = { bank_name:'', bank_account_name:'', bank_account_no:'' };
+    const variants = normalizePhoneVariants(custPhone);
+    if(variants.length){
+      const qc = await sb.from('customers')
+        .select('alamat,postcode,city,state,bank_name,bank_account_name,bank_account_no')
+        .in('phone', variants)
+        .limit(1);
+
+      if(!qc.error && qc.data && qc.data[0]){
+        const c = qc.data[0];
+        const parts = [c.alamat, c.postcode, c.city, c.state].filter(x => x!=null && String(x).trim()!=='');
+        if(parts.length) addr = parts.join(', ');
+        bank = {
+          bank_name: c.bank_name || '',
+          bank_account_name: c.bank_account_name || '',
+          bank_account_no: c.bank_account_no || ''
+        };
+      }
+    }
+    setText('custAddr', addr);
+
+    // bank wrap if TRANSFER
+    const cashout = String(splitRow.cashout_method || method || '').toUpperCase();
+    const bankWrap = $('bankWrap');
+    if(cashout === 'TRANSFER'){
+      if(bankWrap) bankWrap.style.display = '';
+      setText('bankName', bank.bank_name || '-', '-');
+      setText('bankAccName', bank.bank_account_name || '-', '-');
+      setText('bankAccNo', bank.bank_account_no || '-', '-');
+    }else{
+      if(bankWrap) bankWrap.style.display = 'none';
+    }
+
+    // numbers
+    const paid = Number(splitRow.original_paid_rm || 0);
+    const newAmt = Number(splitRow.new_amount_rm || 0);
+    const refund = Number((paid - newAmt).toFixed(2));
+
+    $('paidTotal').textContent = money(paid);
+    $('newTotal').textContent  = money(newAmt);
+    $('refundTotal').textContent = money(refund);
+
+    // weight/len formatting
+    setText('origWeight', (splitRow.original_weight_g!=null && splitRow.original_weight_g!=='')
+      ? (Number(splitRow.original_weight_g).toFixed(4) + ' g')
+      : '-');
+    setText('newWeight', (splitRow.new_weight_g!=null && splitRow.new_weight_g!=='')
+      ? (Number(splitRow.new_weight_g).toFixed(4) + ' g')
+      : '-');
+
+    setText('origLen', (splitRow.original_length_cm!=null && splitRow.original_length_cm!=='')
+      ? (Number(splitRow.original_length_cm).toFixed(2).replace(/\.00$/,'') + ' cm')
+      : '-');
+    setText('newLen', (splitRow.new_length_cm!=null && splitRow.new_length_cm!=='')
+      ? (Number(splitRow.new_length_cm).toFixed(2).replace(/\.00$/,'') + ' cm')
+      : '-');
+
+    if(refund > 0){
+      $('refundHint').textContent = `Kedai perlu pulangkan balik ${money(refund)} kepada pelanggan.`;
+    }else if(refund < 0){
+      $('refundHint').textContent = `Pelanggan perlu tambah ${money(Math.abs(refund))} (cash in).`;
+    }else{
+      $('refundHint').textContent = `Tiada beza (0).`;
+    }
+
+  }catch(e){
+    console.error(e);
+    warn('Ralat muat resit: ' + esc(e?.message||e));
+  }
+})();
+</script>
+</body>
+</html>

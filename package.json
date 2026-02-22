@@ -1,0 +1,17 @@
+{
+  "name": "qr-emas-amir",
+  "version": "1.0.0",
+  "description": "",
+  "main": "admin-guard.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "@supabase/supabase-js": "^2.95.3",
+    "ag-psd": "^30.1.0",
+    "sharp": "^0.34.5"
+  }
+}

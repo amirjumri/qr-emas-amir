@@ -1,0 +1,410 @@
+<!doctype html>
+<html lang="ms">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Resit — J916 • Emas Amir</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+  <style>
+    body{background:#fff}
+    .sheet{max-width:900px;margin:24px auto;padding:24px;border:1px solid #eee;border-radius:12px}
+    .h-logo{font-weight:800;font-size:20px}
+    .muted{color:#6b7280}
+    .table-sm td,.table-sm th{padding:.4rem .5rem}
+    @media print{ .no-print{display:none!important} .sheet{border:none;margin:0;padding:0} }
+  </style>
+</head>
+<body>
+<div class="sheet">
+  <div class="d-flex justify-content-between align-items-start">
+    <div>
+      <div class="h-logo">Emas Amir Sdn Bhd (202301019252)</div>
+      <div class="small muted">+601113230198 / +60168055916 • perniagaanemasamir@gmail.com</div>
+      <div class="small muted">3H Jalan Belibis Taman Tunku Putra 09000 Kulim Kedah</div>
+    </div>
+    <div class="text-end">
+      <div class="fw-bold">RESIT</div>
+      <div class="small" id="resitNo">No. Resit: –</div>
+      <div class="small" id="resitDate">Tarikh: –</div>
+      <div class="small" id="resitBill">Bill/Order: –</div>
+    </div>
+  </div>
+  <hr>
+
+  <div class="row mb-3">
+    <div class="col">
+      <div class="fw-semibold">Kepada</div>
+      <div id="custName">–</div>
+      <div class="small muted">Emel: <span id="custEmail">–</span></div>
+      <div class="small muted">IC: <span id="custIC">–</span></div>
+      <div class="small muted">Alamat: <span id="custAddr">–</span></div>
+      <div class="small muted">No. Telefon: <span id="custPhone">–</span></div>
+    </div>
+    <div class="col text-end no-print">
+      <button class="btn btn-outline-secondary btn-sm" onclick="window.print()">Cetak</button>
+    </div>
+  </div>
+
+  <div class="table-responsive">
+    <table class="table table-sm align-middle">
+      <thead class="table-light">
+        <tr>
+          <th>#</th>
+          <th>Butiran</th>
+          <th class="text-end">Kuantiti</th>
+          <th class="text-end">Harga (RM)</th>
+          <th class="text-end">Diskaun (RM)</th>
+          <th class="text-end">Sub Jumlah (RM)</th>
+        </tr>
+      </thead>
+      <tbody id="tbBody"><tr><td colspan="6" class="text-muted">Memuatkan…</td></tr></tbody>
+      <tfoot>
+        <tr>
+          <th colspan="5" class="text-end">Jumlah (RM)</th>
+          <th class="text-end" id="tvSubtotal">RM 0.00</th>
+        </tr>
+        <tr>
+          <th colspan="5" class="text-end">Penghantaran (RM)</th>
+          <th class="text-end" id="tvShipping">RM 0.00</th>
+        </tr>
+        <tr>
+          <th colspan="5" class="text-end">Diskaun (RM)</th>
+          <th class="text-end" id="tvDiscount">RM 0.00</th>
+        </tr>
+        <tr>
+          <th colspan="5" class="text-end">Jumlah Keseluruhan (RM)</th>
+          <th class="text-end h5" id="tvGrand">RM 0.00</th>
+        </tr>
+      </tfoot>
+    </table>
+  </div>
+
+  <div class="small muted mt-3">* Resit ini dijana secara automatik.</div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script>
+/* =========================
+   Supabase
+   ========================= */
+const SB_URL = "https://dduizetstqqjrpsezbpi.supabase.co";
+const SB_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRkdWl6ZXRzdHFxanJwc2V6YnBpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTg3MzI0ODQsImV4cCI6MjA3NDMwODQ4NH0.CrlHXrmHtKgR9qc2192U6quRb5lpFEeOSgwG0Lb8KRM";
+const sb = window.supabase.createClient(SB_URL, SB_KEY);
+
+/* =========================
+   Helpers
+   ========================= */
+const $ = id => document.getElementById(id);
+const money = n => 'RM ' + Number(n||0).toFixed(2);
+const centsToRm = c => Number(c||0)/100;
+
+function bothPhones(raw){
+  const d = String(raw||'').replace(/\D/g,'');
+  if(!d) return ['', ''];
+  const p60 = d.startsWith('60') ? d : (d.startsWith('0') ? ('6'+d) : ('60'+d));
+  const p0  = d.startsWith('0')  ? d : (d.startsWith('60') ? ('0'+d.slice(2)) : ('0'+d));
+  return [p60, p0];
+}
+
+// Ambil key dari URL (?bill_id=… atau ?order=…)
+function getKey(){
+  try{
+    const qs = new URLSearchParams(location.search);
+    let bill = (qs.get('bill_id') || '').trim();
+    let ord  = (qs.get('order')   || '').trim();
+
+    // fallback: URL hash
+    if(!bill && !ord && location.hash){
+      const m1 = location.hash.match(/bill_id=([^&]+)/);
+      const m2 = location.hash.match(/order=([^&]+)/);
+      if(m1) bill = decodeURIComponent(m1[1]||'');
+      if(m2) ord  = decodeURIComponent(m2[1]||'');
+    }
+
+    // fallback: localStorage (sokong kedua-dua format lama & baru)
+    if(!bill && !ord){
+      const lb = (localStorage.getItem('j916_last_bill_id') || '').trim();
+      const lo = (localStorage.getItem('j916_last_order')   || '').trim();
+
+      let lkBill = '', lkOrder = '';
+      try{
+        const last = JSON.parse(localStorage.getItem('j916_last_key')||'{}');
+        lkBill  = (last.bill  || '').trim();
+        lkOrder = (last.order || '').trim();
+      }catch(_){}
+
+      bill = bill || lb || lkBill;
+      ord  = ord  || lo || lkOrder;
+    }
+
+    try{
+      localStorage.setItem('j916_last_key', JSON.stringify({ bill, order: ord }));
+    }catch(_){}
+
+    return { bill, order: ord };
+  }catch(_){
+    return { bill:'', order:'' };
+  }
+}
+
+function resitNo(suffix){
+  const d = new Date();
+  const ymd = d.getFullYear().toString()+String(d.getMonth()+1).padStart(2,'0')+String(d.getDate()).padStart(2,'0');
+  const suf = String(suffix||'').slice(-4).toUpperCase();
+  return `EA-916-${ymd}-${suf}`;
+}
+
+/* =========================
+   Boot
+   ========================= */
+(async function(){
+  const { bill, order } = getKey();
+  if(!bill && !order){
+    $('tbBody').innerHTML =
+      '<tr><td colspan="6" class="text-danger">Parameter tiada. Sila buka melalui butang “Lihat resit” dari Admin atau pastikan URL ada ?bill_id=XXXX atau ?order=XXXX.</td></tr>';
+    return;
+  }
+
+  console.log('[resit-j916] bill_id=', bill, 'order=', order);
+
+  let rows = [];
+  let qErr = null;
+
+  async function tryQuery(selectList, byCol, value){
+  const q = await sb.from('j916_orders')
+    .select(selectList)
+    .eq(byCol, value)
+    .in('status', ['PAID','COMPLETED'])
+    .order('created_at',{ascending:true});
+  if (q.error) { qErr = q.error; return []; }
+  return q.data || [];
+}
+
+  // cuba ikut bill_id_text dahulu
+if (bill) rows = await tryQuery(
+  'id,created_at,customer_name,phone,customer_ic,user_id,email,alamat,item_name,name,code,weight_g,weight_new_g,weight_orig_g,grams,qty,amount_cents,method,status,bill_id_text,bill_id,order_code,shipping_cents,discount_cents,subtotal_rm,shipping_rm,pay_disc_rm,coupon_disc_rm,grand_total_rm,checkout_group',
+  'bill_id_text', bill
+);
+
+// fallback ikut bill_id (kalau Billplz ID disimpan di bill_id)
+if (!rows.length && bill) rows = await tryQuery(
+  'id,created_at,customer_name,phone,customer_ic,user_id,email,alamat,item_name,name,code,weight_g,weight_new_g,weight_orig_g,grams,qty,amount_cents,method,status,bill_id_text,bill_id,order_code,shipping_cents,discount_cents,subtotal_rm,shipping_rm,pay_disc_rm,coupon_disc_rm,grand_total_rm,checkout_group',
+  'bill_id', bill
+);
+  // fallback ikut order_code
+  if (!rows.length && order) rows = await tryQuery(
+    'id,created_at,customer_name,phone,customer_ic,user_id,email,alamat,item_name,name,code,weight_g,weight_new_g,weight_orig_g,grams,qty,amount_cents,method,status,bill_id_text,bill_id,order_code,shipping_cents,discount_cents,subtotal_rm,shipping_rm,pay_disc_rm,coupon_disc_rm,grand_total_rm,checkout_group',
+    'order_code', order
+  );
+
+  // fallback terakhir: structure lain → select('*')
+  if (!rows.length && qErr){
+    console.warn('[resit-j916] retry with * due to', qErr);
+    if (bill){
+      const r1 = await sb.from('j916_orders')
+        .select('*').eq('bill_id_text',bill).eq('status','PAID')
+        .order('created_at',{ascending:true});
+      rows = r1.data || [];
+    }
+    if (!rows.length && order){
+      const r2 = await sb.from('j916_orders')
+        .select('*').eq('order_code',order).eq('status','PAID')
+        .order('created_at',{ascending:true});
+      rows = r2.data || [];
+    }
+  }
+
+  // ===========================
+  // ✅ FIX: pilih HEAD row yang betul
+  //   - headRow untuk shipping/discount/grand total
+  //   - rows untuk senarai item
+  // ===========================
+  let headRow = rows.length ? rows[0] : null;
+
+  // 🔗 Kalau ada checkout_group → ambil SEMUA item dalam group (PAID)
+  if (rows.length) {
+    const grp = rows[0].checkout_group;
+    if (grp) {
+      const g = await sb.from('j916_orders')
+  .select('*')
+  .eq('checkout_group', grp)
+  .in('status', ['PAID','COMPLETED'])
+  .order('created_at', { ascending: true });
+
+      if (!g.error && Array.isArray(g.data) && g.data.length) {
+        rows = g.data;
+
+        // ✅ headRow mesti ikut bill_id_text (kalau ada), kalau tidak ikut order_code, kalau tidak kekalkan asal
+        if (bill) {
+          headRow = rows.find(r => String(r.bill_id_text||'') === String(bill)) || headRow;
+        } else if (order) {
+          headRow = rows.find(r => String(r.order_code||'') === String(order)) || headRow;
+        } else {
+          headRow = headRow || rows[0];
+        }
+
+        // ✅ extra fallback: kalau masih head tak ada grand/amount, cari row yang ada amount/grand
+        if (headRow && !(Number(headRow.amount_cents) > 0) && !(Number(headRow.grand_total_rm) > 0)) {
+          const candidate = rows.find(r => (Number(r.amount_cents) > 0) || (Number(r.grand_total_rm) > 0));
+          if (candidate) headRow = candidate;
+        }
+      }
+    } else {
+      // kalau tak ada group, headRow kekal rows[0]
+      if (bill) headRow = rows.find(r => String(r.bill_id_text||'') === String(bill)) || headRow;
+      if (order) headRow = rows.find(r => String(r.order_code||'') === String(order)) || headRow;
+    }
+  }
+
+  if(!rows.length || !headRow){
+    $('tbBody').innerHTML = `<tr><td colspan="6" class="text-danger">
+      Tiada item PAID untuk rujukan ini.<br>Dicari: <code>${bill || order}</code>
+    </td></tr>`;
+    $('resitBill').textContent = 'Bill/Order: '+(bill || order);
+    return;
+  }
+
+  const first = headRow; // ✅ guna head row untuk header & kiraan total
+
+  // ====== IC: set awal dari rekod order (jika ada) ======
+  let custIC = first.customer_ic || first.user_ic || first.ic || first.ic_no || '';
+  $('custIC').textContent = custIC || '-';
+
+  // Fallback emel & alamat dari customers
+  let email = first.email || '';
+  let alamat = first.alamat || '';
+  if ((!email || !alamat) && first.phone){
+    try{
+      const [p60, p0] = bothPhones(first.phone);
+      const { data: cust } = await sb.from('customers')
+        .select('email,alamat')
+        .or(`phone.eq.${p60},phone.eq.${p0}`)
+        .limit(1).maybeSingle();
+      email  = email  || cust?.email  || '';
+      alamat = alamat || cust?.alamat || '';
+
+      // Jika IC masih kosong, cuba tarik dari customers (select('*') selamat)
+      if (!custIC){
+        const qc = await sb.from('customers')
+          .select('*')
+          .or(`phone.eq.${p60},phone.eq.${p0}`)
+          .limit(1).maybeSingle();
+        const icFromCust = qc.data?.ic || qc.data?.ic_no || qc.data?.no_ic || '';
+        if (icFromCust){
+          custIC = icFromCust;
+          $('custIC').textContent = custIC;
+        }
+      }
+    }catch(_){}
+  }
+
+  // Jika masih kosong & ada user_id, cuba profiles
+  try{
+    if (!custIC && first.user_id){
+      const qp = await sb.from('profiles')
+        .select('ic')
+        .eq('id', first.user_id)
+        .maybeSingle();
+      if (qp.data?.ic){
+        custIC = qp.data.ic;
+        $('custIC').textContent = custIC;
+      }
+    }
+  }catch(_){}
+
+  // Header
+  $('custName').textContent  = first.customer_name || '-';
+  $('custPhone').textContent = first.phone || '-';
+  $('custEmail').textContent = email || '-';
+  $('custAddr').textContent  = alamat || '-';
+  $('resitDate').textContent = 'Tarikh: ' + new Date(first.created_at)
+    .toLocaleString('ms-MY',{dateStyle:'medium',timeStyle:'short'});
+  $('resitBill').textContent = 'Bill/Order: ' + (first.bill_id_text || first.bill_id || first.order_code || bill || order);
+  $('resitNo').textContent   = 'No. Resit: ' + resitNo(first.order_code || first.bill_id_text || bill || order);
+
+ // ========== Ringkasan jumlah & diskaun ==========
+  // ✅ IMPORTANT:
+  // Untuk checkout_group (multi item), jangan percaya amount_cents / grand_total_rm pada 1 row.
+  // Resit mesti kira sendiri: GRAND = SUBTOTAL + SHIPPING - DISCOUNT
+
+  // 1) Kira DISKAUN total (sum semua row – biasanya hanya 1 row ada nilai)
+  const discRM = Number(rows.reduce((acc, r) => {
+    const pay  = Number(r.pay_disc_rm || 0);
+    const coup = Number(r.coupon_disc_rm || 0);
+    return acc + pay + coup;
+  }, 0).toFixed(2));
+
+  // 2) Sediakan data item + kira subtotal (sum semua item)
+  let subtotalGross = 0;
+  const items = rows.map(r => {
+    const qty = Math.max(1, Number(r.qty || 1));
+    let priceGross = Number(r.unit_rm);
+
+    if (!Number.isFinite(priceGross) || priceGross <= 0) {
+      if (r.subtotal_rm != null) {
+        priceGross = Number(r.subtotal_rm) / qty;
+      } else if (Number(r.amount_cents) > 0) {
+        // fallback: amount_cents hanya untuk dapatkan unit price bila tiada unit_rm/subtotal_rm
+        priceGross = centsToRm(r.amount_cents) / qty;
+      } else {
+        priceGross = 0;
+      }
+    }
+
+    const lineGross = priceGross * qty;
+    subtotalGross += lineGross;
+
+    return { r, qty, priceGross, lineGross };
+  });
+
+  const subRM = Number(subtotalGross.toFixed(2));
+
+  // 3) Shipping total (sum semua row – sebab dalam group, shipping boleh duduk pada row pertama sahaja)
+  const shipRM = Number(rows.reduce((acc, r) => {
+    const s = (r.shipping_rm != null) ? Number(r.shipping_rm) : centsToRm(r.shipping_cents);
+    return acc + Number(s || 0);
+  }, 0).toFixed(2));
+
+  // 4) Grand total – kira sendiri (paling betul untuk group)
+  const grandRM = Number((subRM + shipRM - discRM).toFixed(2));
+
+  // ========== Jadual item (TANPA agih diskaun per item) ==========
+  const body = items.map((it, i) => {
+    const { r, qty, priceGross, lineGross } = it;
+
+    // ✅ Jangan agih diskaun ke item (elak merapu untuk checkout_group)
+    const itemDisc = 0;
+    const lineNet  = lineGross;
+
+    const itemW = Number(
+  (r.weight_new_g != null && Number(r.weight_new_g) > 0) ? r.weight_new_g
+  : (r.weight_g != null && Number(r.weight_g) > 0) ? r.weight_g
+  : (r.grams != null ? r.grams : 0)
+);
+    const title = [
+      r.code ? ('#' + r.code) : null,
+      (r.name || r.item_name || '-'),
+      itemW ? (itemW.toFixed(2) + 'g') : null
+    ].filter(Boolean).join(' • ');
+
+    return `<tr>
+      <td>${i+1}</td>
+      <td>${title}</td>
+      <td class="text-end">${qty}</td>
+      <td class="text-end">${money(priceGross)}</td>
+      <td class="text-end">${money(itemDisc)}</td>
+      <td class="text-end">${money(lineNet)}</td>
+    </tr>`;
+  }).join('');
+
+  $('tbBody').innerHTML = body;
+
+  // ========== Footer ringkasan ==========
+  $('tvSubtotal').textContent = money(subRM);
+  $('tvShipping').textContent = money(shipRM);
+  $('tvDiscount').textContent = money(discRM);
+  $('tvGrand').textContent    = money(grandRM);
+})();
+</script>
+</body>
+</html>

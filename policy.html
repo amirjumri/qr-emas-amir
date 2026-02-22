@@ -1,0 +1,198 @@
+<!doctype html>
+<html lang="ms">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Polisi & Terma — Emas Amir</title>
+<meta name="robots" content="noindex">
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+<style>
+  body{background:#fff}
+  .container-narrow{max-width:900px}
+  h1,h2,h3{scroll-margin-top:90px}
+  .toc a{text-decoration:none}
+  .card+.card{margin-top:16px}
+  code.badge{font-size:.8rem}
+  .top-actions{display:flex;gap:8px;flex-wrap:wrap;align-items:center;justify-content:flex-end}
+  .btn-chip{border-radius:999px}
+  .auth-pill{border:1px solid #e5e7eb;border-radius:999px;padding:.2rem .6rem;background:#fafafa;color:#555}
+</style>
+</head>
+<body>
+<div class="container container-narrow py-3">
+
+  <!-- TOP BAR (diseragamkan) -->
+  <div class="d-flex justify-content-between align-items-center mb-2">
+    <div class="small auth-pill" id="authStatus">Memuatkan…</div>
+    <div class="top-actions">
+      <a class="btn btn-outline-secondary btn-chip" href="index.html">Halaman Utama</a>
+      <a class="btn btn-outline-secondary btn-chip" href="account.html">Akaun</a>
+      <button id="btnLogin"  class="btn btn-outline-secondary btn-chip" type="button">Log masuk</button>
+      <button id="btnLogout" class="btn btn-outline-secondary btn-chip" type="button" style="display:none">Log keluar</button>
+    </div>
+  </div>
+  <hr class="mb-3">
+
+  <!-- HEADER ASAL -->
+  <header class="mb-3">
+    <h1 class="h3 mb-1">Polisi & Terma</h1>
+    <div class="text-muted small">Kemas kini terakhir: <span id="lastUpdated"></span></div>
+    <div class="mt-2">
+      <b>Emas Amir</b> (SSM: <span id="ssm">202301019252(1513174-A)</span>)<br>
+      Alamat: <span id="addr">3H JALAN BELIBIS TAMAN TUNKU PUTRA 09000 KULIM KEDAH</span><br>
+      Emel: <a href="mailto:perniagaanemasamir@gmail.com">perniagaanemasamir@gmail.com</a> • WhatsApp: <a href="https://wa.me/60168055916">+60168055916</a>
+    </div>
+  </header>
+
+  <!-- Kandungan -->
+  <nav class="toc mb-3">
+    <div class="card card-body">
+      <b>Kandungan:</b>
+      <ol class="m-0">
+        <li><a href="#terms">Terma & Syarat (T&C)</a></li>
+        <li><a href="#payment">Polisi Pembayaran</a></li>
+        <li><a href="#shipping">Polisi Penghantaran</a></li>
+        <li><a href="#refund">Polisi Pemulangan & Bayaran Balik</a></li>
+        <li><a href="#privacy">Polisi Privasi (PDPA)</a></li>
+      </ol>
+    </div>
+  </nav>
+
+  <!-- T&C -->
+  <section id="terms" class="card">
+    <div class="card-body">
+      <h2 class="h5">1) Terma &amp; Syarat (T&amp;C)</h2>
+      <ul>
+        <li>Dengan membuat pesanan di <b>emasamir.app</b>, anda bersetuju dengan semua polisi di halaman ini.</li>
+        <li>Harga emas dipaparkan adalah harga semasa + <b>markup platform</b> yang telah dimasukkan di sistem kami.</li>
+        <li>Pembelian tertakluk pada ketersediaan stok & pengesahan pembayaran.</li>
+        <li>Maklumat produk (berat/rekabentuk) dinyatakan pada halaman produk & borang checkout.</li>
+        <li>Kami berhak menolak atau membatalkan pesanan yang mencurigakan atau melanggar polisi.</li>
+      </ul>
+    </div>
+  </section>
+
+  <!-- Pembayaran -->
+  <section id="payment" class="card">
+    <div class="card-body">
+      <h2 class="h5">2) Polisi Pembayaran</h2>
+      <p>Kami menerima:</p>
+      <ul>
+        <li><b>FPX (Online Banking)</b></li>
+        <li><b>Kad Debit/Kredit</b> (Visa/Mastercard)</li>
+        <li><b>E-Wallet</b> (TNG, GrabPay, Boost, ShopeePay, dll.)</li>
+        <li><b>BNPL / PayLater</b> (jika tersedia via senangPay rakan niaga)</li>
+      </ul>
+
+      <h3 class="h6">2.1 Diskaun Kaedah</h3>
+      <p>Kami mengamalkan diskaun mengikut kaedah bayaran (dipaparkan di checkout):</p>
+      <ul>
+        <li>FPX: <code class="badge bg-light text-dark">diskaun dinamik (cth 6%)</code></li>
+        <li>Kad / E-Wallet: <code class="badge bg-light text-dark">diskaun dinamik (cth 5%)</code></li>
+        <li>BNPL/PayLater: <code class="badge bg-light text-dark">tiada diskaun</code></li>
+      </ul>
+      <p class="small text-muted m-0">Nota: Peratus sebenar boleh berubah mengikut promosi & kos gerbang pembayaran semasa. Nilai muktamad akan ditunjukkan sebelum anda menekan “Bayar”.</p>
+
+      <h3 class="h6 mt-3">2.2 Kupon Diskaun</h3>
+      <ul>
+        <li>Kupon tertakluk kepada tempoh sah & syarat minima belian.</li>
+        <li>Sesetengah kupon terhad <b>1 akaun sekali</b> atau mempunyai <b>had penebusan global</b>.</li>
+        <li>Jika kupon tidak sah/luput/telah mencapai had, sistem akan menolak penebusan secara automatik.</li>
+      </ul>
+
+      <h3 class="h6 mt-3">2.3 Pembulatan & Caj Platform</h3>
+      <ul>
+        <li>Jumlah bayar mungkin dibundarkan ke 2 tempat perpuluhan (cth 0.216 → <b>0.22</b>).</li>
+        <li>“Markup/caj platform” telah dimasukkan dalam harga paparan; sebarang diskaun kaedah/kupon akan ditolak di halaman pembayaran.</li>
+      </ul>
+
+      <h3 class="h6 mt-3">2.4 Keselamatan</h3>
+      <p>Pembayaran diproses oleh <b>senangPay/Billplz</b> melalui sambungan selamat (SSL). Kami tidak menyimpan but kad anda di pelayan kami.</p>
+    </div>
+  </section>
+
+  <!-- Penghantaran -->
+  <section id="shipping" class="card">
+    <div class="card-body">
+      <h2 class="h5">3) Polisi Penghantaran</h2>
+      <ul>
+        <li><b>Pickup di Kedai</b>: RM0.</li>
+        <li><b>Semenanjung Malaysia</b>: caj rata (dipaparkan di checkout, cth RM10).</li>
+        <li><b>Sabah/Sarawak</b>: caj rata (cth RM20).</li>
+        <li><b>Singapura</b>: caj rata (cth RM45) – tertakluk kepada kawal selia kastam.</li>
+        <li>Tempoh pemprosesan: 1–3 hari bekerja selepas pembayaran disahkan. Nombor tracking akan diberikan jika berkenaan.</li>
+        <li>Risiko kehilangan/kerosakan semasa penghantaran akan ditangani mengikut liputan kurier/insurans yang digunakan.</li>
+      </ul>
+    </div>
+  </section>
+
+  <!-- Refund -->
+  <section id="refund" class="card">
+    <div class="card-body">
+      <h2 class="h5">4) Polisi Pemulangan & Bayaran Balik</h2>
+      <ul>
+        <li>Emas fizikal adalah barangan bernilai; <b>tiada pemulangan selepas meterai dibuka</b> melainkan kerosakan kilang.</li>
+        <li>Jika barang rosak/tersilap hantar, hubungi kami dalam <b>48 jam</b> dengan bukti (gambar/video & invoice).</li>
+        <li>Bayaran balik (jika diluluskan) diproses melalui kaedah pembayaran asal dalam 3–7 hari bekerja.</li>
+        <li>Pesanan yang belum dibayar akan kekal <b>PENDING</b> dan dibatalkan automatik selepas tempoh tertentu.</li>
+      </ul>
+    </div>
+  </section>
+
+  <!-- Privasi -->
+  <section id="privacy" class="card">
+    <div class="card-body">
+      <h2 class="h5">5) Polisi Privasi (PDPA)</h2>
+      <ul>
+        <li>Kami mengumpul data asas (nama, telefon, alamat, emel) untuk tujuan pemprosesan pesanan & sokongan pelanggan.</li>
+        <li>Data pembayaran diproses oleh gerbang pembayaran (senangPay/Billplz). Kami tidak menyimpan but kad.</li>
+        <li>Kami mungkin menggunakan kuki untuk pengalaman pengguna & analitik asas.</li>
+        <li>Anda boleh meminta akses/pembetulan data peribadi melalui emel <a href="mailto:perniagaanemasamir@gmail.com">perniagaanemasamir@gmail.com</a>.</li>
+        <li>Kami tidak menjual data anda kepada pihak ketiga.</li>
+      </ul>
+    </div>
+  </section>
+
+  <footer class="mt-4 text-center text-muted small">
+    ©️ <span id="yy"></span> Emas Amir. Semua hak cipta terpelihara.
+  </footer>
+</div>
+
+<!-- Supabase auth helpers (sama macam page lain) -->
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="auth.js?v=13.1"></script>
+
+<script>
+  // tarikh kemas kini auto
+  document.getElementById('yy').textContent = new Date().getFullYear();
+  document.getElementById('lastUpdated').textContent =
+    new Date().toLocaleDateString('ms-MY',{year:'numeric',month:'long',day:'numeric'});
+
+  // Status login konsisten (guna auth.js)
+  (function(){
+    const status = document.getElementById('authStatus');
+    const btnLogin = document.getElementById('btnLogin');
+    const btnLogout = document.getElementById('btnLogout');
+
+    try{
+      const a = (window.auth_get && window.auth_get()) || null;
+      if(a){
+        status.textContent = 'Log masuk sebagai ' + (a.name || a.phone || 'pengguna');
+        btnLogin.style.display = 'none';
+        btnLogout.style.display = '';
+        btnLogout.onclick = ()=>{ window.auth_clear && window.auth_clear(); location.reload(); };
+      }else{
+        status.textContent = 'Tidak log masuk';
+        btnLogin.style.display = '';
+        btnLogout.style.display = 'none';
+        btnLogin.onclick = ()=> location.href='login.html#login';
+      }
+    }catch(e){
+      status.textContent = 'Tidak log masuk';
+      btnLogin.style.display = '';
+      btnLogout.style.display = 'none';
+    }
+  })();
+</script>
+</body>
+</html>

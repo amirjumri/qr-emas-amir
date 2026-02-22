@@ -1,0 +1,251 @@
+<!doctype html>
+<html lang="ms">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Resit — Tabung • Emas Amir</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+  <style>
+    body{background:#fff}
+    .sheet{max-width:900px;margin:24px auto;padding:24px;border:1px solid #eee;border-radius:12px}
+    .h-logo{font-weight:800;font-size:20px}
+    .muted{color:#6b7280}
+    .table-sm td,.table-sm th{padding:.4rem .5rem}
+    @media print{ .no-print{display:none!important} .sheet{border:none;margin:0;padding:0} }
+  </style>
+</head>
+<body>
+<div class="sheet">
+  <div class="d-flex justify-content-between align-items-start">
+    <div>
+      <div class="h-logo">Emas Amir Sdn Bhd (202301019252)</div>
+      <div class="small muted">+601113230198 / +60168055916 • perniagaanemasamir@gmail.com</div>
+      <div class="small muted">3H Jalan Belibis Taman Tunku Putra 09000 Kulim Kedah</div>
+    </div>
+    <div class="text-end">
+      <div class="fw-bold">RESIT TABUNG</div>
+      <div class="small" id="resitNo">No. Resit: –</div>
+      <div class="small" id="resitDate">Tarikh: –</div>
+      <div class="small" id="resitBill">Bill/Txn: –</div>
+    </div>
+  </div>
+  <hr>
+
+  <div class="row mb-3">
+    <div class="col">
+      <div class="fw-semibold">Kepada</div>
+<div id="custName">–</div>
+<div class="small muted">Emel: <span id="custEmail">–</span></div>
+<div class="small muted">IC: <span id="custIC">–</span></div>
+<div class="small muted">Alamat: <span id="custAddr">–</span></div>
+<div class="small muted">No. Telefon: <span id="custPhone">–</span></div>
+    </div>
+    <div class="col text-end no-print">
+      <button class="btn btn-outline-secondary btn-sm" onclick="window.print()">Cetak</button>
+    </div>
+  </div>
+
+  <div class="table-responsive">
+    <table class="table table-sm align-middle">
+      <thead class="table-light">
+        <tr>
+          <th>#</th>
+          <th>Butiran</th>
+          <th class="text-end">Kuantiti</th>
+          <th class="text-end">Harga (RM)</th>
+          <th class="text-end">Sub Jumlah (RM)</th>
+        </tr>
+      </thead>
+      <tbody id="tbBody"><tr><td colspan="5" class="text-muted">Memuatkan…</td></tr></tbody>
+      <tfoot>
+        <tr>
+          <th colspan="4" class="text-end">Jumlah (RM)</th>
+          <th class="text-end" id="tvSubtotal">RM 0.00</th>
+        </tr>
+        <tr>
+          <th colspan="4" class="text-end">Upah (RM)</th>
+          <th class="text-end" id="tvFee">RM 0.00</th>
+        </tr>
+        <tr>
+          <th colspan="4" class="text-end">Jumlah Keseluruhan (RM)</th>
+          <th class="text-end h5" id="tvGrand">RM 0.00</th>
+        </tr>
+      </tfoot>
+    </table>
+  </div>
+
+  <div class="small muted mt-3">* Transaksi Tabung. Resit ini dijana secara automatik.</div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script>
+// ========= Supabase =========
+const SB_URL = "https://dduizetstqqjrpsezbpi.supabase.co";
+const SB_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRkdWl6ZXRzdHFxanJwc2V6YnBpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTg3MzI0ODQsImV4cCI6MjA3NDMwODQ4NH0.CrlHXrmHtKgR9qc2192U6quRb5lpFEeOSgwG0Lb8KRM";
+const sb = window.supabase.createClient(SB_URL, SB_KEY);
+
+// ========= Helpers =========
+const $ = id => document.getElementById(id);
+const money = n => 'RM ' + Number(n||0).toFixed(2);
+
+// Normalise telefon: pulangkan versi 60xxx dan 0xxx
+function bothPhones(raw){
+  const d = String(raw||'').replace(/\D/g,'');
+  if(!d) return ['', ''];
+  const p60 = d.startsWith('60') ? d : (d.startsWith('0') ? ('6'+d) : ('60'+d));
+  const p0  = d.startsWith('0')  ? d : (d.startsWith('60') ? ('0'+d.slice(2)) : ('0'+d));
+  return [p60, p0];
+}
+
+function getKey(){
+  try{
+    const qs = new URLSearchParams(location.search);
+    let bill = decodeURIComponent((qs.get('bill_id')||'').trim());
+    let txn  = decodeURIComponent((qs.get('txn_id') ||'').trim());
+    if(!bill && !txn && location.hash){
+      const m1 = location.hash.match(/bill_id=([^&]+)/);
+      const m2 = location.hash.match(/txn_id=([^&]+)/);
+      if(m1) bill = decodeURIComponent(m1[1]||'');
+      if(m2) txn  = decodeURIComponent(m2[1]||'');
+    }
+    if(!bill && !txn){
+      bill = (localStorage.getItem('tabung_last_bill_id')||'').trim();
+      txn  = (localStorage.getItem('tabung_last_txn_id') ||'').trim();
+    }
+    try{
+      localStorage.setItem('tabung_last_bill_id', bill||'');
+      localStorage.setItem('tabung_last_txn_id',  txn||'');
+    }catch(_){}
+    return { bill, txn };
+  }catch(_){ return { bill:'', txn:'' }; }
+}
+
+function resitNo(suffix){
+  const d=new Date();
+  return `EA-TBG-${d.getFullYear()}${String(d.getMonth()+1).padStart(2,'0')}${String(d.getDate()).padStart(2,'0')}-${String(suffix||'').slice(-4).toUpperCase()}`;
+}
+
+// RPC-first, then fallback SELECT (kalau ada login)
+async function fetchReceiptRow(bill, txn){
+  try{
+    const { data, error } = await sb.rpc('tabung_receipt_public', {
+      p_bill_id: bill || null,
+      p_txn: txn || null
+    });
+    if(!error && Array.isArray(data) && data[0]) return data[0];
+  }catch(e){ console.warn('[resit-tabung] RPC error', e); }
+
+  try{
+    if(txn){
+      const { data } = await sb.from('tabung_txn').select('*').eq('id', txn).maybeSingle();
+      if(data) return data;
+    }
+    if(bill){
+      let q = await sb.from('tabung_txn').select('*').eq('bill_id_text', bill).maybeSingle();
+      if(q.data) return q.data;
+      q = await sb.from('tabung_txn').select('*').eq('bill_id', bill).maybeSingle();
+      if(q.data) return q.data;
+    }
+  }catch(e){ console.warn('[resit-tabung] SELECT fallback error', e); }
+
+  return null;
+}
+
+// ========= Boot =========
+(async function(){
+  const { bill, txn } = getKey();
+
+  if(!bill && !txn){
+    $('tbBody').innerHTML =
+      `<tr><td colspan="5" class="text-danger">Parameter tiada. Guna ?bill_id=xxxx atau ?txn_id=xxxx</td></tr>`;
+    return;
+  }
+
+  const row = await fetchReceiptRow(bill, txn);
+
+  if(!row){
+    $('tbBody').innerHTML =
+      `<tr><td colspan="5" class="text-danger">Resit tidak dijumpai. Dicari: <code>${bill || txn}</code></td></tr>`;
+    $('resitBill').textContent = 'Bill/Txn: ' + (bill || txn);
+    return;
+  }
+
+  // ------ Header ------
+const custName  = row.customer_name || row.user_name || row.name || '-';
+const custPhone = row.customer_phone || row.user_phone || row.phone || '-';
+
+// IC: ikut susunan fallback (row -> customers -> profiles)
+let custIC = row.customer_ic || row.user_ic || row.ic || '';
+
+// Fallback emel & alamat dari jadual customers (ikut telefon)
+let custEmail = '-';
+let custAddr  = '-';
+
+if (custPhone){
+  try{
+    const [p60, p0] = bothPhones(custPhone);
+    const { data: cust } = await sb
+      .from('customers')
+      .select('email, alamat, ic')
+      .or(`phone.eq.${p60},phone.eq.${p0}`)
+      .limit(1)
+      .maybeSingle();
+    if (cust){
+      if (cust.email)  custEmail = cust.email;
+      if (cust.alamat) custAddr  = cust.alamat;
+      if (cust.ic && !custIC) custIC = cust.ic;
+    }
+  }catch(e){ console.warn('[resit-tabung] customers lookup fail', e); }
+}
+
+// Jika masih tiada IC dan ada user_id, cuba profiles
+try{
+  if (!custIC && row.user_id){
+    const { data: prof } = await sb
+      .from('profiles')
+      .select('ic')
+      .eq('id', row.user_id)
+      .maybeSingle();
+    if (prof && prof.ic) custIC = prof.ic;
+  }
+}catch(e){ console.warn('[resit-tabung] profiles lookup fail', e); }
+
+$('custName').textContent  = custName;
+$('custPhone').textContent = custPhone || '-';
+$('custEmail').textContent = custEmail;
+$('custAddr').textContent  = custAddr;
+$('custIC').textContent    = custIC || '-';
+
+  $('resitDate').textContent = 'Tarikh: ' +
+    new Date(row.created_at).toLocaleString('ms-MY',{dateStyle:'medium',timeStyle:'short'});
+
+  $('resitBill').textContent = 'Bill/Txn: ' + (row.bill_id_text || row.bill_id || row.id || bill || txn);
+  $('resitNo').textContent   = 'No. Resit: ' + resitNo(row.id || row.bill_id_text || bill || txn);
+
+  // ------ Item & jumlah ------
+  const units = Number(row.units||0);
+  const grams = (units/10).toFixed(1);
+  const ppu   = Number(row.price_per_unit||0);
+  const fee   = Number(row.fee ?? row.upah ?? 0);
+  const subtotal = units * ppu;
+  const grand    = subtotal + fee;
+
+  const kindTxt = String(row.kind || row.type || 'BUY').toUpperCase();
+  const refTxt  = (row.reference_1 || row.reference) ? `Ref: ${row.reference_1 || row.reference}` : '';
+
+  $('tbBody').innerHTML = `
+    <tr>
+      <td>1</td>
+      <td>${kindTxt} • ${units} unit (${grams} g) ${refTxt ? '• '+refTxt : ''}</td>
+      <td class="text-end">${units}</td>
+      <td class="text-end">${money(ppu)}</td>
+      <td class="text-end">${money(subtotal)}</td>
+    </tr>
+  `;
+  $('tvSubtotal').textContent = money(subtotal);
+  $('tvFee').textContent      = money(fee);
+  $('tvGrand').textContent    = money(grand);
+})();
+</script>
+</body>
+</html>

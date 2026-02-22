@@ -1,0 +1,360 @@
+<!DOCTYPE html>
+<html lang="ms">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>QR Generator – Emas Amir</title>
+  <style>
+    :root { --gap:14px; --radius:12px; }
+    body { font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Arial,Helvetica,sans-serif; margin:0; background:#fafafa; }
+    .wrap { max-width:720px; margin:24px auto; padding:0 14px 40px; }
+    h1 { font-size:28px; margin:18px 0 16px; }
+    .card { background:#fff; border:1px solid #eee; border-radius:var(--radius); padding:18px; }
+    .row { margin-bottom:var(--gap); }
+    label { display:block; font-weight:600; margin-bottom:6px; }
+    input[type="text"], input[type="number"] {
+      width:100%; padding:12px; border:1px solid #ddd; border-radius:10px; font-size:16px; background:#fff;
+    }
+    input[readonly]{ background:#f6f6f6; }
+    .inline { display:flex; gap:10px; align-items:center; }
+    .inline>*{ flex:1; }
+    .btn{ border:0; padding:12px 16px; border-radius:10px; cursor:pointer; font-weight:700; font-size:16px; }
+    .btn-danger{ background:#b71c1c; color:#fff; }
+    .btn-dark{ background:#0f172a; color:#fff; }
+    .btn-light{ background:#f3f4f6; color:#111827; border:1px solid #e5e7eb; }
+    .btn-secondary{ background:#6b7280; color:#fff; }
+    .btn:disabled{ opacity:.5; cursor:not-allowed; }
+    .helper{ color:#6b7280; font-size:13px; margin-top:4px; }
+    .qrbox{ border:2px dashed #ddd; border-radius:12px; min-height:220px; display:flex; align-items:center; justify-content:center; margin-top:14px; background:#fff; }
+    .pill{ font-size:12px; background:#111827; color:#fff; border-radius:999px; padding:3px 8px; }
+
+    /* Modal */
+    .modal-backdrop{ position:fixed; inset:0; background:rgba(0,0,0,.5); display:none; z-index:1000; }
+    .modal{ position:fixed; inset:0; display:none; z-index:1001; align-items:center; justify-content:center; }
+    .modal .box{ width:min(680px,92vw); background:#fff; border-radius:14px; overflow:hidden; }
+    .modal .hd{ display:flex; align-items:center; justify-content:space-between; padding:12px 14px; border-bottom:1px solid #eee; }
+    .modal .bd{ padding:12px 14px; }
+    #scanVideo{ width:100%; border-radius:10px; background:#000; height:auto; aspect-ratio:16/9; object-fit:cover; }
+    .warn{ background:#fff3cd; border:1px solid #ffe08a; color:#664d03; padding:10px 12px; border-radius:8px; margin-bottom:10px; font-size:14px; }
+    .uploader{ display:flex; gap:10px; margin-top:10px; align-items:center; flex-wrap:wrap; }
+    .uploader input[type=file]{ padding:10px; border:1px solid #ddd; border-radius:10px; background:#fff; }
+  </style>
+
+  <!-- ZXing untuk fallback & decode -->
+  <script src="https://cdn.jsdelivr.net/npm/@zxing/library@0.20.0/umd/index.min.js"></script>
+
+  <!-- Supabase (untuk next_ref RPC) -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+</head>
+<body>
+  <div class="wrap">
+    <h1>QR Generator – Emas Amir</h1>
+    <a href="index.html" class="btn btn-secondary">🏠 Halaman Utama</a>
+
+    <div class="card">
+      <div class="row">
+        <label for="produk">Produk</label>
+        <input id="produk" type="text" placeholder="cth: Gelang Tangan" autocomplete="off" />
+      </div>
+
+      <div class="row">
+        <label for="sku">SKU</label>
+        <div class="inline">
+          <input id="sku" type="text" placeholder="cth: RT001234" autocomplete="off" />
+          <button id="btnScan" class="btn btn-dark" type="button">Scan SKU (QR / Barcode)</button>
+        </div>
+        <div class="helper">Boleh taip atau tekan <span class="pill">Scan SKU</span> untuk guna kamera.</div>
+      </div>
+
+      <div class="row">
+        <label for="harga">Harga (RM)</label>
+        <input id="harga" type="number" inputmode="decimal" placeholder="cth: 300" />
+      </div>
+
+      <div class="row">
+        <label for="upah">Upah/Pos (RM)</label>
+        <input id="upah" type="number" inputmode="decimal" value="0" />
+      </div>
+
+      <div class="row">
+        <label for="jumlah">Jumlah (RM)</label>
+        <input id="jumlah" type="text" readonly value="0.00" />
+      </div>
+
+      <div class="row">
+        <label for="last4">4 Digit No. Telefon Pelanggan</label>
+        <input id="last4" type="text" inputmode="numeric" maxlength="4" placeholder="cth: 6002" />
+      </div>
+
+      <div class="row">
+  <label for="ref">Ref (Rujukan)</label>
+  <input id="ref" type="text" readonly />
+  <div class="helper">Rujukan auto-jana dari sistem.</div>
+</div>
+
+      <div class="row inline">
+        <button id="btnQR" class="btn btn-danger" type="button">Jana QR</button>
+        <button id="btnOpen" class="btn btn-dark" type="button" disabled>Buka Link</button>
+        <button id="btnCopy" class="btn btn-light" type="button" disabled>Salin Link</button>
+      </div>
+
+      <div id="qrBox" class="qrbox">
+        <span style="color:#9ca3af">QR akan dipaparkan di sini</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============ MODAL SCAN ============ -->
+  <div class="modal-backdrop" id="backdrop"></div>
+  <div class="modal" id="scanModal" aria-hidden="true">
+    <div class="box">
+      <div class="hd">
+        <strong>Scan SKU</strong>
+        <div><button class="btn btn-secondary" onclick="closeScanModal()">Tutup</button></div>
+      </div>
+      <div class="bd">
+        <div id="iabNotice" class="warn" style="display:none;">
+          ⚠️ Kamera mungkin disekat jika membuka laman ini dari dalam aplikasi (WhatsApp/FB/IG).
+          <b>Buka dalam Safari / Chrome</b> untuk scan secara langsung. Anda juga boleh muat naik / ambil gambar barcode di bawah.
+        </div>
+
+        <video id="scanVideo" playsinline muted autoplay></video>
+        <div class="helper">Kamera aktif. Halakan ke QR/Barcode. (Jika kamera tak dibenarkan, guna muat naik gambar di bawah.)</div>
+
+        <div class="uploader">
+          <input id="fileInput" type="file" accept="image/*" />
+          <button id="btnCapture" class="btn btn-light" type="button">Ambil Gambar</button>
+          <span class="helper">Muat naik / ambil gambar QR/Barcode jika kamera tak dibenarkan.</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script>
+/* ================== SUPABASE CLIENT ================== */
+const SB_URL = "https://dduizetstqqjrpsezbpi.supabase.co";
+const SB_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRkdWl6ZXRzdHFxanJwc2V6YnBpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTg3MzI0ODQsImV4cCI6MjA3NDMwODQ4NH0.CrlHXrmHtKgR9qc2192U6quRb5lpFEeOSgwG0Lb8KRM";
+window.sb = window.sb || (
+  (window.supabase && typeof window.supabase.createClient === 'function')
+    ? window.supabase.createClient(SB_URL, SB_KEY)
+    : null
+);
+console.log('[generator] Supabase ready?', !!window.sb);
+
+/* ================== UTIL ================== */
+const $ = s => document.querySelector(s);
+const format2 = n => (Math.round((+n + Number.EPSILON) * 100) / 100).toFixed(2);
+const onlyDigits = s => String(s||'').replace(/\D+/g,'');
+const todayRef = () => {
+  const d=new Date(); const y=d.getFullYear();
+  const m=String(d.getMonth()+1).padStart(2,'0');
+  const dd=String(d.getDate()).padStart(2,'0');
+  return `${y}${m}${dd}`;
+};
+const isInApp = () => {
+  const ua = navigator.userAgent||'';
+  const inApp=/(FBAN|FBAV|Instagram|Line|Twitter|WeChat|Weibo)/i.test(ua);
+  const isWA=/\bWhatsApp\b/i.test(ua);
+  return inApp||isWA;
+};
+
+// ================== AUTO KIRAAN & REF ==================
+const elHarga  = $('#harga');
+const elUpah   = $('#upah');
+const elJumlah = $('#jumlah');
+const elLast4  = $('#last4');
+const elRef    = $('#ref');
+
+// Kiraan jumlah (Harga + Upah)
+function recalc(){
+  const h = parseFloat(elHarga.value || 0);
+  const u = parseFloat(elUpah.value  || 0);
+  elJumlah.value = format2(h + u);
+}
+['input','change'].forEach(evt=>{
+  elHarga.addEventListener(evt, recalc);
+  elUpah .addEventListener(evt, recalc);
+});
+recalc();
+
+// ================== DAPATKAN REF DARI SERVER (GLOBAL HARIAN) ==================
+let localSeq = 0;   // kiraan tempatan untuk hari semasa
+let lastKey  = "";  // YYYYMMDD-####
+
+async function refreshRefFromServer(){
+  // bersihkan input last4 -> 4 digit
+  const l4 = onlyDigits(elLast4.value).slice(-4);
+  if (elLast4.value !== l4) elLast4.value = l4;
+  if (l4.length !== 4) { elRef.value = ""; return; }
+
+  try {
+    if (!window.sb) throw new Error("Supabase client tiada");
+    const client = window.sb;
+    const { data, error } = await client.rpc('next_ref', { in_last4: l4 });
+    if (error) throw error;
+    // contoh: EA-20250928-6002-001
+    elRef.value = data;
+    return;
+  } catch (e) {
+    console.warn('[generator] next_ref RPC gagal, fallback local:', e);
+  }
+
+  // === Fallback local (jika offline/blocked) ===
+  const base = `${todayRef()}-${l4}`;
+  if (base !== lastKey) { lastKey = base; localSeq = 0; }
+  localSeq += 1;
+  elRef.value = `EA-${base}-${String(localSeq).padStart(3,'0')}`;
+}
+
+// auto-refresh bila last4 cukup 4 digit
+elLast4.addEventListener('input', () => {
+  if (onlyDigits(elLast4.value).length >= 4) refreshRefFromServer();
+});
+
+// panggil sekali supaya kalau last4 sudah diisi, terus jana
+refreshRefFromServer();
+
+/* ================== QR LINK & QR IMAGE ================== */
+let lastLink='';
+function buildLink(){
+  const q = new URLSearchParams({
+    produk: $('#produk').value||'',
+    sku:    $('#sku').value||'',
+    harga:  (elHarga.value||'').toString(),
+    upah:   (elUpah.value||'').toString(),
+    jumlah: elJumlah.value||'',
+    ref:    elRef.value||''
+  });
+  return `https://emasamir.app/order?${q.toString()}`;
+}
+
+const elBtnQR=$('#btnQR'), elBtnOpen=$('#btnOpen'), elBtnCopy=$('#btnCopy'), elQRBox=$('#qrBox');
+
+function renderQR(data){
+  elQRBox.innerHTML='';
+  const img=new Image();
+  img.src='https://api.qrserver.com/v1/create-qr-code/?size=320x320&data='+encodeURIComponent(data);
+  img.alt='QR'; img.style.maxWidth='100%';
+  img.onerror=()=>{ elQRBox.innerHTML='<span style="color:#ef4444">QR gagal dijana. Cuba tekan "Jana QR" sekali lagi.</span>'; };
+  elQRBox.appendChild(img);
+}
+
+elBtnQR.addEventListener('click', async ()=>{
+  if (!elRef.value.trim()) await refreshRefFromServer(); // pastikan ada REF
+  lastLink=buildLink();
+  elBtnOpen.disabled=elBtnCopy.disabled=false;
+  renderQR(lastLink);
+});
+elBtnOpen.addEventListener('click', ()=>{
+  if(!lastLink) lastLink=buildLink();
+  window.open(lastLink,'_blank');
+});
+elBtnCopy.addEventListener('click', async ()=>{
+  if(!lastLink) lastLink=buildLink();
+  try{
+    await navigator.clipboard.writeText(lastLink);
+    elBtnCopy.textContent='Disalin!'; setTimeout(()=>elBtnCopy.textContent='Salin Link',1200);
+  }catch{ alert(lastLink); }
+});
+
+/* ================== SCAN MODAL ================== */
+const scanModal=$('#scanModal'), backdrop=$('#backdrop'), videoEl=$('#scanVideo');
+const fileInput=$('#fileInput'), btnCapture=$('#btnCapture');
+
+let stream=null, stopZX=null, barcodeDetector=null, rafId=0;
+
+function openScanModal(){
+  $('#iabNotice').style.display=isInApp()?'block':'none';
+  backdrop.style.display='block'; scanModal.style.display='flex'; startScan();
+}
+function closeScanModal(){ stopScan(); scanModal.style.display='none'; backdrop.style.display='none'; }
+$('#btnScan').addEventListener('click', openScanModal);
+
+async function startScan(){
+  stopScan();
+
+  if('BarcodeDetector' in window){
+    try{
+      const formats=['qr_code','ean_13','code_128','code_39','upc_a','upc_e','ean_8','itf','codabar'];
+      barcodeDetector=new window.BarcodeDetector({formats});
+    }catch{ barcodeDetector=null; }
+  }
+
+  try{
+    stream=await navigator.mediaDevices.getUserMedia({
+      video:{ facingMode:{ideal:'environment'}, width:{ideal:1280}, height:{ideal:720} },
+      audio:false
+    });
+    videoEl.srcObject=stream; await videoEl.play().catch(()=>{});
+  }catch{ stream=null; }
+
+  if(stream && barcodeDetector){
+    const loop=async ()=>{
+      if(!stream) return;
+      try{
+        const codes=await barcodeDetector.detect(videoEl);
+        if(codes && codes.length){ onCodeDetected(codes[0].rawValue||''); return; }
+      }catch{}
+      rafId=requestAnimationFrame(loop);
+    }; loop();
+  }else if(stream){
+    const codeReader=new ZXing.BrowserMultiFormatReader();
+    stopZX=()=>{ try{ codeReader.reset(); }catch{} };
+    try{
+      await codeReader.decodeFromVideoDevice(undefined, videoEl, (res)=>{
+        if(res && res.getText){ onCodeDetected(res.getText()); }
+      });
+    }catch{}
+  }
+}
+
+function stopScan(){
+  if(rafId) cancelAnimationFrame(rafId); rafId=0;
+  if(stopZX){ try{ stopZX(); }catch{}; stopZX=null; }
+  if(videoEl){ try{ videoEl.pause(); }catch{} videoEl.srcObject=null; }
+  if(stream){ stream.getTracks().forEach(t=>t.stop()); stream=null; }
+}
+
+function onCodeDetected(val){
+  const s=(val||'').trim(); if(!s) return;
+  $('#sku').value=s; closeScanModal();
+}
+
+// Fallback — decode dari gambar
+fileInput.addEventListener('change', async (ev)=>{
+  const f=ev.target.files&&ev.target.files[0]; if(!f) return;
+  const url=URL.createObjectURL(f);
+  const codeReader=new ZXing.BrowserMultiFormatReader();
+  try{
+    const res=await codeReader.decodeFromImageUrl(url);
+    if(res && res.getText) onCodeDetected(res.getText());
+  }catch{
+    alert('Maaf, barcode tidak dapat dibaca. Cuba ambil gambar yang lebih jelas.');
+  }finally{ URL.revokeObjectURL(url); }
+});
+
+// Ambil gambar terus (iOS/Android)
+btnCapture.addEventListener('click', ()=>{
+  const i=document.createElement('input'); i.type='file'; i.accept='image/*'; i.capture='environment';
+  i.addEventListener('change', ()=>{
+    const f=i.files&&i.files[0]; if(!f) return;
+    const dt=new DataTransfer(); dt.items.add(f); fileInput.files=dt.files;
+    fileInput.dispatchEvent(new Event('change'));
+  });
+  i.click();
+});
+
+backdrop.addEventListener('click', closeScanModal);
+
+// Kebersihan UI kecil
+['produk','sku','harga','upah','last4','ref'].forEach(id=>{
+  const el=$('#'+id); el&&el.addEventListener('change', ()=>{});
+});
+
+document.addEventListener('DOMContentLoaded', () => {
+  if (onlyDigits(elLast4.value).length >= 4) refreshRefFromServer();
+});
+</script>
+</body>
+</html>

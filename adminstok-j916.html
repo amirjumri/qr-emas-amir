@@ -1,0 +1,2353 @@
+<!doctype html>
+<html lang="ms">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Admin • Stok 916 — Emas Amir</title>
+
+  <!-- Libs -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="auth.js?v=13.1"></script>
+  <script src="admin-guard.js?v=1"></script>
+
+
+<script src="https://cdn.jsdelivr.net/npm/@zxing/library@0.20.0/umd/index.min.js"></script>
+
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+  <style>
+    body{background:#fff}
+    .container-narrow{max-width:1100px}
+    .auth-pill{border:1px solid #e5e7eb;border-radius:999px;padding:.2rem .6rem;background:#fafafa;color:#555}
+    .btn-chip{border:1px solid #e5e7eb;background:#f8fafc;padding:6px 10px;border-radius:999px;font-size:.9rem}
+    .right{text-align:right}
+    .mono{font-family: ui-monospace,Menlo,monospace}
+    .code-badge{font-size:12px;border:1px solid #e5e7eb;border-radius:999px;padding:.1rem .5rem;background:#f3f4f6}
+    .status-pill{font-size:12px;border-radius:999px;padding:.15rem .5rem;border:1px solid #e5e7eb;background:#fafafa}
+    .status-AVAILABLE{background:#ecfdf5;border-color:#d1fae5;color:#065f46}
+    .status-PENDING{background:#fff7ed;border-color:#ffedd5;color:#9a3412}
+    .status-PAID{background:#fef2f2;border-color:#fee2e2;color:#991b1b}
+    /* ⬇️ highlight baris selepas scan */
+    .scan-hit{animation: scanGlow 1.2s ease-in-out 2;}
+    @keyframes scanGlow{0%{background:#fff7cc}100%{background:transparent}}
+    .live-card{border:1px solid #e5e7eb;border-radius:10px;padding:10px}
+    .live-badge{font-size:12px;background:#fee2e2;border:1px solid #fecaca;border-radius:999px;padding:.1rem .5rem;color:#991b1b}
+    .live-price{font-weight:600}
+/* ✅ PILIH LIVE CARD */
+.live-card{ cursor:pointer; }
+.live-card.selected{
+  outline: 3px solid #7c3aed;
+  box-shadow: 0 0 0 3px rgba(124,58,237,.15);
+}
+  </style>
+</head>
+<body>
+<div class="container container-narrow py-3">
+
+  <!-- TOP BAR -->
+  <div class="d-flex justify-content-between align-items-center mb-2">
+    <div class="small auth-pill" id="authStatus">Memuatkan…</div>
+    <div class="d-flex flex-wrap gap-2">
+      <a class="btn btn-outline-secondary btn-chip" href="index.html">Halaman Utama</a>
+      <a class="btn btn-outline-secondary btn-chip" href="admin.html">Admin</a>
+      <a class="btn btn-outline-secondary btn-chip" href="admin-j999.html">Admin 999</a>
+      <a class="btn btn-outline-secondary btn-chip" href="admin-j916.html">Admin 916</a>
+      <a class="btn btn-outline-secondary btn-chip" href="admintabung-simpan.html">Admin Tabung</a>
+      <a class="btn btn-outline-secondary btn-chip" href="account.html">Akaun</a>
+      <button id="btnLogin"  class="btn btn-outline-secondary btn-chip" type="button">Log masuk</button>
+      <button id="btnLogout" class="btn btn-outline-secondary btn-chip" type="button" style="display:none">Log keluar</button>
+    </div>
+  </div>
+  <hr class="mb-3">
+
+<div class="card p-3 mb-3">
+  <h6 class="mb-2">YouTube Live (Emas Amir)</h6>
+  <div class="input-group input-group-sm">
+    <span class="input-group-text">Video ID</span>
+    <input id="ytVideoIdInput" type="text" class="form-control"
+           placeholder="Contoh: NnPMdN553RU">
+    <button class="btn btn-primary" type="button" onclick="saveYtId()">Simpan</button>
+  </div>
+  <small class="text-muted">
+    Copy ID dari link YouTube (lepas <code>v=</code>).
+  </small>
+</div>
+
+  <!-- HEADER -->
+  <div class="d-flex justify-content-between align-items-end flex-wrap gap-2">
+    <div>
+      <h1 class="h4 mb-1">Admin • Barang Kemas 916</h1>
+      <div class="text-muted small">Urus harga, design & stok unik (kod barang).</div>
+    </div>
+    <div class="d-flex gap-2 align-items-center">
+      <span class="small text-muted">Harga 916 semasa:</span>
+      <span class="h5 m-0" id="price916Show">RM – / g</span>
+    </div>
+  </div>
+
+  <!-- KAD HARGA 916 -->
+  <div class="card mt-3">
+    <div class="card-body">
+      <div class="d-flex justify-content-between align-items-center flex-wrap gap-3">
+        <div>
+          <div class="fw-semibold">Kemas Kini Harga 916 / gram</div>
+          <div class="small text-muted">Diguna untuk kiraan: <span class="mono">((harga × berat) + upah) × 1.08</span></div>
+        </div>
+        <div class="input-group" style="max-width:420px">
+          <span class="input-group-text">RM</span>
+          <input id="inpPrice916" class="form-control" type="number" step="0.01" min="0" placeholder="cth 345.00">
+          <button id="btnSavePrice916" class="btn btn-primary" type="button">Simpan</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- TABs -->
+<ul class="nav nav-tabs mt-4" role="tablist">
+  <li class="nav-item"><button class="nav-link active" data-bs-toggle="tab" data-bs-target="#tabDesign" type="button" role="tab">Produk / Design</button></li>
+  <li class="nav-item"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#tabStockAdd" type="button" role="tab">Stok Item (Tambah)</button></li>
+  <li class="nav-item"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#tabStockList" type="button" role="tab">Senarai Stok</button></li>
+  <li class="nav-item"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#tabCSV" type="button" role="tab">Bulk Import CSV</button></li>
+
+  <!-- 🆕 TAB BARU: STOK POTONG -->
+  <li class="nav-item"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#tabSplit" type="button" role="tab">Stok Potong</button></li>
+</ul>
+  <div class="tab-content border-start border-end border-bottom p-3">
+
+    <!-- DESIGN -->
+    <div class="tab-pane fade show active" id="tabDesign" role="tabpanel">
+      <div class="row g-3">
+        <div class="col-lg-5">
+          <div class="card h-100">
+            <div class="card-body">
+              <div class="fw-semibold mb-2">Tambah / Kemaskini Design</div>
+
+              <div class="mb-2">
+                <label class="form-label">Kategori</label>
+                <select id="d_cat" class="form-select">
+                  <option value="">— Pilih —</option>
+                  <option value="RT">Rantai Tangan (RT)</option>
+                  <option value="RL">Rantai Leher (RL)</option>
+                  <option value="RK">Rantai Kaki (RK)</option>
+                  <option value="CC">Cincin (CC)</option>
+                  <option value="LK">Loket (LK)</option>
+                  <option value="SB">Subang (SB)</option>
+                  <option value="BC">Bead/Charm (BC)</option>
+                </select>
+              </div>
+
+              <div class="small text-muted mb-2">Upah default untuk design ini. Item boleh override upah jika perlu.</div>
+
+              <div class="mb-2">
+                <label class="form-label">Nama Design</label>
+                <input id="d_name" class="form-control" placeholder="cth Rantai Tangan Gila2">
+              </div>
+              <div class="mb-2">
+                <label class="form-label">Upah Default (RM)</label>
+                <input id="d_upah" class="form-control" type="number" step="0.01" min="0" placeholder="cth 45.00">
+              </div>
+              <div class="mb-2 form-check">
+                <input id="d_active" class="form-check-input" type="checkbox" checked>
+                <label for="d_active" class="form-check-label">Aktif</label>
+              </div>
+              <div class="mb-2">
+                <label class="form-label">Gambar (3 URL)</label>
+                <div class="input-group input-group-sm mb-1">
+                  <span class="input-group-text">Img1</span><input id="d_img1" class="form-control">
+                </div>
+                <div class="input-group input-group-sm mb-1">
+                  <span class="input-group-text">Img2</span><input id="d_img2" class="form-control">
+                </div>
+                <div class="input-group input-group-sm">
+                  <span class="input-group-text">Img3</span><input id="d_img3" class="form-control">
+                </div>
+              </div>
+
+              <div class="d-flex gap-2">
+                <button id="btnDesignSave" class="btn btn-primary" type="button">Simpan</button>
+                <button id="btnDesignReset" class="btn btn-outline-secondary" type="button">Reset</button>
+              </div>
+              <div id="designMsg" class="small text-muted mt-2"></div>
+              <input id="d_id" type="hidden">
+            </div>
+          </div>
+        </div>
+
+        <div class="col-lg-7">
+          <div class="d-flex justify-content-between align-items-center mb-2">
+            <div class="fw-semibold">Senarai Design</div>
+            <button id="btnReloadDesign" class="btn btn-outline-secondary btn-sm" type="button">Muat semula</button>
+          </div>
+          <div class="table-responsive">
+            <table class="table table-sm align-middle">
+              <thead class="table-light">
+                <tr>
+                  <th>Nama</th>
+                  <th>Kategori</th>
+                  <th class="right">Upah (RM)</th>
+                  <th>Status</th>
+                  <th class="right">Tindakan</th>
+                </tr>
+              </thead>
+              <tbody id="designTable"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+
+ <!-- STOK ITEM (TAMBAH) -->
+  <div class="tab-pane fade" id="tabStockAdd" role="tabpanel">
+    <div class="row g-3">
+
+      <!-- KIRI: BORANG TAMBAH -->
+      <div class="col-lg-7 col-xl-6">
+        <div class="card h-100">
+          <div class="card-body">
+            <div class="fw-semibold mb-2">Tambah / Kemaskini Item (Kod Unik)</div>
+
+            <div class="row g-2">
+              <!-- Kod unik -->
+              <div class="col-md-4">
+                <label class="form-label">Kod Unik (cth RT0283738)</label>
+                <input id="i_code" class="form-control">
+              </div>
+
+              <!-- RFID (EPC) -->
+              <div class="col-md-4">
+                <label class="form-label">
+                  RFID (EPC)
+                  <span class="text-muted small">(scan di sini)</span>
+                </label>
+                <input id="i_rfid"
+                       class="form-control mono"
+                       placeholder="cth E2806..."
+                       autocomplete="off">
+              </div>
+
+              <!-- Pilih design + carian -->
+              <div class="col-md-4">
+                <label class="form-label">Pilih Design</label>
+                <input id="i_design_search"
+                       class="form-control form-control-sm mb-1"
+                       placeholder="Taip untuk cari design…">
+                <select id="i_design_id" class="form-select"></select>
+              </div>
+
+              <!-- Berat -->
+              <div class="col-md-4">
+                <label class="form-label">Berat (g)</label>
+                <input id="i_weight" class="form-control" type="number" step="0.01" min="0.01">
+              </div>
+
+              <!-- Panjang -->
+              <div class="col-md-4">
+                <label class="form-label">Panjang (cm)</label>
+                <input id="i_length" class="form-control" type="number" step="0.1" min="0">
+              </div>
+
+              <!-- Lebar -->
+              <div class="col-md-4">
+                <label class="form-label">Lebar (cm)</label>
+                <input id="i_width" class="form-control" type="number" step="0.1" min="0">
+              </div>
+
+              <!-- Upah override -->
+              <div class="col-md-4">
+                <label class="form-label">Upah Override (RM)</label>
+                <input id="i_upah" class="form-control" type="number" step="0.01" min="0"
+                       placeholder="kosong = ikut design">
+              </div>
+
+              <!-- Status -->
+              <div class="col-md-4">
+                <label class="form-label">Status</label>
+                <select id="i_status" class="form-select">
+                  <option value="AVAILABLE">AVAILABLE</option>
+                  <option value="PENDING">PENDING</option>
+                  <option value="PAID">PAID</option>
+                </select>
+              </div>
+
+              <!-- Aktif / tidak -->
+              <div class="col-md-4">
+                <label class="form-label">Aktif</label>
+                <select id="i_active" class="form-select">
+                  <option value="true">Aktif</option>
+                  <option value="false">Tidak</option>
+                </select>
+              </div>
+            </div>
+
+            <div class="d-flex gap-2 mt-3">
+              <button id="btnItemSave"  class="btn btn-primary" type="button">Simpan Item</button>
+              <button id="btnItemReset" class="btn btn-outline-secondary" type="button">Reset</button>
+            </div>
+
+            <div id="itemMsg" class="small text-muted mt-2"></div>
+            <input id="i_id" type="hidden">
+          </div>
+        </div>
+      </div>
+
+      <!-- KANAN: SENARAI TAMBAH (Sesi Ini) -->
+      <div class="col-lg-5 col-xl-6">
+        <div class="card h-100">
+          <div class="card-body">
+            <div class="d-flex justify-content-between align-items-center mb-2">
+              <div class="fw-semibold">Senarai Tambah (Sesi Ini)</div>
+              <div class="d-flex gap-2">
+                <button id="btnSessClear"
+                        class="btn btn-outline-secondary btn-sm"
+                        type="button">
+                  Kosongkan
+                </button>
+              </div>
+            </div>
+
+            <div class="table-responsive" style="max-height:420px;overflow:auto">
+              <table class="table table-sm align-middle">
+                <thead class="table-light">
+                  <tr>
+                    <th>Kod</th>
+                    <th class="right">Berat</th>
+                    <th class="right">–</th>
+                  </tr>
+                </thead>
+                <tbody id="sessList"></tbody>
+              </table>
+            </div>
+
+            <div class="d-flex flex-column gap-2">
+              <button id="btnGoList"
+                      class="btn btn-outline-dark w-100"
+                      type="button"
+                      style="display:none">
+                Pindah ke Senarai Stok (0)
+              </button>
+
+              <button id="btnPrintAllSess"
+                      class="btn btn-dark w-100"
+                      type="button">
+                Print Tag (Semua dalam Senarai)
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div><!-- /row -->
+  </div><!-- /tab-pane Stok Item (Tambah) -->
+
+<!-- SENARAI STOK -->
+<div class="tab-pane fade" id="tabStockList" role="tabpanel">
+
+  <!-- HEADER + TOOLBAR SENARAI STOK -->
+  <div class="mb-2">
+    <div class="fw-semibold mb-2">Senarai Stok</div>
+
+    <div class="row g-2 mb-2">
+      <div class="col-md-4">
+        <input id="q" class="form-control form-control-sm" placeholder="Cari kod / nama…">
+      </div>
+      <div class="col-md-5">
+        <div class="btn-group btn-group-sm w-100" role="group" aria-label="Filter Status">
+          <button type="button" class="btn btn-outline-secondary active" data-fstatus="ALL">Semua</button>
+          <button type="button" class="btn btn-outline-success"  data-fstatus="AVAILABLE">Avail</button>
+          <button type="button" class="btn btn-outline-warning"  data-fstatus="PENDING">Pending</button>
+          <button type="button" class="btn btn-outline-danger"   data-fstatus="PAID">Paid</button>
+        </div>
+      </div>
+      <div class="col-md-3 d-flex">
+        <button id="btnBulkDelete" class="btn btn-outline-danger btn-sm flex-grow-1" type="button" disabled>
+          Padam Terpilih (0)
+        </button>
+      </div>
+    </div>
+
+<!-- 🆕 WALK-IN ORDER BAR -->
+<div class="card mt-2">
+  <div class="card-body py-2">
+    <div class="d-flex flex-wrap align-items-center gap-2">
+      <div class="fw-semibold">Walk-In (Kaunter)</div>
+      <span class="text-muted small">Pilih item (checkbox) → Lock order walk-in. Lepas tu split dulu di Admin-J916.</span>
+
+      <div class="ms-auto d-flex align-items-center gap-2">
+        <button id="btnWalkinOrder" class="btn btn-primary btn-sm" type="button" disabled>
+          Lock & Buat Order (Walk-In)
+        </button>
+        <button id="btnWalkinClear" class="btn btn-outline-secondary btn-sm" type="button">
+          Clear pilihan
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+    <div class="row g-2">
+      <div class="col-md-4">
+        <select id="rfidCat" class="form-select form-select-sm">
+          <option value="">Audit: Pilih kategori…</option>
+          <option value="RT">Rantai Tangan (RT)</option>
+          <option value="RL">Rantai Leher (RL)</option>
+          <option value="RK">Rantai Kaki (RK)</option>
+          <option value="CC">Cincin (CC)</option>
+          <option value="LK">Loket (LK)</option>
+          <option value="SB">Subang (SB)</option>
+          <option value="BC">Bead/Charm (BC)</option>
+        </select>
+      </div>
+      <div class="col-md-8 d-flex gap-2">
+        <button id="btnRfidAudit" class="btn btn-outline-dark btn-sm" type="button">Audit RFID</button>
+        <button id="btnScan" class="btn btn-outline-primary btn-sm" type="button">Scan</button>
+        <button id="btnReloadItems" class="btn btn-outline-secondary btn-sm ms-auto" type="button">Muat semula</button>
+<button id="btnExportAvailCsv" class="btn btn-outline-success btn-sm" type="button">
+  Export Avail CSV
+</button>
+<button id="btnExportPendingCsv" class="btn btn-outline-warning btn-sm" type="button">
+  Export Pending CSV
+</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="table-responsive" style="max-height:600px;overflow:auto">
+    <table class="table table-sm align-middle">
+      <thead class="table-light">
+        <tr>
+          <th style="width:36px"><input id="chkAll" type="checkbox"></th>
+          <th>Kod</th>
+          <th>RFID</th>
+          <th>Nama</th>
+          <th>Berat</th>
+          <th>Pjg×Lbr</th>
+          <th>Status</th>
+          <th class="right">Tindakan</th>
+        </tr>
+      </thead>
+      <tbody id="itemsTable"></tbody>
+    </table>
+  </div>
+
+  <!-- PANEL LIVE SEKARANG -->
+  <div class="card mt-3">
+    <div class="card-body">
+      <div class="d-flex justify-content-between align-items-center mb-2">
+        <div class="fw-semibold">🔴 Live Sekarang</div>
+        <div class="d-flex align-items-center gap-3">
+          <div class="small text-muted" id="liveHint">Tiada item Live.</div>
+          <div class="input-group input-group-sm" style="width:130px">
+            <span class="input-group-text">Faktor</span>
+            <input id="liveFactor" type="number" step="0.01" min="0.5" class="form-control" />
+          </div>
+        </div>
+      </div>
+      <div id="livePanel" class="row g-2"></div>
+    </div>
+  </div>
+
+</div><!-- /tab-pane tabStockList -->
+   
+
+
+    <!-- CSV -->
+    <div class="tab-pane fade" id="tabCSV" role="tabpanel">
+      <div class="row g-3">
+        <div class="col-lg-6">
+          <div class="card h-100">
+            <div class="card-body">
+              <div class="fw-semibold mb-2">Bulk Import CSV</div>
+              <div class="small text-muted mb-2">
+                Format tajuk lajur (wajib tepat):
+                <span class="code-badge">code,name,weight_g,length_cm,width_cm,upah_rm,img1,img2,img3,active,status</span><br>
+                <span class="small">status: AVAILABLE/PENDING/PAID, active: true/false</span>
+              </div>
+              <textarea id="csvText" class="form-control" rows="10" placeholder="Tampal CSV di sini"></textarea>
+              <div class="d-flex gap-2 mt-2">
+                <button id="btnParseCSV" class="btn btn-outline-secondary" type="button">Preview</button>
+                <button id="btnImportCSV" class="btn btn-primary" type="button" disabled>Import</button>
+              </div>
+              <div id="csvMsg" class="small text-muted mt-2"></div>
+            </div>
+          </div>
+        </div>
+        <div class="col-lg-6">
+          <div class="fw-semibold mb-2">Preview</div>
+          <div class="table-responsive">
+            <table class="table table-sm align-middle">
+              <thead class="table-light" id="csvHead"></thead>
+              <tbody id="csvBody"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+
+<!-- 🆕 STOK POTONG -->
+    <div class="tab-pane fade" id="tabSplit" role="tabpanel">
+      <div class="d-flex justify-content-between align-items-center flex-wrap gap-2 mb-2">
+        <div>
+          <div class="fw-semibold">Stok Potong (Lebihan)</div>
+          <div class="small text-muted">Senarai lebihan hasil potong: contoh RT0019413 → RT0019413pot</div>
+        </div>
+
+        <button id="btnReloadSplit" class="btn btn-outline-secondary btn-sm" type="button">
+          Muat semula
+        </button>
+      </div>
+
+      <div class="row g-2 mb-2">
+        <div class="col-md-4">
+          <input id="splitQ" class="form-control form-control-sm" placeholder="Cari kod asal / kod pot… (cth RT0019413)">
+        </div>
+        <div class="col-md-8">
+          <div class="btn-group btn-group-sm" role="group">
+            <button type="button" class="btn btn-outline-secondary active" data-splitstatus="IN_STOCK">Dalam Stok</button>
+            <button type="button" class="btn btn-outline-secondary" data-splitstatus="ALL">Semua</button>
+            <button type="button" class="btn btn-outline-secondary" data-splitstatus="OUT_LEBUR">Lebur</button>
+            <button type="button" class="btn btn-outline-secondary" data-splitstatus="OUT_SUPPLIER">Jual Supplier</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="table-responsive" style="max-height:600px;overflow:auto">
+        <table class="table table-sm align-middle">
+          <thead class="table-light">
+            <tr>
+              <th>Kod Asal</th>
+              <th>Kod Pot</th>
+              <th class="right">Berat Lebihan (g)</th>
+              <th>Tarikh</th>
+              <th>Status</th>
+              <th class="right">Tindakan</th>
+            </tr>
+          </thead>
+          <tbody id="splitTable">
+            <tr><td colspan="6" class="text-muted">Memuatkan…</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div id="splitMsg" class="small text-muted mt-2"></div>
+    </div>
+
+  </div><!--/tab-content-->
+
+
+<!-- Modal Scan Kamera (baru) -->
+<div class="modal fade" id="scanModal" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Scan Barcode</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body">
+        <video id="scanVideo" style="width:100%;border-radius:8px;background:#000" playsinline muted></video>
+        <div class="small text-muted mt-2">Halakan kamera ke tag kod. Pastikan terang.</div>
+      </div>
+      <div class="modal-footer">
+        <button id="btnScanStop" class="btn btn-outline-secondary" type="button">Henti</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- JS -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+/* ===== Config & helpers ===== */
+const SB_URL = "https://dduizetstqqjrpsezbpi.supabase.co";
+const SB_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRkdWl6ZXRzdHFxanJwc2V6YnBpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTg3MzI0ODQsImV4cCI6MjA3NDMwODQ4NH0.CrlHXrmHtKgR9qc2192U6quRb5lpFEeOSgwG0Lb8KRM";
+
+window.sb = window.sb || window.supabase.createClient(SB_URL, SB_KEY);
+const sb = window.sb;
+const $ = (id)=>document.getElementById(id);
+const money=(n)=>"RM "+Number(n||0).toFixed(2);
+
+// =========================================================
+// ✅ EXPORT CSV (Avail / Pending) + jumlah item & berat
+// =========================================================
+
+// simpan data terakhir ikut carian q (SEMUA status, sebelum filter status UI)
+window._itemsByQuery = window._itemsByQuery || [];
+
+function csvEscape(v){
+  const s = (v===null || v===undefined) ? '' : String(v);
+  return `"${s.replace(/"/g, '""')}"`;
+}
+
+function downloadCSV(filename, csvText){
+  const blob = new Blob([csvText], { type:"text/csv;charset=utf-8;" });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = filename;
+  a.click();
+  URL.revokeObjectURL(url);
+}
+
+function buildStockCSV(rows, statusLabel){
+  // rows = item objects dari RPC (j916_admin_items_list_v1)
+  const header = ["Kod","RFID","Nama","Berat_g","Panjang_cm","Lebar_cm","PjgXLbr","Status"];
+
+  let totalItem = 0;
+  let totalWeight = 0;
+
+  let csv = header.join(",") + "\n";
+
+  rows.forEach(r=>{
+    const w = Number(r.weight_g || 0);
+    totalItem += 1;
+    totalWeight += w;
+
+    const len = Number(r.length_cm || 0);
+    const wid = Number(r.width_cm || 0);
+    const pxl = `${len.toFixed(1)}x${wid.toFixed(1)}cm`;
+
+    const line = [
+      csvEscape(r.code || ""),
+      csvEscape(r.rfid_epc || r.rfid || ""),
+      csvEscape(r.name || ""),
+      csvEscape(w.toFixed(2)),
+      csvEscape(len.toFixed(1)),
+      csvEscape(wid.toFixed(1)),
+      csvEscape(pxl),
+      csvEscape(r.status || "")
+    ].join(",");
+
+    csv += line + "\n";
+  });
+
+  // ✅ tambah ringkasan di bawah (mudah kira)
+  csv += "\n";
+  csv += `JUMLAH_ITEM,${totalItem}\n`;
+  csv += `JUMLAH_BERAT_G,${totalWeight.toFixed(2)}\n`;
+
+  return csv;
+}
+
+function exportStockByStatus(status){
+  const rows = (window._itemsByQuery || []).filter(r => String(r.status) === String(status));
+
+  if (!rows.length){
+    alert(`Tiada data untuk export (${status}).`);
+    return;
+  }
+
+  const q = (document.getElementById("q")?.value || "").trim();
+  const today = new Date().toISOString().slice(0,10);
+  const suffix = q ? `-q_${q.replace(/\s+/g,'_').slice(0,30)}` : "";
+  const filename = `stok-j916-${status.toLowerCase()}-${today}${suffix}.csv`;
+
+  const csv = buildStockCSV(rows, status);
+  downloadCSV(filename, csv);
+}
+
+// ===== ONSEND CONFIG (WhatsApp rasmi kedai) =====
+const ONSEND_BASE  = "https://onsend.io/api/v1";
+const ONSEND_TOKEN = "4b879470cc16ca8f06c5ab9878a4578880cfd0fd7b7cfe0121499f3ab017dd04";
+
+// Tukar telefon biasa → msisdn (60123456789)
+function toMsisdn(p){
+  const d = String(p || "").replace(/\D+/g, "");
+  if (!d) return "";
+  return d.startsWith("6") ? d : ("6" + d);
+}
+
+// Versi antarabangsa (MY + SG) – khusus untuk Live
+function toMsisdnIntl(p){
+  const d = String(p || "").replace(/\D+/g, "");
+  if (!d) return "";
+
+  // Singapore – kalau sudah 65...
+  if (d.startsWith("65") && d.length >= 10 && d.length <= 12) return d;
+
+  // Singapore – 8–9 digit bermula 8/9 (tanpa 65)
+  if ((d.length === 8 || d.length === 9) && /^[89]/.test(d)){
+    return "65" + d;
+  }
+
+  // Malaysia – kalau sudah 60...
+  if (d.startsWith("60")) return d;
+
+  // Malaysia – 0xxxxxxxxx / 01xxxxxxxxx
+  if (d.startsWith("0")) return "6" + d;
+
+  // Malaysia – 1xxxxxxxx (lupa letak 0 depan)
+  if (d.startsWith("1")) return "60" + d;
+
+  // fallback: assume Malaysia juga
+  return "60" + d;
+}
+
+// Hantar WhatsApp via OnSend
+async function sendWA(msisdn, text){
+  try{
+    const r = await fetch(ONSEND_BASE + "/send", {
+      method: "POST",
+      headers: {
+        "Accept": "application/json",
+        "Content-Type": "application/json",
+        "Authorization": "Bearer " + ONSEND_TOKEN
+      },
+      body: JSON.stringify({
+        phone_number: msisdn,
+        message: text,
+        type: "text"
+      })
+    });
+    const j = await r.json().catch(()=>({}));
+    console.log("OnSend resp (LIVE):", r.status, j);
+    return r.ok && (j.success === true || r.status === 200);
+  }catch(e){
+    console.warn("OnSend error (LIVE):", e);
+    return false;
+  }
+}
+
+// ❗ Nombor WhatsApp admin kedai (tanpa +)
+const ADMIN_WA = "60168055916";
+const QR_DUITNOW_URL = "https://emasamir.app/qr-maybank.html"; // tukar ke link QR DuitNow tuan
+
+// —— Penapis & pemilihan (TAMBAHAN) ——
+let _statusFilter = 'ALL';         // ALL | AVAILABLE | PENDING | PAID
+const _selectedIds = new Set();    // simpan id baris terpilih
+
+function applyStatusFilter(rows){
+  return rows.filter(r => _statusFilter==='ALL' ? true : String(r.status)===_statusFilter);
+}
+function updateBulkUI(){
+  const n = _selectedIds.size;
+
+  const btn = $('btnBulkDelete');
+  if (btn){
+    btn.disabled = n===0;
+    btn.textContent = `Padam Terpilih (${n})`;
+  }
+
+  // 🆕 Walk-in order button
+  const wbtn = $('btnWalkinOrder');
+  if (wbtn){
+    wbtn.disabled = (n===0 || n>3); // ✅ max 3 item (boleh ubah)
+    wbtn.textContent = (n>3)
+      ? `Maks 3 item (dipilih ${n})`
+      : `Lock & Buat Order (Walk-In)`;
+  }
+}
+/* Topbar */
+(function(){
+  const pill=$('authStatus'), login=$('btnLogin'), logout=$('btnLogout');
+  try{
+    const a=(window.auth_get&&window.auth_get())||null;
+    if(a){ pill.textContent='Log masuk (admin) — '+(a.phone||a.msisdn||''); login.style.display='none'; logout.style.display='';
+      logout.onclick=()=>{window.auth_clear&&window.auth_clear();location.reload();}; }
+    else{ pill.textContent='Tidak log masuk'; login.style.display=''; logout.style.display='none'; login.onclick=()=>location.href='login.html#login';}
+  }catch(_){}
+})();
+async function fallbackRequireAdmin(){
+  const a=(window.auth_get&&window.auth_get())||null;
+  if(!a){ location.href="login.html#login"; return false; }
+  const phone=(a.phone||a.msisdn||a.username||"").replace(/\D/g,''); if(!phone){ alert("Akses terhad."); location.href="index.html"; return false; }
+  const {data,error}=await sb.from("admin_users").select("phone,is_active").eq("phone",phone.startsWith('60')?phone:'6'+phone).eq("is_active",true).maybeSingle();
+  if(error||!data){ alert("Akses terhad (bukan admin)."); location.href="index.html"; return false; }
+  return true;
+}
+
+/* Harga 916 */
+async function loadPrice916(){
+  try{
+    const {data,error}=await sb.rpc('price_916_current_v1');
+    if(error) throw error;
+    const p=Number((Array.isArray(data)?data[0]:data)?.price_per_g||0);
+    $('price916Show').textContent=p?money(p)+' / g':'RM – / g';
+    $('inpPrice916').value=p?p.toFixed(2):'';
+    window._price916 = p || 0;
+  }catch(e){ $('price916Show').textContent='RM – / g'; console.error(e); }
+}
+async function savePrice916(){
+  const v=Number($('inpPrice916').value)||0; if(v<=0){ alert('Masukkan harga sah.'); return; }
+  const a=(window.auth_get&&window.auth_get())||null; const phone=a&&(a.phone||a.msisdn||a.username);
+  if(!phone){ alert('Tidak jumpa nombor phone admin.'); return; }
+  const btn=$('btnSavePrice916'); btn.disabled=true;
+  try{ const {error}=await sb.rpc('admin_set_price_916_v1',{p_price_per_g:v,p_actor_phone:phone}); if(error) throw error; await loadPrice916(); alert('Harga 916 dikemaskini!');}
+  catch(e){ alert('Gagal simpan harga: '+(e?.message||e)); } finally{ btn.disabled=false; }
+}
+
+/* Design */
+function fillDesignOptions(rows){
+  // 🆕 simpan semua design (aktif) dalam memori
+  _allDesigns = rows || [];
+
+  const sel = $('i_design_id');
+  const list = _allDesigns;
+
+  sel.innerHTML = list.length
+    ? list.map(r => `<option value="${r.id}">${r.cat_code ? `[${r.cat_code}] ` : ''}${r.name}</option>`).join('')
+    : `<option value="">— Tiada design —</option>`;
+}
+async function loadDesigns(){
+  $('designTable').innerHTML=`<tr><td colspan="5" class="text-muted">Memuatkan…</td></tr>`;
+  const fix=(u)=>!u?null:(u.startsWith('http')?u:`${SB_URL}/storage/v1/object${u}`);
+  try{
+    const {data,error}=await sb.rpc('j916_admin_products_list_v1');
+    if(error) throw error;
+    const rows=(Array.isArray(data)?data:[]).map(r=>({
+      id:r.id, name:r.name, upah_default_rm:r.upah_default_rm??r.wage_default??0,
+      is_active:!!r.is_active, cat_code:r.cat_code||r.category||'',
+      img1:fix(r.img1||r.img1_url), img2:fix(r.img2||r.img2_url), img3:fix(r.img3||r.img3_url)
+    }));
+
+// 🆕 Cari design ikut tulisan dalam kotak "Cari design"
+function setupDesignSearch(){
+  const inp = $('i_design_search');
+  if (!inp) return;
+
+  inp.addEventListener('input', () => {
+    const term = (inp.value || '').trim().toLowerCase();
+
+    // kalau kosong → tunjuk semua design
+    const list = term
+      ? _allDesigns.filter(d =>
+          (`${d.cat_code || ''} ${d.name || ''}`).toLowerCase().includes(term)
+        )
+      : _allDesigns;
+
+    const sel = $('i_design_id');
+    sel.innerHTML = list.length
+      ? list.map(r => `<option value="${r.id}">${r.cat_code ? `[${r.cat_code}] ` : ''}${r.name}</option>`).join('')
+      : `<option value="">— Tiada design jumpa —</option>`;
+  });
+}
+// === PETA UPAH DEFAULT DESIGN (untuk LIVE) ===
+window._designUpahMap = new Map(
+  rows.map(r => [String(r.id), Number(r.upah_default_rm || 0)])
+);
+    if(!rows.length){ $('designTable').innerHTML=`<tr><td colspan="5" class="text-muted">Tiada design.</td></tr>`; fillDesignOptions([]); return; }
+    $('designTable').innerHTML=rows.map(r=>`
+      <tr>
+        <td><div class="d-flex align-items-center gap-2">${r.img1?`<img src="${r.img1}" style="height:36px;width:36px;object-fit:cover;border-radius:4px">`:'—'}<span>${r.name||'-'}</span></div></td>
+        <td>${r.cat_code||'—'}</td>
+        <td class="right">${money(r.upah_default_rm||0)}</td>
+        <td><span class="code-badge">${r.is_active?'Aktif':'Tidak'}</span></td>
+        <td class="right"><button class="btn btn-sm btn-outline-primary" data-edit="${r.id}" type="button">Edit</button></td>
+      </tr>`).join('');
+    document.querySelectorAll('[data-edit]').forEach(b=>{
+      b.addEventListener('click',()=>{
+        const id=b.getAttribute('data-edit'); const row=rows.find(x=>String(x.id)===String(id)); if(!row) return;
+        $('d_id').value=row.id; $('d_name').value=row.name||''; $('d_upah').value=Number(row.upah_default_rm||0).toFixed(2);
+        $('d_active').checked=!!row.is_active; $('d_img1').value=row.img1||''; $('d_img2').value=row.img2||''; $('d_img3').value=row.img3||''; $('d_cat').value=row.cat_code||'';
+        $('designMsg').textContent='Mode edit ('+row.id+')';
+      });
+    });
+    fillDesignOptions(rows.filter(r=>r.is_active));
+  }catch(e){ console.error(e); $('designTable').innerHTML=`<tr><td colspan="5" class="text-danger">Ralat memuatkan design.</td></tr>`; fillDesignOptions([]); }
+}
+async function saveDesign(){
+  const id=$('d_id').value||null, name=$('d_name').value.trim(), upah=Number($('d_upah').value||0),
+        active=$('d_active').checked, img1=$('d_img1')?.value?.trim()||null, img2=$('d_img2')?.value?.trim()||null, img3=$('d_img3')?.value?.trim()||null, cat=$('d_cat')?.value||null;
+  if(!name){ alert('Nama design diperlukan.'); return; }
+  try{
+    const {error}=await sb.rpc('j916_admin_products_upsert_v1',{p_id:id?p_id=id:null,p_name:name,p_upah_default_rm:upah,p_is_active:active,p_img1:img1,p_img2:img2,p_img3:img3,p_cat_code:cat});
+    if(error) throw error;
+  }catch(e){
+    const {error}=await sb.rpc('j916_admin_products_upsert_v1',{p_id:id||null,p_name:name,p_upah_default_rm:upah,p_is_active:active,p_img1:img1,p_img2:img2,p_img3:img3,p_cat_code:cat});
+    if(error){ $('designMsg').textContent='Ralat: '+(e?.message||error?.message||e); return; }
+  }
+  $('designMsg').textContent='Disimpan.'; resetDesignForm(); await loadDesigns();await loadItems();
+refreshLiveBaseUpah();
+}
+function resetDesignForm(){ $('d_id').value=''; $('d_name').value=''; $('d_upah').value=''; $('d_active').checked=true; $('d_img1').value=''; $('d_img2').value=''; $('d_img3').value=''; $('d_cat').value=''; $('designMsg').textContent=''; }
+
+async function loadYtIdForAdmin(){
+  try{
+    const { data, error } = await sb
+      .from("live_config")
+      .select("youtube_video_id")
+      .eq("id",1)
+      .maybeSingle();
+    if (!error && data && data.youtube_video_id){
+      document.getElementById("ytVideoIdInput").value = data.youtube_video_id;
+    }
+  }catch(e){
+    console.warn("loadYtIdForAdmin error", e);
+  }
+}
+
+async function saveYtId(){
+  const input = document.getElementById("ytVideoIdInput");
+  const videoId = (input.value || "").trim();
+  if (!videoId){
+    alert("Sila masukkan video ID YouTube.");
+    return;
+  }
+
+  try{
+    const { error } = await sb
+      .from("live_config")
+      .upsert({ id: 1, youtube_video_id: videoId });
+    if (error) throw error;
+    alert("YouTube Live ID berjaya disimpan.");
+  }catch(e){
+    console.warn("saveYtId error", e);
+    alert("Gagal simpan ID, cuba lagi.");
+  }
+}
+
+
+
+/* ===== LIVE (UI SAHAJA – belum SQL override) ===== */
+let _live = {}; // {id, code, name, weight_g, harga916, upah, base_upah, confirmed}
+
+// ✅ PILIH 3 ITEM LIVE (multi select)
+const _liveSelected = new Set(); // simpan id item LIVE yang dipilih (string)
+
+function liveToggleSelectById(id){
+  id = String(id || "");
+  if (!id) return;
+
+  // had max 3
+  if (!_liveSelected.has(id) && _liveSelected.size >= 3){
+    alert("Maksimum 3 item sahaja boleh dipilih untuk Lock & Buat Order sekali.");
+    return;
+  }
+
+  if (_liveSelected.has(id)) _liveSelected.delete(id);
+  else _liveSelected.add(id);
+
+  // update UI highlight
+  document.querySelectorAll("#livePanel .live-card").forEach(card=>{
+    const cid = String(card.getAttribute("data-live-card") || "");
+    if (!cid) return;
+    card.classList.toggle("selected", _liveSelected.has(cid));
+  });
+}
+
+function liveGetSelectedOrSingle(clickedId){
+  const picked = [..._liveSelected];
+  if (picked.length) return picked;
+  return [String(clickedId || "")].filter(Boolean);
+}
+
+function liveClearSelection(){
+  _liveSelected.clear();
+  document.querySelectorAll("#livePanel .live-card.selected").forEach(el=>{
+    el.classList.remove("selected");
+  });
+}
+// Faktor Live boleh ubah (default 1.08)
+let LIVE_MULTIPLIER = Number(localStorage.getItem("liveMultiplier") || "1.08") || 1.08;
+
+function calcLivePrice(h, berat, upah){
+  // ((harga x berat) + upah) x LIVE_MULTIPLIER
+  return ((Number(h||0) * Number(berat||0)) + Number(upah||0)) * LIVE_MULTIPLIER;
+}
+
+function initLiveMultiplierInput(){
+  const inp = $('liveFactor');
+  if (!inp) return;
+
+  // set nilai awal ikut LIVE_MULTIPLIER
+  inp.value = LIVE_MULTIPLIER.toFixed(2);
+
+  const handler = () => {
+    let v = Number(inp.value || 0);
+    if (!v || v <= 0) v = 1;              // fallback selamat
+    LIVE_MULTIPLIER = v;
+    localStorage.setItem("liveMultiplier", String(LIVE_MULTIPLIER));
+    renderLivePanel();                    // refresh harga Live
+  };
+
+  inp.addEventListener('change', handler);
+  inp.addEventListener('input',  handler);
+}
+
+// Segarkan base upah bagi item LIVE bila design/upah default berubah
+async function refreshLiveBaseUpah(){
+  // tiada item live? keluar awal
+  if (!window._live || !Object.keys(_live).length) return;
+
+  // Pastikan kita ada rows terkini; jika kosong, tarik dari DB
+  let rows = window._lastItems || [];
+  if (!rows.length){
+    try{
+      const { data: allItems, error } = await sb.rpc('j916_admin_items_list_v1', { p_query: null });
+      if (!error && Array.isArray(allItems)) rows = allItems;
+    }catch(_){}
+  }
+
+  // Jika masih kosong (contoh view belum update), ambil satu-satu ikut code
+  async function fetchRowByCode(code){
+    try{
+      const { data, error } = await sb.rpc('j916_admin_items_list_v1', { p_query: code });
+      if (!error && Array.isArray(data) && data.length) return data.find(r => r.code === code) || data[0];
+    }catch(_){}
+    return null;
+  }
+
+  // Kemas kini setiap kad LIVE
+  for (const L of Object.values(_live)){
+    // cuba cari dari cache rows
+    let row = rows.find(x => String(x.id) === String(L.id));
+    // fallback: query by code (lebih reliable bila design upah baru)
+    if (!row) row = await fetchRowByCode(L.code);
+
+    if (!row) continue;
+
+    const newBase = Number(row.upah_override_rm ?? row.upah_default_rm ?? 0);
+    const oldBase = Number(L.base_upah ?? 0);
+
+    // Simpan base_upah baru
+    if (newBase !== oldBase) {
+      L.base_upah = newBase;
+
+      // Jika belum disahkan & upah Live sama seperti base lama (termasuk kes string),
+      // ikut base baru (auto ikut design)
+      const liveWasOld = Number(L.upah ?? 0) === Number(oldBase ?? 0);
+      if (!L.confirmed && liveWasOld) {
+        L.upah = newBase;
+      }
+    }
+
+    // Kemas kini DOM kad tanpa render penuh
+    const card = document.querySelector(`.live-card input[data-live-upah="${L.id}"]`)?.closest('.live-card');
+    if (card){
+      const upahInput = card.querySelector(`[data-live-upah="${L.id}"]`);
+      const priceElm  = card.querySelector('.live-price');
+      if (upahInput && !L.confirmed && Number(upahInput.value||0) === Number(oldBase)) {
+        upahInput.value = newBase.toFixed(2);
+      }
+      const liveRM = calcLivePrice(L.harga916, L.weight_g, L.upah);
+      if (priceElm) priceElm.textContent = "RM " + liveRM.toFixed(2);
+    }
+  }
+}
+
+
+// render panel Live
+function renderLivePanel(){
+  const wrap = $('livePanel'); 
+  if(!wrap) return;
+
+  const rows = Object.values(_live);
+  $('liveHint').textContent = rows.length ? `${rows.length} item` : 'Tiada item Live.';
+  if(!rows.length){ 
+    wrap.innerHTML=''; 
+    return; 
+  }
+
+  wrap.innerHTML = rows.map(r=>{
+    const liveRM = calcLivePrice(r.harga916, r.weight_g, r.upah);
+    return `
+      <div class="col-12 col-md-6 col-xl-4">
+        <div class="live-card" data-live-card="${r.id}">
+          <div class="d-flex justify-content-between">
+            <div>
+              <div class="mono">${r.code}</div>
+              <div class="small text-muted">${r.name||'-'} • ${Number(r.weight_g).toFixed(2)}g</div>
+            </div>
+            <span class="live-badge">LIVE</span>
+          </div>
+
+          <div class="row g-2 mt-2">
+            <div class="col-4">
+              <label class="form-label small m-0">Harga/g Live</label>
+              <input class="form-control form-control-sm"
+                     type="number" step="0.01" inputmode="decimal"
+                     value="${r.harga916}"
+                     data-live-h916="${r.id}">
+            </div>
+
+            <div class="col-4">
+              <label class="form-label small m-0">Upah Live (RM)</label>
+              <input class="form-control form-control-sm"
+                     type="number" step="0.01" inputmode="decimal"
+                     value="${r.upah}"
+                     data-live-upah="${r.id}">
+            </div>
+
+            <div class="col-4">
+              <label class="form-label small m-0">Penghantaran (RM)</label>
+              <input class="form-control form-control-sm"
+                     type="number" step="0.01" inputmode="decimal"
+                     value="0"
+                     data-live-ship="${r.id}">
+            </div>
+          </div>
+
+          <div class="mt-2">
+            <div class="small text-muted">Harga Live:</div>
+            <div class="live-price">RM ${liveRM.toFixed(2)}</div>
+          </div>
+
+          <div class="d-flex gap-2 mt-2">
+            <button class="btn btn-sm btn-primary" data-live-apply="${r.id}">Sah Harga Live</button>
+            <button class="btn btn-sm btn-success" data-live-order="${r.id}">Lock &amp; Buat Order</button>
+            <button class="btn btn-sm btn-outline-secondary" data-live-reset="${r.id}">Reset</button>
+            <button class="btn btn-sm btn-dark ms-auto" data-live-off="${r.id}">Live Off</button>
+          </div>
+        </div>
+      </div>
+    `;
+  }).join('');
+
+  // ✅ Klik kad untuk select (max 3)
+  wrap.querySelectorAll('.live-card').forEach(card=>{
+    card.addEventListener('click', (e)=>{
+      if (e.target.closest('input') || e.target.closest('button') || e.target.closest('a')) return;
+      const id = card.getAttribute('data-live-card');
+      liveToggleSelectById(id);
+    });
+  });
+
+  // wire inputs
+  wrap.querySelectorAll('[data-live-h916]').forEach(inp=>{
+    inp.addEventListener('input',()=>{
+      const id = inp.getAttribute('data-live-h916');
+      if(_live[id]){
+        _live[id].harga916 = Number(inp.value||0);
+        const card = inp.closest('.live-card');
+        const priceElm = card.querySelector('.live-price');
+        const liveRM = calcLivePrice(_live[id].harga916, _live[id].weight_g, _live[id].upah);
+        priceElm.textContent = "RM " + liveRM.toFixed(2);
+      }
+    });
+  });
+
+  wrap.querySelectorAll('[data-live-upah]').forEach(inp=>{
+    inp.addEventListener('input',()=>{
+      const id = inp.getAttribute('data-live-upah');
+      if(_live[id]){
+        _live[id].upah = Number(inp.value||0);
+        const card = inp.closest('.live-card');
+        const priceElm = card.querySelector('.live-price');
+        const liveRM = calcLivePrice(_live[id].harga916, _live[id].weight_g, _live[id].upah);
+        priceElm.textContent = "RM " + liveRM.toFixed(2);
+      }
+    });
+  });
+
+  wrap.querySelectorAll('[data-live-reset]').forEach(btn=>{
+    btn.addEventListener('click',()=>{
+      const id = btn.getAttribute('data-live-reset');
+      if(_live[id]){
+        _live[id].harga916 = window._price916 || 0;
+        _live[id].upah = Number(_live[id].base_upah ?? 0);
+        renderLivePanel();
+      }
+    });
+  });
+
+  // ✅ Sah harga live
+  wrap.querySelectorAll('[data-live-apply]').forEach(btn=>{
+    btn.addEventListener('click', async ()=>{
+      const id = btn.getAttribute('data-live-apply');
+      const h916 = Number(wrap.querySelector(`[data-live-h916="${id}"]`)?.value || 0);
+      const upah = Number(wrap.querySelector(`[data-live-upah="${id}"]`)?.value || 0);
+      const minutes = Math.ceil((window._LIVE_SECONDS || 300) / 60);
+
+      btn.disabled = true;
+      try{
+        await sb.rpc('j916_live_price_override_set_v1', {
+          p_item_id: id,
+          p_price_per_g: h916,
+          p_upah_rm: upah,
+          p_minutes: minutes
+        });
+        if(_live[id]){
+          _live[id].confirmed = true;
+          btn.textContent='Disahkan';
+        }
+      }catch(e){
+        alert('Ralat sah harga live: '+(e?.message||e));
+        btn.disabled = false;
+      }
+    });
+  });
+
+  // ✅ Live off
+  wrap.querySelectorAll('[data-live-off]').forEach(btn=>{
+    btn.addEventListener('click', async ()=>{
+      const id = btn.getAttribute('data-live-off');
+      try{
+        await setLiveSpotlight(id, false);
+        try{ await sb.rpc('j916_live_override_clear_v1', { p_item_id:id }); }
+        catch(_){ await sb.rpc('j916_live_price_override_set_v1',{ p_item_id:id, p_price_per_g:null, p_upah_rm:null, p_minutes:0 }); }
+
+        if(_live[id]) delete _live[id];
+        renderLivePanel();
+        loadItems();
+        alert('Live dimatikan.');
+      }catch(e){
+        alert('Ralat Live Off: '+(e?.message||e));
+      }
+    });
+  });
+
+ // ✅ Lock & Buat Order (Live → boleh 1 atau 3 item sekali)
+wrap.querySelectorAll('[data-live-order]').forEach(btn=>{
+  btn.addEventListener('click', async (ev)=>{
+    ev.preventDefault();
+    ev.stopPropagation(); // ✅ elak klik button trigger click kad (select/unselect)
+
+    const clickedId = btn.getAttribute('data-live-order');
+
+    // ✅ kalau ada selected (max 3) → guna selected
+    const picked = liveGetSelectedOrSingle(clickedId);
+const idsToOrder = [String(clickedId), ...picked.filter(x => String(x) !== String(clickedId))];
+
+    // validate exist
+    const items = idsToOrder.map(id => _live[String(id)]).filter(Boolean);
+    if (!items.length){
+      alert("Item LIVE tidak ditemui.");
+      return;
+    }
+
+    // ✅ 1) minta no telefon sekali sahaja
+    let phone = prompt(
+      'No. telefon pelanggan (cth 0123456789 / 01123456789 / 81234567):',
+      ''
+    );
+    if (phone === null) return;
+
+    phone = (phone || '').trim();
+    if (!phone){
+      alert('Sila masukkan no telefon pelanggan.');
+      return;
+    }
+
+    const digits = phone.replace(/\D/g,'');
+    if (!/^\d{8,15}$/.test(digits)){
+      alert(
+        'No telefon tak sah. Cuba lagi.\n\n' +
+        'Contoh Malaysia : 0123456789 atau 01123456789\n' +
+        'Contoh Singapore: 81234567 atau +65 8123 4567'
+      );
+      return;
+    }
+
+    const phoneLocal = digits;                    // simpan local
+    const phoneMsisdn = toMsisdnIntl(phoneLocal); // untuk WhatsApp
+
+    // ✅ 2) kira jumlah semua item + shipping
+    // ambil shipping = nilai paling tinggi dari item yang dipilih
+    let sub = 0;
+    let shipRm = 0;
+
+    for (const L of items){
+      // ambil shipping input dari card item itu (dalam panel live)
+      const shipInput = wrap.querySelector(
+        `.live-card[data-live-card="${L.id}"] [data-live-ship="${L.id}"]`
+      );
+      const s = Number(shipInput?.value || 0);
+      if (s > shipRm) shipRm = s;
+
+      sub += calcLivePrice(L.harga916, L.weight_g, L.upah);
+    }
+
+    const totalRM = sub + shipRm;
+
+    // confirm ringkas
+    const listTxt = items
+      .map(L => `${L.code} (${Number(L.weight_g||0).toFixed(2)}g)`)
+      .join(", ");
+
+    if (!confirm(
+      `Sahkan buat order LIVE?\n\n` +
+      `Item: ${listTxt}\n` +
+      `Jumlah barang: RM ${sub.toFixed(2)}\n` +
+      `Penghantaran: RM ${shipRm.toFixed(2)}\n` +
+      `Jumlah perlu bayar: RM ${totalRM.toFixed(2)}\n\n` +
+      `Telefon: ${phoneLocal}\n\nTeruskan?`
+    )) return;
+
+const checkoutGroup = (window.crypto && crypto.randomUUID)
+  ? crypto.randomUUID()
+  : (`live_${Date.now()}_${Math.random().toString(16).slice(2)}`);
+
+    btn.disabled = true;
+
+    try{
+      // ✅ 3) buat order satu-satu (RPC sekarang memang 1 item)
+      const orderCodes = [];
+
+      for (let idx = 0; idx < items.length; idx++){
+  const L = items[idx];
+
+  const itemRM = calcLivePrice(L.harga916, L.weight_g, L.upah);
+  const itemCents = Math.round(itemRM * 100);
+
+  // ✅ postage simpan pada order pertama sahaja dalam group
+  const shipThis = (idx === 0) ? Number(shipRm || 0) : 0;
+
+  const { data, error } = await sb.rpc('j916_live_manual_order_v1', {
+    p_item_id:        L.id,
+    p_code:           L.code,
+    p_weight_g:       L.weight_g,
+    p_price_per_g:    L.harga916,
+    p_upah_rm:        L.upah,
+
+    // ✅ FIX: amount_cents = harga item sahaja (TANPA shipping)
+    // shipping akan duduk dalam p_shipping_rm dan SQL kira grand_total sekali sahaja
+    p_amount_cents:   itemCents,
+
+    p_customer_phone: phoneLocal,
+    p_shipping_rm:    shipThis,
+    p_checkout_group: checkoutGroup
+  });
+  if (error) throw error;
+
+  const orderCode =
+    (typeof data === 'string') ? data :
+    data?.order_code || data?.reference || '(order)';
+
+  orderCodes.push(orderCode);
+
+  try{
+    await sb.rpc('j916_admin_item_status_v1', { p_item_id: L.id, p_status: 'PENDING' });
+  }catch(_){}
+}
+
+      // ✅ 4) WhatsApp (sekali sahaja)
+      const msisdnCust  = phoneMsisdn;
+      const msisdnAdmin = toMsisdnIntl(ADMIN_WA);
+
+      const qrLine = QR_DUITNOW_URL
+        ? `Atau boleh juga scan QR berikut: ${QR_DUITNOW_URL}\n`
+        : "";
+
+      const msgCust =
+`Assalamualaikum,
+
+Tempahan barang kemas LIVE di Emas Amir telah direkodkan.
+
+No. Order : ${orderCodes.join(", ")}
+
+Item : ${listTxt}
+
+Jumlah barang : RM ${sub.toFixed(2)}
+Penghantaran  : RM ${shipRm.toFixed(2)}
+Jumlah perlu bayar : RM ${totalRM.toFixed(2)}
+
+No Akaun untuk Pembayaran Secara Online Transfer
+👇🏻👇🏻👇🏻
+Bank      : Maybank
+Nama      : EMAS AMIR SDN. BHD.
+No Akaun  : 552031155695
+Reference : LETAK NO 4 DIGIT AKHIR WHATSAPP ANDA
+
+${qrLine}Sila buat bayaran mengikut jumlah di atas dan hantarkan resit bayaran. ✅`;
+
+      const msgAdmin =
+`[ORDER LIVE BARU]
+
+Orders: ${orderCodes.join(", ")}
+Item  : ${listTxt}
+
+Jumlah barang : RM ${sub.toFixed(2)}
+Penghantaran  : RM ${shipRm.toFixed(2)}
+Jumlah + Pos  : RM ${totalRM.toFixed(2)}
+
+Telefon pelanggan (local): ${phoneLocal}
+Telefon pelanggan (WA)   : ${phoneMsisdn}
+Status: PENDING (LIVE)`;
+
+      try{
+        if (msisdnCust)  await sendWA(msisdnCust,  msgCust);
+        if (msisdnAdmin) await sendWA(msisdnAdmin, msgAdmin);
+      }catch(e){
+        console.warn('Gagal hantar WhatsApp LIVE:', e);
+      }
+
+      await loadItems();
+
+      alert(
+        'Order LIVE berjaya dibuat.\n\n' +
+        'Orders: ' + orderCodes.join(", ") + '\n' +
+        'WhatsApp dihantar kepada pelanggan & admin.'
+      );
+
+      // ✅ clear selection
+      liveClearSelection();
+
+    }catch(e){
+      alert('Ralat buat order Live: ' + (e?.message || e));
+    }finally{
+      btn.disabled = false;
+    }
+  });
+});
+
+}
+
+// tambah 1 item ke panel live (dipanggil bila klik "Live")
+function addLiveFromRow(r){
+  // Ambil upah mengikut keutamaan:
+  // 1) upah item override  2) upah default design dari peta  3) fallback lain
+  const baseUpah = Number(
+    r.upah_override_rm ??
+    (window._designUpahMap?.get(String(r.design_id))) ??
+    r.upah_default_rm ??
+    r.wage_default ??
+    (r.design && r.design.wage_default) ??
+    0
+  );
+
+  _live[r.id] = {
+    id: r.id,
+    code: r.code,
+    name: r.name,
+    weight_g: r.weight_g,
+    harga916: window._price916 || 0,
+    upah: baseUpah,      // auto isi Upah Live mengikut default/override
+    base_upah: baseUpah, // untuk Reset & auto-sync
+    confirmed: false
+  };
+
+  renderLivePanel();
+}
+
+
+// ===== Seed panel LIVE dari DB (supaya tak hilang lepas F5) =====
+async function seedLivePanelFromDB(){
+  try{
+    // 1) Ambil item_id yang masih LIVE (expires_at > now())
+    const { data: liveIds, error } = await sb
+      .from('j916_live_now_v1')        // view: item_id yang aktif
+      .select('item_id');
+
+    if(error) throw error;
+
+    const ids = (liveIds||[]).map(x=>x.item_id);
+    _live = {};                       // reset UI map
+
+    if(!ids.length){
+      renderLivePanel();
+      return;
+    }
+
+    // 2) Dapatkan butiran item untuk papar di panel
+    let items = window._lastItems || [];
+    // Jika cache kosong, fallback ambil semua & tapis (ringkas, tak sentuh SQL)
+    if(!items.length){
+      const { data: allItems, error: e2 } = await sb.rpc('j916_admin_items_list_v1',{ p_query: null });
+      if(e2) throw e2;
+      items = Array.isArray(allItems)?allItems:[];
+    }
+
+    // 3) Isi _live berdasarkan ids yang aktif
+    ids.forEach(id=>{
+      const r = items.find(x=>String(x.id)===String(id));
+      if(r){
+        const baseUpah = Number(
+  r.wage_default ?? r.design?.wage_default ?? r.upah_default_rm ?? 0
+);
+_live[r.id] = {
+  id: r.id,
+  code: r.code,
+  name: r.name,
+  weight_g: r.weight_g,
+  harga916: window._price916 || 0,
+  upah: baseUpah,      // ✅ ikut default/override design
+  base_upah: baseUpah, // ✅ untuk reset & auto sync
+  confirmed: false
+};
+      }
+    });
+
+    renderLivePanel();
+  }catch(e){
+    console.error('[seedLivePanelFromDB] gagal:', e);
+    // tak ganggu page – cuma biar panel kosong
+  }
+}
+
+
+/* Items */
+function resetItemForm(){
+  $('i_id').value      = '';
+  $('i_code').value    = '';
+  $('i_rfid').value    = '';   // 🆕 kosongkan RFID sekali
+  $('i_weight').value  = '';
+  $('i_length').value  = '';
+  $('i_width').value   = '';
+  $('i_upah').value    = '';
+  $('i_status').value  = 'AVAILABLE';
+  $('i_active').value  = 'true';
+  $('itemMsg').textContent = '';
+}
+async function loadItems(){
+  const q = ($('q').value||'').trim();
+
+  // nota: kita ada lajur baharu (checkbox), jadi header jadual anda dah ditukar di No.2
+  $('itemsTable').innerHTML = `<tr><td colspan="7" class="text-muted">Memuatkan…</td></tr>`;
+
+  try{
+    const { data, error } = await sb.rpc('j916_admin_items_list_v1', { p_query: q||null });
+    if (error) throw error;
+
+    const rows = Array.isArray(data) ? data : [];
+    window._itemsByQuery = rows;       // ✅ simpan utk export CSV (ikut carian q)
+    window._lastItems = rows;          // cache untuk LIVE panel
+    refreshLiveBaseUpah();
+
+    // ⬇️ tapis ikut status yang dipilih
+    const viewRows = applyStatusFilter(rows);
+
+    if (!viewRows.length){
+      $('itemsTable').innerHTML = `<tr><td colspan="7" class="text-muted">Tiada stok ditemui.</td></tr>`;
+      return;
+    }
+
+    // ⬇️ bina baris termasuk checkbox
+    $('itemsTable').innerHTML = viewRows.map(r=>`
+      <tr data-rowid="${r.id}">
+        <td>
+          <input type="checkbox" class="rowChk" data-chk-id="${r.id}" ${_selectedIds.has(String(r.id))?'checked':''}>
+        </td>
+        <td><span class="mono">${r.code}</span></td>
+        <td class="mono small">${r.rfid_epc || '—'}</td> <!-- 🆕 RFID -->
+        <td>${r.name||'-'}</td>
+        <td>${Number(r.weight_g).toFixed(2)}g</td>
+        <td>${Number(r.length_cm).toFixed(1)}×${Number(r.width_cm||0).toFixed(1)}cm</td>
+        <td><span class="status-pill status-${r.status}">${r.status}</span></td>
+        <td class="right">
+          <div class="btn-group btn-group-sm">
+            <button class="btn btn-outline-primary"  data-iedit="${r.id}" type="button">Edit</button>
+            <button class="btn btn-outline-secondary" data-istat="AVAILABLE" data-id="${r.id}" type="button">Avail</button>
+            <button class="btn btn-outline-warning"  data-istat="PENDING"  data-id="${r.id}" type="button">Pending</button>
+            <button class="btn btn-outline-success"  data-istat="PAID"     data-id="${r.id}" type="button">Paid</button>
+            <button class="btn btn-outline-danger"   data-del="${r.id}"    type="button">Del</button>
+            <button class="btn btn-outline-dark" data-live="${r.id}" type="button">Live</button>
+            <button class="btn btn-dark"         data-liveoff="${r.id}" type="button">Live Off</button>
+          </div>
+        </td>
+      </tr>
+    `).join('');
+
+    // ——— wiring CHECKBOX satu-satu
+    document.querySelectorAll('.rowChk').forEach(chk=>{
+      chk.addEventListener('change', ()=>{
+        const id = String(chk.getAttribute('data-chk-id'));
+        if (chk.checked) _selectedIds.add(id);
+        else _selectedIds.delete(id);
+        updateBulkUI();
+
+        // sync dengan "pilih semua"
+        const all = [...document.querySelectorAll('.rowChk')];
+        const head = $('chkAll');
+        if (head) head.checked = all.length>0 && all.every(x=>x.checked);
+      });
+    });
+
+    // ——— wiring "Pilih Semua" di header
+    const head = $('chkAll');
+    if (head){
+      const all = [...document.querySelectorAll('.rowChk')];
+      head.checked = all.length>0 && all.every(x=>x.checked);
+      head.onchange = ()=>{
+        const boxes = document.querySelectorAll('.rowChk');
+        boxes.forEach(b=>{
+          b.checked = head.checked;
+          const id = String(b.getAttribute('data-chk-id'));
+          if (head.checked) _selectedIds.add(id); else _selectedIds.delete(id);
+        });
+        updateBulkUI();
+      };
+    }
+    updateBulkUI();
+
+    // ——— wiring butang2 sedia ada (kekal)
+   document.querySelectorAll('[data-iedit]').forEach(b=>{
+  b.addEventListener('click', () => {
+    const id  = b.getAttribute('data-iedit');
+    const r   = viewRows.find(x => String(x.id) === String(id));
+    if (!r) return;
+
+    $('i_id').value        = r.id;
+    $('i_code').value      = r.code || '';
+    $('i_rfid').value      = r.rfid || '';          // 🆕 isi RFID kalau ada
+    $('i_design_id').value = r.design_id || '';
+
+    $('i_weight').value    = r.weight_g || '';
+    $('i_length').value    = r.length_cm || '';
+    $('i_width').value     = r.width_cm || '';
+
+    $('i_upah').value      = (r.upah_override_rm ?? '');
+    $('i_status').value    = r.status || 'AVAILABLE';
+    $('i_active').value    = r.is_active ? 'true' : 'false';
+
+    $('itemMsg').textContent = 'Mode edit (' + r.id + ')';
+  });
+});
+
+    document.querySelectorAll('[data-istat]').forEach(b=>{
+      b.addEventListener('click',async ()=>{
+        const id=b.getAttribute('data-id'), st=b.getAttribute('data-istat'); b.disabled=true;
+        try{ const {error}=await sb.rpc('j916_admin_item_status_v1',{p_item_id:id,p_status:st}); if(error) throw error; await loadItems(); }
+        catch(e){ alert('Ralat set status: '+(e?.message||e)); } finally{ b.disabled=false; }
+      });
+    });
+
+    document.querySelectorAll('[data-del]').forEach(b=>{
+      b.addEventListener('click',async ()=>{
+        const id=b.getAttribute('data-del'); if(!confirm('Padam item ini?')) return; b.disabled=true;
+        try{ const {error}=await sb.rpc('j916_admin_items_delete_v1',{p_item_id:id}); if(error) throw error; await loadItems(); }
+        catch(e){ alert('Ralat padam: '+(e?.message||e)); } finally{ b.disabled=false; }
+      });
+    });
+
+    document.querySelectorAll('[data-live]').forEach(b=>{
+      b.addEventListener('click', async ()=>{
+        const id = b.getAttribute('data-live');
+        const row = viewRows.find(x=>String(x.id)===String(id));
+        try{
+          await setLiveSpotlight(id, true);
+          if(row) addLiveFromRow(row);
+          alert('Ditanda LIVE. Muncul di Halaman Utama.');
+        }catch(e){ alert('Ralat Live: '+(e?.message||e)); }
+      });
+    });
+
+    document.querySelectorAll('[data-liveoff]').forEach(b=>{
+      b.addEventListener('click', async ()=>{
+        const id = b.getAttribute('data-liveoff');
+        b.disabled = true;
+        try{
+          await setLiveSpotlight(id, false);
+          try{ await sb.rpc('j916_live_override_clear_v1', { p_item_id:id }); }
+          catch(_){ await sb.rpc('j916_live_price_override_set_v1',{ p_item_id:id, p_price_per_g:null, p_upah_rm:null, p_minutes:0 }); }
+          if (window._live && _live[id]){ delete _live[id]; renderLivePanel(); }
+          await loadItems();
+          alert('Live dimatikan & override dibersihkan.');
+        }catch(e){ alert('Ralat Live Off: ' + (e?.message || e)); }
+        finally{ b.disabled = false; }
+      });
+    });
+
+  }catch(e){
+    $('itemsTable').innerHTML = `<tr><td colspan="7" class="text-danger">Ralat memuatkan stok.</td></tr>`;
+  }
+}
+async function saveItem(){
+  const get = (id) => document.getElementById(id);
+
+  const payload = {
+    p_code: (get('i_code')?.value || '').trim(),
+    p_design_id: (get('i_design_id')?.value || '') || null,
+    p_id: (get('i_id')?.value || '') || null,
+    p_is_active: (get('i_active')?.value === 'true' || get('i_active')?.value === 'Aktif'),
+    p_length_cm: Number(get('i_length')?.value || 0),
+    p_status: get('i_status')?.value || 'AVAILABLE',
+    p_upah_override_rm: (get('i_upah')?.value === '' ? null : Number(get('i_upah')?.value || 0)),
+    p_weight_g: Number(get('i_weight')?.value || 0),
+    p_width_cm: Number(get('i_width')?.value || 0),
+
+    // 🆕 HANTAR RFID KE SQL (j916_admin_items_upsert_v1)
+    p_rfid: ((get('i_rfid')?.value || '').trim() || null)
+  };
+  if(!payload.p_code){ alert('Kod unik diperlukan.'); return; }
+  if(!payload.p_design_id){ alert('Pilih design.'); return; }
+  if(payload.p_weight_g<=0){ alert('Berat tidak sah.'); return; }
+
+  const msg=$('itemMsg');
+  try{
+    msg.textContent='Menyimpan…';
+    const {error}=await sb.rpc('j916_admin_items_upsert_v1',payload);
+    if(error) throw error;
+
+    msg.textContent='Disimpan.';
+
+   
+
+    // Kumpul data sebelum reset & masukkan ke Senarai Tambah (sesi ini)
+    const newCode   = ($('i_code')?.value || '').trim();
+    const newWeight = Number($('i_weight')?.value || 0);
+    if(newCode){
+      _sessAdded.push({ code:newCode, weight_g:newWeight, ts:Date.now() });
+      renderSessAdded();
+    }
+
+    const goBtn = $('btnGoList');
+    if(goBtn){
+      goBtn.onclick = ()=>{
+        document.querySelector('[data-bs-target="#tabStockList"]')?.click();
+        if(_sessAdded.length === 1){
+          $('q').value = _sessAdded[0].code;
+          loadItems().then(()=>{
+            const hit = document.querySelector('tbody#itemsTable tr');
+            if(hit){
+              hit.classList.add('scan-hit');
+              hit.scrollIntoView({ block: 'center' });
+              setTimeout(()=>hit.classList.remove('scan-hit'), 1400);
+            }
+          });
+        }else{
+          $('q').value = '';
+          loadItems();
+        }
+      };
+    }
+
+    // Reset borang selepas simpan
+    resetItemForm();
+  }catch(e){
+    msg.textContent='';
+    alert('Ralat: '+(e?.message||e));
+  }
+}
+
+/* ===== Session list (Senarai Tambah) ===== */
+let _sessAdded = [];  // [{code, weight_g, ts}]
+
+// render table sebelah kanan
+function renderSessAdded(){
+  const body = $('sessList');
+  if (!body) return;
+
+  if (!_sessAdded.length){
+    body.innerHTML = `<tr><td colspan="3" class="text-muted">Belum ada item ditambah.</td></tr>`;
+  } else {
+    body.innerHTML = _sessAdded.map((r, idx) => `
+      <tr>
+        <td class="mono">${r.code}</td>
+        <td class="right">${Number(r.weight_g || 0).toFixed(2)}g</td>
+        <td class="right">
+          <button class="btn btn-sm btn-outline-danger" data-sess-del="${idx}" type="button">Buang</button>
+        </td>
+      </tr>
+    `).join('');
+
+    // wire buang satu baris
+    document.querySelectorAll('[data-sess-del]').forEach(b => {
+      b.addEventListener('click', () => {
+        const i = Number(b.getAttribute('data-sess-del'));
+        _sessAdded.splice(i, 1);
+        renderSessAdded();
+      });
+    });
+  }
+
+  // update butang pindah
+  const go = $('btnGoList');
+  if (go){
+    if (_sessAdded.length){
+      go.style.display = '';
+      go.textContent = `Pindah ke Senarai Stok (${_sessAdded.length})`;
+    } else {
+      go.style.display = 'none';
+    }
+  }
+
+  // enable/disable butang print
+  const printBtn = $('btnPrintAllSess');
+  if (printBtn){
+    printBtn.disabled = !_sessAdded.length;
+  }
+}
+
+// fungsi untuk buka page print dengan semua kod dalam senarai
+function printSessTags(){
+  if (!_sessAdded.length){
+    alert("Tiada item dalam Senarai Tambah.");
+    return;
+  }
+
+  const codes = _sessAdded
+    .map(r => (r.code || "").trim())
+    .filter(Boolean);
+
+  if (!codes.length){
+    alert("Tiada kod sah untuk dicetak.");
+    return;
+  }
+
+  // ikut URL page print tu — screenshot tunjuk /print-tag-j916
+  const url = `print-tag-j916?codes=${encodeURIComponent(codes.join(","))}`;
+  window.open(url, "_blank", "width=500,height=400");
+}
+
+// kosongkan senarai (butang "Kosongkan")
+$('btnSessClear')?.addEventListener('click', () => {
+  if (!_sessAdded.length) return;
+  if (confirm('Kosongkan senarai tambah sesi ini?')){
+    _sessAdded = [];
+    renderSessAdded();
+  }
+});
+
+// butang "Print Tag (Semua dalam Senarai)"
+$('btnPrintAllSess')?.addEventListener('click', printSessTags);
+
+// mula-mula render kosong
+renderSessAdded();
+
+/* CSV */
+let _csvRows=[];
+
+// Parser CSV robust
+function parseCSVLine(line){
+  const out = []; let cur = ''; let inQ = false;
+  for (let i = 0; i < line.length; i++){
+    const ch = line[i];
+    if (ch === '"'){
+      if (inQ && line[i+1] === '"'){ cur += '"'; i++; }
+      else inQ = !inQ;
+    } else if (ch === ',' && !inQ){
+      out.push(cur.trim()); cur = '';
+    } else { cur += ch; }
+  }
+  out.push(cur.trim()); return out;
+}
+function validateCSVRows(rows){
+  const missing = rows.filter(r => !r.code || !r.name || !Number(r.weight_g));
+  if(missing.length){ alert(`Ada ${missing.length} baris tidak lengkap (code / name / weight_g). Sila semak.`); return false; }
+  return true;
+}
+function previewCSV(rows, head){
+  $('csvHead').innerHTML=`<tr>${head.map(h=>`<th>${h}</th>`).join('')}</tr>`;
+  $('csvBody').innerHTML=rows.slice(0,200).map(r=>`
+    <tr>
+      <td class="mono">${r.code}</td><td>${r.name}</td>
+      <td>${r.weight_g}</td><td>${r.length_cm}</td><td>${r.width_cm}</td>
+      <td>${r.upah_rm??''}</td>
+      <td class="small">${r.img1??''}</td><td class="small">${r.img2??''}</td><td class="small">${r.img3??''}</td>
+      <td>${r.active}</td><td>${r.status}</td>
+    </tr>`).join('');
+}
+function handleParseCSV(){
+  const txt = ($('csvText').value || '').trim();
+  if (!txt){ alert('Tampal CSV dahulu.'); return; }
+  const lines  = txt.split(/\r?\n/).filter(x => x.trim().length);
+  const header = parseCSVLine(lines[0]).map(s => s.trim());
+  const need   = ['code','name','weight_g','length_cm','width_cm','upah_rm','img1','img2','img3','active','status'];
+  const miss = need.filter(k => !header.includes(k)); if (miss.length){ alert('Lajur hilang: ' + miss.join(', ')); return; }
+
+  const idx = Object.fromEntries(header.map((h,i)=>[h,i]));
+  const cell  = (row, key) => (row[idx[key]] ?? '').toString().trim();
+  const toNum = (v) => { const s=(v??'').toString().trim(); if(s==='') return 0; const n=Number(s.replace(/,/g,'')); return isNaN(n)?0:n; };
+  const toBool= (v) => { const s=(v??'').toString().trim().toLowerCase(); return (s==='true'||s==='1'||s==='yes'); };
+
+  _csvRows = lines.slice(1).map(line=>{
+    const c = parseCSVLine(line);
+    return {
+      code:cell(c,'code'), name:cell(c,'name'),
+      weight_g:toNum(cell(c,'weight_g')), length_cm:toNum(cell(c,'length_cm')), width_cm:toNum(cell(c,'width_cm')),
+      upah_rm:(cell(c,'upah_rm')===''?null:toNum(cell(c,'upah_rm'))),
+      img1:cell(c,'img1')||null, img2:cell(c,'img2')||null, img3:cell(c,'img3')||null,
+      active:toBool(cell(c,'active')),
+      status:(cell(c,'status')||'AVAILABLE').toUpperCase()
+    };
+  });
+
+  if(!validateCSVRows(_csvRows)) { _csvRows=[]; $('btnImportCSV').disabled=true; return; }
+  $('csvMsg').textContent=`Parsed ${_csvRows.length} baris.`; $('btnImportCSV').disabled=_csvRows.length===0; previewCSV(_csvRows,need);
+}
+/* Import batch (dibetulkan: hantar 'batch') */
+async function handleImportCSV(){
+  if(!_csvRows.length){ alert('Tiada data untuk import.'); return; }
+  if(!confirm('Import/kemaskini '+_csvRows.length+' item?')) return;
+  const BATCH = 250;
+  try{
+    for(let i=0;i<_csvRows.length;i+=BATCH){
+      const batch=_csvRows.slice(i,i+BATCH);
+      const {error}=await sb.rpc('j916_admin_bulk_upsert_v1',{p_rows_json: batch});
+      if(error) throw error;
+      $('csvMsg').textContent=`Import ${Math.min(i+BATCH,_csvRows.length)} / ${_csvRows.length}`;
+    }
+    $('csvMsg').textContent='Import selesai.'; $('btnImportCSV').disabled=true; await loadItems();
+  }catch(e){ $('csvMsg').textContent='Ralat import: '+(e?.message||e); }
+}
+
+/* >>> LIVE SPOTLIGHT (baru) — status item kekal <<< */
+async function setLiveSpotlight(itemId, active){
+  try{
+    const seconds = 300; // 5 minit – ubah jika mahu
+    window._LIVE_SECONDS = seconds;
+    const {error}=await sb.rpc('j916_live_spotlight_set_v1',{p_item_id:itemId,p_active:active,p_seconds:seconds});
+    if(error) throw error;
+    const msg = active ? 'Ditanda LIVE. Muncul di Halaman Utama.' : 'Live dimatikan.';
+    alert(msg);
+  }catch(e){
+    alert('Ralat Live: '+(e?.message||e));
+  }
+}
+
+
+// >>> SCAN BARCODE (baru) — versi serasi @zxing/library <<<
+let codeReader = null;
+let BSScan = null;
+
+async function startScan(){
+  try{
+    // buka modal
+    BSScan = BSScan || new bootstrap.Modal(document.getElementById('scanModal'));
+    BSScan.show();
+
+    // reader sekali sahaja
+    if(!codeReader){
+      codeReader = new ZXing.BrowserMultiFormatReader();
+    }else{
+      try{ codeReader.reset(); }catch(_){}
+    }
+
+    const videoElem = document.getElementById('scanVideo');
+
+    // Tidak perlu pilih deviceId — biar browser pilih kamera belakang bila ada
+    await codeReader.decodeFromVideoDevice(
+      undefined,          // auto-pilih kamera
+      videoElem,
+      (result, err) => {
+        if(result && result.getText){
+          const text = (result.getText() || '').trim();
+          if(text){
+            // isi ke medan carian, hentikan, reload list dan highlight
+            document.getElementById('q').value = text;
+            stopScan();
+            loadItems().then(()=>{
+              const hit = document.querySelector('tbody#itemsTable tr');
+              if(hit){
+                hit.classList.add('scan-hit');
+                hit.scrollIntoView({ block: 'center' });
+                setTimeout(()=>hit.classList.remove('scan-hit'), 1400);
+              }
+            });
+          }
+        }
+      }
+    );
+  }catch(e){
+    alert('Tak dapat akses kamera: ' + (e && e.message ? e.message : e));
+    stopScan();
+  }
+}
+
+function stopScan(){
+  try{ codeReader && codeReader.reset(); }catch(_){}
+  const m = BSScan;
+  if(m){ try{ m.hide(); }catch(_){ } }
+  const v = document.getElementById('scanVideo');
+  if(v){ try{ v.pause(); v.srcObject = null; }catch(_){} }
+}
+
+async function bulkDeleteSelected(){
+  if (_selectedIds.size===0) return;
+  const ids = [..._selectedIds];
+  if (!confirm(`Padam ${ids.length} item terpilih?`)) return;
+
+  let ok=0, fail=0;
+  for (const id of ids){
+    try{
+      const { error } = await sb.rpc('j916_admin_items_delete_v1', { p_item_id: id });
+      if (error) throw error;
+      ok++;
+    }catch(_){ fail++; }
+  }
+
+  _selectedIds.clear();
+  updateBulkUI();
+  await loadItems();
+  alert(`Selesai: berjaya ${ok} • gagal ${fail}`);
+}
+
+async function createWalkinOrder(){
+  const ids = [..._selectedIds];
+  if (!ids.length){
+    alert("Sila pilih item (checkbox) dahulu.");
+    return;
+  }
+  if (ids.length > 3){
+    alert("Maksimum 3 item untuk 1 order walk-in.");
+    return;
+  }
+
+  let phone = prompt("No telefon pelanggan (walk-in) — boleh kosong jika tak mahu:", "");
+  if (phone === null) return;
+  phone = (phone || "").trim();
+  const phoneLocal = phone ? phone.replace(/\D/g,'') : null;
+
+  const rows = (window._itemsByQuery || []).filter(r => ids.includes(String(r.id)));
+
+  if (!rows.length){
+    alert("Item terpilih tidak ditemui dalam senarai. Cuba reload.");
+    return;
+  }
+
+  const notAvail = rows.filter(r => String(r.status) !== "AVAILABLE");
+  if (notAvail.length){
+    alert("Ada item bukan AVAILABLE. Sila pilih item AVAILABLE sahaja untuk walk-in.");
+    return;
+  }
+
+  const listTxt = rows.map(r => `${r.code} (${Number(r.weight_g||0).toFixed(2)}g)`).join(", ");
+  if (!confirm(`Buat order WALK-IN (PENDING) untuk:\n\n${listTxt}\n\nTeruskan?`)) return;
+
+  const btn = $('btnWalkinOrder');
+  if (btn) btn.disabled = true;
+
+  try{
+    const checkoutGroup = (window.crypto && crypto.randomUUID)
+      ? crypto.randomUUID()
+      : (`walkin_${Date.now()}_${Math.random().toString(16).slice(2)}`);
+
+    const orderCodes = [];
+
+    for (let idx=0; idx<rows.length; idx++){
+      const r = rows[idx];
+
+      // ✅ Elak "is not defined"
+      const harga916 = Number(window._price916 || 0);
+      const upah = Number(r.upah_override_rm ?? r.upah_default_rm ?? 0);
+
+      // ✅ WAJIB ambil {data,error}
+      const { data, error } = await sb.rpc('j916_walkin_create_pending_v1', {
+        p_item_id: r.id,
+        p_code: r.code,
+        p_weight_g: r.weight_g,
+        p_price_per_g: harga916,
+        p_upah_rm: upah,
+        p_customer_phone: phoneLocal,
+        p_checkout_group: checkoutGroup,
+        p_order_mode: 'WALKIN'
+      });
+      if (error) throw error;
+
+      const orderCode =
+        (typeof data === 'string') ? data :
+        data?.order_code || data?.reference || '(order)';
+
+      orderCodes.push(orderCode);
+
+      // ✅ lock item status supaya tak terjual online
+      try{
+        await sb.rpc('j916_admin_item_status_v1', { p_item_id: r.id, p_status: 'PENDING' });
+      }catch(_){}
+    }
+
+    _selectedIds.clear();
+    updateBulkUI();
+    await loadItems();
+
+    alert(
+      "Order WALK-IN berjaya dibuat (PENDING).\n\n" +
+      "Orders: " + orderCodes.join(", ") + "\n\n" +
+      "Seterusnya: pergi Admin-J916 → cari order → Split Walk-In dulu → baru bayar manual."
+    );
+
+  }catch(e){
+    alert("Ralat buat order Walk-In: " + (e?.message || e));
+  }finally{
+    if (btn) btn.disabled = false;
+  }
+}
+/* =========================================================
+ * WIRE (SEMUA BUTANG & INPUT)
+ * ======================================================= */
+
+/* ——— Harga 916 ——— */
+$('btnSavePrice916')?.addEventListener('click', savePrice916);
+
+/* ——— Design ——— */
+$('btnDesignSave')?.addEventListener('click', saveDesign);
+$('btnDesignReset')?.addEventListener('click', resetDesignForm);
+$('btnReloadDesign')?.addEventListener('click', loadDesigns);
+
+/* ——— Item Stok ——— */
+$('btnItemSave')?.addEventListener('click', saveItem);
+$('btnItemReset')?.addEventListener('click', resetItemForm);
+$('btnReloadItems')?.addEventListener('click', loadItems);
+$('btnExportAvailCsv')?.addEventListener('click', () => exportStockByStatus('AVAILABLE'));
+$('btnExportPendingCsv')?.addEventListener('click', () => exportStockByStatus('PENDING'));
+
+/* carian stok (debounce) */
+$('q')?.addEventListener('input', () => {
+  clearTimeout(window._qdeb);
+  window._qdeb = setTimeout(loadItems, 300);
+});
+
+/* ——— CSV ——— */
+$('btnParseCSV')?.addEventListener('click', handleParseCSV);
+$('btnImportCSV')?.addEventListener('click', handleImportCSV);
+
+/* ——— Print tag sesi ——— */
+$('btnPrintAllSess')?.addEventListener('click', printSessTags);
+
+/* =========================================================
+ * SCAN BARCODE
+ * ======================================================= */
+$('btnScan')?.addEventListener('click', startScan);
+$('btnScanStop')?.addEventListener('click', stopScan);
+
+/* =========================================================
+ * AUDIT RFID
+ * ======================================================= */
+$('btnRfidAudit')?.addEventListener('click', () => {
+  const sel = document.getElementById('rfidCat');
+  const cat = (sel && sel.value) ? sel.value : '';
+
+  if (!cat){
+    alert('Sila pilih kategori (tray) untuk audit RFID.');
+    return;
+  }
+
+  // dev (localhost)
+  window.location.href = `admin-rfid-j916?cat=${encodeURIComponent(cat)}`;
+  // production nanti:
+  // window.location.href = `admin-rfid-j916.html?cat=${encodeURIComponent(cat)}`;
+});
+
+
+$('btnWalkinOrder')?.addEventListener('click', createWalkinOrder);
+$('btnWalkinClear')?.addEventListener('click', ()=>{
+  _selectedIds.clear();
+  updateBulkUI();
+  // untick semua checkbox dalam table
+  document.querySelectorAll('.rowChk').forEach(c=>c.checked=false);
+  const head = $('chkAll');
+  if (head) head.checked = false;
+});
+/* =========================================================
+ * BULK DELETE
+ * ======================================================= */
+$('btnBulkDelete')?.addEventListener('click', bulkDeleteSelected);
+
+/* =========================================================
+ * FILTER STATUS STOK (Semua / Avail / Pending / Paid)
+ * ======================================================= */
+document.querySelectorAll('[data-fstatus]').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document
+      .querySelectorAll('[data-fstatus]')
+      .forEach(b => b.classList.remove('active'));
+
+    btn.classList.add('active');
+    _statusFilter = btn.getAttribute('data-fstatus') || 'ALL';
+    loadItems();
+  });
+});
+
+/* =========================================================
+ * 🆕 SPLIT / POTONG (STOK LEBIHAN)
+ * ======================================================= */
+
+/* status split: IN_STOCK | OUT_LEBUR | OUT_SUPPLIER */
+window._splitStatus = window._splitStatus || 'IN_STOCK';
+
+/* ===== util ===== */
+function splitStatusLabel(s){
+  const x = String(s || '').toUpperCase();
+  if (x === 'OUT_LEBUR') return 'Lebur';
+  if (x === 'OUT_SUPPLIER') return 'Jual Supplier';
+  return 'Dalam Stok';
+}
+
+function fmtDT(ts){
+  try{
+    const d = new Date(ts);
+    return d.toLocaleString('ms-MY', {
+      day:'2-digit', month:'2-digit', year:'numeric',
+      hour:'2-digit', minute:'2-digit',
+      hour12:true
+    });
+  }catch(_){
+    return String(ts || '');
+  }
+}
+
+/* ===== LOAD SPLIT TABLE ===== */
+window.loadSplit = async function loadSplit(){
+  const q  = ($('splitQ')?.value || '').trim();
+  const st = window._splitStatus || 'IN_STOCK';
+
+  const body = $('splitTable');
+  if (!body) return;
+
+  body.innerHTML = `
+    <tr>
+      <td colspan="6" class="text-muted">Memuatkan…</td>
+    </tr>
+  `;
+
+  try{
+    const { data, error } = await sb.rpc('j916_split_list_v1', {
+      p_query:  q || null,
+      p_status: st
+    });
+    if (error) throw error;
+
+    const rows = Array.isArray(data) ? data : [];
+    if (!rows.length){
+      body.innerHTML = `
+        <tr>
+          <td colspan="6" class="text-muted">Tiada rekod.</td>
+        </tr>
+      `;
+      return;
+    }
+
+    body.innerHTML = rows.map(r => {
+      const lebihan = Number(r.berat_lebihan_g || 0);
+      const status  = String(r.status || 'IN_STOCK').toUpperCase();
+
+      return `
+        <tr>
+          <td class="mono">${r.kod_asal || '-'}</td>
+          <td class="mono">${r.kod_pot  || '-'}</td>
+          <td class="text-end">${lebihan.toFixed(4)}</td>
+          <td>${fmtDT(r.tarikh)}</td>
+          <td>${splitStatusLabel(status)}</td>
+
+          <td class="text-end">
+            <div class="btn-group btn-group-sm" role="group">
+              <button
+                class="btn btn-outline-secondary ${status==='IN_STOCK'?'active':''}"
+                data-split-set="IN_STOCK"
+                data-split-id="${r.id}">
+                Dalam Stok
+              </button>
+
+              <button
+                class="btn btn-outline-warning ${status==='OUT_LEBUR'?'active':''}"
+                data-split-set="OUT_LEBUR"
+                data-split-id="${r.id}">
+                Lebur
+              </button>
+
+              <button
+                class="btn btn-outline-dark ${status==='OUT_SUPPLIER'?'active':''}"
+                data-split-set="OUT_SUPPLIER"
+                data-split-id="${r.id}">
+                Jual Supplier
+              </button>
+            </div>
+          </td>
+        </tr>
+      `;
+    }).join('');
+
+    /* ===== WIRE TINDAKAN ===== */
+    body.querySelectorAll('[data-split-set]').forEach(btn => {
+      btn.addEventListener('click', async () => {
+        const id = btn.getAttribute('data-split-id');
+        const to = btn.getAttribute('data-split-set');
+
+        const label =
+          to === 'OUT_LEBUR' ? 'Lebur' :
+          to === 'OUT_SUPPLIER' ? 'Jual Supplier' :
+          'Dalam Stok';
+
+        if (!confirm(`Tukar status lebihan kepada: ${label}?`)) return;
+
+        btn.disabled = true;
+        try{
+          const { data: ok, error } = await sb.rpc(
+            'j916_split_status_set_v1',
+            { p_id: id, p_status: to }
+          );
+          if (error) throw error;
+          if (!ok) throw new Error('Gagal kemaskini status.');
+
+          await loadSplit();
+        }catch(e){
+          alert('Ralat: ' + (e?.message || e));
+        }finally{
+          btn.disabled = false;
+        }
+      });
+    });
+
+  }catch(e){
+    console.error('[loadSplit]', e);
+    body.innerHTML = `
+      <tr>
+        <td colspan="6" class="text-danger">Ralat memuatkan data.</td>
+      </tr>
+    `;
+  }
+};
+
+/* ===== reload ===== */
+$('btnReloadSplit')?.addEventListener('click', loadSplit);
+
+/* ===== carian ===== */
+$('splitQ')?.addEventListener('input', () => {
+  clearTimeout(window._splitdeb);
+  window._splitdeb = setTimeout(loadSplit, 300);
+});
+
+/* ===== filter status ===== */
+document.querySelectorAll('[data-splitstatus]').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document
+      .querySelectorAll('[data-splitstatus]')
+      .forEach(b => b.classList.remove('active'));
+
+    btn.classList.add('active');
+    window._splitStatus =
+      btn.getAttribute('data-splitstatus') || 'IN_STOCK';
+
+    loadSplit();
+  });
+});
+
+/* ===== auto load bila tab dibuka ===== */
+document
+  .querySelector('[data-bs-target="#tabSplit"]')
+  ?.addEventListener('shown.bs.tab', loadSplit);
+// 🆕 Carian design
+let _allDesigns = [];
+
+function setupDesignSearch(){
+  const inp = document.getElementById("i_design_search");
+  const sel = document.getElementById("i_design_id");
+  if (!inp || !sel) return;
+
+  inp.addEventListener("input", () => {
+    const term = (inp.value || "").trim().toLowerCase();
+
+    const list = term
+      ? _allDesigns.filter(d =>
+          (`${d.cat_code || ""} ${d.name || ""}`)
+            .toLowerCase()
+            .includes(term)
+        )
+      : _allDesigns;
+
+    sel.innerHTML = list.length
+      ? list
+          .map(
+            r =>
+              `<option value="${r.id}">${r.cat_code ? `[${r.cat_code}] ` : ""}${
+                r.name
+              }</option>`
+          )
+          .join("")
+      : `<option value="">— Tiada design jumpa —</option>`;
+  });
+}
+/* Boot */
+(async ()=>{
+  const pill=$('authStatus'); const set=(t)=> pill&&(pill.textContent=t);
+  let ok=false;
+  if(window.adminGuard&&typeof adminGuard.require==='function'){
+    ok=await adminGuard.require({
+      onChecking:()=>set("Mengesahkan akses…"),
+      onDenied:()=>set("Akses ditolak"),
+      onAllowed:(p)=>set("Log masuk (admin) — "+p)
+    });
+  }else{
+    ok=await fallbackRequireAdmin();
+    if(ok) set("Log masuk (admin)");
+  }
+  if(!ok) return;
+
+  await loadPrice916();
+  await loadDesigns();       // 👉 load dulu (isi _allDesigns)
+  setupDesignSearch();       // 👉 lepas tu baru attach event search
+  await loadItems();
+  await seedLivePanelFromDB();
+  initLiveMultiplierInput();
+})();
+
+</script>
+</body>
+</html>

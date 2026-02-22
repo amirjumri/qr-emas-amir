@@ -1,0 +1,343 @@
+<!doctype html>
+<html lang="ms">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Sahkan Transaksi Tabung – Emas Amir</title>
+
+  <!-- Libs -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="auth.js?v=13.1"></script>
+  <script src="admin-guard.js?v=1"></script>
+
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css">
+  <style>
+    body{background:#f8f9fa}
+    .wrap{max-width:980px;margin:18px auto;padding:0 12px}
+    .pill-admin{display:inline-block;background:#e8f7ee;border:1px solid #c9ecd8;color:#157347;
+      padding:2px 10px;border-radius:999px;font-size:12px;font-weight:600}
+    .mono{font-family: ui-monospace,SFMono-Regular,Menlo,Consolas,monospace}
+    .label{color:#6c757d}
+  </style>
+</head>
+<body>
+<div class="wrap">
+  <!-- Header -->
+  <div class="d-flex justify-content-between align-items-center mb-3">
+    <div class="d-flex align-items-center gap-2">
+      <span id="adminBadge" class="pill-admin" style="display:none;">Admin ✅</span>
+      <a href="admin.html" class="text-decoration-none">← Ke Admin</a>
+    </div>
+    <div class="d-flex align-items-center gap-2">
+      <a href="index.html" class="btn btn-outline-secondary btn-sm">Halaman Utama</a>
+    </div>
+  </div>
+
+  <h3 class="mb-3">Sahkan Transaksi Tabung</h3>
+
+  <div id="alertWrap"></div>
+
+  <!-- Panel -->
+  <div id="panel" style="display:none">
+    <div class="card mb-3">
+      <div class="card-body">
+        <div class="d-flex justify-content-between">
+          <div>
+            <div class="label">Log masuk (admin)</div>
+            <div class="mono" id="adminPhone">-</div>
+          </div>
+          <div class="text-end">
+            <div class="label">Status</div>
+            <div class="fw-bold" id="txStatus">-</div>
+          </div>
+        </div>
+
+        <hr>
+
+        <div class="row g-3">
+          <div class="col-md-4">
+            <div class="label">ID Transaksi</div>
+            <div class="mono" id="txId">-</div>
+          </div>
+          <div class="col-md-4">
+            <div class="label">Jenis</div>
+            <div class="fw-bold" id="txKind">-</div>
+          </div>
+          <div class="col-md-4">
+            <div class="label">Tarikh</div>
+            <div id="txDate">-</div>
+          </div>
+
+          <div class="col-md-3">
+            <div class="label">Unit (0.1g)</div>
+            <div id="txUnits">-</div>
+          </div>
+          <div class="col-md-3">
+            <div class="label">Harga/Unit</div>
+            <div id="txPPU">-</div>
+          </div>
+          <div class="col-md-3">
+            <div class="label">Upah</div>
+            <div id="txFee">-</div>
+          </div>
+          <div class="col-md-3">
+            <div class="label">Jumlah (RM)</div>
+            <div class="fw-bold" id="txTotal">-</div>
+          </div>
+
+          <div class="col-md-6">
+            <div class="label">Nama</div>
+            <div id="txName">-</div>
+          </div>
+          <div class="col-md-6">
+            <div class="label">Telefon</div>
+            <div class="mono" id="txPhone">-</div>
+          </div>
+
+          <div class="col-12" id="bankBox" style="display:none">
+            <div class="label">Akaun bank pelanggan (jual balik)</div>
+            <div class="mono" id="txBank">-</div>
+          </div>
+
+          <div class="col-12">
+            <div class="label">Catatan</div>
+            <div id="txNotes">-</div>
+          </div>
+        </div>
+
+        <div class="mt-3 d-flex gap-2">
+          <button id="btnApprove" class="btn btn-success">Sahkan</button>
+          <button id="btnClose" class="btn btn-outline-secondary">Tutup</button>
+          <span id="actMsg" class="ms-2 text-muted"></span>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+/* ====== Config ====== */
+const SB_URL = "https://dduizetstqqjrpsezbpi.supabase.co";
+const SB_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRkdWl6ZXRzdHFxanJwc2V6YnBpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTg3MzI0ODQsImV4cCI6MjA3NDMwODQ4NH0.CrlHXrmHtKgR9qc2192U6quRb5lpFEeOSgwG0Lb8KRM";
+
+window.sb = window.sb || window.supabase.createClient(SB_URL, SB_KEY);
+const sb = window.sb;
+
+/* ====== Utils ====== */
+const $ = id => document.getElementById(id);
+const qs = new URLSearchParams(location.search);
+const Q_ID   = qs.get('id') || '';
+const Q_TYPE = (qs.get('type') || '').toUpperCase(); // BUY|SELL|WITHDRAW
+const money  = n => 'RM ' + Number(n||0).toFixed(2);
+const grams  = u => (Number(u||0)*0.1).toFixed(1);
+const fmtMY  = s => { try{ return new Date(s).toLocaleString('ms-MY',{hour12:false}); }catch{ return '-'; } };
+const normMsisdn = p => {
+  if(!p) return null;
+  let x = String(p).replace(/\D/g,'');
+  if(x.startsWith('60')) return x;
+  if(x.startsWith('0')) return '60'+x.slice(1);
+  if(/^[1-9]/.test(x)) return '6'+x;
+  return x;
+};
+function alertBox(kind, msg){
+  $('alertWrap').innerHTML = `<div class="alert alert-${kind}" role="alert">${msg}</div>`;
+}
+
+/* ====== WhatsApp helper (OnSend) ====== */
+const ONSEND_BASE  = "https://onsend.io/api/v1";
+const ONSEND_TOKEN = "76a6f98cfc6e009e5d824e47acd98b9b59a6e5177e14b072fd210276309d91f6";
+
+async function sendWA_Auto(msisdn, text){
+  const phone = normMsisdn(msisdn);
+  if(!phone || !text) return { ok:false, message:"Tiada nombor atau mesej." };
+  try{
+    if (typeof window.sendWA === 'function'){
+      const ok = await window.sendWA(phone, text);
+      return { ok, message: ok ? "sent" : "fail" };
+    }
+  }catch(_){}
+  try{
+    const r = await fetch(ONSEND_BASE + "/send", {
+      method: "POST",
+      headers: {
+        "Accept":"application/json",
+        "Content-Type":"application/json",
+        "Authorization":"Bearer " + ONSEND_TOKEN
+      },
+      body: JSON.stringify({ phone_number: phone, message: text, type: "text" })
+    });
+    const j = await r.json().catch(()=>({}));
+    return { ok: r.ok && j?.success === true, message: j?.message || r.status };
+  }catch(e){
+    return { ok:false, message:String(e) };
+  }
+}
+
+/* ====== State ====== */
+let TXN = null;
+let ADMIN_PHONE = "";
+
+/* ====== Boot (admin guard + load) ====== */
+(async ()=>{
+  if(!Q_ID || !Q_TYPE){
+    alertBox('warning','Pautan tak lengkap. Perlu ?type=&id=');
+    return;
+  }
+
+  // Guard admin
+  const pill = $('adminBadge');
+  let allowed = false;
+  if (window.adminGuard && typeof adminGuard.require==='function'){
+    allowed = await adminGuard.require({
+      onChecking: ()=> alertBox('info','Mengesahkan akses…'),
+      onDenied:   ()=> alertBox('danger','Akses ditolak. Hanya admin.'),
+      onAllowed:  (phone)=>{ 
+        ADMIN_PHONE = phone||""; 
+        $('adminPhone').textContent = ADMIN_PHONE ? ('+'+ADMIN_PHONE) : '-'; 
+        pill.style.display=''; 
+        alertBox('success','Akses disahkan.'); 
+      }
+    });
+  }else{
+    const a = (window.auth_get && window.auth_get()) || null;
+    if(a){ 
+      allowed = true; 
+      ADMIN_PHONE = normMsisdn(a.phone||a.msisdn||'')||''; 
+      $('adminPhone').textContent = ADMIN_PHONE ? ('+'+ADMIN_PHONE) : '-'; 
+      pill.style.display=''; 
+    }
+  }
+  if(!allowed) return;
+
+  await loadTxn(); // tentukan panel nak tunjuk atau sorok
+})();
+
+/* ====== Load & render (guna RPC admin → tabung_txn) ====== */
+async function loadTxn(){
+  try{
+    const r = await sb.rpc('tabung_admin_get_txn', { p_id: Q_ID });
+    if (r.error || !r.data || (Array.isArray(r.data) && r.data.length === 0)) {
+      alertBox('danger','Transaksi tidak ditemui. Pastikan pautan menggunakan ID dari jadual "tabung_txn".');
+      return;
+    }
+    const row = Array.isArray(r.data) ? r.data[0] : r.data;
+
+    TXN = row;
+    const kind  = String(row.kind || Q_TYPE).toUpperCase();
+    const units = Number(row.units || 0);
+    const ppu   = Number(row.price_per_unit || 0);
+    const fee   = Number(row.fee || 0);
+    const total = (row.total != null) ? Number(row.total) : (ppu * units + fee);
+    const when  = row.created_at || null;
+
+    $('txId').textContent     = row.id || '-';
+    $('txKind').textContent   = kind;
+    $('txStatus').textContent = String(row.status || '-').toUpperCase();
+    $('txUnits').textContent  = units;
+    $('txPPU').textContent    = money(ppu);
+    $('txFee').textContent    = money(fee);
+    $('txTotal').textContent  = money(total);
+    $('txDate').textContent   = when ? fmtMY(when) : '-';
+    $('txName').textContent   = row.user_name || '-';
+    $('txPhone').textContent  = row.user_phone || '-';
+    $('txNotes').textContent  = row.notes || '-';
+
+    if (kind === 'SELL'){ 
+      $('bankBox').style.display=''; 
+      $('txBank').textContent = row.bank || row.bank_account || '-'; 
+    } else { 
+      $('bankBox').style.display='none'; 
+    }
+
+    const isPending = String(row.status || '').toUpperCase() === 'PENDING';
+    // Hanya boleh sahkan jika PENDING dan jenisnya SELL/WITHDRAW
+    $('btnApprove').disabled = !(isPending && (kind === 'SELL' || kind === 'WITHDRAW'));
+
+    // Panel hanya dipaparkan jika transaksi wujud
+    document.getElementById('panel').style.display = '';
+  }catch(e){
+    console.warn(e);
+    alertBox('danger','Ralat muat transaksi.');
+  }
+}
+
+/* ====== Actions ====== */
+$('btnClose').addEventListener('click', ()=> window.close() || (location.href='admin.html'));
+
+$('btnApprove').addEventListener('click', async ()=>{
+  if (!TXN) return;
+
+  const kind = String(TXN.kind || Q_TYPE).toUpperCase();
+  if (kind === 'BUY') { 
+    alertBox('info','Belian tidak perlu disahkan di sini.'); 
+    return; 
+  }
+
+  $('btnApprove').disabled = true; 
+  $('actMsg').textContent = 'Memproses…';
+
+  let errMsg = '';
+  async function tryCall(fn, args){
+    try{
+      const { error } = await sb.rpc(fn, args);
+      if (error) throw error;
+      return true;
+    }catch(e){
+      errMsg = e?.message || String(e);
+      return false;
+    }
+  }
+
+  // Hanya SATU fungsi: mark_paid (server akan set status yang betul utk SELL/WITHDRAW)
+  const ok = await tryCall('tabung_admin_mark_paid', {
+    p_id: TXN.id,
+    p_kind: kind,
+    p_paid_at: new Date().toISOString()
+  });
+
+  if (!ok) {
+    $('actMsg').textContent = '❌ ' + (errMsg || 'Gagal sahkan.');
+    $('btnApprove').disabled = false;
+    return;
+  }
+
+  alertBox('success','Berjaya dikemaskini.');
+  await loadTxn();
+  $('actMsg').textContent = '';
+
+  // WhatsApp (WITHDRAW & SELL sahaja)
+  try{
+    const tarikh = new Date().toLocaleString('ms-MY',{hour12:false});
+    let msg = '';
+
+    if (kind === 'WITHDRAW'){
+      msg = [
+        '✅ Admin telah mengesahkan keluar fizikal tabung anda.',
+        `Nama: ${TXN.user_name||'-'}`,
+        `Keluar: ${grams(TXN.units)} g (${TXN.units} unit)`,
+        `Upah kad: ${money(TXN.fee||0)}`,
+        `Jumlah: ${money(TXN.total||0)}`,
+        `Tarikh: ${tarikh}`,
+        'Terima kasih.'
+      ].join('\n');
+    } else if (kind === 'SELL'){
+      msg = [
+        '✅ Admin telah mengesahkan jual balik tabung anda.',
+        `Unit: ${TXN.units} (0.1g) = ${grams(TXN.units)} g`,
+        `Jumlah: ${money(TXN.total||0)}`,
+        `Tarikh: ${tarikh}`,
+        'Bayaran akan dibuat ikut maklumat akaun yang diberi.'
+      ].join('\n');
+    }
+
+    if (msg) {
+      const to = TXN.user_phone || TXN.customer_phone || '';
+      await sendWA_Auto(to, msg);
+    }
+  }catch(e){
+    console.warn('Gagal hantar WA:', e);
+  }
+});
+</script>
+</body>
+</html>

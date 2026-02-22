@@ -1,0 +1,2160 @@
+<!doctype html>
+<html lang="ms">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Barang Kemas 916 — Emas Amir</title>
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+<style>
+  body{background:#f6f7f9}
+  .container-narrow{max-width:1100px}
+
+  /* Top header (Tabung-style) */
+  .top-wrap{background:transparent}
+  .home-btn{
+    width:64px;height:64px;border-radius:18px;
+    display:flex;align-items:center;justify-content:center;
+    border:1px solid #e5e7eb;background:#fff;
+    font-size:28px;text-decoration:none;color:#111;
+  }
+  .page-title{font-weight:800;font-size:34px;letter-spacing:-.5px}
+  .page-sub{color:#6b7280;font-size:18px;margin-top:-4px}
+  .login-as{
+    border:1px solid #e5e7eb;border-radius:999px;
+    padding:.55rem .9rem;background:#eef1f4;color:#4b5563;
+    font-size:16px;
+  }
+  .btn-tab{
+    border:2px solid #9ca3af;border-radius:999px;
+    padding:.6rem 1.1rem;background:transparent;color:#4b5563;
+    font-weight:600;
+  }
+  .btn-tab:hover{background:#fff}
+
+  /* Chips kategori */
+  .chip-row{
+    display:flex;gap:10px;overflow:auto;padding-bottom:4px;
+    -webkit-overflow-scrolling:touch;
+  }
+  .chip{
+    white-space:nowrap;
+    border:1px solid #e5e7eb;border-radius:999px;
+    padding:.45rem .85rem;background:#fff;
+    color:#374151;font-weight:600;font-size:14px;
+  }
+  .chip.active{
+    background:#e7d7b6;
+    border-color:#e7d7b6;
+    color:#111;
+  }
+
+  /* Button “Tapis & Susun” */
+  .filter-btn{
+    border:1px solid #e5e7eb;border-radius:18px;
+    background:#fff;padding:.9rem 1rem;
+    font-size:22px;font-weight:700;
+    display:flex;align-items:center;gap:12px;
+  }
+
+  /* Cards grid */
+  .card-item{border:1px solid #e5e7eb;border-radius:18px;overflow:hidden;background:#fff}
+  .card-item .thumb{aspect-ratio:1/1;object-fit:cover;background:#f8f8f8;width:100%}
+  .code-badge{font-size:12px;border:1px solid #e5e7eb;border-radius:999px;padding:.15rem .5rem;background:#f3f4f6}
+  .muted{color:#777}
+  .price{font-weight:800}
+  .grid{display:grid;gap:14px;grid-template-columns:repeat(auto-fill,minmax(240px,1fr))}
+  .strike{ text-decoration: line-through; opacity:.6 }
+  .right{text-align:right}
+
+  /* Pills status (kekal) */
+  .status-pill{font-size:12px;border-radius:999px;padding:.15rem .5rem;border:1px solid #e5e7eb;background:#fafafa}
+  .status-AVAILABLE{background:#ecfdf5;border-color:#d1fae5;color:#065f46}
+  .status-PENDING{background:#fff7ed;border-color:#ffedd5;color:#9a3412}
+  .status-PAID{background:#fef2f2;border-color:#fee2e2;color:#991b1b}
+
+  /* Cart button (Senarai) */
+  .cart-btn{
+    border:1px solid #d1d5db;border-radius:16px;
+    background:#fff;padding:.7rem .9rem;
+    font-weight:800;
+  }
+  .cart-btn:hover{background:#fff}
+  .cart-badge{
+    display:inline-flex;align-items:center;justify-content:center;
+    min-width:28px;height:28px;border-radius:999px;
+    background:#111;color:#fff;font-weight:800;
+    padding:0 8px;margin-left:6px;
+  }
+
+  /* Modals (kecantikan) */
+  .modal-title{font-weight:800}
+  .menu-btn{
+    border:1px solid #e5e7eb;border-radius:14px;
+    padding:.85rem 1rem;background:#fff;
+    font-weight:700;
+  }
+  .menu-btn:hover{background:#f8fafc}
+  .menu-tip{color:#6b7280;font-size:14px}
+.offcanvas .btn{border-radius:12px}
+
+</style>
+</head>
+<body>
+<div class="container container-narrow py-3">
+
+  <!-- HEADER (ikut Tabung) -->
+  <div class="top-wrap">
+    <div class="d-flex gap-3 align-items-center mb-2">
+      <a class="home-btn" href="index.html" aria-label="Halaman Utama">🏠</a>
+      <div class="flex-grow-1">
+        <div class="d-flex align-items-center gap-2">
+          <div class="page-title">Barang Kemas 916</div>
+        </div>
+        <div class="page-sub">Cari • Senarai • Tempah</div>
+      </div>
+    </div>
+
+    <div class="login-as mb-3" id="authStatus">Memuatkan…</div>
+
+    <div class="d-flex gap-3 mb-3">
+     <button id="btnMenu" class="btn-tab" type="button"
+  data-bs-toggle="offcanvas" data-bs-target="#menuCanvas" aria-controls="menuCanvas">
+  ☰ Menu
+</button>
+      <button id="btnLogin"  class="btn-tab" type="button">Log masuk</button>
+      <button id="btnLogout" class="btn-tab" type="button" style="display:none">Log keluar</button>
+    </div>
+  </div>
+
+  <!-- Row kecil: harga semasa (optional kecil) + Senarai -->
+  <div class="d-flex justify-content-between align-items-center mb-3">
+    <div class="small text-muted">
+      916: <b id="price916">RM –</b> (auto)
+    </div>
+    <button id="btnOpenCart" class="cart-btn" type="button">
+      🧺 Senarai <span class="cart-badge"><span id="cartCount">0</span></span>
+    </button>
+  </div>
+
+  <!-- KATEGORI CHIPS -->
+  <div class="chip-row mb-3" id="catChips">
+    <button type="button" class="chip active" data-cat="">Semua</button>
+    <button type="button" class="chip" data-cat="RT">Rantai Tangan</button>
+    <button type="button" class="chip" data-cat="RL">Rantai Leher</button>
+    <button type="button" class="chip" data-cat="LK">Loket</button>
+    <button type="button" class="chip" data-cat="CC">Cincin</button>
+    <button type="button" class="chip" data-cat="SB">Subang</button>
+    <button type="button" class="chip" data-cat="RK">Rantai Kaki</button>
+    <button type="button" class="chip" data-cat="BC">Bead/Charm</button>
+  </div>
+
+  <!-- BUTANG TAPIS -->
+  <button id="btnOpenFilter" class="filter-btn w-100 mb-3" type="button">
+    <span style="font-size:24px">🔎</span>
+    <span>Tapis &amp; Susun</span>
+  </button>
+
+  <div id="payNotice"></div>
+  <div id="itemsWrap" class="grid"></div>
+
+</div>
+
+<!-- OFFCANVAS MENU (Tabung-style) -->
+<div class="offcanvas offcanvas-end" tabindex="-1" id="menuCanvas" aria-labelledby="menuCanvasLabel">
+  <div class="offcanvas-header">
+    <h5 class="offcanvas-title" id="menuCanvasLabel">Menu</h5>
+    <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Tutup"></button>
+  </div>
+  <div class="offcanvas-body">
+    <div class="d-grid gap-2">
+      <a href="index.html" class="btn btn-outline-secondary">🏠 Halaman Utama</a>
+      <a href="goldbar-coin.html" class="btn btn-outline-secondary">🪙 GoldBar/Coin Fizikal</a>
+      <a href="j916.html" class="btn btn-outline-secondary">🏠 Barang Kemas 916</a>
+      <a href="jual-emas.html" class="btn btn-outline-secondary">💰 Jual Emas</a>
+      <a href="policy.html" class="btn btn-outline-secondary">🛡️ Polisi</a>
+      <a href="account.html" class="btn btn-outline-secondary">👤 Akaun</a>
+      <hr>
+      <div class="menu-tip">Tip: Tekan “Tapis &amp; Susun” untuk buka panel penapis.</div>
+    </div>
+  </div>
+</div>
+<!-- MODAL TAPIS (semua filter asal dipindah masuk sini) -->
+<div class="modal fade" id="modalFilter" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-lg modal-dialog-scrollable modal-fullscreen-sm-down">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Tapis &amp; Susun</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+
+      <div class="modal-body">
+        <!-- Filter Bar (asal) -->
+        <div class="row g-2 align-items-end">
+          <div class="col-md-4">
+            <label class="form-label small">Kategori</label>
+            <select id="catSelect" class="form-select">
+              <option value="">— Semua —</option>
+              <option value="BC">Bead/Charm (BC)</option>
+              <option value="CC">Cincin (CC)</option>
+              <option value="LK">Loket (LK)</option>
+              <option value="RK">Rantai Kaki (RK)</option>
+              <option value="RL">Rantai Leher (RL)</option>
+              <option value="RT">Rantai Tangan (RT)</option>
+              <option value="SB">Subang (SB)</option>
+            </select>
+          </div>
+          <div class="col-md-8">
+            <label class="form-label small">Cari (kod / nama)</label>
+            <input id="qSearch" class="form-control" placeholder="cth rt9823 / Gila2">
+          </div>
+
+          <div class="col-md-6">
+            <label class="form-label small mt-2">Bajet (RM)</label>
+            <div class="input-group">
+              <input id="minPrice" type="number" step="0.01" class="form-control" placeholder="min">
+              <span class="input-group-text">→</span>
+              <input id="maxPrice" type="number" step="0.01" class="form-control" placeholder="max">
+            </div>
+          </div>
+
+          <div class="col-md-6">
+            <label class="form-label small mt-2">Berat (g)</label>
+            <div class="input-group">
+              <input id="minWeight" type="number" step="0.01" class="form-control" placeholder="min">
+              <span class="input-group-text">→</span>
+              <input id="maxWeight" type="number" step="0.01" class="form-control" placeholder="max">
+            </div>
+          </div>
+
+          <div class="col-md-6">
+            <label class="form-label small mt-2">Panjang (cm)</label>
+            <div class="input-group">
+              <input id="minLen" type="number" step="0.1" class="form-control" placeholder="min">
+              <span class="input-group-text">→</span>
+              <input id="maxLen" type="number" step="0.1" class="form-control" placeholder="max">
+            </div>
+          </div>
+
+          <div class="col-md-6">
+            <label class="form-label small mt-2">Susun ikut</label>
+            <select id="sortBy" class="form-select">
+              <option value="price_asc">Harga (Murah → Mahal)</option>
+              <option value="price_desc">Harga (Mahal → Murah)</option>
+              <option value="newest">Terbaru</option>
+              <option value="wt_asc">Berat (Ringan → Berat)</option>
+              <option value="wt_desc">Berat (Berat → Ringan)</option>
+            </select>
+          </div>
+
+          <div class="col-12">
+            <button id="btnResetFilter" class="btn btn-outline-secondary w-100 mt-2" type="button">Reset Penapis</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="modal-footer d-flex justify-content-between">
+        <div class="small text-muted">Penapis disimpan automatik.</div>
+        <button class="btn btn-primary" type="button" data-bs-dismiss="modal">Siap</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL PILIHAN BARANG -->
+<div class="modal fade" id="modalDesign" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-lg modal-dialog-scrollable modal-fullscreen-sm-down">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 id="mdTitle" class="modal-title">Pilihan Barang</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body">
+        <div id="mdCarousel" class="mb-3"></div>
+        <div class="table-responsive">
+          <table class="table table-sm align-middle">
+            <thead class="table-light">
+              <tr>
+                <th style="width:36px"><input type="checkbox" id="mdCheckAll"></th>
+                <th>Kod</th>
+                <th class="text-end">Berat</th>
+                <th>Ukuran</th>
+                <th>Status</th>
+                <th class="text-end">Harga</th>
+              </tr>
+            </thead>
+            <tbody id="mdBody">
+              <tr><td colspan="6" class="text-muted">Memuatkan…</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+      <div class="modal-footer d-flex justify-content-between">
+        <div class="small text-muted" id="mdCount">0 dipilih</div>
+        <div class="d-flex gap-2">
+          <button id="mdAddOnly" class="btn btn-outline-primary" type="button" disabled>Tambah</button>
+          <button id="mdAddSelected" class="btn btn-primary" type="button" disabled>Tambah &amp; Senarai</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL: Senarai + Checkout -->
+<div class="modal fade" id="modalConfirm" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-lg modal-dialog-scrollable">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Checkout Barang Kemas 916</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+
+      <div class="modal-body">
+        <div id="confirmItems" class="small text-muted mb-2"></div>
+
+        <!-- 1) Senarai item -->
+        <div class="table-responsive mb-3">
+          <table class="table align-middle">
+            <thead>
+              <tr>
+                <th>Item</th>
+                <th class="text-end">Kuantiti</th>
+                <th class="text-end">Unit</th>
+                <th class="text-end">Jumlah</th>
+                <th></th>
+              </tr>
+            </thead>
+            <tbody id="cartTableBody"></tbody>
+          </table>
+        </div>
+
+        <!-- 2) Pilihan Pos -->
+        <div class="ship-box mb-3">
+          <div class="fw-semibold mb-2">Pilihan Pos</div>
+          <div class="d-flex flex-wrap gap-3">
+            <div class="form-check">
+              <input class="form-check-input" type="radio" name="shipOpt" id="shipPU" value="PU" checked>
+              <label class="form-check-label" for="shipPU">Pick Up di Kedai — RM 0</label>
+            </div>
+            <div class="form-check">
+              <input class="form-check-input" type="radio" name="shipOpt" id="shipMY" value="MY">
+              <label class="form-check-label" for="shipMY">Semenanjung Malaysia — RM 10</label>
+            </div>
+            <div class="form-check">
+              <input class="form-check-input" type="radio" name="shipOpt" id="shipMYE" value="MYE">
+              <label class="form-check-label" for="shipMYE">Sabah/Sarawak — RM 20</label>
+            </div>
+            <div class="form-check">
+              <input class="form-check-input" type="radio" name="shipOpt" id="shipSG" value="SG">
+              <label class="form-check-label" for="shipSG">Singapore — RM 45</label>
+            </div>
+          </div>
+        </div>
+
+        <!-- 3) Kaedah Bayaran -->
+<div class="method-box mb-3">
+  <div class="fw-semibold mb-2">Kaedah Bayaran</div>
+
+  <div class="d-flex flex-wrap gap-3">
+    <div class="form-check">
+      <input class="form-check-input" type="radio" name="payMethod" value="FPX" id="payFPX" checked>
+      <label class="form-check-label" for="payFPX" id="labelPayFPX">FPX</label>
+    </div>
+
+    <div class="form-check">
+      <input class="form-check-input" type="radio" name="payMethod" value="MANUAL" id="payMANUAL">
+      <label class="form-check-label" for="payMANUAL" id="labelPayMANUAL">
+        Tunai / E-Wallet (Manual)
+      </label>
+    </div>
+
+    <div class="form-check">
+      <input class="form-check-input" type="radio" name="payMethod" value="BNPL" id="payBNPL">
+      <label class="form-check-label" for="payBNPL" id="labelPayBNPL">
+        Atome (Ansuran)
+      </label>
+    </div>
+  </div>
+
+  <div class="small text-muted mt-1">
+    Diskaun akan ditolak mengikut kaedah bayaran yang dipilih.
+  </div>
+</div>
+
+        <!-- 4) Kupon -->
+<div class="coupon-box mb-3">
+  <div class="fw-semibold mb-2">Kupon</div>
+
+  <div class="d-flex flex-column gap-2">
+    <div class="d-flex gap-2 flex-wrap align-items-start">
+      <div class="d-flex gap-2 flex-grow-1">
+        <input id="couponCode" class="form-control" placeholder="Masukkan kod kupon">
+        <button id="btnApplyCoupon" class="btn btn-outline-secondary" type="button">Guna</button>
+      </div>
+
+      <button id="btnShowMyCoupons" class="btn btn-outline-primary btn-sm" type="button">
+        Kupon boleh tebus
+      </button>
+    </div>
+
+    <div id="couponStatus" class="small text-muted"></div>
+    <div id="availableCoupons" class="small"></div>
+  </div>
+</div>
+
+        <!-- 5) Ringkasan Jumlah -->
+        <div class="mt-2">
+          <div class="price-line">
+            <span>Subtotal</span>
+            <b id="cfSubtotal">RM 0.00</b>
+          </div>
+          <div class="price-line">
+            <span>Pos</span>
+            <b id="cfShipping">RM 0.00</b>
+          </div>
+          <div class="price-line">
+            <span class="text-success">Diskaun Kaedah</span>
+            <b class="text-success" id="cfPayDisc">- RM 0.00</b>
+          </div>
+          <div class="price-line">
+            <span class="text-primary">Diskaun Kupon</span>
+            <b class="text-primary" id="cfCouponDisc">- RM 0.00</b>
+          </div>
+          <hr class="my-2">
+          <div class="d-flex justify-content-between fs-5">
+            <span>Jumlah Bayar</span>
+            <b id="cfGrand">RM 0.00</b>
+          </div>
+        </div>
+
+        <div class="alert alert-info small d-none mt-3">
+          Harga dipapar = <code>((harga916 × berat) + upah) × 1.08</code>.
+          Diskaun kaedah/kupon ditolak di sini.
+        </div>
+      </div>
+
+      <div class="modal-footer d-flex justify-content-between">
+  <div class="text-muted small" id="loginHint">Sila log masuk untuk meneruskan.</div>
+  <div class="d-flex flex-wrap gap-2">
+    <button id="btnProceedBillplz" class="btn btn-danger btn-wide" type="button">
+      Bayar FPX (Billplz)
+    </button>
+
+    <button id="btnProceedOther" class="btn btn-outline-secondary btn-wide" type="button">
+      Tunai / E-Wallet (Manual)
+    </button>
+
+    <button id="btnProceedBNPL" class="btn btn-dark btn-wide" type="button">
+      Atome (Scan QR)
+    </button>
+  </div>
+</div>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL MAKLUMAN PEMBAYARAN -->
+<div class="modal fade" id="modalPayInfo916" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Makluman Pembayaran</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Tutup"></button>
+      </div>
+      <div class="modal-body">
+        <div class="mb-2 small text-muted">
+          Jika di <b>Sejarah Lock/Order</b> status masih
+          <span class="badge bg-warning text-dark">PENDING</span> — pembayaran belum disahkan admin.
+        </div>
+        <div class="mb-2 small">
+          Jika status <span class="badge bg-success">PAID</span> — pembayaran <b>berjaya</b> ✅
+          (admin telah sahkan pembayaran diterima).
+        </div>
+        <div class="mb-2 small">
+          Jika status <span class="badge bg-danger">FAILED</span> — admin telah <b>batalkan</b> pesanan anda.
+        </div>
+
+        <div class="alert alert-info small my-3" id="payInfoGeneral916">
+          Selepas berjaya, admin akan sahkan &amp; asingkan pesanan anda.
+          Anda juga akan menerima WhatsApp pengesahan.
+        </div>
+
+        <hr class="my-2">
+
+        <div class="d-flex align-items-start gap-2 small">
+          <div class="text-muted">Kaedah dipilih:</div>
+          <div id="payInfoMethod916" class="fw-semibold">FPX</div>
+        </div>
+        <div class="small text-muted mt-1" id="payInfoCta916">
+          Klik butang di bawah untuk meneruskan pembayaran.
+        </div>
+      </div>
+      <div class="modal-footer">
+  <button class="btn btn-outline-secondary" data-bs-dismiss="modal" type="button">Kembali</button>
+
+  <button id="btnPayInfoFPX916" class="btn btn-success" type="button">
+    Teruskan ke Pembayaran FPX
+  </button>
+
+  <button id="btnPayInfoCARD916" class="btn btn-outline-secondary" type="button">
+    Teruskan ke Tunai / E-Wallet (Manual)
+  </button>
+
+  <button id="btnPayInfoBNPL916" class="btn btn-dark" type="button">
+    Teruskan ke Atome (Scan QR)
+  </button>
+</div>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL SELEPAS MANUAL BAYARAN (popup ringkas) -->
+<div class="modal fade" id="modalAfterManual916" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Teruskan Bayaran di WhatsApp</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Tutup"></button>
+      </div>
+      <div class="modal-body small">
+        WhatsApp sedang atau akan dibuka di tetingkap baharu.<br><br>
+        Sila teruskan bayaran &amp; hantar resit kepada admin di WhatsApp.
+        <br><br>
+        Halaman ini akan kembali ke <b>Halaman Utama</b> secara automatik dalam beberapa saat.
+      </div>
+      <div class="modal-footer">
+        <button id="btnManualHome916" type="button" class="btn btn-primary">
+          Pergi ke Halaman Utama Sekarang
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Libs -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+<script src="agent-ref.js?v=1"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="auth.js?v=13.1"></script>
+
+<script>
+/* ========================== Konfigurasi ========================== */
+const SB_URL = "https://dduizetstqqjrpsezbpi.supabase.co";
+const SB_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRkdWl6ZXRzdHFxanJwc2V6YnBpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTg3MzI0ODQsImV4cCI6MjA3NDMwODQ4NH0.CrlHXrmHtKgR9qc2192U6quRb5lpFEeOSgwG0Lb8KRM";
+
+// ===== ONSEND CONFIG (sama macam page login) =====
+const ONSEND_BASE  = "https://onsend.io/api/v1";
+const ONSEND_TOKEN = "4b879470cc16ca8f06c5ab9878a4578880cfd0fd7b7cfe0121499f3ab017dd04"; // token OnSend puan
+
+// ✅ URL gambar QR DuitNow (boleh tukar bila dah upload di Supabase)
+const QR_DUITNOW_URL = "https://emasamir.app/qr-maybank.html";
+const QR_ATOME_URL = "https://emasamir.app/qr-atome.html";
+
+// Tukar telefon biasa → format msisdn (contoh: 60123456789)
+const toMsisdn = p => {
+  const d = String(p || "").replace(/\D+/g, "");
+  return d.startsWith("6") ? d : "6" + d;
+};
+
+// Hantar WhatsApp via OnSend (text sahaja)
+async function sendWA(msisdn, text){
+  try{
+    const r = await fetch(ONSEND_BASE + "/send", {
+      method: "POST",
+      headers: {
+        "Accept": "application/json",
+        "Content-Type": "application/json",
+        "Authorization": "Bearer " + ONSEND_TOKEN
+      },
+      body: JSON.stringify({
+        phone_number: msisdn,   // ✅ WAJIB nama ini
+        message: text,          // ✅ mesej
+        type: "text"            // ✅ pastikan text
+      })
+    });
+    const j = await r.json().catch(()=>({}));
+    console.log("OnSend resp:", r.status, j);
+    return r.ok && (j.success === true || r.status === 200);
+  }catch(e){
+    console.warn("OnSend error:", e);
+    return false;
+  }
+}
+window.sb = window.sb || window.supabase.createClient(SB_URL, SB_KEY);
+const sb = window.sb;
+
+const EDGE_BASE       = SB_URL + "/functions/v1";
+const CREATE_BILL_URL = EDGE_BASE + "/create-bill-j916";
+const SP_SIGN_FN      = "sp-sign";
+const REDIRECT_URL    = location.origin + "/j916.html";
+
+// ❗ Tukar kepada nombor WhatsApp admin kedai (tanpa +, tanpa -)
+const ADMIN_WA        = "60168055916";
+
+const MARKUP_RATE = 0.08;
+
+// Nilai default (nanti di-override dari table payment_discounts)
+const PAYMENT_DISCOUNTS = {
+  FPX:    { type: "PERCENT", value: 7.5 },
+  MANUAL: { type: "PERCENT", value: 7.5 },   // Tunai / E-Wallet (Manual)
+  CARD_EWALLET: { type: "PERCENT", value: 4.5 },
+  BNPL:        { type: "PERCENT", value: 0 }
+};
+const COUPON_LIST = {
+  "RAYA10": { type: "PERCENT", value: 10, note: "Diskaun 10%" },
+  "LESS5":  { type: "FIXED",   value: 5,  note: "Diskaun RM5" }
+};
+
+// ================== Loyalty coupon (localStorage) ==================
+const LS_MY_COUPONS = 'emasamir_loyalty_coupons_v1';
+
+// Baca senarai kupon yang telah disimpan oleh page Point & Ganjaran
+function getMySavedCoupons(){
+  try{
+    const raw = localStorage.getItem(LS_MY_COUPONS);
+    if (!raw) return [];
+    const arr = JSON.parse(raw);
+    return Array.isArray(arr) ? arr : [];
+  }catch(_){
+    return [];
+  }
+}
+/* ========================== Util & Auth ========================== */
+const $ = id => document.getElementById(id);
+const money = n => "RM " + Number(n || 0).toFixed(2);
+/* ================== Agent Ref (rujukan agen) ================== */
+function getAgentRef(){
+  try{
+    return localStorage.getItem("emasamir_agent_ref") || null;
+  }catch(e){
+    return null;
+  }
+}
+function getQueryParams(){
+  const u = new URL(location.href);
+  const q = Object.fromEntries(u.searchParams.entries());
+  if (u.hash && u.hash.includes('?')){
+    const h = new URLSearchParams(u.hash.split('?')[1]);
+    for (const [k,v] of h.entries()){ if(!(k in q)) q[k]=v; }
+  }
+  return q;
+}
+function showNotice(html, type='success'){
+  const box = $('payNotice'); if(!box) return;
+  box.innerHTML = `<div class="alert alert-${type}">${html}</div>`;
+}
+function getAuth(){
+  const a = (window.auth_get && window.auth_get()) || null;
+  if (a && (a.name || a.phone)) return a;
+  const name  = localStorage.getItem('auth_name');
+  const phone = localStorage.getItem('auth_phone');
+  if (name || phone) return { name, phone };
+  return null;
+}
+function requireLogin(){
+  const auth = getAuth();
+  if (!auth){
+    alert("Sila log masuk dahulu untuk meneruskan.");
+    location.href = "login.html#login";
+    return null;
+  }
+  return auth;
+}
+function debounce(fn, ms){ let t; return (...a)=>{ clearTimeout(t); t=setTimeout(()=>fn(...a), ms); }; }
+
+/* ========================== Tapisan & Render ========================== */
+function applyFilters(items){
+  const f = state.filter || defaultFilter;
+  function normRange(min,max){ if(min!=null && max!=null && Number(min)>Number(max)) return [max,min]; return [min,max]; }
+  let [pMin,pMax] = normRange(f.minPrice, f.maxPrice);
+  let [wMin,wMax] = normRange(f.minWeight, f.maxWeight);
+  let [lMin,lMax] = normRange(f.minLen,   f.maxLen);
+  const q = (f.q||'').toLowerCase();
+
+  return items.filter(it=>{
+    if (f.cat && (it.cat_code||'') !== f.cat) return false;
+    const unit = calcUnit916(it.weight_g, it.upah_rm);
+    if (pMin!=null && unit <  Number(pMin)) return false;
+    if (pMax!=null && unit >  Number(pMax)) return false;
+    if (wMin!=null && it.weight_g < Number(wMin)) return false;
+    if (wMax!=null && it.weight_g > Number(wMax)) return false;
+    if (lMin!=null && it.length_cm < Number(lMin)) return false;
+    if (lMax!=null && it.length_cm > Number(lMax)) return false;
+    if (q){
+      const text = `${it.code||''} ${it.design_name||''}`.toLowerCase();
+      if (!text.includes(q)) return false;
+    }
+    return true;
+  });
+}
+function buildGroups(items){
+  const groups = {};
+  for (const it of items){
+    const key = it.design_id || it.design_name;
+    if (!groups[key]){
+      groups[key] = {
+        design_id: it.design_id,
+        design_name: it.design_name,
+        cat_code: it.cat_code || '',
+        img1: it.img1, img2: it.img2, img3: it.img3,
+        created_at: it.created_at,
+        items:[]
+      };
+    }
+    groups[key].items.push(it);
+  }
+  return groups;
+}
+function pickRepresentative(arr){
+  return arr.reduce((a,b)=> (a.weight_g <= b.weight_g ? a : b));
+}
+function renderAll(){
+  const filtered = applyFilters(state.allItems || []);
+  const groups   = buildGroups(filtered);
+  const sortBy = state.filter.sortBy || 'price_asc';
+  const keys = Object.keys(groups);
+  const rows = keys.map(k=>{
+    const g   = groups[k];
+    const rep = pickRepresentative(g.items);
+    const unit= calcUnit916(rep.weight_g, rep.upah_rm);
+    return { key:k, g, rep, unit, weight:rep.weight_g, created_at:(rep.created_at||g.created_at||'') };
+  });
+  rows.sort((a,b)=>{
+    if (sortBy==='price_asc')  return a.unit - b.unit;
+    if (sortBy==='price_desc') return b.unit - a.unit;
+    if (sortBy==='wt_asc')     return a.weight - b.weight;
+    if (sortBy==='wt_desc')    return b.weight - a.weight;
+    if (sortBy==='newest')     return (new Date(b.created_at) - new Date(a.created_at));
+    return 0;
+  });
+  const sortedGroups = {};
+  rows.forEach(r=>{ sortedGroups[r.key] = r.g; });
+
+  state.items        = filtered;
+  state.designGroups = sortedGroups;
+
+  renderDesignCards(sortedGroups);
+}
+
+/* ========================== State ========================== */
+let BSConfirm = null;
+let BSPayInfo = null;
+let BSPayManual = null;
+const state = {
+  price916: 0,
+  items: [],
+  cart: [],
+  payMethod: 'FPX',
+  coupon: null,
+  cat : ''
+};
+function calcUnit916(weight_g, upah_rm){
+  const base = (Number(state.price916) * Number(weight_g)) + Number(upah_rm || 0);
+  return base * (1 + MARKUP_RATE);
+}
+state.sortBy = 'price_asc';
+function pickRepresentative(list){
+  const avail = list.filter(x => x.status !== 'PAID');
+  const src = avail.length ? avail : list;
+  return src.reduce((a,b)=> (a.weight_g <= b.weight_g ? a : b));
+}
+
+/* ========================== Filter state (persist) ========================== */
+const FILTER_KEY = 'j916_filter_v1';
+const defaultFilter = { cat:'', q:'', minPrice:null, maxPrice:null, minWeight:null, maxWeight:null, minLen:null, maxLen:null, sortBy:'price_asc' };
+state.filter = {...defaultFilter};
+function loadSavedFilter(){ try{ const raw=localStorage.getItem(FILTER_KEY); if(!raw) return; const saved=JSON.parse(raw); state.filter={...defaultFilter,...saved}; }catch(_){} }
+function saveFilter(){ try{ localStorage.setItem(FILTER_KEY, JSON.stringify(state.filter)); }catch(_){} }
+function setControlsFromFilter(){
+  $('catSelect').value  = state.filter.cat || '';
+  $('qSearch').value    = state.filter.q || '';
+  $('minPrice').value   = state.filter.minPrice ?? '';
+  $('maxPrice').value   = state.filter.maxPrice ?? '';
+  $('minWeight').value  = state.filter.minWeight ?? '';
+  $('maxWeight').value  = state.filter.maxWeight ?? '';
+  $('minLen').value     = state.filter.minLen ?? '';
+  $('maxLen').value     = state.filter.maxLen ?? '';
+  $('sortBy').value     = state.filter.sortBy || 'price_asc';
+}
+
+/* ========================== Fetch harga916 + items ========================== */
+async function loadPrice916(){
+  try{
+    const { data, error } = await sb.rpc('price_916_current_v1');
+    if (error) throw error;
+    state.price916 = Number((Array.isArray(data)?data[0]:data)?.price_per_g || 0);
+  }catch(e){
+    console.warn('price_916_current_v1:', e);
+    state.price916 = 0;
+  }
+  $('price916').textContent = money(state.price916) + ' / g';
+}
+async function loadCategories(){
+  try{
+    const { data, error } = await sb.from('j916_categories').select('code,name').order('name');
+    if (error) throw error;
+    const sel = $('catFilter');
+    if (!sel) return;
+    sel.innerHTML = `<option value="">— Semua —</option>` +
+      (data||[]).map(r=>`<option value="${r.code}">${r.name} (${r.code})</option>`).join('');
+    sel.onchange = ()=>{
+      state.cat = sel.value || '';
+      renderDesignCards(state.designGroups);
+    };
+  }catch(_){}
+}
+function normalizeItem(r){
+  const d = r.design || r;
+  function fixUrl(url){
+    if(!url) return null;
+    if(url.startsWith('http')) return url;
+    return 'https://dduizetstqqjrpsezbpi.supabase.co/storage/v1/object' + url;
+  }
+  const rawImg1 = d.img1_url || d.img1 || r.img1_url || r.img1 || null;
+  const rawImg2 = d.img2_url || d.img2 || r.img2_url || r.img2 || null;
+  const rawImg3 = d.img3_url || d.img3 || r.img3_url || r.img3 || null;
+
+  return {
+    id: r.id, code: r.code, design_id: r.design_id,
+    design_name: d.name || r.name || '-',
+    cat_code: d.cat_code || r.cat_code || null,
+    weight_g: Number(r.weight_g || 0),
+    length_cm: Number(r.length_cm || 0),
+    width_cm: Number(r.width_cm || 0),
+    status: r.status || 'AVAILABLE',
+    upah_rm: (r.upah_override_rm ?? d.wage_default ?? 0) * 1,
+    img1: fixUrl(rawImg1), img2: fixUrl(rawImg2), img3: fixUrl(rawImg3),
+    is_active: r.is_active !== false
+  };
+}
+async function loadItems(){
+  const wrap = $('itemsWrap');
+  wrap.innerHTML = `<div class="text-muted">Memuatkan…</div>`;
+  try{
+    const pageSize = 1000;
+    let from = 0;
+    let all = [];
+
+    while (true){
+      const { data, error } = await sb
+        .from('j916_items')
+        .select(`
+          id, code, design_id, weight_g, length_cm, width_cm, status, upah_override_rm, is_active, created_at,
+          design:j916_designs ( id, name, wage_default, cat_code, img1_url, img2_url, img3_url, img1, img2, img3 )
+        `)
+        .eq('is_active', true)
+        .order('created_at', { ascending:false })
+        .range(from, from + pageSize - 1);
+
+      if (error) throw error;
+
+      all = all.concat(data || []);
+      if (!data || data.length < pageSize) break; // habis
+      from += pageSize;
+    }
+
+    const items = all.map(normalizeItem);
+
+    const groups = {};
+    for (const it of items){
+      const key = it.design_id || it.design_name;
+      if (!groups[key]){
+        groups[key] = {
+          design_id: it.design_id,
+          design_name: it.design_name,
+          cat_code: it.cat_code || '',
+          img1: it.img1, img2: it.img2, img3: it.img3,
+          created_at: it.created_at,
+          items:[]
+        };
+      }
+      groups[key].items.push(it);
+    }
+
+    state.allItems = items;
+    renderAll();
+    document.dispatchEvent(new CustomEvent('itemsReady'));
+  }catch(e){
+    console.error(e);
+    $('itemsWrap').innerHTML = `<div class="text-danger">Ralat memuatkan item.</div>`;
+  }
+}
+function renderDesignCards(groups){
+  const wrap = $('itemsWrap');
+  const keys = Object.keys(groups);
+  if (!keys.length){
+    wrap.innerHTML = '<div class="text-muted">Tiada item aktif.</div>';
+    return;
+  }
+  const rows = keys.map(key=>{
+    const g = groups[key];
+    const rep = pickRepresentative(g.items);
+    const unit = calcUnit916(rep.weight_g, rep.upah_rm);
+    return { key, g, rep, unit, weight: rep.weight_g, created_at: rep.created_at || null };
+  });
+  const s = state.sortBy || 'price_asc';
+  rows.sort((a,b)=>{
+    if (s==='price_asc')  return a.unit - b.unit;
+    if (s==='price_desc') return b.unit - a.unit;
+    if (s==='weight_asc') return a.weight - b.weight;
+    if (s==='weight_desc')return b.weight - a.weight;
+    if (s==='newest')     return (new Date(b.rep.created_at||0)) - (new Date(a.rep.created_at||0));
+    return 0;
+  });
+  wrap.innerHTML = '';
+  rows.forEach(({key,g,unit})=>{
+    const el = document.createElement('div');
+    el.className = 'card-item';
+    el.innerHTML = `
+      <img class="thumb" src="${g.img1 || g.img2 || g.img3 || ''}" alt="">
+      <div class="p-3">
+        <div class="fw-bold">${g.design_name}</div>
+        <div class="small text-muted">${g.items.filter(x => x.status === 'AVAILABLE').length} varian</div>
+        <div class="mt-2"><div class="price h5 m-0">${money(unit)}</div></div>
+        <div class="mt-3"><button class="btn btn-primary btn-sm" data-open="${key}">Lihat Pilihan</button></div>
+      </div>`;
+    el.querySelector('[data-open]').addEventListener('click', ()=>openDesignModal(key));
+    wrap.appendChild(el);
+  });
+}
+
+// ---- Helper: bina carousel untuk img1/2/3 ----
+function buildDesignCarousel(g){
+  const imgs = [g.img1, g.img2, g.img3].filter(Boolean);
+
+  if (!imgs.length){
+    return `<div class="ratio ratio-16x9 mb-3" style="background:#fafafa;border-radius:10px"></div>`;
+  }
+
+  if (imgs.length === 1){
+    return `
+      <img class="d-block w-100 mb-3"
+           style="max-height:400px;object-fit:contain;background:#fafafa;border-radius:10px"
+           src="${imgs[0]}" alt="">
+    `;
+  }
+
+  const id = 'mdCarouselInner';
+
+  return `
+    <div id="${id}" class="carousel slide mb-3" data-bs-ride="carousel">
+      <div class="carousel-inner" style="background:#fafafa;border-radius:10px;max-height:400px">
+        ${imgs.map((url, i)=>`
+          <div class="carousel-item ${i===0?'active':''}">
+            <img class="d-block w-100"
+                 style="max-height:400px;object-fit:contain"
+                 src="${url}" alt="">
+          </div>
+        `).join('')}
+      </div>
+
+      <button class="carousel-control-prev" type="button" data-bs-target="#${id}" data-bs-slide="prev">
+        <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+        <span class="visually-hidden">Sebelum</span>
+      </button>
+      <button class="carousel-control-next" type="button" data-bs-target="#${id}" data-bs-slide="next">
+        <span class="carousel-control-next-icon" aria-hidden="true"></span>
+        <span class="visually-hidden">Seterusnya</span>
+      </button>
+
+      <div class="carousel-indicators">
+        ${imgs.map((_,i)=>`
+          <button type="button" data-bs-target="#${id}" data-bs-slide-to="${i}" ${i===0?'class="active" aria-current="true"':''} aria-label="Slide ${i+1}"></button>
+        `).join('')}
+      </div>
+    </div>
+  `;
+}
+
+let BSDesign = null;
+function openDesignModal(key){
+  const g = state.designGroups[key];
+  if (!g) return;
+  $('mdTitle').textContent = g.design_name;
+  $('mdCarousel').innerHTML = buildDesignCarousel(g);
+
+ const rows = g.items
+  .filter(it => String(it.status || '').toUpperCase() === 'AVAILABLE')   // ✅ hanya AVAILABLE
+  .map(it=>{
+    const unit = calcUnit916(it.weight_g, it.upah_rm);
+    const dim  = `${Number(it.length_cm).toFixed(1)}×${Number(it.width_cm||0).toFixed(1)}cm`;
+    const alreadyInCart = state.cart.some(x => String(x.id) === String(it.id));
+
+    // AVAILABLE je, jadi tak perlu disabledByStatus
+    const isDisabled = alreadyInCart;
+    const cls = 'status-AVAILABLE';
+    const rowClass = alreadyInCart ? 'opacity-50' : '';
+
+    return `
+      <tr data-id="${it.id}" class="${rowClass}">
+        <td><input type="checkbox" class="mdPick" ${isDisabled ? 'disabled' : ''}></td>
+        <td><span class="code-badge">${it.code}</span></td>
+        <td class="text-end">${Number(it.weight_g).toFixed(2)}g</td>
+        <td>${dim}</td>
+        <td>
+          <span class="status-pill ${cls}">AVAILABLE</span>
+          ${alreadyInCart ? `<span class="ms-2 badge text-bg-light border">Dalam senarai</span>` : ''}
+        </td>
+        <td class="text-end">${money(unit)}</td>
+      </tr>`;
+  }).join('');
+
+// kalau semua habis (tiada AVAILABLE)
+$('mdBody').innerHTML = rows || `<tr><td colspan="6" class="text-muted">Tiada stok AVAILABLE untuk design ini.</td></tr>`;
+  $('mdBody').innerHTML = rows;
+  $('mdCheckAll').checked = false;
+
+  const updateCount = ()=>{
+    const n = [...document.querySelectorAll('.mdPick')].filter(x=>x.checked).length;
+    $('mdCount').textContent = `${n} dipilih`;
+    $('mdAddOnly').disabled = (n===0);
+    $('mdAddSelected').disabled = (n===0);
+  };
+  document.querySelectorAll('.mdPick').forEach(x=> x.onchange = updateCount);
+  $('mdCheckAll').onchange = ()=>{
+    const v = $('mdCheckAll').checked;
+    document.querySelectorAll('.mdPick:not(:disabled)').forEach(x=> x.checked = v);
+    updateCount();
+  };
+  const collectSelected = ()=>{
+    const ids = [...document.querySelectorAll('.mdPick:checked')]
+      .map(x => x.closest('tr').dataset.id);
+    return state.items.filter(i => ids.includes(String(i.id)));
+  };
+  $('mdAddOnly').onclick = ()=>{
+    const sel = collectSelected(); if (!sel.length) return;
+    sel.forEach(it => addToCart(it, 1));
+    document.querySelectorAll('.mdPick:checked').forEach(chk=>{
+      chk.checked = false;
+      chk.disabled = true;
+      const tr = chk.closest('tr');
+      if (tr){
+        tr.classList.add('opacity-50');
+        const statusCell = tr.children[4];
+        if (statusCell && !statusCell.querySelector('.badge')){
+          statusCell.insertAdjacentHTML('beforeend',
+            `<span class="ms-2 badge text-bg-light border">Dalam senarai</span>`);
+        }
+      }
+    });
+    $('mdCheckAll').checked = false;
+    updateCartCount(); updateCount();
+  };
+  $('mdAddSelected').onclick = ()=>{
+    const sel = collectSelected(); if (!sel.length) return;
+    sel.forEach(it => addToCart(it, 1));
+    updateCartCount();
+    BSDesign?.hide();
+    openConfirm();
+  };
+
+  BSDesign = BSDesign || new bootstrap.Modal($('modalDesign'));
+  BSDesign.show();
+  $('mdCount').textContent = '0 dipilih';
+  $('mdAddOnly').disabled = true;
+  $('mdAddSelected').disabled = true;
+}
+
+
+/* ========================== Cart + Confirm ========================== */
+function addToCart(it, qty, unitOverride){
+  const idx  = state.cart.findIndex(x => x.id === it.id);
+  const unit = (unitOverride != null)
+    ? Number(unitOverride)
+    : calcUnit916(it.weight_g, it.upah_rm);
+  if (idx >= 0) return;
+  state.cart.push({
+    id: it.id, code: it.code, name: it.design_name,
+    weight_g: it.weight_g, length_cm: it.length_cm, width_cm: it.width_cm,
+    upah_rm: it.upah_rm, img1: it.img1, unit_price: unit, qty: qty || 1
+  });
+  updateCartCount();
+}
+function updateCartCount(){
+  $('cartCount').textContent = state.cart.reduce((s,i)=> s+i.qty, 0);
+}
+function getShippingCost(){
+  const v = document.querySelector('input[name="shipOpt"]:checked')?.value || 'PU';
+  if (v==='PU')  return 0;
+  if (v==='MY')  return 10;
+  if (v==='MYE') return 20;
+  if (v==='SG')  return 45;
+  return 0;
+}
+const PAYMENT_DISCOUNTS_REF = PAYMENT_DISCOUNTS;
+function payDiscAmt(method, base){
+  const r = PAYMENT_DISCOUNTS_REF[method] || {type:'PERCENT', value:0};
+  if (r.type==='PERCENT') return base*(Number(r.value)/100);
+  if (r.type==='FIXED')   return Math.min(base, Number(r.value));
+  return 0;
+}
+function couponAmt(coupon, base){
+  if(!coupon) return 0;
+  if (coupon.type==='PERCENT') return base*(Number(coupon.value)/100);
+  if (coupon.type==='FIXED')   return Math.min(base, Number(coupon.value));
+  return 0;
+}
+
+// ================== Semak kupon dari table `coupons` ==================
+async function fetchCouponFromDB(code, payMethod){
+  const nowIso = new Date().toISOString();
+
+  // map method untuk padan dengan `applicable_methods`
+  const methodKey = (payMethod === 'FPX')      ? 'fpx'
+                   : (payMethod === 'MANUAL')  ? 'manual'
+                   : (payMethod === 'CARD_EWALLET') ? 'card_wallet'
+                   : (payMethod === 'BNPL')    ? 'bnpl'
+                   : null;
+
+  const { data, error } = await sb
+    .from('coupons')
+    .select('code,title,discount_type,discount_value,min_order,start_at,end_at,active,applicable_methods')
+    .eq('code', code)
+    .eq('active', true)
+    .lte('start_at', nowIso)
+    .gte('end_at', nowIso)
+    .maybeSingle();
+
+  if (error || !data) return null;
+
+  // Semak kaedah bayaran kalau ada filter
+  if (Array.isArray(data.applicable_methods) && methodKey){
+    if (!data.applicable_methods.includes(methodKey)){
+      throw new Error('Kupon ini tidak sah untuk kaedah bayaran yang dipilih.');
+    }
+  }
+
+  // Semak min order (guna jumlah sebelum kupon, selepas diskaun kaedah & shipping)
+  const totals = computeTotals();
+  const baseForCoupon = totals.subtotal + totals.ship - totals.pd;
+  if (Number(data.min_order || 0) > 0 && baseForCoupon < Number(data.min_order)){
+    throw new Error(`Jumlah belum capai minima RM ${Number(data.min_order).toFixed(2)}.`);
+  }
+
+  return {
+    code: data.code,
+    type: data.discount_type === 'percent' ? 'PERCENT' : 'FIXED',
+    value: Number(data.discount_value || 0),
+    minOrder: Number(data.min_order || 0),
+    title: data.title || ''
+  };
+}
+
+// --- Override diskaun kaedah bayaran dari DB + update label UI ---
+async function loadPaymentDiscountsFromDB(){
+  try{
+    const { data, error } = await sb
+      .from("payment_discounts")
+      .select("method, percent");
+    if (error){
+      console.warn("[payDisc916] load error:", error);
+      return;
+    }
+
+    const map = new Map(
+      (data || []).map(r => [String(r.method || "").toLowerCase(), Number(r.percent || 0)])
+    );
+
+    const fpx    = map.get("fpx");
+    const manual = map.get("manual");
+    const card   = map.get("card_wallet");
+    const bnpl   = map.get("bnpl");
+
+    if (Number.isFinite(fpx))    PAYMENT_DISCOUNTS.FPX.value    = fpx;
+    if (Number.isFinite(manual)) PAYMENT_DISCOUNTS.MANUAL.value = manual;
+    if (Number.isFinite(card))   PAYMENT_DISCOUNTS.CARD_EWALLET.value = card;
+    if (Number.isFinite(bnpl))   PAYMENT_DISCOUNTS.BNPL.value         = bnpl;
+
+    const sFPX    = document.getElementById("labelPayFPX");
+    const sMANUAL = document.getElementById("labelPayMANUAL");
+const sBNPL = document.getElementById("labelPayBNPL");
+if (sBNPL){
+  const v = Number(PAYMENT_DISCOUNTS.BNPL.value || 0);
+  sBNPL.textContent = v > 0 ? `Atome (Ansuran) — Diskaun ${v}%` : `Atome (Ansuran)`;
+}
+
+    if (sFPX){
+      sFPX.textContent = `FPX (Diskaun ${PAYMENT_DISCOUNTS.FPX.value}%)`;
+    }
+    if (sMANUAL){
+      sMANUAL.textContent = `Tunai / E-Wallet (Diskaun ${PAYMENT_DISCOUNTS.MANUAL.value}%)`;
+    }
+
+    console.log("[payDisc916] aktif:", PAYMENT_DISCOUNTS);
+  }catch(e){
+    console.warn("[payDisc916] exception:", e);
+  }
+}
+
+function computeTotals(){
+  const subtotal = state.cart.reduce((s,i)=> s + (Number(i.unit_price)*Number(i.qty)), 0);
+  const ship = getShippingCost();
+  const before = subtotal + ship;
+  const pd = payDiscAmt(state.payMethod, before);
+  const afterPay = before - pd;
+  const cd = couponAmt(state.coupon, afterPay);
+  const grand = Math.max(0, afterPay - cd);
+  return {subtotal, ship, pd, cd, grand};
+}
+function renderCartTable(){
+  const tbody = $('cartTableBody');
+  tbody.innerHTML = '';
+  state.cart.forEach((it, idx)=>{
+    const row = document.createElement('tr');
+    const amount = Number(it.unit_price)*Number(it.qty);
+    row.innerHTML = `
+      <td>
+        <div class="fw-semibold">${it.name}</div>
+        <div class="small text-muted">Kod: ${it.code} • ${Number(it.weight_g).toFixed(2)}g • ${Number(it.length_cm).toFixed(1)}cm</div>
+      </td>
+      <td class="text-end">${it.qty}</td>
+      <td class="text-end">${money(it.unit_price)}</td>
+      <td class="text-end">${money(amount)}</td>
+      <td class="text-end"><button class="btn btn-sm btn-outline-danger" data-rm="${idx}">Buang</button></td>
+    `;
+    row.querySelector('[data-rm]')?.addEventListener('click', ()=>{
+      state.cart.splice(idx,1);
+      updateCartCount();
+      renderCartTable();
+      renderSummary();
+    });
+    tbody.appendChild(row);
+  });
+}
+
+function buildTotalsLines(totals){
+  const lines = [];
+  lines.push(`Subtotal barang: ${money(totals.subtotal)}`);
+  if (totals.ship > 0){
+    lines.push(`Penghantaran: ${money(totals.ship)}`);
+  }
+  if (totals.pd > 0){
+    let label = "Diskaun kaedah bayaran";
+    if (state.payMethod === "FPX"){
+      label = `Diskaun FPX (${PAYMENT_DISCOUNTS.FPX.value}%)`;
+    } else if (state.payMethod === "MANUAL"){
+      label = `Diskaun Tunai / E-Wallet (${PAYMENT_DISCOUNTS.MANUAL.value}%)`;
+    }
+    lines.push(`${label}: - ${money(totals.pd)}`);
+  }
+  if (totals.cd > 0){
+    const cpCode = state.coupon?.code || "";
+    const cpLabel = cpCode ? `Diskaun kupon (${cpCode})` : "Diskaun kupon";
+    lines.push(`${cpLabel}: - ${money(totals.cd)}`);
+  }
+  lines.push(`Grand Total perlu dibayar: ${money(totals.grand)}`);
+  return lines;
+}
+
+function renderSummary(){
+  const t = computeTotals();
+  $('cfSubtotal').textContent = money(t.subtotal);
+  $('cfShipping').textContent = money(t.ship);
+  $('cfPayDisc').textContent  = t.pd ? ('- '+money(t.pd)) : '- RM 0.00';
+  $('cfCouponDisc').textContent = t.cd ? ('- '+money(t.cd)) : '- RM 0.00';
+  $('cfGrand').textContent    = money(t.grand);
+}
+async function openConfirm(){
+  if (!state.cart.length){ alert('Senarai kosong.'); return; }
+  const a = getAuth();
+  $('loginHint').textContent = a ? ('Log masuk sebagai ' + (a.name||a.phone)) : 'Sila log masuk untuk meneruskan.';
+state.coupon = null;
+
+// default: kalau FPX disembunyikan/disabled, terus pilih MANUAL
+const payFPXEl = $('payFPX');
+const payMANEl = $('payMANUAL');
+const payBNPLEl = $('payBNPL');
+
+if (payBNPLEl) payBNPLEl.checked = false;
+
+if (payFPXEl && !payFPXEl.disabled && payFPXEl.offsetParent !== null){
+  state.payMethod = 'FPX';
+  payFPXEl.checked = true;
+  if (payMANEl) payMANEl.checked = false;
+}else{
+  state.payMethod = 'MANUAL';
+  if (payMANEl) payMANEl.checked = true;
+  if (payFPXEl) payFPXEl.checked = false;
+}
+  await loadPaymentDiscountsFromDB();
+
+  ['shipPU','shipMY','shipMYE','shipSG'].forEach(id=>{
+    const el = $(id);
+    if (el){
+      el.onchange = ()=>{ renderSummary(); };
+    }
+  });
+
+['payFPX','payMANUAL','payBNPL'].forEach(id=>{
+  const el = $(id);
+  if (el){
+    el.onchange = ()=>{ state.payMethod = el.value; renderSummary(); };
+  }
+});
+  $('btnApplyCoupon').onclick = () => {
+    applyCouponFromInput();
+  };
+
+  renderCartTable();
+  renderSummary();
+  renderAvailableCoupons();
+
+  BSConfirm = BSConfirm || new bootstrap.Modal($('modalConfirm'));
+  BSConfirm.show();
+}
+
+async function applyCouponFromInput(){
+  const inputEl = $('couponCode');
+  const statusEl = $('couponStatus');
+  const raw = (inputEl.value || '').trim();
+
+  if (!raw){
+    statusEl.textContent = 'Sila isi kod kupon.';
+    return;
+  }
+
+  const code = raw.toUpperCase();
+  statusEl.textContent = 'Menyemak kupon…';
+  state.coupon = null;
+  renderSummary();
+
+  try{
+    let cp = await fetchCouponFromDB(code, state.payMethod);
+
+    if (!cp){
+      const info = COUPON_LIST[code] || null;
+      if (info){
+        cp = {
+          code,
+          type: (info.type === 'PERCENT' || info.type === 'FIXED')
+                ? info.type
+                : (info.type === 'percent' ? 'PERCENT' : 'FIXED'),
+          value: Number(info.value || 0),
+          minOrder: 0,
+          title: info.note || ''
+        };
+      }
+    }
+
+    if (!cp){
+      statusEl.textContent = 'Kod tidak sah atau sudah tamat tempoh.';
+      return;
+    }
+
+    state.coupon = cp;
+    statusEl.textContent = cp.title
+      ? `Kupon diterima: ${cp.title} (kod ${cp.code})`
+      : `Kupon diterima: ${cp.code}`;
+    renderSummary();
+  }catch(e){
+    statusEl.textContent = e?.message || 'Kupon tidak boleh digunakan.';
+  }
+}
+
+function renderAvailableCoupons(){
+  const box = $('availableCoupons');
+  if (!box) return;
+
+  const list = getMySavedCoupons();
+  if (!list.length){
+    box.innerHTML = '<span class="text-muted">Tiada kupon tersimpan.</span>';
+    return;
+  }
+
+  const now = Date.now();
+  const usable = list.filter(c=>{
+    const exp = c.expires_at || c.end_at || c.expiry;
+    if (!exp) return true;
+    return new Date(exp).getTime() >= now;
+  });
+
+  if (!usable.length){
+    box.innerHTML = '<span class="text-muted">Tiada kupon aktif sekarang.</span>';
+    return;
+  }
+
+  box.innerHTML = usable.map(c=>{
+    const label = c.label || c.title || c.desc || '';
+    return `
+      <button type="button" class="btn btn-sm btn-outline-primary me-1 mb-1" data-mycp="${c.code}">
+        ${c.code}${label ? ' — ' + label : ''}
+      </button>`;
+  }).join('') + `<div class="small text-muted mt-1">Klik kupon untuk isi automatik.</div>`;
+}
+
+$('availableCoupons')?.addEventListener('click', (e)=>{
+  const btn = e.target.closest('button[data-mycp]');
+  if (!btn) return;
+  $('couponCode').value = btn.getAttribute('data-mycp') || '';
+  applyCouponFromInput();
+});
+
+$('btnShowMyCoupons')?.addEventListener('click', ()=>{
+  const box = $('availableCoupons');
+  if (!box) return;
+  box.scrollIntoView({behavior:'smooth', block:'nearest'});
+});
+
+function disableFPX(){
+  const payFPX   = document.getElementById("payFPX");
+  const labelFPX = document.getElementById("labelPayFPX");
+  const btnBill  = document.getElementById("btnProceedBillplz");
+  const btnInfo  = document.getElementById("btnPayInfoFPX916");
+
+  if (payFPX){
+    payFPX.checked  = false;
+    payFPX.disabled = true;
+    if (payFPX.parentElement){
+      payFPX.parentElement.style.display = "none";
+    }
+  }
+  if (labelFPX){
+    labelFPX.style.display = "none";
+  }
+
+  const payMANUAL = document.getElementById("payMANUAL");
+  if (payMANUAL){
+    payMANUAL.checked = true;
+  }
+  state.payMethod = "MANUAL";
+
+  if (btnBill){
+    btnBill.style.display = "none";
+  }
+  if (btnInfo){
+    btnInfo.style.display = "none";
+  }
+}
+
+function handlePaymentReturnUI(){
+  const q = getQueryParams();
+  const hasSignal = q.bill_id || q.paid || q.status_id || q.order_id || q.ok;
+  if (!hasSignal) return;
+  const isSuccess = (q.paid==='1') || (q.status_id==='1') || !!q.bill_id || q.ok==='1';
+  if (isSuccess){
+    state.cart = [];
+    updateCartCount();
+    loadItems?.();
+    showNotice(
+      `Terima kasih! Bayaran anda telah diterima. 
+       <a class="btn btn-sm btn-outline-primary ms-2" href="account.html">Lihat pesanan saya</a>`,
+      'success'
+    );
+  }else{
+    showNotice(`Bayaran dibatalkan / gagal. Anda boleh cuba semula dari senarai.`, 'warning');
+  }
+  history.replaceState({}, '', location.pathname);
+}
+
+function normalize(msisdn){
+  if(!msisdn) return null;
+  msisdn = (''+msisdn).trim();
+  if(msisdn.startsWith('+60')) return msisdn;
+  if(msisdn.startsWith('601')) return '+'+msisdn;
+  if(msisdn.startsWith('0'))   return '+60'+msisdn.slice(1);
+  return msisdn;
+}
+
+async function getCustomerAgentSlug(){
+  try{
+    const { data, error } = await sb.auth.getUser();
+    if (error || !data?.user) return null;
+    const uid = data.user.id;
+
+    const { data: cust, error: cErr } = await sb
+      .from("customers")
+      .select("agent_slug")
+      .eq("id", uid)
+      .maybeSingle();
+
+    if (!cErr && cust?.agent_slug){
+      return cust.agent_slug;
+    }
+
+    let slug = null;
+    try{
+      if (window.EmasAmirAgent && typeof window.EmasAmirAgent.getRef === "function"){
+        slug = window.EmasAmirAgent.getRef();
+      }
+    }catch(_){}
+
+    if (!slug) return null;
+
+    try{
+      await sb.rpc("set_customer_agent_if_empty", {
+        p_user_id: uid,
+        p_agent_slug: slug
+      });
+    }catch(e){
+      console.warn("[agent] set_customer_agent_if_empty error:", e);
+    }
+
+    return slug;
+  }catch(e){
+    console.warn("[agent] getCustomerAgentSlug error:", e);
+    return null;
+  }
+}
+
+async function fetchLiveOverrideByCode(code){
+  try{
+    const c = String(code||'').toUpperCase();
+    const { data, error } = await sb
+      .from('j916_live_cards_pricing_v1')
+      .select('code, weight_g, base_price_per_g, base_upah_rm, ov_price_per_g, ov_upah_rm, live_price_rm')
+      .eq('code', c).limit(1).maybeSingle();
+    if (error || !data) return null;
+    return {
+      per_g: (data.ov_price_per_g ?? data.base_price_per_g ?? state.price916) * 1,
+      upah : (data.ov_upah_rm ?? data.base_upah_rm ?? 0) * 1,
+      live : (data.live_price_rm != null ? Number(data.live_price_rm) : null)
+    };
+  }catch(_){ return null; }
+}
+
+function calcUnit916From(per_g, berat_g, upah_rm){
+  return ((Number(per_g||0)*Number(berat_g||0)) + Number(upah_rm||0)) * (1 + MARKUP_RATE);
+}
+
+async function prepareOrderOnServer_J916(it, totals, checkoutGroup){
+  const auth      = getAuth() || {};
+  const phoneRaw  = auth.phone || "";
+  const phoneNorm = normalize(phoneRaw || "");
+
+  let agentSlug = null;
+
+  try{
+    if (phoneRaw){
+      const { data: cust, error: cErr } = await sb
+        .from("customers")
+        .select("agent_slug")
+        .eq("phone", phoneRaw)
+        .maybeSingle();
+
+      if (!cErr && cust?.agent_slug){
+        agentSlug = cust.agent_slug;
+      }
+    }
+  }catch(e){
+    console.warn("[agent] lookup customers by phone error:", e);
+  }
+
+  if (!agentSlug){
+    try{
+      agentSlug = getAgentRef() || null;
+    }catch(e){
+      console.warn("[agent] getAgentRef error:", e);
+    }
+
+    if (agentSlug && phoneRaw){
+      try{
+        await sb.rpc("customers_set_agent_once_v1", {
+          p_phone: phoneRaw,
+          p_agent_slug: agentSlug
+        });
+      }catch(e){
+        console.warn("[customers_set_agent_once_v1] warn:", e);
+      }
+    }
+  }
+
+  const t = totals || computeTotals();
+
+  const { data, error } = await sb.rpc("j916_order_prepare_v1", {
+    p_code: it.code || "",
+    p_item_id: it.id,
+    p_name: it.name,
+    p_weight_g: it.weight_g,
+    p_length_cm: it.length_cm,
+    p_width_cm: it.width_cm || 0,
+    p_upah_rm: it.upah_rm,
+    p_price_per_g: state.price916,
+    p_unit_rm: it.unit_price,
+    p_qty: it.qty,
+    p_customer_id: null,
+    p_customer_name: auth.name || phoneNorm,
+    p_phone: phoneNorm,
+    p_pay_method: state.payMethod || "MANUAL",
+    p_subtotal_rm:    t.subtotal,
+    p_shipping_rm:    t.ship,
+    p_pay_disc_rm:    t.pd,
+    p_coupon_disc_rm: t.cd,
+    p_grand_total_rm: t.grand,
+    p_checkout_group: checkoutGroup || null
+  });
+
+  if (error) throw error;
+
+  const ref = (typeof data === "string")
+    ? data
+    : (data?.reference_1 || data?.reference || data?.ref || data?.id);
+
+  if (ref && agentSlug){
+    try{
+      await sb.rpc("j916_order_attach_agent_v1", {
+        p_reference: ref,
+        p_agent_slug: agentSlug
+      });
+    }catch(e){
+      console.warn("[j916_order_attach_agent_v1] warn:", e);
+    }
+
+    const payload = { agent_slug: agentSlug };
+    try { await sb.from("j916_orders").update(payload).eq("reference",   ref); } catch(_) {}
+    try { await sb.from("j916_orders").update(payload).eq("reference_1", ref); } catch(_) {}
+    try { await sb.from("j916_orders").update(payload).eq("id",          ref); } catch(_) {}
+  }
+
+  return ref;
+}
+async function createRefsForCart(user, totals){
+  const refs = [];
+  const t = totals || computeTotals();
+
+  const checkoutGroup =
+    (crypto.randomUUID && crypto.randomUUID()) ||
+    ('cg-' + Date.now() + '-' + Math.random().toString(16).slice(2));
+
+  for (const it of state.cart){
+    const ref = await prepareOrderOnServer_J916(it, t, checkoutGroup);
+    if (!ref) throw new Error("Rujukan pesanan tiada.");
+    refs.push(ref);
+  }
+  return refs;
+}
+
+async function attachBillId(reference, billId){
+  if (!reference || !billId) return;
+
+  try {
+    await sb.rpc("j916_attach_bill_v1", { p_reference: reference, p_bill_id: billId });
+  } catch (_) {}
+
+  const payload = { bill_id_text: String(billId), bill_id: String(billId) };
+  try { await sb.from('j916_orders').update(payload).eq('reference',   reference); } catch(_) {}
+  try { await sb.from('j916_orders').update(payload).eq('reference_1', reference); } catch(_) {}
+  try { await sb.from('j916_orders').update(payload).eq('id',          reference); } catch(_) {}
+}
+
+async function openWhatsappForManual(refs, totals){
+  const auth  = getAuth() || {};
+  const name  = auth.name  || '';
+  const phone = auth.phone || '';
+
+  if (!phone){
+    alert("Nombor telefon pelanggan tidak ditemui. Sila log keluar & log masuk semula.");
+    return false;
+  }
+
+  const itemLines = state.cart.map(it => {
+    const amt = Number(it.unit_price) * Number(it.qty);
+    return `• ${it.name} (Kod: ${it.code}) x${it.qty} — ${money(amt)}`;
+  });
+
+  const lines = [
+    "Assalamualaikum,",
+    "",
+    "Ini ringkasan pesanan barang kemas 916 anda di Emas Amir.",
+    refs && refs.length ? `No. Rujukan: ${refs.join(", ")}` : "",
+    name  ? `Nama: ${name}` : "",
+    phone ? `No. Telefon: ${phone}` : "",
+    "",
+    getAgentRef() ? `Rujukan Agen: ${getAgentRef()}` : "",
+    "Item:",
+    ...itemLines,
+    "",
+    "Ringkasan jumlah:",
+    ...buildTotalsLines(totals),
+    "",
+    "No Akaun untuk Pembayaran Secara Online Transfer",
+    "👇🏻👇🏻👇🏻",
+    "Bank   : Maybank",
+    "Nama   : EMAS AMIR SDN. BHD.",
+    "No Akaun : 552031155695",
+    "Reference : LETAK NO 4 DIGIT AKHIR WHATSAPP ANDA",
+    "",
+    QR_DUITNOW_URL ? `Atau boleh juga scan QR berikut: ${QR_DUITNOW_URL}` : "",
+    "",
+    "Sila buat bayaran Tunai / E-Wallet / Online Transfer mengikut jumlah di atas.",
+    "Selepas berjaya, sila hantarkan resit bayaran kepada admin Emas Amir seperti biasa. ✅"
+  ].filter(Boolean);
+
+  const text   = lines.join("\n");
+  const msisdn = toMsisdn(phone);
+
+  const ok = await sendWA(msisdn, text);
+  if (!ok){
+    alert("Gagal menghantar mesej WhatsApp kepada anda. Sila cuba lagi atau hubungi admin.");
+    return false;
+  }
+  return true;
+}
+
+async function openWhatsappForAtome(refs, totals){
+  const auth  = getAuth() || {};
+  const name  = auth.name  || '';
+  const phone = auth.phone || '';
+
+  if (!phone){
+    alert("Nombor telefon pelanggan tidak ditemui. Sila log keluar & log masuk semula.");
+    return false;
+  }
+
+  const itemLines = state.cart.map(it => {
+    const amt = Number(it.unit_price) * Number(it.qty);
+    return `• ${it.name} (Kod: ${it.code}) x${it.qty} — ${money(amt)}`;
+  });
+
+  const lines = [
+    "Assalamualaikum,",
+    "",
+    "Ini ringkasan pesanan barang kemas 916 anda di Emas Amir.",
+    refs && refs.length ? `No. Rujukan: ${refs.join(", ")}` : "",
+    name  ? `Nama: ${name}` : "",
+    phone ? `No. Telefon: ${phone}` : "",
+    "",
+    getAgentRef() ? `Rujukan Agen: ${getAgentRef()}` : "",
+    "Item:",
+    ...itemLines,
+    "",
+    "Ringkasan jumlah:",
+    ...buildTotalsLines(totals),
+    "",
+    "✅ Pembayaran Atome (Ansuran)",
+    "• Bayaran pertama berjaya → barang terus boleh dapat (admin akan sahkan & asingkan).",
+    "• Minimum ansuran biasanya 3 bulan, dan boleh jadi lebih dari 3 bulan bergantung pada akaun anda.",
+    "• Anda boleh semak pilihan tempoh ansuran bila anda scan QR Atome nanti.",
+    "",
+    QR_ATOME_URL ? `📌 Scan / buka QR Atome di sini: ${QR_ATOME_URL}` : "",
+    "",
+    "Selepas berjaya, anda akan terima WhatsApp pengesahan dari sistem kami. ✅"
+  ].filter(Boolean);
+
+  const text   = lines.join("\n");
+  const msisdn = toMsisdn(phone);
+
+  const ok = await sendWA(msisdn, text);
+  if (!ok){
+    alert("Gagal menghantar mesej WhatsApp kepada anda. Sila cuba lagi atau hubungi admin.");
+    return false;
+  }
+  return true;
+}
+
+async function proceedFPX(){
+  const chosen = document.querySelector('input[name="payMethod"]:checked')?.value || 'FPX';
+  if (chosen !== 'FPX'){ alert('Sila pilih FPX pada Kaedah.'); return; }
+  state.payMethod = 'FPX';
+
+  const user = requireLogin(); if (!user) return;
+  if (!state.cart.length){ alert('Senarai kosong.'); return; }
+  try{
+    const totals = computeTotals();
+    const amount = Number(totals.grand).toFixed(2);
+    const refs = await createRefsForCart(user, totals);
+    const res = await fetch(CREATE_BILL_URL, {
+      method:'POST',
+      headers:{'Content-Type':'application/json','Authorization':'Bearer '+SB_KEY},
+      body: JSON.stringify({
+        txn_id: refs.join(','),
+        amount: Number(amount),
+        description: `Barang Kemas 916 (${state.cart.length} item) + shipping`,
+        redirect_url: REDIRECT_URL,
+        name:  (getAuth()?.name || getAuth()?.phone || 'Pelanggan'),
+        email: '',
+        phone: (getAuth()?.phone || '')
+      })
+    });
+    const j = await res.json().catch(()=>({}));
+    if (!res.ok || !j?.ok || !j?.bill_url){
+      console.error('create-bill response:', j);
+      throw new Error(j?.error || j?.message || 'Billplz ralat.');
+    }
+    for (const r of refs){ await attachBillId(r, j.bill_id || ''); }
+    BSConfirm?.hide(); BSPayInfo?.hide();
+    location.href = j.bill_url;
+  }catch(e){
+    alert('Ralat Billplz: ' + (e?.message || e));
+  }
+}
+async function proceedOther(){
+  const chosen = document.querySelector('input[name="payMethod"]:checked')?.value || 'MANUAL';
+  if (chosen !== 'MANUAL'){
+    alert('Sila pilih "Tunai / E-Wallet (Manual)" pada bahagian Kaedah terlebih dahulu.');
+    return;
+  }
+  state.payMethod = 'MANUAL';
+
+  const user = requireLogin();
+  if (!user) return;
+
+  if (!state.cart.length){
+    alert('Senarai kosong.');
+    return;
+  }
+
+  try{
+    const totals = computeTotals();
+    const refs = await createRefsForCart(user, totals);
+    const ok = await openWhatsappForManual(refs, totals);
+
+    BSConfirm?.hide();
+    BSPayInfo?.hide();
+
+    if (ok){
+      state.cart = [];
+      updateCartCount();
+      renderCartTable();
+      renderSummary();
+      showAfterManualPopup();
+    }else{
+      showNotice("Gagal menghantar mesej WhatsApp. Anda boleh cuba sekali lagi.", "warning");
+    }
+  }catch(e){
+    console.error("MANUAL_PAY_FAIL:", e);
+    alert('Ralat semasa merekod pesanan. Sila cuba lagi.');
+  }
+}
+function showAfterManualPopup() {
+  const modalEl = $('modalAfterManual916');
+  if (modalEl) {
+    BSPayManual = BSPayManual || new bootstrap.Modal(modalEl);
+    BSPayManual.show();
+
+    const btnHome = $('btnManualHome916');
+    if (btnHome && !btnHome._bound) {
+      btnHome._bound = true;
+      btnHome.addEventListener('click', () => {
+        location.href = 'index.html';
+      });
+    }
+
+    setTimeout(() => {
+      location.href = 'index.html';
+    }, 6000);
+  } else {
+    setTimeout(() => {
+      location.href = 'index.html';
+    }, 4000);
+  }
+}
+
+$('btnProceedBillplz').addEventListener('click', () => {
+  const chosen = document.querySelector('input[name="payMethod"]:checked')?.value;
+  if (chosen !== 'FPX') {
+    alert('Sila pilih "FPX" pada bahagian Kaedah terlebih dahulu.');
+    return;
+  }
+  openPayInfoModal();
+});
+
+$('btnProceedOther').addEventListener('click', () => {
+  const chosen = document.querySelector('input[name="payMethod"]:checked')?.value;
+  if (chosen !== 'MANUAL') {
+    alert('Sila pilih "Tunai / E-Wallet (Manual)" pada bahagian Kaedah terlebih dahulu.');
+    return;
+  }
+  openPayInfoModal();
+});
+
+$('btnProceedBNPL')?.addEventListener('click', () => {
+  const chosen = document.querySelector('input[name="payMethod"]:checked')?.value;
+  if (chosen !== 'BNPL') {
+    alert('Sila pilih "Atome (Ansuran)" pada bahagian Kaedah terlebih dahulu.');
+    return;
+  }
+  openPayInfoModal();
+});
+
+function openPayInfoModal(){
+  const chosen = document.querySelector('input[name="payMethod"]:checked')?.value || 'FPX';
+
+  // label kaedah
+  $('payInfoMethod916').textContent =
+    (chosen === 'MANUAL') ? 'Tunai / E-Wallet (Manual)'
+    : (chosen === 'BNPL') ? 'Atome (Ansuran)'
+    : 'FPX';
+
+  // ayat info ikut kaedah
+  const infoBox = $('payInfoGeneral916');
+  if (infoBox){
+    if (chosen === 'BNPL'){
+      infoBox.innerHTML = `
+        Selepas berjaya, admin akan sahkan &amp; asingkan pesanan anda.
+        Anda juga akan menerima WhatsApp pengesahan.
+        <br><br>
+        <b>Atome:</b> Bayaran pertama berjaya → barang terus boleh dapat ✅
+        <br>
+        Minimum ansuran biasanya <b>3 bulan</b>, dan boleh jadi lebih lama bergantung akaun anda.
+        Anda boleh semak tempoh ansuran bila scan QR Atome nanti.
+      `;
+    }else{
+      infoBox.innerHTML = `
+        Selepas berjaya, admin akan sahkan &amp; asingkan pesanan anda.
+        Anda juga akan menerima WhatsApp pengesahan.
+      `;
+    }
+  }
+
+  // show/hide butang
+  $('btnPayInfoFPX916').style.display   = (chosen === 'FPX')    ? '' : 'none';
+  $('btnPayInfoCARD916').style.display  = (chosen === 'MANUAL') ? '' : 'none';
+  $('btnPayInfoBNPL916').style.display  = (chosen === 'BNPL')   ? '' : 'none';
+
+  BSPayInfo = BSPayInfo || new bootstrap.Modal($('modalPayInfo916'));
+  BSPayInfo.show();
+}
+
+$('btnPayInfoFPX916').addEventListener('click', proceedFPX);
+$('btnPayInfoCARD916').addEventListener('click', proceedOther);
+$('btnPayInfoBNPL916')?.addEventListener('click', proceedBNPL);
+
+async function proceedBNPL(){
+  const chosen = document.querySelector('input[name="payMethod"]:checked')?.value || 'BNPL';
+  if (chosen !== 'BNPL'){
+    alert('Sila pilih "Atome (Ansuran)" pada bahagian Kaedah terlebih dahulu.');
+    return;
+  }
+  state.payMethod = 'BNPL';
+
+  const user = requireLogin();
+  if (!user) return;
+
+  if (!state.cart.length){
+    alert('Senarai kosong.');
+    return;
+  }
+
+  try{
+    const totals = computeTotals();
+    const refs = await createRefsForCart(user, totals);
+
+    // hantar WhatsApp kepada pelanggan (macam manual)
+    const ok = await openWhatsappForAtome(refs, totals);
+
+    BSConfirm?.hide();
+    BSPayInfo?.hide();
+
+    if (ok){
+      state.cart = [];
+      updateCartCount();
+      renderCartTable();
+      renderSummary();
+      showAfterManualPopup(); // reuse popup “WhatsApp sedang dibuka…”
+    }else{
+      showNotice("Gagal menghantar mesej WhatsApp. Anda boleh cuba sekali lagi.", "warning");
+    }
+  }catch(e){
+    console.error("BNPL_PAY_FAIL:", e);
+    alert('Ralat semasa merekod pesanan. Sila cuba lagi.');
+  }
+}
+
+
+/* ========================== Top bar auth & actions ========================== */
+(function initTopbar(){
+  const status = $('authStatus');
+  const btnLogin  = $('btnLogin');
+  const btnLogout = $('btnLogout');
+  try{
+    const a = getAuth();
+    if (a){
+      status.textContent = 'Log masuk sebagai ' + (a.name || a.phone || 'pengguna');
+      btnLogin.style.display = 'none';
+      btnLogout.style.display = '';
+      btnLogout.onclick = ()=>{ window.auth_clear && window.auth_clear(); location.reload(); };
+    }else{
+      status.textContent = 'Tidak log masuk';
+      btnLogin.style.display = '';
+      btnLogout.style.display = 'none';
+      btnLogin.onclick = ()=> location.href='login.html#login';
+    }
+  }catch(_){}
+})();
+
+/* ========================== UI baru: Menu + Filter modal + Chips ========================== */
+let BSFilter = null;
+// btnMenu tak perlu JS lagi sebab trigger guna data-bs-toggle="offcanvas"
+
+$('btnOpenFilter')?.addEventListener('click', ()=>{
+  BSFilter = BSFilter || new bootstrap.Modal($('modalFilter'));
+  BSFilter.show();
+});
+
+// Chips kategori: sync ke filter + select
+(function wireChips(){
+  const wrap = $('catChips');
+  if (!wrap) return;
+
+  wrap.addEventListener('click', (e)=>{
+    const btn = e.target.closest('button[data-cat]');
+    if (!btn) return;
+
+    const cat = btn.getAttribute('data-cat') || '';
+    state.filter.cat = cat;
+
+    // active UI
+    wrap.querySelectorAll('.chip').forEach(x=> x.classList.remove('active'));
+    btn.classList.add('active');
+
+    // sync select
+    if ($('catSelect')) $('catSelect').value = cat;
+
+    saveFilter();
+    renderAll();
+  });
+})();
+
+function setActiveChip(cat){
+  const wrap = $('catChips');
+  if (!wrap) return;
+  const c = cat || '';
+  wrap.querySelectorAll('.chip').forEach(x=>{
+    x.classList.toggle('active', (x.getAttribute('data-cat') || '') === c);
+  });
+}
+
+/* ========================== Hook lama ========================== */
+$('btnOpenCart').addEventListener('click', openConfirm);
+
+// Susun ikut (kekal)
+$('sortBy')?.addEventListener('change', (e)=>{
+  state.sortBy = e.target.value || 'price_asc';
+  renderDesignCards(state.designGroups || {});
+});
+
+/* ========================== Init ========================== */
+(async function(){
+  await loadPrice916();
+  await loadItems();
+
+  loadSavedFilter();
+  setControlsFromFilter();
+  setActiveChip(state.filter.cat || '');
+
+  wireFilterControls();
+
+  // pastikan render ikut filter yang load
+  renderAll();
+
+  handlePaymentReturnUI();
+  disableFPX();
+})();
+
+// Wiring penapis
+function readNumber(v){ if(v===''||v==null) return null; const n=Number(v); return isNaN(n)?null:n; }
+function wireFilterControls(){
+  $('catSelect')?.addEventListener('change', e=>{
+    state.filter.cat = e.target.value || '';
+    setActiveChip(state.filter.cat || '');
+    saveFilter(); renderAll();
+  });
+  $('qSearch')?.addEventListener('input', debounce(e=>{
+    state.filter.q = e.target.value.trim();
+    saveFilter(); renderAll();
+  }, 300));
+  const onRangeChange = ()=>{
+    state.filter.minPrice  = readNumber($('minPrice').value);
+    state.filter.maxPrice  = readNumber($('maxPrice').value);
+    state.filter.minWeight = readNumber($('minWeight').value);
+    state.filter.maxWeight = readNumber($('maxWeight').value);
+    state.filter.minLen    = readNumber($('minLen').value);
+    state.filter.maxLen    = readNumber($('maxLen').value);
+    saveFilter(); renderAll();
+  };
+  ['minPrice','maxPrice','minWeight','maxWeight','minLen','maxLen'].forEach(id=>{
+    $(id)?.addEventListener('input', debounce(onRangeChange, 300));
+  });
+  $('sortBy')?.addEventListener('change', e=>{
+    state.filter.sortBy = e.target.value || 'price_asc';
+    saveFilter(); renderAll();
+  });
+  $('btnResetFilter')?.addEventListener('click', ()=>{
+    state.filter = {...defaultFilter};
+    setControlsFromFilter();
+    setActiveChip('');
+    saveFilter();
+    renderAll();
+  });
+}
+
+/* ==== AUTO CHECKOUT (fix: guna getQueryParams + lebih kebal) ==== */
+
+(function(){
+  let done = false;
+
+  function readSignal(){
+    const q = (typeof getQueryParams === 'function') ? getQueryParams()
+            : Object.fromEntries(new URL(location.href).searchParams.entries());
+    const CODE = String(q.code || '').trim().toUpperCase();
+    const WANT = String(q.checkout || '') === '1';
+    return { CODE, WANT };
+  }
+
+  async function tryAddAndOpen(CODE){
+    if (done || !CODE) return false;
+
+    if (Array.isArray(state.items) && state.items.length){
+      const it = state.items.find(x => String(x.code||'').toUpperCase() === CODE);
+      if (it && it.status !== 'PAID'){
+        let unitOverride = null;
+        const live = await fetchLiveOverrideByCode(CODE);
+        if (live){
+          unitOverride = (live.live != null)
+            ? live.live
+            : calcUnit916From(live.per_g, it.weight_g, (live.upah ?? it.upah_rm));
+        }
+        addToCart(it, 1, unitOverride);
+        updateCartCount();
+        openConfirm();
+        done = true;
+        console.log('[AUTOCHK] from state.items →', CODE, unitOverride!=null ? '(override)' : '');
+        return true;
+      }
+    }
+
+    try{
+      const { data, error } = await sb
+        .from('j916_items')
+        .select(`id, code, design_id, weight_g, length_cm, width_cm, status, upah_override_rm, is_active, created_at,
+                 design:j916_designs ( id, name, wage_default, cat_code, img1_url, img2_url, img3_url, img1, img2, img3 )`)
+        .eq('code', CODE)
+         .or('is_active.eq.true,active.eq.true')
+        .limit(1)
+        .maybeSingle();
+
+      if (!error && data){
+        const it = normalizeItem ? normalizeItem(data) : data;
+        if (it && it.status !== 'PAID'){
+          let unitOverride = null;
+          const live = await fetchLiveOverrideByCode(CODE);
+          if (live){
+            unitOverride = (live.live != null)
+              ? live.live
+              : calcUnit916From(live.per_g, it.weight_g, (live.upah ?? it.upah_rm));
+          }
+          addToCart(it, 1, unitOverride);
+          updateCartCount();
+          openConfirm();
+          done = true;
+          console.log('[AUTOCHK] via fallback →', CODE, unitOverride!=null ? '(override)' : '(normal)');
+          return true;
+        }
+      }
+    }catch(e){
+      console.warn('[AUTOCHK] fallback error:', e);
+    }
+
+    return false;
+  }
+
+  const { CODE, WANT } = readSignal();
+  console.log('[AUTOCHK] detect =>', { CODE, WANT, href: location.href });
+  if (!CODE || !WANT) return;
+
+  document.addEventListener('itemsReady', ()=>{ if(!done) tryAddAndOpen(CODE); });
+  window.addEventListener('DOMContentLoaded', ()=>{ if(!done) setTimeout(()=>tryAddAndOpen(CODE), 0); });
+  setTimeout(()=>{ if(!done) tryAddAndOpen(CODE); }, 1500);
+})();
+</script>
+</body>
+</html>

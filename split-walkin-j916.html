@@ -1,0 +1,459 @@
+<!doctype html>
+<html lang="ms">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Split Walk-In J916 — Emas Amir</title>
+
+  <!-- Libs -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="auth.js?v=13.1"></script>
+  <script src="admin-guard.js?v=1"></script>
+
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+
+  <style>
+    body{background:#fff}
+    .container-narrow{max-width:920px}
+    .auth-pill{border:1px solid #e5e7eb;border-radius:999px;padding:.2rem .6rem;background:#fafafa;color:#555}
+    .box{border:1px solid #e5e7eb;border-radius:14px;padding:14px}
+    .muted{color:#6b7280}
+    .mono{font-family:ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,monospace}
+  </style>
+</head>
+<body>
+<div class="container container-narrow py-3">
+
+  <!-- TOP BAR -->
+  <div class="d-flex justify-content-between align-items-center mb-2">
+    <div class="small auth-pill" id="authStatus">Memuatkan…</div>
+    <div class="d-flex flex-wrap gap-2">
+      <a class="btn btn-outline-secondary btn-sm" href="admin-j916.html">↩ Kembali Admin-J916</a>
+      <a class="btn btn-outline-secondary btn-sm" href="admin.html">Admin</a>
+      <a class="btn btn-outline-secondary btn-sm" href="index.html">Halaman Utama</a>
+    </div>
+  </div>
+  <hr class="mb-3">
+
+  <div class="d-flex align-items-center justify-content-between flex-wrap gap-2">
+    <div>
+      <h1 class="h4 m-0">Split Walk-In (J916)</h1>
+      <div class="small muted">Khas untuk <b>WALK-IN</b> — order <b>PENDING</b> dan <b>tiada Bill ID online</b>. Tiada refund. Tiada pulang duit.</div>
+    </div>
+    <div class="small muted">
+      Mode: <span class="badge bg-warning text-dark">PENDING</span> → <span class="badge bg-success">PAID</span> (bayar manual selepas simpan)
+    </div>
+  </div>
+
+  <div class="box mt-3">
+    <div class="row g-3">
+
+      <div class="col-12">
+        <label class="form-label">Order Code</label>
+        <input id="order_code" class="form-control mono" readonly>
+        <div class="small muted mt-1">Parameter URL: <span class="mono">?order=XXXXXXX</span></div>
+      </div>
+
+      <div class="col-md-6">
+        <label class="form-label">Status</label>
+        <input id="order_status" class="form-control" readonly>
+      </div>
+
+      <div class="col-md-6">
+        <label class="form-label">Bill ID</label>
+        <input id="bill_id" class="form-control" readonly>
+        <div class="small muted mt-1">Kalau ada Bill ID online → ini checkout online, split walk-in akan <b>block</b>.</div>
+      </div>
+
+      <div class="col-md-6">
+        <label class="form-label">Berat asal (g)</label>
+        <input id="weight_old" class="form-control" type="number" step="0.01" readonly>
+        <div class="small muted mt-1">Ini <b>tak akan berubah</b>. Simpan dalam <span class="mono">weight_g</span> dan/atau <span class="mono">weight_orig_g</span>.</div>
+      </div>
+
+      <div class="col-md-6">
+        <label class="form-label">Berat baru (g)</label>
+        <input id="weight_new" class="form-control" type="number" step="0.01" placeholder="contoh 0.81">
+        <div class="small muted mt-1">Ini disimpan dalam <span class="mono">weight_new_g</span> (tak override <span class="mono">weight_g</span>).</div>
+      </div>
+
+      <div class="col-md-6">
+        <label class="form-label">Harga asal (RM)</label>
+        <input id="price_old_rm" class="form-control" type="number" step="0.01" readonly>
+      </div>
+
+      <div class="col-md-6">
+        <label class="form-label">Harga baru (RM)</label>
+        <input id="price_new_rm" class="form-control" type="number" step="0.01" placeholder="contoh 619.00">
+        <div class="small muted mt-1">Ini akan jadi nilai “Perlu bayar” dalam Admin-J916.</div>
+      </div>
+
+      <div class="col-12">
+        <div class="d-flex justify-content-between align-items-center flex-wrap gap-2">
+          <div class="small muted">
+            Checkout group:
+            <span id="checkout_group" class="mono">-</span>
+          </div>
+
+          <div class="form-check">
+            <input class="form-check-input" type="checkbox" id="apply_group" checked>
+            <label class="form-check-label" for="apply_group">
+              Apply kepada semua item dalam group (jika ada)
+            </label>
+          </div>
+        </div>
+      </div>
+
+      <div class="col-12">
+        <div class="alert alert-light border mb-0">
+          <div class="fw-semibold">Apa yang akan berlaku bila “Simpan Split Walk-In”:</div>
+          <ul class="mb-0">
+            <li>Status kekal <b>PENDING</b></li>
+            <li>Harga order akan jadi <b>Harga baru</b> (update <span class="mono">amount_cents</span> + <span class="mono">subtotal_rm</span> + <span class="mono">grand_total_rm</span>)</li>
+            <li><b>Berat asal kekal</b> (tidak override <span class="mono">weight_g</span>)</li>
+            <li>Berat baru disimpan dalam <span class="mono">weight_new_g</span> (dan lock asal dalam <span class="mono">weight_orig_g</span> jika belum ada)</li>
+            <li>Selepas itu, Amir balik Admin-J916 → klik <b>Bayar manual</b></li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="col-12 d-flex gap-2 justify-content-end">
+        <button id="btnReload" class="btn btn-outline-secondary" type="button">Reload</button>
+        <button id="btnSave" class="btn btn-primary" type="button">Simpan Split Walk-In</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="small muted mt-3">
+    Tip: Lepas simpan, buka semula Admin-J916 dan tekan Refresh. Nilai “Perlu bayar” akan ikut harga baru.
+  </div>
+
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+/* ========== Config ========== */
+const SB_URL = "https://dduizetstqqjrpsezbpi.supabase.co";
+const SB_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRkdWl6ZXRzdHFxanJwc2V6YnBpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTg3MzI0ODQsImV4cCI6MjA3NDMwODQ4NH0.CrlHXrmHtKgR9qc2192U6quRb5lpFEeOSgwG0Lb8KRM";
+
+window.sb = window.sb || window.supabase.createClient(SB_URL, SB_KEY);
+const sb = window.sb;
+
+const $ = (id)=>document.getElementById(id);
+const getQS = (k)=> new URLSearchParams(location.search).get(k);
+
+function normalize(msisdn){
+  if(!msisdn) return null;
+  let x=(''+msisdn).replace(/\D/g,'');
+  if(x.startsWith('60'))return x;
+  if(x.startsWith('0'))return '6'+x;
+  return '60'+x;
+}
+
+function rmToCents(rm){
+  const n = Number(rm);
+  if(!Number.isFinite(n)) return null;
+  return Math.round(n*100);
+}
+
+function isOnlineBillId(raw){
+  const b = String(raw || '').trim();
+  if (!b) return false;
+
+  const u = b.toUpperCase();
+
+  // ✅ apa-apa yang bermula dengan WALKIN / WALK-IN kira sebagai walk-in (bukan online bill)
+  if (u === 'WALKIN' || u === 'WALK-IN' || u === 'MANUAL' || u === '-' || u.startsWith('WALKIN') || u.startsWith('WALK-IN')) {
+    return false;
+  }
+
+  // selain itu, anggap bill online wujud
+  return true;
+}
+
+function numOr0(x){
+  const n = Number(x);
+  return Number.isFinite(n) ? n : 0;
+}
+
+function pickOrigWeight(row){
+  // ✅ orig locked dulu kalau ada
+  const a = numOr0(row.weight_orig_g);
+  if(a > 0) return a;
+
+  // fallback orig = weight_g (asal)
+  const b = numOr0(row.weight_g);
+  if(b > 0) return b;
+
+  return 0;
+}
+
+function pickNewWeight(row){
+  // ✅ kalau pernah split, new weight disimpan sini
+  const n = numOr0(row.weight_new_g);
+  if(n > 0) return n;
+
+  // kalau belum split, new=orig
+  return pickOrigWeight(row);
+}
+
+/* ========== Topbar auth ========== */
+(function(){
+  const pill=$('authStatus');
+  try{
+    const a=(window.auth_get&&window.auth_get())||null;
+    if(a){
+      pill.textContent='Log masuk (admin) — '+(a.phone||a.msisdn||'');
+    } else {
+      pill.textContent='Tidak log masuk';
+    }
+  }catch(_){}
+})();
+
+/* ========== Admin guard (fallback) ========== */
+async function fallbackRequireAdmin(){
+  const a=(window.auth_get&&window.auth_get())||null;
+  if(!a){ location.href="login.html#login"; return false; }
+  const phone=normalize(a.phone||a.msisdn||a.username||"");
+  if(!phone){ alert("Akses terhad (tiada nombor)."); location.href="index.html"; return false; }
+  const {data,error}=await sb
+    .from("admin_users").select("phone,is_active")
+    .eq("phone",phone).eq("is_active",true).maybeSingle();
+  if(error||!data){ alert("Akses terhad (bukan admin)."); location.href="index.html"; return false; }
+  return true;
+}
+
+let currentOrderRow = null;
+
+/* ========== Load order ========== */
+async function loadOrder(){
+  const orderCode = (getQS('order') || '').trim();
+  $('order_code').value = orderCode;
+
+  if(!orderCode){
+    alert('URL tiada parameter ?order=');
+    return;
+  }
+
+  const { data, error } = await sb
+    .from('j916_orders')
+    .select('*')
+    .eq('order_code', orderCode)
+    .maybeSingle();
+
+  if(error) throw error;
+  if(!data){
+    alert('Order tidak dijumpai dalam table j916_orders.');
+    return;
+  }
+
+  currentOrderRow = data;
+
+  const status = String(data.status || '').toUpperCase();
+  const billRaw = (data.bill_id_text || data.bill_id || '');
+  const bill = String(billRaw || '').trim();
+
+  $('order_status').value = status || '-';
+  $('bill_id').value = bill || '';
+
+  // BLOCK kalau bukan walk-in pending
+  if (status !== 'PENDING'){
+    alert('Split Walk-In hanya untuk status PENDING.\nStatus sekarang: ' + status);
+  }
+
+  // block hanya kalau bill online sebenar
+  if (isOnlineBillId(bill)){
+    alert('Order ini ada Bill ID (checkout online).\nSplit Walk-In akan diblock.');
+  }
+
+  // ✅ berat asal tak berubah (weight_g). lock dalam weight_orig_g kalau ada
+  const wOrig = pickOrigWeight(data);
+  const wNew  = pickNewWeight(data);
+
+  $('weight_old').value = (wOrig > 0 ? wOrig.toFixed(2) : '0.00');
+  $('weight_new').value = (wNew  > 0 ? wNew.toFixed(2)  : '');
+
+  // Harga asal
+  let priceOldRM = 0;
+  if(Number.isFinite(Number(data.subtotal_rm)) && Number(data.subtotal_rm) > 0){
+    priceOldRM = Number(data.subtotal_rm);
+  } else if(Number.isFinite(Number(data.grand_total_rm)) && Number(data.grand_total_rm) > 0){
+    priceOldRM = Number(data.grand_total_rm);
+  } else if(Number.isFinite(Number(data.amount_cents)) && Number(data.amount_cents) > 0){
+    priceOldRM = Number(data.amount_cents)/100;
+  }
+  $('price_old_rm').value = Number.isFinite(priceOldRM) ? priceOldRM.toFixed(2) : '0.00';
+
+  // Prefill harga baru (default ikut asal)
+  $('price_new_rm').value = (Number.isFinite(priceOldRM) ? priceOldRM.toFixed(2) : '');
+
+  const cg = data.checkout_group ? String(data.checkout_group) : '';
+  $('checkout_group').textContent = cg ? (cg.slice(0,18) + (cg.length>18?'…':'')) : '-';
+
+  // Apply group checkbox: hanya ON kalau group wujud
+  $('apply_group').checked = !!cg;
+  $('apply_group').disabled = !cg;
+}
+
+/* ========== Save split walk-in ========== */
+async function saveSplitWalkin(){
+  const orderCode = ($('order_code').value || '').trim();
+  if(!orderCode){ alert('Order code kosong.'); return; }
+
+  // Reload latest row dulu (elak stale)
+  const { data: latest, error: e0 } = await sb
+    .from('j916_orders')
+    .select('*')
+    .eq('order_code', orderCode)
+    .maybeSingle();
+  if(e0) throw e0;
+  if(!latest){ alert('Order tidak dijumpai.'); return; }
+
+  const status = String(latest.status || '').toUpperCase();
+  const billRaw = (latest.bill_id_text || latest.bill_id || '');
+  const bill = String(billRaw || '').trim();
+
+  if (status !== 'PENDING'){
+    alert('Split Walk-In hanya untuk PENDING.\nStatus sekarang: ' + status);
+    return;
+  }
+
+  if (isOnlineBillId(bill)){
+    alert('Order ini ada Bill ID (checkout online).\nSplit Walk-In tidak dibenarkan.');
+    return;
+  }
+
+  const wNew = Number(($('weight_new').value || '').trim());
+  if(!Number.isFinite(wNew) || wNew <= 0){
+    alert('Berat baru tidak sah. Sila isi berat baru (g).');
+    return;
+  }
+
+  const pNewRM = Number(($('price_new_rm').value || '').trim());
+  if(!Number.isFinite(pNewRM) || pNewRM <= 0){
+    alert('Harga baru tidak sah. Sila isi harga baru (RM).');
+    return;
+  }
+
+  const newCents = rmToCents(pNewRM);
+  if(!Number.isFinite(newCents) || newCents <= 0){
+    alert('Harga baru tidak sah (cents).');
+    return;
+  }
+
+  const applyGroup = !!$('apply_group').checked;
+  const groupId = latest.checkout_group ? String(latest.checkout_group) : null;
+
+  // ✅ orig weight (lock)
+  const orig = pickOrigWeight(latest);
+  if(!(orig > 0)){
+    alert('Berat asal tak jumpa (weight_g kosong). Sila semak data order.');
+    return;
+  }
+
+  // ✅ payload: JANGAN sentuh weight_g
+  const basePayload = {
+    status: 'PENDING',
+    amount_cents: newCents,
+    subtotal_rm: pNewRM,
+    grand_total_rm: pNewRM,
+    weight_new_g: wNew
+  };
+
+  // ===== APPLY SINGLE =====
+  async function updateOne(oc, row){
+    const origLocal = pickOrigWeight(row);
+    const payload = {
+      ...basePayload,
+      // set weight_orig_g hanya jika belum ada
+      weight_orig_g: (numOr0(row.weight_orig_g) > 0) ? row.weight_orig_g : origLocal
+    };
+
+    const { error } = await sb
+      .from('j916_orders')
+      .update(payload)
+      .eq('order_code', oc)
+      .eq('status', 'PENDING');
+    if(error) throw error;
+  }
+
+  // ===== APPLY GROUP =====
+  if(applyGroup && groupId){
+    const { data: rows, error } = await sb
+      .from('j916_orders')
+      .select('order_code,status,weight_g,weight_orig_g,weight_new_g')
+      .eq('checkout_group', groupId)
+      .eq('status', 'PENDING');
+
+    if(error) throw error;
+
+    const list = Array.isArray(rows) ? rows : [];
+    if(!list.length){
+      alert('Tiada item PENDING dalam group untuk dikemaskini.');
+      return;
+    }
+
+    await Promise.all(list.map(r => updateOne(r.order_code, r)));
+  } else {
+    await updateOne(orderCode, latest);
+  }
+
+  const lebihan = (orig - wNew);
+
+  alert(
+    'Berjaya simpan Split Walk-In ✅\n\n' +
+    '- Status kekal: PENDING\n' +
+    '- Harga baru: RM ' + pNewRM.toFixed(2) + '\n' +
+    '- Berat asal kekal: ' + orig.toFixed(2) + 'g\n' +
+    '- Berat baru: ' + wNew.toFixed(2) + 'g\n' +
+    '- Lebihan (asal - baru): ' + lebihan.toFixed(4) + 'g\n' +
+    '\nLepas ini, balik Admin-J916 → Refresh → klik "Bayar manual".'
+  );
+}
+
+/* ========== Wire & boot ========== */
+$('btnReload')?.addEventListener('click', async ()=>{
+  try{ await loadOrder(); }catch(e){ alert('Ralat reload: ' + (e?.message || e)); }
+});
+$('btnSave')?.addEventListener('click', async ()=>{
+  const btn = $('btnSave');
+  btn.disabled = true;
+  const old = btn.textContent;
+  btn.textContent = 'Menyimpan…';
+  try{
+    await saveSplitWalkin();
+  }catch(e){
+    alert('Ralat simpan: ' + (e?.message || e));
+  }finally{
+    btn.disabled = false;
+    btn.textContent = old;
+  }
+});
+
+(async ()=>{
+  const pill=$('authStatus');
+  const set=(t)=> pill&&(pill.textContent=t);
+  let ok=false;
+
+  if(window.adminGuard&&typeof adminGuard.require==='function'){
+    ok=await adminGuard.require({
+      onChecking:()=>set("Mengesahkan akses…"),
+      onDenied:()=>set("Akses ditolak"),
+      onAllowed:(p)=>set("Log masuk (admin) — "+p)
+    });
+  }else{
+    ok=await fallbackRequireAdmin();
+    if(ok) set("Log masuk (admin)");
+  }
+
+  if(!ok) return;
+
+  try{
+    await loadOrder();
+  }catch(e){
+    alert('Ralat load: ' + (e?.message || e));
+  }
+})();
+</script>
+</body>
+</html>

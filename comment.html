@@ -1,0 +1,879 @@
+<!doctype html>
+<html lang="ms">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Komen Live • Emas Amir</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css">
+
+  <style>
+    body{background:#020617;color:#e5e7eb;margin:0;}
+    .container-narrow{max-width:1100px}
+
+    .pill{display:inline-block;background:#0b1120;border-radius:999px;padding:2px 10px;font-size:12px;border:1px solid #1f2937;color:#e5e7eb}
+    .btn-chip{border-radius:999px}
+
+    /* Hero atas */
+    .hero-wrap{
+      position:relative;
+      border-radius:18px;
+      overflow:hidden;
+      padding:16px 16px 18px;
+      background:radial-gradient(circle at top left,#facc15 0,#0b1120 45%,#020617 100%);
+      box-shadow:0 18px 40px rgba(0,0,0,0.65);
+    }
+    .hero-title{font-size:22px;font-weight:800;}
+    .hero-sub{font-size:14px;color:#e5e7eb;}
+    .hero-note{font-size:13px;color:#9ca3af;}
+
+    /* Bar LIVE + gambar kecil */
+    .overlay-product{
+      margin-top:10px;
+      display:flex;
+      align-items:center;
+      gap:10px;
+      padding:6px 10px;
+      border-radius:999px;
+      background:rgba(15,23,42,0.95);
+      color:#e5e7eb;
+      font-size:0.8rem;
+      box-shadow:0 10px 30px rgba(0,0,0,0.5);
+    }
+    .overlay-product img{
+      width:42px;
+      height:42px;
+      border-radius:999px;
+      object-fit:cover;
+      background:#020617;
+    }
+    .badge-live{background:#e11d48;color:#fff;border-radius:999px;padding:2px 8px;font-size:11px;font-weight:700}
+    .overlay-product .code{
+      font-weight:700;
+      font-family:ui-monospace,Menlo,Consolas,monospace;
+    }
+    .overlay-product .weight{
+      font-size:0.7rem;
+      color:#9ca3af;
+    }
+    .overlay-product .price{
+      font-weight:800;
+      color:#f97316;
+      font-size:0.9rem;
+    }
+
+    /* Input komen */
+    .comment-wrap{
+      margin-top:14px;
+      display:flex;
+      align-items:center;
+      gap:8px;
+    }
+    .comment-wrap input{
+      flex:1;
+      border-radius:999px;
+      border:none;
+      padding:8px 14px;
+      font-size:16px;           /* elak iPhone zoom */
+      background:rgba(15,23,42,0.9);
+      color:#f9fafb;
+      outline:none;
+    }
+    .comment-wrap input::placeholder{color:#9ca3af;}
+    .comment-wrap button{
+      border-radius:999px;
+      font-size:0.9rem;
+      font-weight:600;
+    }
+
+    /* Stream komen (untuk semua pelanggan, kini besar + scroll) */
+    #overlayChatList{
+      margin-top:8px;
+      font-size:0.8rem;
+      max-height:220px;       /* lebih tinggi */
+      overflow-y:auto;        /* boleh scroll */
+    }
+    .overlay-msg{
+      color:#e5e7eb;
+      text-shadow:0 1px 2px rgba(0,0,0,0.5);
+      margin-bottom:4px;
+    }
+    .overlay-msg-name{
+      font-weight:600;
+    }
+    .overlay-msg-text{
+      font-size:0.8rem;
+      color:#e5e7eb;
+    }
+
+    /* Senarai komen (panel admin sahaja) */
+    .card-chat-panel{
+      background:#020617;
+      border-radius:14px;
+      border:1px solid #1f2933;
+      color:#e5e7eb;
+    }
+    .card-chat-panel .card-header{
+      border-bottom-color:#111827;
+      background:#020617;
+    }
+    #chatListPanel{
+      max-height:260px;
+      overflow-y:auto;
+      font-size:0.9rem;
+    }
+    hr.my-1{border-color:#111827;}
+
+    /* Barang live sekarang */
+    .live-card{border:1px solid #111827;border-radius:14px;overflow:hidden;background:#020617;color:#e5e7eb}
+    .live-img{width:100%;height:220px;object-fit:cover;background:#030712}
+    .mono{font-family:ui-monospace,Menlo,Consolas,monospace}
+    .price-wrap{display:flex;gap:.5rem;align-items:baseline}
+    .price-old{text-decoration:line-through;color:#9ca3af;font-weight:600}
+    .price-new{color:#f97316;font-weight:800}
+
+    .live-section-title{color:#f9fafb;}
+
+    body{padding-bottom:40px;}
+    @media (max-width:576px){
+      .container-narrow{padding-left:0;padding-right:0;}
+    }
+
+    /* ===== Modal login/daftar ringkas ===== */
+    .ea-modal-backdrop{
+      position:fixed;
+      inset:0;
+      background:rgba(15,23,42,0.85);
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      padding:16px;
+      z-index:1050;
+    }
+    .ea-modal-card{
+      background:#020617;
+      border-radius:16px;
+      border:1px solid #1f2933;
+      padding:18px 16px 14px;
+      max-width:360px;
+      width:100%;
+      box-shadow:0 18px 40px rgba(0,0,0,0.7);
+    }
+
+    /* ===== YouTube live embed ===== */
+    .yt-wrap{
+      margin-top:10px;
+      border-radius:14px;
+      border:1px solid #1f2933;
+      background:#020617;
+      padding:8px;
+    }
+  </style>
+</head>
+<body>
+  <div class="container container-narrow py-3 px-3">
+    <!-- Header -->
+    <div class="d-flex justify-content-between align-items-center mb-2">
+      <div>
+        <div class="pill mb-1">Komen Live • Emas Amir</div>
+        <small class="text-muted">Tonton video & suara di TikTok <b>@EmasAmir</b>. Komen & lock barang di sini.</small>
+      </div>
+      <a href="index.html" class="btn btn-outline-light btn-sm btn-chip">← Utama</a>
+    </div>
+
+    <!-- HERO: info + bar LIVE + input komen -->
+    <div class="hero-wrap">
+      <div class="d-flex justify-content-between align-items-center mb-1">
+        <span class="badge bg-danger rounded-pill">🔴 Sedang LIVE</span>
+        <span class="badge bg-dark rounded-pill">💬 Komen di sini</span>
+      </div>
+
+      <div class="hero-title mb-1">Komen & Lock Barang Di Sini</div>
+      <div class="hero-sub mb-1">
+        Buka LIVE kami, dengar suara & tengok barang. Komen contoh: <b>"Nak lock"</b> atau <b>"Dah bayar, resit WhatsApp"</b>.
+      </div>
+      <div class="hero-note">
+        Nama & empat digit terakhir nombor telefon akan dipaparkan supaya host senang kenal.
+      </div>
+      <!-- Active count untuk semua orang -->
+      <div id="heroActive" class="hero-note" style="font-size:12px;">
+        Memuatkan penonton aktif…
+      </div>
+
+      <!-- YouTube LIVE embed -->
+      <div class="yt-wrap">
+        <div class="ratio ratio-16x9">
+          <iframe
+            id="ytLiveFrame"
+            src="https://www.youtube-nocookie.com/embed/ekRtZMEz9fM?autoplay=1&playsinline=1"
+            frameborder="0"
+            allow="autoplay; encrypted-media; picture-in-picture"
+            referrerpolicy="strict-origin-when-cross-origin"
+            allowfullscreen
+          ></iframe>
+        </div>
+        <div class="hero-note mt-1" style="font-size:12px;">
+          Jika video tak keluar, <b>terutama jika buka dari TikTok di iPhone</b>,
+          sila tekan butang di titik 3 atas kanan untuk buka halaman ini dalam Safari / Google Chrome.
+          Lepas buka, terus boleh komen & lock barang macam biasa.
+        </div>
+        
+
+      <!-- Bar LIVE + gambar kecil -->
+      <div id="overlayProduct" class="overlay-product" style="display:none"></div>
+
+      <!-- Input komen -->
+      <form id="chatFormOverlay" class="comment-wrap">
+        <input id="chatMsgOverlay"
+               type="text"
+               autocomplete="off"
+               placeholder="Tulis komen… (log masuk dulu)">
+        <button class="btn btn-danger" type="submit">Hantar</button>
+      </form>
+
+      <!-- Stream komen (pelanggan boleh scroll) -->
+      <div id="overlayChatList" aria-live="polite"></div>
+    </div>
+  </div>
+
+  <!-- Panel komen penuh (ADMIN sahaja – default disembunyikan) -->
+  <div id="adminChatWrapper" class="container container-narrow px-3 mt-3 d-none">
+    <div class="card card-chat-panel mb-3">
+      <div class="card-header d-flex justify-content-between align-items-center">
+        <span>
+          💬 Senarai Komen Live
+          <small id="chatActiveAdmin" class="text-muted ms-2"></small>
+        </span>
+        <small id="chatStatus" class="text-muted">Menyambung chat…</small>
+      </div>
+      <div class="card-body">
+        <div id="chatListPanel"></div>
+        <small class="text-muted d-block mt-2">
+          Komen akan kekal di sini, boleh scroll ke atas untuk baca balik.
+        </small>
+      </div>
+    </div>
+  </div>
+
+  <!-- Barang Live Sekarang -->
+  <div class="container container-narrow px-3 mt-3">
+    <div class="d-flex justify-content-between align-items-center mb-2">
+      <h5 class="m-0 live-section-title">🛒 Barang Live Sekarang</h5>
+      <button id="btnRefreshLive" class="btn btn-sm btn-outline-primary">Refresh Senarai</button>
+    </div>
+    <div id="liveGrid" class="row g-3 mb-5"></div>
+    <div id="liveEmpty" class="text-muted small" style="display:none">
+      Belum ada barang ditanda LIVE. Sila tunggu host naikkan barang.
+    </div>
+  </div>
+
+  <!-- Supabase + Auth -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="auth.js?v=13.1"></script>
+
+  <script>
+    // ==========================
+    // Konfigurasi Supabase
+    // ==========================
+    const SB_URL = "https://dduizetstqqjrpsezbpi.supabase.co";
+    const SB_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRkdWl6ZXRzdHFxanJwc2V6YnBpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTg3MzI0ODQsImV4cCI6MjA3NDMwODQ4NH0.CrlHXrmHtKgR9qc2192U6quRb5lpFEeOSgwG0Lb8KRM";
+    const sb = window.supabase.createClient(SB_URL, SB_KEY);
+
+    const CHAT_ROOM = "emasamir-live";
+
+     // Buka semula page komen dalam domain asal (tanpa trik pelik)
+  function openInRealBrowser(){
+    const target = "https://emasamir.app/comment"; // atau /comment.html kalau itu nama file sebenar
+    window.location.href = target;
+  }
+
+    // ==========================
+    // YouTube LIVE config (ambil videoId dari Supabase)
+    // ==========================
+    async function loadYoutubeFrame(){
+      const frame = document.getElementById("ytLiveFrame");
+      if (!frame) return;
+
+      // fallback kalau Supabase gagal
+      let videoId = "ekRtZMEz9fM";
+
+      try{
+        const { data, error } = await sb
+          .from("live_config")
+          .select("youtube_video_id")
+          .eq("id", 1)
+          .maybeSingle();
+
+        if (!error && data && data.youtube_video_id){
+          videoId = String(data.youtube_video_id).trim();
+        }
+      }catch(e){
+        console.warn("Gagal baca live_config:", e);
+      }
+
+      // Guna youtube-nocookie untuk kurangkan isu error 153 di iPhone / WebView
+      frame.src =
+        "https://www.youtube-nocookie.com/embed/" +
+        encodeURIComponent(videoId) +
+        "?autoplay=1&playsinline=1";
+    }
+
+    window.addEventListener("load", loadYoutubeFrame);
+
+    const liveGrid      = document.getElementById("liveGrid");
+    const liveEmpty     = document.getElementById("liveEmpty");
+    const btnRefreshLive= document.getElementById("btnRefreshLive");
+    const overlayProduct= document.getElementById("overlayProduct");
+
+    const overlayForm   = document.getElementById("chatFormOverlay");
+    const overlayInput  = document.getElementById("chatMsgOverlay");
+    const overlayChatList = document.getElementById("overlayChatList");
+
+    const chatListPanel = document.getElementById("chatListPanel");
+    const chatStatus    = document.getElementById("chatStatus");
+    const adminChatWrapper = document.getElementById("adminChatWrapper");
+
+    const heroActive = document.getElementById("heroActive");
+    const chatActiveAdmin = document.getElementById("chatActiveAdmin");
+
+    const money = n => (Number(n||0)).toFixed(2);
+
+    // ===== Auth user untuk komen =====
+    const auth = (window.auth_get && window.auth_get()) || null;
+    const liveUser = auth ? {
+      id: auth.id,
+      name: auth.name || "",
+      phone: auth.phone || auth.msisdn || ""
+    } : null;
+
+    // Normalise phone ke +60…
+    function normalizePhone(msisdn){
+      if(!msisdn) return null;
+      msisdn = (""+msisdn).trim();
+      if(msisdn.startsWith("+60")) return msisdn;
+      if(msisdn.startsWith("601")) return "+"+msisdn;
+      if(msisdn.startsWith("0"))   return "+60"+msisdn.slice(1);
+      return msisdn;
+    }
+
+    // ==========================
+    // 1) Barang LIVE (sama macam index + gambar RPC)
+    // ==========================
+    function toCard(row){
+      const code  = String(row?.code || "").toUpperCase();
+      const name  = row?.name || row?.product_name || row?.design_name || code || "Barang 916";
+      const berat = Number(row?.weight_g || 0);
+
+      const candidates = [
+        row?._img_from_rpc,
+        row?.img,
+        row?.img1,
+        row?.product_img1,
+        row?.design_img1,
+        row?.design_img1_url,
+        row?.image_url,
+        row?.img_url,
+        row?.image1,
+        row?.photo_url
+      ];
+      const firstImg = candidates.find(u => u && String(u).trim().length > 5);
+      const img = firstImg || ("https://placehold.co/640x480?text=" + encodeURIComponent(code || "EMAS 916"));
+
+      const basePerG = Number(
+        row?.base_price_per_g ??
+        row?.price_per_g_current ?? 0
+      );
+      const baseUpah = Number(
+        row?.base_upah_rm ??
+        row?.upah_default_rm ?? 0
+      );
+      const g = berat;
+      const calc = (pg,g,u)=>((pg*g)+u)*1.08;
+
+      const normalRM = (
+        row?.normal_price_rm != null
+          ? Number(row.normal_price_rm)
+          : calc(basePerG,g,baseUpah)
+      );
+
+      const ovPerG_raw = (row?.ov_price_per_g ?? row?.override_price_per_g ?? row?.price_per_g_live);
+      const ovUpah_raw = (row?.ov_upah_rm     ?? row?.upah_override_rm     ?? row?.upah_live);
+
+      const perG_eff = (ovPerG_raw != null) ? Number(ovPerG_raw) : basePerG;
+      const upah_eff = (ovUpah_raw != null) ? Number(ovUpah_raw) : baseUpah;
+
+      const liveRM = (
+        row?.live_price_rm != null
+          ? Number(row.live_price_rm)
+          : calc(perG_eff,g,upah_eff)
+      );
+
+      const hasDrop = (liveRM > 0 && normalRM > 0 && (normalRM - liveRM) > 0.005);
+      const hargaHTML = hasDrop
+        ? `<div class="price-wrap h6 mt-1 mb-2">
+             <div class="price-old">RM ${normalRM.toFixed(2)}</div>
+             <div class="price-new">RM ${liveRM.toFixed(2)}</div>
+           </div>`
+        : `<div class="h6 mt-1 mb-2">RM ${liveRM.toFixed(2)}</div>`;
+
+      return `
+        <div class="col-12 col-sm-6 col-lg-4">
+          <div class="live-card h-100">
+            <img class="live-img" src="${img}" alt="${name}"
+              onerror="if(!this.dataset.f){this.dataset.f=1;this.src='https://placehold.co/640x480?text=${code}'}">
+            <div class="p-3">
+              <div class="d-flex align-items-center justify-content-between">
+                <span class="badge-live">LIVE</span>
+                <small class="text-muted mono">${code}</small>
+              </div>
+              <div class="mt-1">${name}</div>
+              <div class="text-muted small">Berat: ${berat.toFixed(2)} g</div>
+              ${hargaHTML}
+              <a href="j916.html#checkout?code=${encodeURIComponent(code)}&checkout=1" class="btn btn-danger w-100">
+                Lock Sekarang
+              </a>
+            </div>
+          </div>
+        </div>
+      `;
+    }
+
+    function renderOverlayProduct(row){
+      if(!overlayProduct) return;
+      if(!row){
+        overlayProduct.style.display = "none";
+        overlayProduct.innerHTML = "";
+        return;
+      }
+
+      const code  = String(row?.code || "").toUpperCase();
+      const berat = Number(row?.weight_g || 0);
+
+      const candidates = [
+        row?._img_from_rpc,
+        row?.img,
+        row?.img1,
+        row?.product_img1,
+        row?.design_img1,
+        row?.design_img1_url,
+        row?.image_url,
+        row?.img_url,
+        row?.image1,
+        row?.photo_url
+      ];
+      const firstImg = candidates.find(u => u && String(u).trim().length > 5);
+      const img = firstImg || ("https://placehold.co/200x200?text=" + encodeURIComponent(code || "EMAS"));
+
+      const basePerG = Number(
+        row?.base_price_per_g ??
+        row?.price_per_g_current ?? 0
+      );
+      const baseUpah = Number(
+        row?.base_upah_rm ??
+        row?.upah_default_rm ?? 0
+      );
+      const g = berat;
+      const calc = (pg,g,u)=>((pg*g)+u)*1.08;
+
+      const ovPerG_raw = (row?.ov_price_per_g ?? row?.override_price_per_g ?? row?.price_per_g_live);
+      const ovUpah_raw = (row?.ov_upah_rm     ?? row?.upah_override_rm     ?? row?.upah_live);
+
+      const perG_eff = (ovPerG_raw != null) ? Number(ovPerG_raw) : basePerG;
+      const upah_eff = (ovUpah_raw != null) ? Number(ovUpah_raw) : baseUpah;
+
+      const liveRM = (
+        row?.live_price_rm != null
+          ? Number(row.live_price_rm)
+          : calc(perG_eff,g,upah_eff)
+      );
+
+      overlayProduct.style.display = "flex";
+      overlayProduct.innerHTML = `
+        <img src="${img}" alt="${code}" onerror="if(!this.dataset.f){this.dataset.f=1;this.src='https://placehold.co/200x200?text=${code}'}">
+        <div>
+          <div class="badge-live">LIVE</div>
+          <div class="code">${code}</div>
+          <div class="weight">${berat.toFixed(2)} g</div>
+        </div>
+        <div class="ms-auto d-flex align-items-center gap-2">
+          <span class="price">RM ${liveRM.toFixed(2)}</span>
+          <a href="j916.html#checkout?code=${encodeURIComponent(code)}&checkout=1"
+             class="btn btn-danger btn-sm">
+            Lock
+          </a>
+        </div>
+      `;
+    }
+
+    async function loadLiveCards(){
+      try{
+        const { data: viewRows, error } = await sb
+          .from("j916_live_cards_pricing_v1")
+          .select("*")
+          .order("ts",{ascending:false})
+          .limit(24);
+        if(error) throw error;
+        const rows = Array.isArray(viewRows) ? viewRows : [];
+
+        const { data: rpcRows } = await sb.rpc("j916_live_spotlight_feed_v1");
+        const imgMap = new Map(
+          (Array.isArray(rpcRows) ? rpcRows : []).map(r => {
+            const c = String(r?.code || "").toUpperCase();
+            const img = r?.img1 || r?.img || r?.product_img1 || r?.design_img1 ||
+                        r?.image_url || r?.img_url || r?.photo_url || r?.image1 || "";
+            return [c, img];
+          })
+        );
+
+        for(const r of rows){
+          const c = String(r?.code || "").toUpperCase();
+          const fromRpc = imgMap.get(c);
+          if(fromRpc && String(fromRpc).trim().length > 5){
+            r._img_from_rpc = fromRpc;
+          }
+        }
+
+        if(!rows.length){
+          liveGrid.innerHTML = "";
+          liveEmpty.style.display = "";
+          renderOverlayProduct(null);
+          return;
+        }
+        liveEmpty.style.display = "none";
+        liveGrid.innerHTML = rows.map(toCard).join("");
+        renderOverlayProduct(rows[0]);
+      }catch(e){
+        console.warn("Live cards error:", e);
+        liveGrid.innerHTML = "";
+        liveEmpty.style.display = "";
+        renderOverlayProduct(null);
+      }
+    }
+
+    btnRefreshLive?.addEventListener("click", loadLiveCards);
+    loadLiveCards();
+    setInterval(loadLiveCards, 20000);
+  </script>
+
+  <script>
+    // ==========================
+    // 2) Live Chat (komen)
+    // ==========================
+    const shownIds = new Set();
+    let lastCreatedAt = null;
+
+    function setChatStatus(text){
+      if(chatStatus) chatStatus.textContent = text;
+    }
+    function formatTime(iso){
+      try{
+        return new Date(iso).toLocaleTimeString("ms-MY",{hour:"2-digit",minute:"2-digit",hour12:true});
+      }catch{ return ""; }
+    }
+    function escapeHtml(str){
+      return String(str || "").replace(/</g,"&lt;").replace(/>/g,"&gt;");
+    }
+
+    function registerSeen(row){
+      if(!row) return;
+      if(row.id) shownIds.add(row.id);
+      if(row.created_at){
+        if(!lastCreatedAt || row.created_at > lastCreatedAt){
+          lastCreatedAt = row.created_at;
+        }
+      }
+    }
+
+   function renderOverlayMessage(row){
+  if(!overlayChatList || !row) return;
+
+  const name   = row.name || "Tetamu";
+  const phone4 = (row.phone4 || "").trim();
+  const msg    = row.message || "";
+  const head   = phone4 ? `${name} (${phone4})` : name;
+
+  const div = document.createElement("div");
+  div.className = "overlay-msg";
+  div.innerHTML = `
+    <div class="overlay-msg-name">${escapeHtml(head)}</div>
+    <div class="overlay-msg-text">${escapeHtml(msg)}</div>
+  `;
+
+  // Masuk komen baru
+  overlayChatList.appendChild(div);
+
+  // 🔥 Auto-scroll ke komen paling bawah (tak perlu scroll sendiri)
+  overlayChatList.scrollTop = overlayChatList.scrollHeight;
+
+  // 🔢 Limit maksimum 50 komen pada skrin
+  while (overlayChatList.children.length > 50){
+    overlayChatList.removeChild(overlayChatList.firstChild);
+  }
+
+  // ⏱ Auto-hilang selepas 60 saat (macam versi lama, cuma boleh kumpul sampai 50)
+  setTimeout(()=>{
+    if (div.parentNode === overlayChatList){
+      overlayChatList.removeChild(div);
+    }
+  }, 60000);
+}
+
+    function renderPanelMessage(row){
+      if(!chatListPanel || !row) return;
+      const div = document.createElement("div");
+
+      const name   = row.name || "Tetamu";
+      const phone4 = (row.phone4 || "").trim();
+      const time   = formatTime(row.created_at);
+      const msg    = row.message || "";
+
+      const head = phone4 ? `${name} (${phone4})` : name;
+
+      div.innerHTML = `
+        <div>
+          <strong>${escapeHtml(head)}</strong>
+          <span class="text-muted small">• ${escapeHtml(time)}</span>
+        </div>
+        <div>${escapeHtml(msg)}</div>
+        <hr class="my-1">
+      `;
+      chatListPanel.appendChild(div);
+      chatListPanel.scrollTop = chatListPanel.scrollHeight;
+    }
+
+    function showLoginPrompt(){
+      const m = document.getElementById("loginModal");
+      if(m){
+        m.style.display = "flex";
+      }else{
+        alert("Sila log masuk dulu untuk hantar komen.");
+        location.href = "login.html#login";
+      }
+    }
+
+    async function loadChatInitial(){
+      try{
+        setChatStatus("Muat naik komen…");
+
+        const since = new Date(Date.now() - 3*60*60*1000).toISOString();
+        const { data, error } = await sb
+          .from("live_chat_messages")
+          .select("*")
+          .eq("room", CHAT_ROOM)
+          .gte("created_at", since)
+          .order("created_at",{ascending:true})
+          .limit(200);
+
+        if(error) throw error;
+        if(chatListPanel) chatListPanel.innerHTML = "";
+        (data || []).forEach(row=>{
+          registerSeen(row);
+          renderPanelMessage(row);
+          renderOverlayMessage(row);
+        });
+        setChatStatus("Chat live aktif.");
+      }catch(e){
+        console.warn("chat load error", e);
+        setChatStatus("Gagal muat komen (cuba refresh).");
+      }
+    }
+
+    async function updateChatCount(){
+      try{
+        const since = new Date(Date.now() - 5*60*1000).toISOString();
+        const { data, error } = await sb
+          .from("live_chat_messages")
+          .select("name, phone4")
+          .eq("room", CHAT_ROOM)
+          .gte("created_at", since);
+
+        if(error) throw error;
+        const seen = new Set();
+        (data || []).forEach(r=>{
+          let key = (r.phone4 && r.phone4.trim()) ||
+                    (r.name && r.name.trim().toLowerCase());
+          if(key) seen.add(key);
+        });
+        const count = seen.size;
+
+        if(heroActive){
+          heroActive.textContent = count > 0
+            ? `${count} orang sedang aktif komen (5 minit terakhir).`
+            : "Tiada komen baru 5 minit terakhir.";
+        }
+        if(chatActiveAdmin){
+          chatActiveAdmin.textContent = `Aktif: ${count} orang (5 minit)`;
+        }
+      }catch(e){
+        console.warn("chat count error", e);
+      }
+    }
+
+    async function pollNewChats(){
+      try{
+        if(!lastCreatedAt) return;
+        const { data, error } = await sb
+          .from("live_chat_messages")
+          .select("*")
+          .eq("room", CHAT_ROOM)
+          .gt("created_at", lastCreatedAt)
+          .order("created_at",{ascending:true})
+          .limit(50);
+
+        if(error) throw error;
+        const rows = data || [];
+        rows.forEach(row=>{
+          if(row.id && shownIds.has(row.id)) return;
+          registerSeen(row);
+          renderPanelMessage(row);
+          renderOverlayMessage(row);
+        });
+        if(rows.length) updateChatCount();
+      }catch(e){
+        console.warn("chat poll error", e);
+      }
+    }
+
+    async function sendChatMessage(msg){
+      if(!liveUser){
+        showLoginPrompt();
+        return;
+      }
+
+      const dispName =
+        (liveUser.name && liveUser.name.trim()) ||
+        liveUser.phone ||
+        "Pelanggan";
+
+      let phone4 = null;
+      const digits = (liveUser.phone || "").replace(/\D/g,"");
+      if(digits.length >= 4){
+        phone4 = digits.slice(-4);
+      }
+
+      try{
+        const { data, error } = await sb
+          .from("live_chat_messages")
+          .insert({
+            room: CHAT_ROOM,
+            name: dispName,
+            phone4,
+            message: msg
+          })
+          .select()
+          .single();
+        if(error) throw error;
+
+        registerSeen(data);
+        renderPanelMessage(data);
+        renderOverlayMessage(data);
+        updateChatCount();
+      }catch(e){
+        console.warn("chat insert error", e);
+        alert("Gagal hantar komen, cuba lagi.");
+      }
+    }
+
+    overlayForm?.addEventListener("submit", async (ev)=>{
+      ev.preventDefault();
+      const msg = (overlayInput.value || "").trim();
+      if(!msg) return;
+      await sendChatMessage(msg);
+      overlayInput.value = "";
+    });
+
+    ["focus","click"].forEach(evt=>{
+      overlayInput?.addEventListener(evt, ()=>{
+        if(!liveUser){
+          showLoginPrompt();
+        }
+      });
+    });
+
+    try{
+      sb.channel("live-chat-room-comment")
+        .on(
+          "postgres_changes",
+          {
+            event: "INSERT",
+            schema: "public",
+            table: "live_chat_messages",
+            filter: "room=eq."+CHAT_ROOM
+          },
+          (payload)=>{
+            const row = payload.new;
+            if(row.id && shownIds.has(row.id)) return;
+            registerSeen(row);
+            renderPanelMessage(row);
+            renderOverlayMessage(row);
+            updateChatCount();
+          }
+        )
+        .subscribe((status)=>{
+          if(status === "SUBSCRIBED"){
+            setChatStatus("Chat live aktif.");
+          }
+        });
+    }catch(e){
+      console.warn("chat realtime error", e);
+    }
+
+    async function detectAdmin(){
+      try{
+        if(!liveUser || !liveUser.phone) return;
+        const phone = normalizePhone(liveUser.phone);
+        if(!phone) return;
+
+        const { data, error } = await sb
+          .from("admin_users")
+          .select("is_active")
+          .eq("phone", phone)
+          .maybeSingle();
+
+        if(error){
+          console.warn("admin check error", error);
+          return;
+        }
+        if(data && data.is_active){
+          adminChatWrapper?.classList.remove("d-none");
+        }
+      }catch(e){
+        console.warn("admin check error", e);
+      }
+    }
+
+    (async ()=>{
+      await detectAdmin();
+      await loadChatInitial();
+      await updateChatCount();
+
+      setInterval(pollNewChats, 2000);
+      setInterval(updateChatCount, 15000);
+    })();
+  </script>
+
+  <!-- Modal login/daftar ringkas -->
+  <div id="loginModal" class="ea-modal-backdrop" style="display:none;">
+    <div class="ea-modal-card">
+      <h6 class="mb-2">Log masuk untuk komen</h6>
+      <p class="small mb-3 text-muted">
+        Untuk komen & lock barang di sini, sila log masuk atau daftar ringkas dulu.
+      </p>
+      <button type="button"
+              class="btn btn-light w-100 mb-2"
+              onclick="location.href='login.html#login'">
+        Saya dah ada akaun
+      </button>
+      <button type="button"
+              class="btn btn-danger w-100"
+              onclick="location.href='login.html#signup'">
+        Daftar baru
+      </button>
+      <button type="button"
+              class="btn btn-link text-muted w-100 mt-2"
+              onclick="document.getElementById('loginModal').style.display='none'">
+        Tutup
+      </button>
+    </div>
+  </div>
+</body>
+</html>

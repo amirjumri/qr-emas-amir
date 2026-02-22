@@ -1,0 +1,973 @@
+<!doctype html>
+<html lang="ms">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Admin Emas Amir</title>
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+<style>
+  body{background:#fff}
+  .container-narrow{max-width:980px}
+  .badge-soft{background:#eef7ff;color:#0d6efd;border:1px solid #d7ebff}
+  input[type=number]{text-align:right}
+  .card+.card{margin-top:14px}
+  details>summary{cursor:pointer}
+  .top-btns .btn{border-radius:12px}
+  .table-xs td,.table-xs th{padding:.45rem .55rem}
+</style>
+</head>
+<body>
+<div class="container container-narrow py-3">
+  <!-- Top bar -->
+ <div class="d-flex justify-content-between align-items-center">
+  <h3 class="m-0">Admin</h3>
+
+  <div class="top-btns btn-group">
+
+    <a class="btn btn-outline-secondary" href="index.html">
+      Laman Utama
+    </a>
+
+<a class="btn btn-outline-secondary btn-chip" href="admin-misc-service.html">
+      Admin Service
+    </a>   
+
+ <a class="btn btn-outline-secondary btn-chip" href="admin-j999.html">
+      Admin 999
+    </a>
+
+    <a class="btn btn-outline-secondary btn-chip" href="admin-j916.html">
+      Admin 916
+    </a>
+
+    <a class="btn btn-outline-secondary btn-chip" href="adminstok-j916.html">
+      Admin Stok 916
+    </a>
+
+    <!-- ADMIN TRADE DROPDOWN -->
+    <div class="btn-group">
+      <button
+        type="button"
+        class="btn btn-outline-secondary btn-chip dropdown-toggle"
+        data-bs-toggle="dropdown"
+        aria-expanded="false">
+        Admin Trade
+      </button>
+
+      <ul class="dropdown-menu">
+        <li>
+          <a class="dropdown-item" href="tradein.html">
+            Trade In
+          </a>
+        </li>
+        <li>
+          <a class="dropdown-item" href="admin-settle-j916-tradein.html">
+            Settle J916 Tradein
+          </a>
+        </li>
+        <li>
+          <a class="dropdown-item" href="admin-tradein.html">
+            Senarai Tradein
+          </a>
+        </li>
+      </ul>
+    </div>
+    <!-- /ADMIN TRADE -->
+
+    <a class="btn btn-outline-secondary btn-chip" href="admintabung-simpan.html">
+      Admin Tabung
+    </a>
+
+    <a class="btn btn-outline-secondary btn-chip" href="account.html">
+      Akaun
+    </a>
+
+  </div>
+</div>
+
+<hr>
+
+  <!-- Pengurusan Admin -->
+  <div class="card">
+    <div class="card-body">
+      <div class="d-flex justify-content-between">
+        <h5 class="card-title mb-3">Pengurusan Admin</h5>
+        <span id="addNote" class="badge badge-soft align-self-start" style="display:none">✓ Ditambah/diaktifkan</span>
+      </div>
+      <div class="row g-2 align-items-end">
+        <div class="col-md">
+          <label class="form-label">Nombor Telefon (Malaysia)</label>
+          <input id="adminPhone" class="form-control" placeholder="+60123456789 atau 01XXXXXXXX">
+          <div class="form-text">Boleh taip 013… atau +6013… — sistem akan normalisasi ke +60… automatik.</div>
+        </div>
+        <div class="col-auto">
+          <button id="btnAddAdmin" class="btn btn-primary">Tambah Admin</button>
+        </div>
+      </div>
+
+      <div class="table-responsive mt-3">
+        <table class="table table-sm align-middle">
+          <thead>
+            <tr><th>Telefon</th><th>Status</th><th>Didafar</th><th style="width:1%"></th></tr>
+          </thead>
+          <tbody id="adminList"><tr><td colspan="4">Memuatkan…</td></tr></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- Harga emas (BELI) -->
+  <div class="card">
+    <div class="card-body">
+      <h5 class="card-title">🔥 Kemas Kini Harga Emas (per 1g)</h5>
+      <div id="buyLatest" class="text-muted small mb-2">Terkini: memuatkan…</div>
+
+      <div class="row g-2">
+        <div class="col-md-4">
+          <label class="form-label">Tarikh & Masa</label>
+          <input id="buyDate" class="form-control" type="datetime-local">
+          <div class="form-text">Jika backdate, akan <b>overwrite</b> rekod untuk masa itu.</div>
+        </div>
+        <div class="col-md-4">
+          <label class="form-label">Harga 999.9 (1g)</label>
+          <input id="buy9999" class="form-control" type="number" step="0.01" placeholder="cth 345.55">
+        </div>
+        <div class="col-md-4">
+          <label class="form-label">Harga 916 (1g)</label>
+          <input id="buy916" class="form-control" type="number" step="0.01" placeholder="cth 320.10">
+        </div>
+      </div>
+      <div class="mt-3 d-flex align-items-center gap-3">
+        <button id="btnSaveBuy" class="btn btn-success">Simpan Harga</button>
+        <span id="buyStatus" class="text-muted"></span>
+      </div>
+
+      <!-- History beli -->
+      <details class="mt-3">
+        <summary>History Harga Emas</summary>
+        <div class="table-responsive mt-2">
+          <table class="table table-sm">
+            <thead><tr><th>Tarikh</th><th>999.9 (1g)</th><th>916 (1g)</th></tr></thead>
+            <tbody id="buyHist"><tr><td colspan="3">Memuatkan…</td></tr></tbody>
+          </table>
+        </div>
+      </details>
+    </div>
+  </div>
+
+  <!-- Harga Jual Balik -->
+  <div class="card">
+    <div class="card-body">
+      <h5 class="card-title">🧱 Kemas Kini Harga Jual Balik (per 0.1g)</h5>
+      <div id="sellLatest" class="text-muted small mb-2">Terkini: memuatkan…</div>
+
+      <div class="row g-2">
+        <div class="col-md-4">
+          <label class="form-label">Tarikh & Masa</label>
+          <input id="sellDate" class="form-control" type="datetime-local">
+          <div class="form-text">Jika backdate, akan <b>overwrite</b> rekod untuk masa itu.</div>
+        </div>
+        <div class="col-md-4">
+          <label class="form-label">Jual Balik 999.9 (0.1g)</label>
+          <input id="sell9999" class="form-control" type="number" step="0.01" placeholder="cth 42.5">
+        </div>
+        <div class="col-md-4">
+          <label class="form-label">Jual Balik 916 (0.1g)</label>
+          <input id="sell916" class="form-control" type="number" step="0.01" placeholder="cth 38.0">
+        </div>
+      </div>
+      <div class="mt-3 d-flex align-items-center gap-3">
+        <button id="btnSaveSell" class="btn btn-primary">Simpan Harga Jual Balik</button>
+        <span id="sellStatus" class="text-muted"></span>
+      </div>
+
+      <!-- History jual balik -->
+      <details class="mt-3">
+        <summary>History Harga Jual Balik</summary>
+        <div class="table-responsive mt-2">
+          <table class="table table-sm">
+            <thead><tr><th>Tarikh</th><th>999.9 (0.1g)</th><th>916 (0.1g)</th><th>Admin</th></tr></thead>
+            <tbody id="sellHist"><tr><td colspan="4">Memuatkan…</td></tr></tbody>
+          </table>
+        </div>
+      </details>
+    </div>
+  </div>
+
+  <!-- Edit Upah — Gold Coin & Dinar -->
+  <div class="card">
+    <div class="card-body">
+      <h5 class="card-title">🪙 Edit Upah — Gold Coin & Dinar</h5>
+      <div class="text-muted small mb-2">
+        Simpan upah setiap berat. Halaman <b>GoldBar/Coin</b> akan auto dikemas kini (realtime).
+      </div>
+
+      <!-- COIN -->
+      <h6 class="mt-2 mb-2">Gold Coin</h6>
+      <div class="table-responsive">
+        <table class="table table-sm table-xs align-middle">
+          <thead><tr><th>Berat</th><th style="width:180px">Upah (RM)</th><th>Catatan</th></tr></thead>
+          <tbody id="upahCoinBody"><tr><td colspan="3">Memuatkan…</td></tr></tbody>
+        </table>
+      </div>
+
+      <!-- DINAR -->
+      <h6 class="mt-3 mb-2">Koleksi Dinar</h6>
+      <div class="table-responsive">
+        <table class="table table-sm table-xs align-middle">
+          <thead><tr><th>Berat</th><th style="width:180px">Upah (RM)</th><th>Catatan</th></tr></thead>
+          <tbody id="upahDinarBody"><tr><td colspan="3">Memuatkan…</td></tr></tbody>
+        </table>
+      </div>
+
+      <button id="btnSaveUpah" class="btn btn-warning mt-2">Simpan Upah</button>
+      <span id="upahStatus" class="ms-2 text-muted"></span>
+    </div>
+  </div>
+
+  <!-- =====================================
+       TAMBAHAN 1: Diskaun Kaedah Bayaran
+       ===================================== -->
+  <div class="card">
+  <div class="card-body">
+    <h5 class="card-title">💳 Diskaun Ikut Kaedah Bayaran</h5>
+    <div class="row g-2 align-items-end">
+      <div class="col-md-2">
+        <label class="form-label">FPX (%)</label>
+        <input id="discFpx" type="number" step="0.1" min="0" class="form-control" placeholder="cth 7.5">
+      </div>
+      <div class="col-md-3">
+        <label class="form-label">Tunai / E-Wallet (Manual) (%)</label>
+        <input id="discManual" type="number" step="0.1" min="0" class="form-control" placeholder="cth 7.5">
+      </div>
+      <div class="col-md-3">
+        <label class="form-label">Kad / E-Wallet (Gateway) (%)</label>
+        <input id="discCard" type="number" step="0.1" min="0" class="form-control" placeholder="cth 4.5">
+      </div>
+      <div class="col-md-2">
+        <label class="form-label">PayLater / BNPL (%)</label>
+        <input id="discBnpl" type="number" step="0.1" min="0" class="form-control" placeholder="cth 0">
+      </div>
+      <div class="col-md-2">
+        <button id="btnSaveDisc" class="btn btn-primary w-100">Simpan Diskaun</button>
+      </div>
+    </div>
+    <div id="discNote" class="text-muted small mt-2">
+      Nilai ini dipakai di checkout untuk kira diskaun ikut kaedah bayaran (FPX, Tunai/E-Wallet Manual, Kad/E-Wallet, BNPL).
+    </div>
+  </div>
+</div>
+
+  <!-- =====================================
+       TAMBAHAN 2: Kupon Diskaun
+       ===================================== -->
+  <div class="card">
+    <div class="card-body">
+      <h5 class="card-title">🎟️ Kupon Diskaun</h5>
+      <div class="row g-2">
+        <div class="col-md-3">
+          <label class="form-label">Kod Kupon</label>
+          <input id="cpCode" class="form-control" placeholder="cth EMAS10">
+        </div>
+        <div class="col-md-3">
+          <label class="form-label">Jenis Diskaun</label>
+          <select id="cpType" class="form-select">
+            <option value="percent">Peratus (%)</option>
+            <option value="amount">Amaun (RM)</option>
+          </select>
+        </div>
+        <div class="col-md-3">
+          <label class="form-label">Nilai</label>
+          <input id="cpValue" type="number" step="0.01" min="0" class="form-control" placeholder="cth 10">
+        </div>
+        <div class="col-md-3">
+          <label class="form-label">Min. Order (RM)</label>
+          <input id="cpMinOrder" type="number" step="0.01" min="0" class="form-control" placeholder="cth 50">
+        </div>
+
+        <div class="col-md-3">
+          <label class="form-label">Mula</label>
+          <input id="cpStart" type="datetime-local" class="form-control">
+        </div>
+        <div class="col-md-3">
+          <label class="form-label">Tamat</label>
+          <input id="cpEnd" type="datetime-local" class="form-control">
+        </div>
+        <div class="col-md-3">
+          <label class="form-label">Had / Akaun</label>
+          <input id="cpPerUser" type="number" min="1" step="1" class="form-control" value="1">
+        </div>
+        <div class="col-md-3">
+          <label class="form-label">Had Global (opsyenal)</label>
+          <input id="cpMaxAll" type="number" min="1" step="1" class="form-control" placeholder="cth 100">
+        </div>
+
+        <div class="col-12">
+          <label class="form-label">Kaedah Bayaran Terpakai</label>
+          <div class="form-check form-check-inline">
+            <input class="form-check-input" type="checkbox" id="cpMAll" checked>
+            <label class="form-check-label" for="cpMAll">Semua</label>
+          </div>
+          <div class="form-check form-check-inline">
+            <input class="form-check-input cpMethod" type="checkbox" id="cpMFpx" value="fpx">
+            <label class="form-check-label" for="cpMFpx">FPX</label>
+          </div>
+          <div class="form-check form-check-inline">
+            <input class="form-check-input cpMethod" type="checkbox" id="cpMCard" value="card_wallet">
+            <label class="form-check-label" for="cpMCard">Kad / E-Wallet</label>
+          </div>
+          <div class="form-check form-check-inline">
+            <input class="form-check-input cpMethod" type="checkbox" id="cpMBnpl" value="bnpl">
+            <label class="form-check-label" for="cpMBnpl">BNPL</label>
+          </div>
+          <div class="form-text">Jika “Semua” ditanda, checkbox lain akan diabaikan.</div>
+        </div>
+
+        <div class="col-12">
+          <label class="form-label">Tajuk / Catatan</label>
+          <input id="cpTitle" class="form-control" placeholder="cth Diskaun 10% pembelian pertama">
+        </div>
+        <div class="col-12">
+          <button id="btnSaveCoupon" class="btn btn-success">Simpan Kupon</button>
+          <span id="cpNote" class="text-muted ms-2"></span>
+        </div>
+      </div>
+
+      <div class="table-responsive mt-3">
+        <table class="table table-sm align-middle">
+          <thead>
+            <tr>
+              <th>Kod</th><th>Jenis/Nilai</th><th>Tempoh</th><th>Min RM</th><th>Kaedah</th><th>Had</th><th>Status</th><th class="text-end">Tindakan</th>
+            </tr>
+          </thead>
+          <tbody id="cpList"><tr><td colspan="8">Memuatkan…</td></tr></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- =====================================
+       TAMBAHAN 3: Loyalty Rewards (Tier)
+       ===================================== -->
+  <div class="card">
+    <div class="card-body">
+      <h5 class="card-title">⭐ Point Ganjaran (Loyalty Rewards)</h5>
+      <p class="text-muted small mb-3">
+        Tetapkan ganjaran yang boleh ditebus oleh pelanggan menggunakan point. 
+        Semua ganjaran akan dikeluarkan dalam bentuk <b>kupon diskaun</b> (tiada cash-out).
+      </p>
+
+      <!-- Form tambah / kemas kini reward -->
+      <div class="row g-2 align-items-end mb-3">
+        <div class="col-md-2">
+          <label class="form-label">Kod Reward</label>
+          <input id="rwCode" class="form-control" placeholder="cth PTS5">
+        </div>
+        <div class="col-md-3">
+          <label class="form-label">Tajuk</label>
+          <input id="rwTitle" class="form-control" placeholder="cth Diskaun RM5 pembelian seterusnya">
+        </div>
+        <div class="col-md-2">
+          <label class="form-label">Perlu Point</label>
+          <input id="rwPoints" type="number" min="1" step="1" class="form-control" placeholder="cth 1500">
+        </div>
+        <div class="col-md-2">
+          <label class="form-label">Jenis Diskaun</label>
+          <select id="rwType" class="form-select">
+            <option value="amount">Amaun (RM)</option>
+            <option value="percent">Peratus (%)</option>
+          </select>
+        </div>
+        <div class="col-md-2">
+          <label class="form-label">Nilai Diskaun</label>
+          <input id="rwValue" type="number" step="0.01" min="0" class="form-control" placeholder="cth 5">
+        </div>
+        <div class="col-md-1">
+          <label class="form-label">Hari Sah</label>
+          <input id="rwValidDays" type="number" min="1" step="1" class="form-control" value="30">
+        </div>
+        <div class="col-md-2">
+          <label class="form-label">Min. Order (RM)</label>
+          <input id="rwMinOrder" type="number" step="0.01" min="0" class="form-control" placeholder="cth 200">
+        </div>
+        <div class="col-md-2">
+          <button id="btnSaveReward" class="btn btn-success w-100">Simpan / Kemas Kini</button>
+        </div>
+        <div class="col-md-8">
+          <span id="rwNote" class="text-muted small"></span>
+        </div>
+      </div>
+
+      <!-- Senarai reward -->
+      <div class="table-responsive">
+        <table class="table table-sm align-middle">
+          <thead>
+            <tr>
+              <th>Kod</th>
+              <th>Point</th>
+              <th>Diskaun</th>
+              <th>Min Order</th>
+              <th>Tempoh</th>
+              <th>Status</th>
+              <th class="text-end">Tindakan</th>
+            </tr>
+          </thead>
+          <tbody id="rwList">
+            <tr><td colspan="7">Memuatkan…</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="auth.js?v=13.1"></script>
+<script src="admin-guard.js?v=1"></script>
+
+<script>
+/* --- Supabase --- */
+const SB_URL = "https://dduizetstqqjrpsezbpi.supabase.co";
+const SB_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRkdWl6ZXRzdHFxanJwc2V6YnBpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTg3MzI0ODQsImV4cCI6MjA3NDMwODQ4NH0.CrlHXrmHtKgR9qc2192U6quRb5lpFEeOSgwG0Lb8KRM";
+
+window.sb = window.sb || window.supabase.createClient(SB_URL, SB_KEY);
+const sb = window.sb;
+
+/* --- Util --- */
+const $ = id => document.getElementById(id);
+const MY = "ms-MY";
+function normalize(msisdn){
+  if(!msisdn) return null;
+  msisdn = (""+msisdn).trim();
+  if(msisdn.startsWith("+60")) return msisdn;
+  if(msisdn.startsWith("601")) return "+"+msisdn;
+  if(msisdn.startsWith("0"))   return "+60"+msisdn.slice(1);
+  return msisdn;
+}
+function isoFromInput(el){ const v = el.value; return v ? new Date(v).toISOString() : new Date().toISOString(); }
+function money(n){ return Number(n||0).toFixed(2); }
+function dt(x){ try{ return new Date(x).toLocaleString(MY,{dateStyle:"medium",timeStyle:"short",hour12:true}); }catch{ return x; } }
+function setLocalNow(el){
+  const now=new Date();const yyyy=now.getFullYear();const mm=String(now.getMonth()+1).padStart(2,"0");
+  const dd=String(now.getDate()).padStart(2,"0");const hh=String(now.getHours()).padStart(2,"0");
+  const mi=String(now.getMinutes()).padStart(2,"0");el.value=`${yyyy}-${mm}-${dd}T${hh}:${mi}`;
+}
+function ensureTimeFilled(el){
+  if(!el.value) return; if(/T00:00$/.test(el.value)){
+    const now=new Date(); const hh=String(now.getHours()).padStart(2,"0"); const mi=String(now.getMinutes()).padStart(2,"0");
+    el.value=el.value.slice(0,11)+`${hh}:${mi}`;
+  }
+}
+
+/* --- Admins --- */
+async function refreshAdmins(){
+  const tbody = $("adminList");
+
+  const { data, error } = await sb.rpc("admin_users_list");
+  if(error){ tbody.innerHTML = `<tr><td colspan="4">Ralat muat admin: ${error.message}</td></tr>`; return; }
+  if(!data || data.length===0){ tbody.innerHTML = `<tr><td colspan="4">Tiada admin.</td></tr>`; return; }
+
+  tbody.innerHTML = data.map(r=>{
+    const badge = r.is_active ? `<span class="badge text-bg-success">Aktif</span>`
+                              : `<span class="badge text-bg-secondary">Nyahaktif</span>`;
+    const normalized = normalize(r.phone);
+    const btn = r.is_active
+      ? `<button class="btn btn-sm btn-outline-danger"  data-act="off" data-phone="${normalized}">Nyahaktif</button>`
+      : `<button class="btn btn-sm btn-outline-success" data-act="on"  data-phone="${normalized}">Aktifkan</button>`;
+    return `<tr>
+      <td>${normalized || r.phone || "-"}</td>
+      <td>${badge}</td>
+      <td>${dt(r.created_at)}</td>
+      <td class="text-end">${btn}</td>
+    </tr>`;
+  }).join("");
+
+  [...tbody.querySelectorAll("button[data-act]")].forEach(b=>{
+    b.onclick = async ()=>{
+      const phone = b.getAttribute("data-phone");
+      const on = b.getAttribute("data-act")==="on";
+      const { error } = await sb.rpc("admin_set_active",{ p_phone: phone, p_active: on });
+      if(error) alert("Gagal set status admin: "+error.message);
+      refreshAdmins();
+    };
+  });
+}
+$("btnAddAdmin").onclick = async ()=>{
+  const phone = normalize($("adminPhone").value);
+  if(!phone) return alert("Sila isi nombor telefon.");
+  const { error } = await sb.rpc("admin_upsert", { p_phone: phone });
+  if(error) return alert("Gagal tambah admin: "+error.message);
+  $("addNote").style.display="inline-block"; setTimeout(()=>$("addNote").style.display="none",1500);
+  $("adminPhone").value="";
+  refreshAdmins();
+};
+
+/* --- Helper pelaku (admin) --- */
+async function actorPhone(){
+  try{
+    const a = (window.auth_get && window.auth_get()) || null;
+    const p = a && (a.phone || a.msisdn || a.username);
+    if(p) return normalize(p);
+  }catch{}
+  const r = await sb
+    .from("admin_users")
+    .select("phone")
+    .eq("is_active", true)
+    .order("created_at")
+    .limit(1)
+    .maybeSingle();
+  return normalize(r.data?.phone || "") || "";
+}
+
+/* --- Harga: load latest & histories --- */
+async function loadLatest(){
+  // BELI
+  {
+    const a = await sb.from("gold_prices")
+      .select("ddate,price_9999,price_916")
+      .order("ddate",{ascending:false})
+      .limit(1).maybeSingle();
+    if(a.error && a.error.code!=="PGRST116") $("buyLatest").textContent = "Ralat: "+a.error.message;
+    else if(!a.data) $("buyLatest").textContent = "Terkini: tiada rekod.";
+    else $("buyLatest").textContent = `Terkini: ${dt(a.data.ddate)} — 999.9: RM ${money(a.data.price_9999)}, 916: RM ${money(a.data.price_916)}`;
+  }
+
+  // JUAL BALIK
+  {
+    const b = await sb.from("gold_sell_prices")
+      .select("ddate,price_9999,price_916,actor_phone")
+      .order("ddate",{ascending:false});
+    if(b.error){
+      $("sellLatest").textContent = "Ralat: "+b.error.message;
+      $("sellHist").innerHTML = `<tr><td colspan="4">Ralat.</td></tr>`;
+    }else if(!b.data || b.data.length===0){
+      $("sellLatest").textContent = "Terkini: tiada rekod.";
+      $("sellHist").innerHTML = `<tr><td colspan="4">Tiada rekod.</td></tr>`;
+    }else{
+      const latest = b.data[0];
+      $("sellLatest").textContent = `Terkini: ${dt(latest.ddate)} — 999.9: RM ${money(latest.price_9999)}, 916: RM ${money(latest.price_916)}`;
+      $("sellHist").innerHTML = b.data.map(r=>`
+        <tr>
+          <td>${dt(r.ddate)}</td>
+          <td>RM ${money(r.price_9999)}</td>
+          <td>RM ${money(r.price_916)}</td>
+          <td>${r.actor_phone||"-"}</td>
+        </tr>
+      `).join("");
+    }
+  }
+}
+
+async function loadBuyHistory(limit=50){
+  const body = $("buyHist");
+  try{
+    const { data, error } = await sb
+      .from("gold_prices")
+      .select("ddate, price_9999, price_916")
+      .order("ddate", { ascending:false })
+      .limit(limit);
+    if(error) throw error;
+    if(!data || data.length===0){
+      body.innerHTML = `<tr><td colspan="3">Tiada rekod.</td></tr>`;
+      return;
+    }
+    body.innerHTML = data.map(r=>`
+      <tr>
+        <td>${dt(r.ddate)}</td>
+        <td>RM ${money(r.price_9999)}</td>
+        <td>RM ${money(r.price_916)}</td>
+      </tr>
+    `).join("");
+  }catch(e){
+    body.innerHTML = `<tr><td colspan="3">⚠️ Ralat: ${e?.message||e}</td></tr>`;
+  }
+}
+
+/* ---------- UPAH: Coin & Dinar ---------- */
+const COIN_WEIGHTS  = [0.10,0.15,0.25,0.50,1.00,1.50,2.50,3.00,5.00];
+const DINAR_WEIGHTS = [1.0625,2.1250,4.2500];
+const DINAR_LABELS  = {
+  1.0625: "1/4 dinar (1.0625g)",
+  2.125:  "1/2 dinar (2.125g)",
+  4.25:   "1 dinar (4.25g)"
+};
+
+async function renderUpah(kind, weights, tbodyId){
+  const body = $(tbodyId);
+  try{
+    const { data, error } = await sb
+      .from("goldbar_upah")
+      .select("kind,weight_g,upah_rm")
+      .eq("kind", kind)
+      .order("weight_g");
+
+    if(error) throw error;
+
+    const map = new Map();
+    (data||[]).forEach(r => map.set(Number(r.weight_g).toFixed(4), Number(r.upah_rm)));
+
+    body.innerHTML = weights.map(w => {
+      const key = Number(w).toFixed(4);
+      const val = map.has(key) ? map.get(key) : 0;
+      const label = (kind==='dinar') ? (DINAR_LABELS[Number(w)] || `${w}g`) : `${w}g`;
+      return `
+        <tr>
+          <td>${label}</td>
+          <td>
+            <input class="form-control form-control-sm upah-input"
+                   type="number" step="0.01" min="0"
+                   data-kind="${kind}" data-weight="${w}"
+                   value="${Number(val).toFixed(2)}">
+          </td>
+          <td>Upah jualan untuk ${kind==='dinar' ? 'Dinar '+label : 'Gold Coin '+label}</td>
+        </tr>`;
+    }).join("");
+  }catch(e){
+    body.innerHTML = `<tr><td colspan="3">Ralat memuat upah: ${e?.message||e}</td></tr>`;
+  }
+}
+
+async function saveAllUpah(){
+  const inputs = [...document.querySelectorAll(".upah-input")];
+  const rows = inputs.map(i => ({
+    kind: i.dataset.kind,
+    weight_g: Number(i.dataset.weight),
+    upah_rm: Number(i.value||0)
+  }));
+
+  $("upahStatus").textContent = "Menyimpan…";
+  const { error } = await sb.from("goldbar_upah").upsert(rows, { onConflict: "kind,weight_g" });
+  $("upahStatus").textContent = error ? ("Gagal: "+error.message) : "✔ Disimpan!";
+}
+
+/* --- Simpan BELI --- */
+$("btnSaveBuy").onclick = async ()=>{
+  const phone = await actorPhone();
+  const dISO  = isoFromInput($("buyDate"));
+  const p9999 = parseFloat($("buy9999").value||0);
+  const p916  = parseFloat($("buy916").value||0);
+  $("buyStatus").textContent = "Menyimpan…";
+  const { error } = await sb.rpc("gold_upsert_price", {
+    p_actor_phone: phone,
+    p_ddate: dISO,
+    p_price_9999: p9999,
+    p_price_916:  p916
+  });
+  $("buyStatus").textContent = error ? ("Gagal: "+error.message) : "✔ Disimpan/kemas kini!";
+  if(!error){ await loadLatest(); await loadBuyHistory(); }
+};
+
+/* --- Simpan JUAL BALIK --- */
+$("btnSaveSell").onclick = async ()=>{
+  const phone = await actorPhone();
+  const dISO  = isoFromInput($("sellDate"));
+  const p9999 = parseFloat($("sell9999").value||0);
+  const p916  = parseFloat($("sell916").value||0);
+  $("sellStatus").textContent = "Menyimpan…";
+  const { error } = await sb.rpc("gold_sellback_upsert_price", {
+    p_actor_phone: phone,
+    p_ddate: dISO,
+    p_price_9999: p9999,
+    p_price_916:  p916
+  });
+  $("sellStatus").textContent = error ? ("Gagal: "+error.message) : "✔ Disimpan/kemas kini!";
+  if(!error) await loadLatest();
+};
+
+/* ====== Diskaun Kaedah Bayaran (baru) ====== */
+async function loadPaymentDiscounts(){
+  const { data, error } = await sb.from("payment_discounts")
+    .select("method, percent")
+    .order("method");
+  if(error){
+    $("discNote").textContent = "Ralat muat: " + error.message;
+    return;
+  }
+
+  const map = new Map((data||[]).map(r => [String(r.method || "").toLowerCase(), Number(r.percent || 0)]));
+
+  $("discFpx").value     = map.get("fpx")         || 0;
+  $("discManual").value  = map.get("manual")      || 0;          // 🔹 Tunai / E-Wallet (Manual)
+  $("discCard").value    = map.get("card_wallet") || 0;
+  $("discBnpl").value    = map.get("bnpl")        || 0;
+
+  $("discNote").textContent = "Nilai ini dipakai di checkout untuk kira diskaun ikut kaedah bayaran.";
+}
+
+$("btnSaveDisc").onclick = async ()=>{
+  const rows = [
+    { method: "fpx",         percent: Number($("discFpx").value    || 0) },
+    { method: "manual",      percent: Number($("discManual").value || 0) }, // 🔹 Tunai / E-Wallet (Manual)
+    { method: "card_wallet", percent: Number($("discCard").value   || 0) },
+    { method: "bnpl",        percent: Number($("discBnpl").value   || 0) },
+  ];
+  $("discNote").textContent = "Menyimpan…";
+  const { error } = await sb.from("payment_discounts")
+    .upsert(rows, { onConflict:"method" });
+  $("discNote").textContent = error ? ("Gagal: "+error.message) : "✔ Disimpan!";
+  if(!error) loadPaymentDiscounts();
+};
+
+/* ====== Kupon Diskaun (baru) ====== */
+function setNowIfEmpty(el){
+  if(!el.value){
+    const now=new Date();const yyyy=now.getFullYear();const mm=String(now.getMonth()+1).padStart(2,"0");
+    const dd=String(now.getDate()).padStart(2,"0");const hh=String(now.getHours()).padStart(2,"0");const mi=String(now.getMinutes()).padStart(2,"0");
+    el.value=`${yyyy}-${mm}-${dd}T${hh}:${mi}`;
+  }
+}
+function getCpMethods(){
+  if($("cpMAll").checked) return null; // semua
+  const vals=[...document.querySelectorAll(".cpMethod:checked")].map(x=>x.value);
+  return vals.length? vals : null;
+}
+$("cpMAll").addEventListener("change", ()=>{
+  const disabled = $("cpMAll").checked;
+  document.querySelectorAll(".cpMethod").forEach(x=>{ x.disabled = disabled; if(disabled) x.checked=false; });
+});
+
+async function loadCoupons(){
+  const body = $("cpList");
+  const { data, error } = await sb.from("coupons")
+    .select("code, title, discount_type, discount_value, start_at, end_at, active, min_order, applicable_methods, per_user_limit, max_redemptions, created_at")
+    .order("created_at",{ascending:false});
+  if(error){ body.innerHTML = `<tr><td colspan="8">Ralat: ${error.message}</td></tr>`; return; }
+  if(!data || !data.length){ body.innerHTML = `<tr><td colspan="8">Tiada kupon.</td></tr>`; return; }
+
+  body.innerHTML = data.map(r=>{
+    const jenis = r.discount_type==="percent" ? `${r.discount_value}%` : `RM ${money(r.discount_value)}`;
+    const tempoh = `${dt(r.start_at)} → ${dt(r.end_at)}`;
+    const methods = r.applicable_methods ? r.applicable_methods.join(", ") : "Semua";
+    const had = `Akaun: ${r.per_user_limit || 1}${r.max_redemptions? `, Global: ${r.max_redemptions}`:""}`;
+    const badge = r.active ? `<span class="badge text-bg-success">Aktif</span>` : `<span class="badge text-bg-secondary">Tidak aktif</span>`;
+    const btnTxt = r.active ? "Nyahaktif" : "Aktifkan";
+    return `<tr>
+      <td><b>${r.code}</b><div class="small text-muted">${r.title||""}</div></td>
+      <td>${jenis}</td>
+      <td>${tempoh}</td>
+      <td>RM ${money(r.min_order||0)}</td>
+      <td>${methods}</td>
+      <td>${had}</td>
+      <td>${badge}</td>
+      <td class="text-end">
+        <button class="btn btn-sm btn-outline-secondary" data-toggle="${r.code}" data-active="${r.active?1:0}">${btnTxt}</button>
+      </td>
+    </tr>`;
+  }).join("");
+
+  [...body.querySelectorAll("button[data-toggle]")].forEach(btn=>{
+    btn.onclick = async ()=>{
+      const code = btn.getAttribute("data-toggle");
+      const active = btn.getAttribute("data-active")==="1";
+      const { error } = await sb.from("coupons")
+        .update({ active: !active })
+        .eq("code", code);
+      if(error) alert("Gagal kemas kini status: "+error.message);
+      loadCoupons();
+    };
+  });
+}
+
+$("btnSaveCoupon").onclick = async ()=>{
+  // isi default tarikh jika kosong
+  setNowIfEmpty($("cpStart"));
+  setNowIfEmpty($("cpEnd"));
+
+  const payload = {
+    code: ($("cpCode").value||"").toUpperCase().trim(),
+    title: $("cpTitle").value||null,
+    discount_type: $("cpType").value,
+    discount_value: Number($("cpValue").value||0),
+    start_at: new Date($("cpStart").value).toISOString(),
+    end_at:   new Date($("cpEnd").value).toISOString(),
+    min_order: Number($("cpMinOrder").value||0),
+    applicable_methods: getCpMethods(), // null=semua
+    per_user_limit: parseInt($("cpPerUser").value||"1"),
+    max_redemptions: $("cpMaxAll").value? parseInt($("cpMaxAll").value) : null,
+    active: true
+  };
+  if(!payload.code) return alert("Sila isi Kod Kupon.");
+  if(payload.discount_value<=0) return alert("Nilai diskaun mesti > 0.");
+
+  $("cpNote").textContent = "Menyimpan…";
+  const { error } = await sb.from("coupons").upsert(payload, { onConflict:"code" });
+  $("cpNote").textContent = error ? ("Gagal: "+error.message) : "✔ Kupon disimpan!";
+  if(!error){ loadCoupons(); }
+};
+
+/* ====== Loyalty Rewards (Point Ganjaran) ====== */
+async function loadRewards(){
+  const body = $("rwList");
+  const { data, error } = await sb
+    .from("loyalty_rewards")
+    .select("*")
+    .order("required_points", { ascending: true });
+
+  if(error){
+    body.innerHTML = `<tr><td colspan="7">Ralat muat reward: ${error.message}</td></tr>`;
+    return;
+  }
+  if(!data || !data.length){
+    body.innerHTML = `<tr><td colspan="7">Tiada reward lagi. Tambah di atas.</td></tr>`;
+    return;
+  }
+
+  body.innerHTML = data.map(r=>{
+    const jenis = r.discount_type === "percent"
+      ? `${Number(r.discount_value||0).toFixed(2)}%`
+      : `RM ${money(r.discount_value)}`;
+
+    const status = r.is_active
+      ? `<span class="badge text-bg-success">Aktif</span>`
+      : `<span class="badge text-bg-secondary">Nyahaktif</span>`;
+
+    const btnTxt = r.is_active ? "Nyahaktif" : "Aktifkan";
+
+    return `
+      <tr>
+        <td><b>${r.code}</b><div class="small text-muted">${r.title||""}</div></td>
+        <td>${r.required_points}</td>
+        <td>${jenis}</td>
+        <td>RM ${money(r.min_order_rm||0)}</td>
+        <td>${r.valid_days||0} hari</td>
+        <td>${status}</td>
+        <td class="text-end">
+          <button class="btn btn-sm btn-outline-secondary me-1"
+                  data-fill="${r.id}">Isi ke atas</button>
+          <button class="btn btn-sm btn-outline-primary"
+                  data-toggle="${r.id}" data-active="${r.is_active?1:0}">${btnTxt}</button>
+        </td>
+      </tr>
+    `;
+  }).join("");
+
+  // Butang toggle aktif / nyahaktif
+  [...body.querySelectorAll("button[data-toggle]")].forEach(btn=>{
+    btn.onclick = async ()=>{
+      const id = btn.getAttribute("data-toggle");
+      const active = btn.getAttribute("data-active")==="1";
+
+      const { error } = await sb
+        .from("loyalty_rewards")
+        .update({ is_active: !active })
+        .eq("id", id);
+
+      if(error) alert("Gagal kemas kini status: " + error.message);
+      loadRewards();
+    };
+  });
+
+  // Butang isi ke atas (untuk edit cepat)
+  [...body.querySelectorAll("button[data-fill]")].forEach(btn=>{
+    btn.onclick = ()=>{
+      const id = btn.getAttribute("data-fill");
+      const row = data.find(x=>x.id === id);
+      if(!row) return;
+      $("rwCode").value      = row.code || "";
+      $("rwTitle").value     = row.title || "";
+      $("rwPoints").value    = row.required_points || "";
+      $("rwType").value      = row.discount_type || "amount";
+      $("rwValue").value     = Number(row.discount_value||0).toFixed(2);
+      $("rwMinOrder").value  = Number(row.min_order_rm||0).toFixed(2);
+      $("rwValidDays").value = row.valid_days || 30;
+      $("rwNote").textContent = "Mod edit: sebarang Simpan akan overwrite reward kod ini.";
+    };
+  });
+}
+
+// Simpan / upsert reward
+$("btnSaveReward").onclick = async ()=>{
+  const code  = ($("rwCode").value||"").trim().toUpperCase();
+  const title = $("rwTitle").value || null;
+  const pts   = parseInt($("rwPoints").value||"0", 10);
+  const dtype = $("rwType").value;
+  const val   = Number($("rwValue").value||0);
+  const minRM = Number($("rwMinOrder").value||0);
+  const days  = parseInt($("rwValidDays").value||"30", 10);
+
+  if(!code)  return alert("Sila isi Kod Reward.");
+  if(!pts || pts <= 0) return alert("Perlu Point mesti > 0.");
+  if(!val || val <= 0) return alert("Nilai diskaun mesti > 0.");
+  if(!days || days <= 0) return alert("Hari sah mesti > 0.");
+
+  const payload = {
+    code,
+    title,
+    required_points: pts,
+    discount_type: dtype,
+    discount_value: val,
+    min_order_rm: minRM,
+    valid_days: days
+  };
+
+  $("rwNote").textContent = "Menyimpan…";
+  const { error } = await sb
+    .from("loyalty_rewards")
+    .upsert(payload, { onConflict: "code" });
+
+  $("rwNote").textContent = error
+    ? ("Gagal: " + error.message)
+    : "✔ Reward disimpan / dikemas kini!";
+
+  if(!error){
+    $("rwCode").value = "";
+    $("rwTitle").value = "";
+    $("rwPoints").value = "";
+    $("rwValue").value = "";
+    $("rwMinOrder").value = "";
+    $("rwValidDays").value = 30;
+    $("rwType").value = "amount";
+    setTimeout(()=> $("rwNote").textContent = "", 2000);
+    loadRewards();
+  }
+};
+
+/* --- Init --- */
+(async ()=>{
+  if(!$("buyDate").value)  setLocalNow($("buyDate"));
+  if(!$("sellDate").value) setLocalNow($("sellDate"));
+  ["buyDate","sellDate"].forEach(id=>{
+    const el = $(id);
+    el.addEventListener("change", ()=>ensureTimeFilled(el));
+  });
+
+  await refreshAdmins();
+  await loadLatest();
+  await loadBuyHistory();
+
+  // Upah Coin & Dinar
+  await renderUpah('coin',  COIN_WEIGHTS,  'upahCoinBody');
+  await renderUpah('dinar', DINAR_WEIGHTS, 'upahDinarBody');
+  $("btnSaveUpah").onclick = saveAllUpah;
+
+  // Tambahan: Diskaun Payment + Kupon
+  await loadPaymentDiscounts();
+  await loadCoupons();
+// 🔥 Tambahan: Loyalty Rewards
+  await loadRewards();
+
+})();
+
+(async () => {
+    // tunjuk status ringkas pada UI (optional)
+    const pill = document.getElementById('authStatus');
+    const set = (t)=> pill && (pill.textContent = t);
+
+    const ok = await adminGuard.require({
+      onChecking: ()=> set?.("Mengesahkan akses…"),
+      onDenied:   ()=> set?.("Akses ditolak"),
+      onAllowed:  (phone)=> set?.("Log masuk (admin) — " + phone)
+    });
+
+    if (!ok) return; // TERHENTI DI SINI jika bukan admin
+
+    // >>> di bawah ini barulah anda jalankan kod page admin sedia ada
+    // contoh:
+    //   initAdmin916UI();
+    //   loadPrice916();
+    //   renderDesigns();
+  })();
+
+</script>
+</body>
+</html>

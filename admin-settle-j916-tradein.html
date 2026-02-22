@@ -1,0 +1,947 @@
+<!doctype html>
+<html lang="ms">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Admin • Settle Sale + Trade In — Emas Amir</title>
+
+  <!-- Libs -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="auth.js?v=13.1"></script>
+  <script src="admin-guard.js?v=1"></script>
+
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+
+  <style>
+    body{background:#fff}
+    .container-narrow{max-width:1200px}
+    .auth-pill{border:1px solid #e5e7eb;border-radius:999px;padding:.2rem .6rem;background:#fafafa;color:#555}
+    .btn-chip{border:1px solid #e5e7eb;background:#f8fafc;padding:6px 10px;border-radius:999px;font-size:.9rem}
+    .btn-chip.btn-primary{background:#0d6efd;color:#fff;border-color:#0d6efd}
+    .table-sticky thead th{position:sticky;top:0;background:#fff;z-index:5}
+    .mono{font-family:ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,"Liberation Mono","Courier New",monospace}
+    .card-soft{border:1px solid #e5e7eb;border-radius:14px}
+    .small-muted{font-size:12px;color:#6b7280}
+    .toast-wrap{position:fixed;right:16px;bottom:16px;z-index:1080}
+    .pick-row{cursor:pointer}
+    .pick-row:hover{background:#f8fafc}
+    .selected-row{outline:2px solid #0d6efd; outline-offset:-2px; background:#eef6ff}
+    .badge-soft{border:1px solid #e5e7eb;background:#fafafa;border-radius:999px;padding:2px 8px;font-size:12px}
+  </style>
+</head>
+<body>
+<div class="container container-narrow py-3">
+
+  <!-- TOP BAR -->
+  <div class="d-flex justify-content-between align-items-center mb-2">
+    <div class="small auth-pill" id="authStatus">Memuatkan…</div>
+    <div class="d-flex flex-wrap gap-2">
+      <a class="btn btn-outline-secondary btn-chip" href="index.html">Halaman Utama</a>
+      <a class="btn btn-outline-secondary btn-chip" href="admin.html">Admin</a>
+      <a class="btn btn-outline-secondary btn-chip" href="admin-j916.html">Admin J916</a>
+      <a class="btn btn-outline-secondary btn-chip" href="admin-tradein.html">Admin Trade In</a>
+      <a class="btn btn-outline-secondary btn-chip" href="account.html">Akaun</a>
+      <button id="btnLogin"  class="btn btn-outline-secondary btn-chip" type="button">Log masuk</button>
+      <button id="btnLogout" class="btn btn-outline-secondary btn-chip" type="button" style="display:none">Log keluar</button>
+    </div>
+  </div>
+  <hr class="mb-3">
+
+  <div class="d-flex align-items-center justify-content-between gap-2 flex-wrap">
+    <h1 class="h4 m-0">Admin • Settle Sale (J916) + Trade In</h1>
+    <div class="d-flex gap-2 align-items-center">
+      <span class="badge-soft">Ambil: J916 <b>PENDING</b> sahaja + TradeIn <b>DRAFT</b> sahaja</span>
+    </div>
+  </div>
+
+  <!-- SEARCH -->
+  <div class="card-soft p-3 mt-3">
+    <div class="row g-2 align-items-end">
+      <div class="col-12 col-md-6">
+        <label class="form-label mb-1">No telefon pelanggan</label>
+        <input id="phoneBox" class="form-control" placeholder="Contoh: 0123456789 / 60123456789" />
+        <div class="small-muted mt-1">Tip: tekan Enter untuk cari.</div>
+      </div>
+      <div class="col-12 col-md-6">
+        <div class="d-flex gap-2">
+          <button id="btnSearch" class="btn btn-primary" type="button">Cari</button>
+          <button id="btnClear" class="btn btn-outline-secondary" type="button">Reset</button>
+        </div>
+        <div class="small-muted mt-2" id="searchInfo">-</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- RESULTS -->
+  <div class="row g-3 mt-1">
+    <div class="col-12 col-lg-6">
+      <div class="card-soft p-3">
+        <div class="d-flex justify-content-between align-items-center">
+          <div class="fw-semibold">1) Pilih Sale J916 (PENDING)</div>
+          <small class="text-muted" id="saleCount">0</small>
+        </div>
+        <div class="table-responsive mt-2">
+          <table class="table table-sm align-middle table-sticky">
+            <thead>
+              <tr>
+                <th style="width:150px">Tarikh</th>
+                <th>Order</th>
+                <th>Pelanggan</th>
+                <th class="text-end" style="width:140px">Jumlah</th>
+              </tr>
+            </thead>
+            <tbody id="saleTbody">
+              <tr><td colspan="4" class="text-center text-muted py-4">Belum cari.</td></tr>
+            </tbody>
+          </table>
+        </div>
+
+        <div class="mt-2 small-muted">
+          Dipilih: <span class="mono" id="salePicked">-</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-12 col-lg-6">
+      <div class="card-soft p-3">
+        <div class="d-flex justify-content-between align-items-center">
+          <div class="fw-semibold">2) Pilih Trade In (DRAFT)</div>
+          <small class="text-muted" id="tradeCount">0</small>
+        </div>
+        <div class="table-responsive mt-2">
+          <table class="table table-sm align-middle table-sticky">
+            <thead>
+              <tr>
+                <th style="width:150px">Tarikh</th>
+                <th>ID</th>
+                <th>Pelanggan</th>
+                <th class="text-end" style="width:140px">Subtotal</th>
+              </tr>
+            </thead>
+            <tbody id="tradeTbody">
+              <tr><td colspan="4" class="text-center text-muted py-4">Belum cari.</td></tr>
+            </tbody>
+          </table>
+        </div>
+
+        <div class="mt-2 small-muted">
+          Dipilih: <span class="mono" id="tradePicked">-</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- SETTLEMENT SUMMARY -->
+  <div class="card-soft p-3 mt-3">
+    <div class="d-flex justify-content-between align-items-center flex-wrap gap-2">
+      <div class="fw-semibold">3) Ringkasan Settlement</div>
+      <div class="d-flex gap-2">
+        <button id="btnPreview" class="btn btn-outline-dark btn-sm" type="button" disabled>Preview Resit Gabungan</button>
+        <button id="btnSettle" class="btn btn-success btn-sm" type="button" disabled>SELESAI (Mark PAID dua-dua)</button>
+      </div>
+    </div>
+
+    <div class="row g-2 mt-1">
+      <div class="col-12 col-md-4">
+        <div class="small-muted">Sale (J916)</div>
+        <div class="fw-semibold" id="sumSale">RM 0.00</div>
+      </div>
+      <div class="col-12 col-md-4">
+        <div class="small-muted">Trade In</div>
+        <div class="fw-semibold" id="sumTrade">RM 0.00</div>
+      </div>
+      <div class="col-12 col-md-4">
+        <div class="small-muted">Net (Sale - TradeIn)</div>
+        <div class="fw-bold" id="sumNet">RM 0.00</div>
+        <div class="small-muted" id="netHint">-</div>
+      </div>
+    </div>
+
+    <hr class="my-2">
+
+    <div class="row g-2">
+      <div class="col-12 col-md-6">
+        <label class="form-label mb-1">Catatan settlement (optional)</label>
+        <input id="noteBox" class="form-control" placeholder="Contoh: bayar beza tunai / cash out transfer / nota staff" />
+      </div>
+      <div class="col-12 col-md-3">
+        <label class="form-label mb-1">Cash out method (jika kedai bayar)</label>
+        <select id="cashoutMethod" class="form-select">
+          <option value="">-</option>
+          <option value="TUNAI">TUNAI</option>
+          <option value="TRANSFER">TRANSFER</option>
+        </select>
+        <div class="small-muted mt-1">Isi kalau Net negatif.</div>
+      </div>
+      <div class="col-12 col-md-3">
+        <label class="form-label mb-1">Rujukan (optional)</label>
+        <input id="refBox" class="form-control" placeholder="Contoh: ref bank / no slip" />
+      </div>
+    </div>
+
+    <div class="small-muted mt-2">
+      *Page ini hanya update status. Data lain (harga/amount) tak diubah.
+    </div>
+  </div>
+</div>
+
+<!-- TOAST -->
+<div class="toast-wrap">
+  <div class="toast align-items-center text-bg-dark border-0" id="mainToast" role="status" aria-live="polite" aria-atomic="true">
+    <div class="d-flex">
+      <div class="toast-body" id="toastMsg">Berjaya.</div>
+      <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Tutup"></button>
+    </div>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+/* ========================== Supabase ========================== */
+const SB_URL = "https://dduizetstqqjrpsezbpi.supabase.co";
+const SB_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsImJlZiI6ImRkdWl6ZXRzdHFxanJwc2V6YnBpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTg3MzI0ODQsImV4cCI6MjA3NDMwODQ4NH0.CrlHXrmHtKgR9qc2192U6quRb5lpFEeOSgwG0Lb8KRM";
+window.sb = window.sb || window.supabase.createClient(SB_URL, SB_KEY);
+const sb = window.sb;
+
+/* ========================== WhatsApp (OnSend) ========================== */
+const ADMIN_WA = "60168055916"; // no admin yang akan terima mesej refund (digits sahaja)
+const ONSEND_BASE  = "https://onsend.io/api/v1";
+const ONSEND_TOKEN = "4b879470cc16ca8f06c5ab9878a4578880cfd0fd7b7cfe0121499f3ab017dd04"; // ⚠️ sebaiknya pindah ke Netlify function kemudian
+
+function normalizeWA(msisdn){
+  if(!msisdn) return null;
+  let x=(''+msisdn).replace(/\D/g,'');
+  if(!x) return null;
+  if(x.startsWith('60')) return x;
+  if(x.startsWith('0'))  return '60' + x.slice(1);
+  return '60' + x;
+}
+
+async function sendWA(msisdn, text){
+  const phone_number = normalizeWA(msisdn);
+  if(!phone_number) return { ok:false, reason:'bad_phone' };
+
+  try{
+    const r = await fetch(ONSEND_BASE + "/send", {
+      method: "POST",
+      headers: {
+        Accept: "application/json",
+        "Content-Type": "application/json",
+        Authorization: "Bearer " + ONSEND_TOKEN
+      },
+      body: JSON.stringify({ phone_number, message: text, type: "text" })
+    });
+    const j = await r.json().catch(()=>({}));
+    console.log("[OnSend]", r.status, j);
+    return { ok: (r.ok && j.success === true), raw:j };
+  }catch(e){
+    return { ok:false, reason:String(e?.message||e) };
+  }
+}
+
+function getAdminPhoneForLog(){
+  try{
+    const a=(window.auth_get&&window.auth_get())||null;
+    const p = (''+(a?.phone||a?.msisdn||a?.username||'')).replace(/\D/g,'');
+    if(!p) return null;
+    return p.startsWith('60') ? ('+'+p) : ('+60'+p);
+  }catch(_){ return null; }
+}
+
+async function saveSettlementToDB(payload){
+  // payload: sale_order_code, tradein_id, sale_rm, trade_rm, net_rm, note, ref, cashout_method, created_by_phone
+  const { data, error } = await sb
+    .from('settlement_txn')
+    .insert([payload])
+    .select('id')
+    .maybeSingle();
+
+  // kalau duplicate (unique constraint), kita fetch yang sedia ada
+  if(error){
+    const msg = String(error.message||'');
+    const isDup = msg.includes('duplicate') || msg.includes('unique') || msg.includes('settlement_txn_sale_order_code_tradein_id_key');
+    if(isDup){
+      const { data:exist, error:ex2 } = await sb
+        .from('settlement_txn')
+        .select('id')
+        .eq('sale_order_code', payload.sale_order_code)
+        .eq('tradein_id', payload.tradein_id)
+        .maybeSingle();
+      if(ex2) throw ex2;
+      return exist?.id || null;
+    }
+    throw error;
+  }
+  return data?.id || null;
+}
+
+const $ = (id)=>document.getElementById(id);
+const showToast=(m)=>{ const el=$('mainToast'); $('toastMsg').textContent=m||'OK'; new bootstrap.Toast(el,{delay:1800}).show(); };
+const fmtMY=(s)=> new Date(s).toLocaleString('ms-MY',{hour12:false});
+const money=(n)=> 'RM ' + (Number(n||0)).toFixed(2);
+const moneyFromCents=(c)=> 'RM ' + ((Number(c||0))/100).toFixed(2);
+
+function calcSaleRM(r){
+  if(!r) return 0;
+
+  // 1) kalau dah ada amount_cents (selalunya bill/gateway atau manual yang admin dah isi)
+  const cents = Number(r.amount_cents);
+  if(Number.isFinite(cents) && cents > 0) return cents/100;
+
+  // 2) kalau ada grand_total_rm (manual PENDING biasanya ada ni)
+  const gt = Number(r.grand_total_rm);
+  if(Number.isFinite(gt) && gt > 0) return gt;
+
+  // 3) fallback kira sendiri dari subtotal + shipping - diskaun
+  const sub   = Number(r.subtotal_rm) || 0;
+  const ship  = Number(r.shipping_rm) || 0;
+  const payD  = Number(r.pay_disc_rm) || 0;
+  const coupD = Number(r.coupon_disc_rm) || 0;
+  const computed = sub + ship - payD - coupD;
+
+  return Number.isFinite(computed) && computed > 0 ? computed : 0;
+}
+
+// ===== Phone matching (kebal: 013 / 60 / +60 / 011 / +65 / singapore) =====
+const digitsOnly = (v)=> String(v||'').replace(/\D/g,'');
+
+// bina "key" untuk compare.
+// - kalau bermula 60 -> ambil local 0 + baki (contoh 6013.. => 013..)
+// - kalau bermula 65 -> simpan 65+... (SG)
+// - selain itu guna digits asal
+function phoneKey(anyPhone){
+  const d = digitsOnly(anyPhone);
+  if(!d) return '';
+  if(d.startsWith('60') && d.length >= 10) return '0' + d.slice(2); // MY key
+  if(d.startsWith('65') && d.length >= 10) return '65' + d.slice(2); // SG key
+  return d;
+}
+
+// untuk papar debug (variants yang kita anggap sama)
+function phoneVariantsForDebug(input){
+  const d = digitsOnly(input);
+  if(!d) return [];
+  const set = new Set();
+  set.add(d);
+
+  // MY variants
+  if(d.startsWith('0')) {
+    set.add('60' + d.slice(1));     // 013.. -> 6013..
+    set.add('+60' + d.slice(1));    // 013.. -> +6013..
+  }
+  if(d.startsWith('60')) {
+    set.add('0' + d.slice(2));      // 6013.. -> 013..
+    set.add('+' + d);               // 6013.. -> +6013..
+  }
+  if(d.startsWith('601')) { /* just keep */ }
+
+  // SG variants (simple)
+  if(d.startsWith('65')) set.add('+' + d);
+  if(d.startsWith('65')===false && input.trim().startsWith('+65')) set.add(digitsOnly(input));
+
+  return Array.from(set);
+}
+
+// ===== compatibility: jika ada code lama masih call normalizePhoneVariants() =====
+function normalizePhoneVariants(msisdn){
+  // guna debug variants (digits + 0/60/+60 + 65/+65)
+  return phoneVariantsForDebug(msisdn).map(v => String(v));
+}
+
+async function fetchCustomerBankByPhone(phoneInput){
+  const variants = normalizePhoneVariants(phoneInput);
+  if(!variants.length) return null;
+
+  const { data, error } = await sb
+    .from('customers')
+    .select('name,phone,bank_name,bank_account_name,bank_account_no')
+    .in('phone', variants)
+    .limit(1);
+
+  if(error) throw error;
+  return (data && data[0]) ? data[0] : null;
+}
+
+function buildRefundMsg({ cust, amountRM, saleOrder, tradeId, sid, ref, method }){
+  const amt = Number(amountRM||0).toFixed(2);
+  const tshort = String(tradeId||'').slice(0,8) + "…";
+  const resitUrl = sid ? `${location.origin}/resit-gabungan-settle.html?sid=${encodeURIComponent(sid)}` : "";
+
+  return [
+    "*EMAS AMIR • REFUND / TRANSFER*",
+    "",
+    `Nama: ${cust?.name || "-"}`,
+    `No Tel: ${cust?.phone || "-"}`,
+    "",
+    `Bank: ${cust?.bank_name || "-"}`,
+    `Nama Akaun: ${cust?.bank_account_name || "-"}`,
+    `No Akaun: ${cust?.bank_account_no || "-"}`,
+    "",
+    "Tujuan: Lebihan Trade In (Settlement)",
+    `Jumlah: RM ${amt}`,
+    `Kaedah: ${method || "-"}`,
+    `Rujukan: ${ref || "-"}`,
+    "",
+    `Sale: ${saleOrder || "-"}`,
+    `TradeIn: ${tshort}`,
+    (resitUrl ? `Resit: ${resitUrl}` : null),
+  ].filter(Boolean).join("\n");
+}
+
+function buildAdminSettleMsg({ cust, saleOrder, saleGroup, tradeId, saleRM, tradeRM, net, method, ref, note, sid }){
+  const tshort = String(tradeId||'').slice(0,8) + "…";
+  const resitUrl = sid ? `${location.origin}/resit-gabungan-settle.html?sid=${encodeURIComponent(sid)}` : "";
+  const netTxt = (Number(net) < 0) ? `-RM ${Math.abs(net).toFixed(2)}` : `RM ${Number(net).toFixed(2)}`;
+
+  const lines = [
+    "✅ *SETTLEMENT (J916 + TRADE IN)*",
+    "",
+    `Sale: ${saleOrder || "-"}`,
+    `Group: ${saleGroup ? (String(saleGroup).slice(0,8) + "…") : "-"}`,
+    `TradeIn: ${tshort}`,
+    "",
+    `Sale RM: RM ${Number(saleRM||0).toFixed(2)}`,
+    `Trade RM: RM ${Number(tradeRM||0).toFixed(2)}`,
+    `NET: ${netTxt}`,
+    "",
+    `Cashout Method: ${method || "-"}`,
+    `Rujukan: ${ref || "-"}`,
+    (note ? `Nota: ${note}` : null),
+    (resitUrl ? `Resit: ${resitUrl}` : null),
+  ].filter(Boolean);
+
+  // Kalau NET negatif & TRANSFER → tambah bank info customer
+  if (Number(net) < 0 && String(method||'').toUpperCase() === "TRANSFER") {
+    lines.push(
+      "",
+      "*INFO BANK CUSTOMER (UNTUK REFUND)*",
+      `Nama: ${cust?.name || "-"}`,
+      `Tel: ${cust?.phone || "-"}`,
+      `Bank: ${cust?.bank_name || "-"}`,
+      `Nama Akaun: ${cust?.bank_account_name || "-"}`,
+      `No Akaun: ${cust?.bank_account_no || "-"}`
+    );
+  }
+
+  return lines.join("\n");
+}
+
+/* ========================== Topbar Auth UI ========================== */
+(function(){
+  const pill=$('authStatus'),login=$('btnLogin'),logout=$('btnLogout');
+  try{
+    const a=(window.auth_get&&window.auth_get())||null;
+    if(a){
+      pill.textContent='Log masuk (admin) — '+(a.phone||a.msisdn||'');
+      login.style.display='none'; logout.style.display='';
+      logout.onclick=()=>{window.auth_clear&&window.auth_clear();location.reload();};
+    }else{
+      pill.textContent='Tidak log masuk';
+      login.style.display=''; logout.style.display='none';
+      login.onclick=()=>location.href='login.html#login';
+    }
+  }catch(_){}
+})();
+
+/* ========================== Admin guard (fallback) ========================== */
+async function fallbackRequireAdmin(){
+  const a=(window.auth_get&&window.auth_get())||null;
+  if(!a){ location.href="login.html#login"; return false; }
+  const phone = (''+(a.phone||a.msisdn||a.username||'')).replace(/\D/g,'');
+  if(!phone){ alert("Akses terhad."); location.href="index.html"; return false; }
+  const {data,error}=await sb
+    .from("admin_users").select("phone,is_active")
+    .eq("phone",phone.startsWith('60')?phone:('60'+phone))
+    .eq("is_active",true)
+    .maybeSingle();
+  if(error||!data){ alert("Akses terhad (bukan admin)."); location.href="index.html"; return false; }
+  return true;
+}
+
+/* ========================== State ========================== */
+let saleRows = [];
+let tradeRows = [];
+
+let pickedSale = null;        // row j916_orders (row yang diklik)
+let pickedSaleGroup = null;   // checkout_group yang dipilih
+let pickedSales = [];         // semua row dalam group (tanpa limit)
+
+let pickedTrade = null;       // row tradein_txn
+
+function resetPick(){
+  pickedSale = null;
+  pickedSaleGroup = null;
+  pickedSales = [];
+
+  pickedTrade = null;
+
+  $('salePicked').textContent='-';
+  $('tradePicked').textContent='-';
+  updateSummary();
+  $('btnSettle').disabled = true;
+  $('btnPreview').disabled = true;
+}
+
+function updateSummary(){
+  const saleRM = (pickedSales && pickedSales.length)
+    ? pickedSales.reduce((sum, r)=> sum + calcSaleRM(r), 0)
+    : (pickedSale ? calcSaleRM(pickedSale) : 0);
+
+  const tradeRM = pickedTrade ? Number(pickedTrade.subtotal_rm||0) : 0;
+  const net = saleRM - tradeRM;
+
+  $('sumSale').textContent = money(saleRM);
+  $('sumTrade').textContent = money(tradeRM);
+  $('sumNet').textContent = money(net);
+
+  if(!pickedSale || !pickedTrade){
+    $('netHint').textContent = 'Pilih 1 sale + 1 trade-in dahulu.';
+    return;
+  }
+
+  if(net > 0){
+    $('netHint').textContent = `Pelanggan perlu tambah ${money(net)} (cash in).`;
+  }else if(net < 0){
+    $('netHint').textContent = `Kedai perlu bayar balik ${money(Math.abs(net))} (cash out).`;
+  }else{
+    $('netHint').textContent = `Tiada beza (0).`;
+  }
+
+  $('btnSettle').disabled = false;
+  $('btnPreview').disabled = false;
+}
+
+function renderSale(){
+  const tb = $('saleTbody');
+  $('saleCount').textContent = saleRows.length;
+
+  if(!saleRows.length){
+    tb.innerHTML = `<tr><td colspan="4" class="text-center text-muted py-4">Tiada J916 PENDING untuk nombor ini.</td></tr>`;
+    return;
+  }
+
+  tb.innerHTML = saleRows.map((r, idx)=>{
+    const sel = (pickedSaleGroup && r.checkout_group === pickedSaleGroup) ? 'selected-row' : '';
+    return `
+      <tr class="pick-row ${sel}" data-idx="${idx}" onclick="pickSale(${idx})">
+        <td>${fmtMY(r.created_at)}</td>
+        <td class="mono">
+          <div class="fw-semibold">${r.order_code || '-'}</div>
+          <div class="small-muted">Status: ${(r.status||'').toUpperCase()}</div>
+        </td>
+        <td>
+          <div class="fw-semibold">${r.customer_name || '-'}</div>
+          <div class="small-muted mono">${r.phone || '-'}</div>
+        </td>
+        <td class="text-end fw-semibold">${money(calcSaleRM(r))}</td>
+      </tr>
+    `;
+  }).join('');
+}
+
+function renderTrade(){
+  const tb = $('tradeTbody');
+  $('tradeCount').textContent = tradeRows.length;
+
+  if(!tradeRows.length){
+    tb.innerHTML = `<tr><td colspan="4" class="text-center text-muted py-4">Tiada Trade-in DRAFT untuk nombor ini.</td></tr>`;
+    return;
+  }
+
+  tb.innerHTML = tradeRows.map((r, idx)=>{
+    const short = String(r.id||'').slice(0,8)+'…';
+    const sel = (pickedTrade && pickedTrade.id === r.id) ? 'selected-row' : '';
+    return `
+      <tr class="pick-row ${sel}" data-idx="${idx}" onclick="pickTrade(${idx})">
+        <td>${fmtMY(r.created_at)}</td>
+        <td class="mono">
+          <div class="fw-semibold">${short}</div>
+          <div class="small-muted">Status: ${(r.status||'').toUpperCase()}</div>
+        </td>
+        <td>
+          <div class="fw-semibold">${r.customer_name || '-'}</div>
+          <div class="small-muted mono">${r.customer_phone || '-'}</div>
+        </td>
+        <td class="text-end fw-semibold">${money(r.subtotal_rm||0)}</td>
+      </tr>
+    `;
+  }).join('');
+}
+
+window.pickSale = function(idx){
+  pickedSale = saleRows[idx] || null;
+
+  // pilih semua order dalam checkout_group yang sama (tanpa limit)
+  pickedSaleGroup = pickedSale?.checkout_group || null;
+
+  if(pickedSaleGroup){
+    pickedSales = saleRows.filter(r => r.checkout_group === pickedSaleGroup);
+  }else{
+    pickedSales = pickedSale ? [pickedSale] : [];
+  }
+
+  // paparan "Dipilih"
+  if(!pickedSale){
+    $('salePicked').textContent = '-';
+  }else if(pickedSaleGroup){
+    const gShort = String(pickedSaleGroup).slice(0,8) + '…';
+    const codes = pickedSales.map(r => r.order_code).filter(Boolean);
+    const codesShort = codes.slice(0,3).join(', ') + (codes.length > 3 ? ` +${codes.length-3} lagi` : '');
+    $('salePicked').textContent = `Group ${gShort} • ${pickedSales.length} item • ${codesShort || '-'}`;
+  }else{
+    $('salePicked').textContent = pickedSale.order_code || '-';
+  }
+
+  renderSale();
+  updateSummary();
+};
+
+window.pickTrade = function(idx){
+  pickedTrade = tradeRows[idx] || null;
+  $('tradePicked').textContent = pickedTrade ? (String(pickedTrade.id||'')) : '-';
+  renderTrade();
+  updateSummary();
+};
+
+/* ========================== Fetch ========================== */
+async function fetchPendingSaleByPhone(phoneInput){
+  const key = phoneKey(phoneInput);
+  if(!key) return [];
+
+  // ambil semua PENDING dulu (limit besar sikit), kemudian tapis secara digits
+  const { data, error } = await sb
+    .from('j916_orders')
+    .select('order_code,checkout_group,created_at,customer_name,phone,amount_cents,status,pay_method,subtotal_rm,shipping_rm,pay_disc_rm,coupon_disc_rm,grand_total_rm')
+    .eq('status', 'PENDING')
+    .order('created_at', { ascending:false })
+    .limit(1000);
+
+  if(error) throw error;
+  const rows = Array.isArray(data) ? data : [];
+  return rows.filter(r => phoneKey(r.phone) === key);
+}
+
+async function fetchDraftTradeinByPhone(phoneInput){
+  const key = phoneKey(phoneInput);
+  if(!key) return [];
+
+  const { data, error } = await sb
+    .from('tradein_txn')
+    .select('id,created_at,customer_name,customer_phone,subtotal_rm,status')
+    .eq('status', 'DRAFT')
+    .order('created_at', { ascending:false })
+    .limit(200);
+
+  if(error) throw error;
+  const rows = Array.isArray(data) ? data : [];
+  return rows.filter(r => phoneKey(r.customer_phone) === key);
+}
+
+async function doSearch(){
+  const input = ($('phoneBox').value || '').trim();
+  if(!input){ alert('Sila isi nombor telefon.'); return; }
+
+  $('searchInfo').textContent = 'Mencari…';
+  resetPick();
+
+  try{
+    const [sales, trades] = await Promise.all([
+      fetchPendingSaleByPhone(input),
+      fetchDraftTradeinByPhone(input)
+    ]);
+
+    saleRows = sales;
+    tradeRows = trades;
+
+    renderSale();
+    renderTrade();
+
+    const v = phoneVariantsForDebug(input);
+    $('searchInfo').textContent = `Phone key: ${phoneKey(input)} | Variants: ${v.join(', ')}`;
+
+    showToast('Carian siap.');
+  }catch(e){
+    console.error(e);
+    $('searchInfo').textContent = 'Ralat carian.';
+    alert('Ralat: ' + (e?.message || e));
+  }
+}
+
+/* ========================== Preview Resit Gabungan ========================== */
+function openCombinedReceiptPreview(){
+  if(!pickedSale || !pickedTrade){
+    alert('Sila pilih 1 sale dan 1 trade-in.');
+    return;
+  }
+
+  const saleList = (pickedSales && pickedSales.length) ? pickedSales : (pickedSale ? [pickedSale] : []);
+  const saleCodes = saleList.map(r => r.order_code).filter(Boolean);
+
+  const payload = {
+    sale: saleCodes[0] || pickedSale.order_code,
+    sale_group: pickedSaleGroup || pickedSale.checkout_group || '',
+    sale_list: saleCodes.join(','),
+    trade: pickedTrade.id,
+    note: ($('noteBox').value||'').trim(),
+    ref:  ($('refBox').value||'').trim(),
+    method: ($('cashoutMethod').value||'').trim(),
+    at: new Date().toISOString()
+  };
+
+  // ✅ backup kalau query string hilang (rewrite/router)
+  try{ localStorage.setItem('settle_preview', JSON.stringify(payload)); }catch(_){}
+
+  const qs = new URLSearchParams({
+    sale: payload.sale,
+    sale_group: payload.sale_group,
+    sale_list: payload.sale_list,
+    trade: payload.trade,
+    note: payload.note,
+    ref: payload.ref,
+    method: payload.method
+  }).toString();
+
+  // ✅ guna absolute URL (lebih kebal)
+  const url = `${location.origin}/resit-gabungan-settle.html?${qs}`;
+  window.open(url, '_blank');
+}
+
+/* ========================== Settle action ========================== */
+async function settleNow(){
+  if(!pickedSale || !pickedTrade){
+    alert('Sila pilih 1 sale dan 1 trade-in.');
+    return;
+  }
+
+  const saleList = (pickedSales && pickedSales.length) ? pickedSales : (pickedSale ? [pickedSale] : []);
+  const saleCodes = saleList.map(r => r.order_code).filter(Boolean);
+  const saleLabel = (pickedSaleGroup)
+    ? `GROUP ${String(pickedSaleGroup).slice(0,8)}… (${saleCodes.length} item)`
+    : (pickedSale?.order_code || '-');
+
+  /* ======================
+     1) KIRA JUMLAH SALE (SUM GROUP)
+     ====================== */
+  let saleRM = saleList.reduce((sum, r)=> sum + calcSaleRM(r), 0);
+  saleRM = Number(saleRM.toFixed(2));
+
+  /* ======================
+     2) KIRA TRADE IN
+     ====================== */
+  const tradeRM = Number(pickedTrade.subtotal_rm || 0);
+
+  /* ======================
+     3) NET
+     ====================== */
+  const net = saleRM - tradeRM;
+
+  /* ======================
+     4) VALIDASI CASH OUT
+     ====================== */
+  const method = ($('cashoutMethod').value || '').trim();
+  if(net < 0 && !method){
+    alert('Net negatif. Sila pilih Cash Out Method (TUNAI / TRANSFER).');
+    return;
+  }
+
+  const note = ($('noteBox').value || '').trim();
+  const ref  = ($('refBox').value || '').trim();
+
+  /* ======================
+     5) CONFIRM
+     ====================== */
+  const ok = confirm(
+    `Sahkan settlement?\n\n` +
+    `Sale J916: ${saleLabel}\n` +
+    (pickedSaleGroup ? (`Order: ${saleCodes.slice(0,5).join(', ')}${saleCodes.length>5?` +${saleCodes.length-5} lagi`:''}\n`) : '') +
+    `Jumlah Sale: RM ${saleRM.toFixed(2)}\n\n` +
+    `Trade In: ${String(pickedTrade.id).slice(0,8)}…\n` +
+    `Jumlah Trade: RM ${tradeRM.toFixed(2)}\n\n` +
+    `NET: RM ${net.toFixed(2)}\n\n` +
+    `Tekan OK untuk mark PAID dua-dua.`
+  );
+  if(!ok) return;
+
+  $('btnSettle').disabled = true;
+  $('btnSettle').textContent = 'Memproses…';
+
+  try{
+    /* ======================
+       6) UPDATE SALE J916 (SEMUA DALAM GROUP)
+       ====================== */
+    if(!saleCodes.length) throw new Error("Tiada sale order_code untuk settle.");
+
+    const saleUpdate = {
+      status: 'PAID',
+      paid_at: new Date().toISOString()
+    };
+
+    // ✅ SELAMAT: auto isi amount_cents hanya jika 1 order sahaja
+    if (saleCodes.length === 1) {
+      const only = saleList[0];
+      const onlyRM = calcSaleRM(only);
+      if (!(Number(only.amount_cents) > 0) && Number(onlyRM) > 0) {
+        saleUpdate.amount_cents = Math.round(Number(onlyRM) * 100);
+      }
+    }
+
+    const { error: e1 } = await sb
+      .from('j916_orders')
+      .update(saleUpdate)
+      .in('order_code', saleCodes)
+      .eq('status', 'PENDING');
+
+    if(e1) throw e1;
+
+    /* ======================
+       7) UPDATE TRADE IN
+       ====================== */
+    const tradeUpdate = { status: 'PAID' };
+
+    const { error: e2 } = await sb
+      .from('tradein_txn')
+      .update(tradeUpdate)
+      .eq('id', pickedTrade.id)
+      .eq('status', 'DRAFT');
+
+    if(e2) throw e2;
+
+    /* ======================
+       7.5) SIMPAN REKOD SETTLEMENT (SUPABASE)
+       ====================== */
+    const settlePayload = {
+      sale_order_code: (pickedSaleGroup ? (`GROUP:${pickedSaleGroup}`) : (pickedSale.order_code)),
+      tradein_id: pickedTrade.id,
+      sale_rm: saleRM,
+      trade_rm: tradeRM,
+      net_rm: net,
+      note: note || null,
+      ref: ref || null,
+      cashout_method: method || null,
+      created_by_phone: getAdminPhoneForLog()
+    };
+
+    const settleId = await saveSettlementToDB(settlePayload);
+
+    // simpan untuk buka resit balik kalau tab tertutup
+    try{
+      localStorage.setItem('settle_last_id', String(settleId||''));
+    }catch(_){}
+
+    /* ======================
+       7.6) WhatsApp ke ADMIN (sentiasa)
+       ====================== */
+    try{
+      // ambil bank customer hanya bila perlu
+      let custBank = null;
+      if (net < 0 && String(method||'').toUpperCase() === "TRANSFER") {
+        custBank = await fetchCustomerBankByPhone(
+          pickedSale.phone || pickedTrade.customer_phone || ""
+        );
+      }
+
+      const msgAdmin = buildAdminSettleMsg({
+        cust: custBank,
+        saleOrder: (pickedSaleGroup ? saleCodes.join(', ') : (pickedSale.order_code)),
+        saleGroup: pickedSaleGroup || pickedSale.checkout_group || null,
+        tradeId: pickedTrade.id,
+        saleRM,
+        tradeRM,
+        net,
+        method,
+        ref,
+        note,
+        sid: settleId
+      });
+
+      console.log("[SETTLE] Send admin ->", ADMIN_WA);
+      const sent = await sendWA(ADMIN_WA, msgAdmin);
+      console.log("[SETTLE] OnSend admin resp:", sent);
+
+      if(!sent.ok){
+        showToast("Settle OK, tapi WhatsApp admin gagal.");
+      }
+    }catch(e){
+      console.warn("Notify admin error:", e?.message || e);
+    }
+
+    /* ======================
+       8) LOG (LOCAL ONLY)
+       ====================== */
+    try{
+      localStorage.setItem('settle_last', JSON.stringify({
+        at: new Date().toISOString(),
+        sale_group: pickedSaleGroup || null,
+        sale_orders: saleCodes,
+        tradein_id: pickedTrade.id,
+        sale_rm: saleRM,
+        trade_rm: tradeRM,
+        net_rm: net,
+        cashout_method: method || null,
+        ref: ref || null,
+        note: note || null
+      }));
+    }catch(_){}
+
+    showToast('Selesai ✅ Sale & Trade In ditanda PAID');
+
+    const sid = (function(){ try{return localStorage.getItem('settle_last_id')||''}catch(_){return ''} })();
+    const urlResit = sid ? `${location.origin}/resit-gabungan-settle.html?sid=${encodeURIComponent(sid)}` : '';
+
+    alert(
+      'Selesai ✅\n\nSale & Trade In sudah PAID.\n\n' +
+      (urlResit ? ('Resit gabungan (boleh buka semula):\n' + urlResit + '\n\n') : '') +
+      'Resit gabungan boleh cetak.'
+    );
+
+    await doSearch();
+
+  }catch(e){
+    console.error(e);
+    alert('Ralat settle: ' + (e?.message || e));
+  }finally{
+    $('btnSettle').textContent = 'SELESAI (Mark PAID dua-dua)';
+    $('btnSettle').disabled = false;
+  }
+}
+
+/* ========================== Wire ========================== */
+$('btnSearch').addEventListener('click', doSearch);
+$('phoneBox').addEventListener('keydown', (e)=>{ if(e.key==='Enter') doSearch(); });
+
+$('btnClear').addEventListener('click', ()=>{
+  $('phoneBox').value='';
+  $('searchInfo').textContent='-';
+  saleRows=[]; tradeRows=[];
+  resetPick();
+  $('saleTbody').innerHTML = `<tr><td colspan="4" class="text-center text-muted py-4">Belum cari.</td></tr>`;
+  $('tradeTbody').innerHTML = `<tr><td colspan="4" class="text-center text-muted py-4">Belum cari.</td></tr>`;
+  $('saleCount').textContent='0';
+  $('tradeCount').textContent='0';
+});
+
+$('btnPreview').addEventListener('click', openCombinedReceiptPreview);
+$('btnSettle').addEventListener('click', settleNow);
+
+/* ========================== Boot ========================== */
+(async ()=>{
+  const pill=$('authStatus'); const set=(t)=> pill&&(pill.textContent=t);
+  let ok=false;
+
+  if(window.adminGuard && typeof adminGuard.require==='function'){
+    ok = await adminGuard.require({
+      onChecking:()=>set("Mengesahkan akses…"),
+      onDenied:()=>set("Akses ditolak"),
+      onAllowed:(p)=>set("Log masuk (admin) — "+p)
+    });
+  }else{
+    ok = await fallbackRequireAdmin();
+    if(ok) set("Log masuk (admin)");
+  }
+  if(!ok) return;
+
+  showToast('Ready. Masukkan phone untuk mula.');
+})();
+</script>
+</body>
+</html>

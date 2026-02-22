@@ -1,0 +1,185 @@
+<!doctype html>
+<html lang="ms">
+<head>
+  <meta charset="utf-8">
+  <title>Cetak Tag 916</title>
+
+  <!-- Libs -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="https://cdn.jsdelivr.net/npm/jsbarcode@3.11.6/dist/JsBarcode.all.min.js"></script>
+
+  <style>
+    /* Saiz label: 67mm x 27mm (ikut setting printer tag916) */
+    @page {
+      size: 67mm 27mm;
+      margin: 0;
+    }
+
+    * { box-sizing: border-box; }
+
+    body{
+      margin:0;
+      padding:0;
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    }
+
+    /* Setiap tag = satu label */
+    .tag-page{
+      width:67mm;
+      height:27mm;
+      padding:2mm 2mm 1.5mm 2mm;
+      display:flex;
+      flex-direction:column;
+      justify-content:flex-start;
+    }
+
+    .tag-top{
+      height:13mm;
+      padding-right:1mm;
+      display:flex;
+      flex-direction:column;
+      justify-content:flex-start;
+      font-size:8.5pt;
+      line-height:1.22;
+      white-space:nowrap;
+    }
+
+    .tag-top .title{
+      font-weight:700;
+      margin-bottom:0.5mm;
+      font-size:9.2pt;
+    }
+
+    .tag-bottom{
+      flex:1;
+      display:flex;
+      flex-direction:column;
+      align-items:flex-start;
+    }
+
+    /* === BARCODE === */
+    .barcode{
+      margin-top:1mm;
+      margin-left:0.2mm;   /* posisi kanan sikit */
+      display:block;
+    }
+
+    .code-text{
+      font-size:8pt;
+      margin-top:0.5mm;
+      width:20mm;
+      text-align:center;
+      letter-spacing:0.05em;
+      margin-left:1mm;
+    }
+
+    @media screen {
+      body{
+        background:#eee;
+        padding:10px;
+        display:flex;
+        flex-wrap:wrap;
+        gap:6px;
+      }
+      .tag-page{
+        background:#fff;
+        border:1px solid #ccc;
+      }
+    }
+  </style>
+</head>
+<body>
+<script>
+  // ====================== CONFIG SUPABASE ======================
+  const SB_URL = "https://dduizetstqqjrpsezbpi.supabase.co";
+  const SB_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRkdWl6ZXRzdHFxanJwc2V6YnBpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTg3MzI0ODQsImV4cCI6MjA3NDMwODQ4NH0.CrlHXrmHtKgR9qc2192U6quRb5lpFEeOSgwG0Lb8KRM";
+  const sb = window.supabase.createClient(SB_URL, SB_KEY);
+
+  const RPC_NAME = "j916_admin_get_items_by_codes";
+
+  // ====================== HELPER FORMAT ======================
+  const fmt1 = x => Number(x || 0).toFixed(1);
+  const fmt2 = x => Number(x || 0).toFixed(2);
+
+  // ====================== RENDER TAG ======================
+  function renderTags(items){
+    document.body.innerHTML = ""; // kosongkan
+
+    items.forEach((it, idx)=>{
+      const div = document.createElement("div");
+      div.className = "tag-page";
+
+      const size   = fmt1(it.length_cm);
+      const lebar  = fmt1(it.width_cm);
+      const weight = fmt2(it.weight_g);
+
+      div.innerHTML = `
+        <div class="tag-top">
+          <div class="title">916 EMAS AMIR</div>
+          <div>S:${size}   L:${lebar}</div>
+          <div>W: ${weight}gm&nbsp;&nbsp;EA</div>
+        </div>
+
+        <div class="tag-bottom">
+          <svg id="bc-${idx}" class="barcode"></svg>
+          <div class="code-text">${it.code}</div>
+        </div>
+      `;
+
+      document.body.appendChild(div);
+
+      // ===== Barcode =====
+      try{
+        JsBarcode(`#bc-${idx}`, String(it.code || ""), {
+          format: "CODE128",
+          displayValue: false,
+          margin: 4,   // quiet zone
+          height: 20,  // 👉 pendekkan (lebih kurang 10mm atas kertas)
+          width: 1.1   // bar tebal, masih senang scan
+        });
+      }catch(e){
+        console.error("Barcode error", e);
+      }
+    });
+
+    setTimeout(()=>window.print(), 300);
+  }
+
+  // ====================== MAIN ======================
+  (async function main(){
+    const params = new URLSearchParams(window.location.search);
+    const codesStr = params.get("codes") || "";
+    const codes = codesStr.split(",").map(c=>c.trim()).filter(Boolean);
+
+    if (!codes.length){
+      alert("Tiada kod item.");
+      return;
+    }
+
+    try{
+      const { data, error } = await sb.rpc(RPC_NAME, { p_codes: codes });
+      if (error) throw error;
+
+      const rows = Array.isArray(data) ? data : [];
+      if (!rows.length){
+        alert("Tiada data item.");
+        return;
+      }
+
+      // ikut urutan input
+      const order = new Map(codes.map((c,i)=>[c.toUpperCase(), i]));
+      rows.sort((a,b)=>{
+        return (order.get(a.code.toUpperCase()) ?? 9999) -
+               (order.get(b.code.toUpperCase()) ?? 9999);
+      });
+
+      renderTags(rows);
+
+    }catch(e){
+      alert("Gagal dapatkan data: " + e.message);
+      console.error(e);
+    }
+  })();
+</script>
+</body>
+</html>

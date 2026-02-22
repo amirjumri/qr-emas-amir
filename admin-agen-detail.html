@@ -1,0 +1,816 @@
+<!doctype html>
+<html lang="ms">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Butiran Agen & Jualan — Emas Amir</title>
+
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+  <style>
+    body{background:#fff}
+    .container-narrow{max-width:1100px}
+    .auth-pill{
+      border:1px solid #e5e7eb;
+      border-radius:999px;
+      padding:.2rem .6rem;
+      background:#fafafa;
+      color:#555;
+      font-size:13px;
+    }
+    .btn-chip{
+      border-radius:999px;
+      font-size:13px;
+      padding:.25rem .7rem;
+    }
+    .page-title{font-weight:700;font-size:22px}
+    .stat-card{
+      border:1px solid #e5e7eb;
+      border-radius:10px;
+      padding:.75rem 1rem;
+      background:#fafafa;
+    }
+    .stat-label{font-size:12px;color:#6b7280}
+    .stat-value{font-weight:600;font-size:18px}
+    .status-badge{
+      font-size:11px;
+      border-radius:999px;
+      padding:.15rem .45rem;
+    }
+    .section-title{
+      margin-top:18px;
+      font-weight:700;
+      font-size:15px;
+    }
+    code{font-size:12px}
+    .muted{color:#6b7280}
+  </style>
+</head>
+<body>
+<div class="container container-narrow py-3">
+
+  <!-- TOP BAR -->
+  <div class="d-flex justify-content-between align-items-center mb-3">
+    <div class="auth-pill small">
+      <span class="me-1 badge text-bg-dark">Admin</span>
+      <span id="authStatus">Memuatkan…</span>
+    </div>
+    <div class="d-flex flex-wrap gap-2">
+      <a class="btn btn-outline-secondary btn-chip" href="index.html">Halaman Utama</a>
+      <a class="btn btn-outline-secondary btn-chip" href="tabung.html">Tabung</a>
+      <a class="btn btn-outline-secondary btn-chip" href="goldbar-coin.html">GoldBar/Coin</a>
+      <a class="btn btn-outline-secondary btn-chip" href="j916.html">Barang Kemas 916</a>
+      <a class="btn btn-outline-secondary btn-chip" href="admin-agen.html">Senarai Agen</a>
+      <a class="btn btn-outline-secondary btn-chip" href="admin-komisen-agen.html">Komisen Agen</a>
+      <button id="btnLogout" class="btn btn-outline-secondary btn-chip" type="button">Log keluar</button>
+    </div>
+  </div>
+
+  <!-- HEADER -->
+  <div class="d-flex justify-content-between align-items-end mb-2">
+    <div>
+      <div class="page-title">Butiran Agen & Jualan</div>
+      <div class="small text-muted">
+        916 ikut <code>agent_slug</code>. Tabung & Goldbar/Coin ikut pelanggan bawah agen (match <code>customer_id/user_id/phone</code>).
+      </div>
+    </div>
+  </div>
+
+  <!-- ALERT SLUG -->
+  <div id="alertSlug" class="alert alert-danger py-2 px-3 small d-none">
+    Slug agen tiada. Sila buka halaman ini melalui <strong>Senarai Agen</strong>.
+  </div>
+
+  <!-- MAKLUMAT AGEN -->
+  <div class="border rounded-3 p-3 mb-3">
+    <div class="d-flex justify-content-between align-items-start flex-wrap">
+      <div>
+        <div class="small text-muted mb-1">Agen</div>
+        <h5 id="agName" class="mb-0">–</h5>
+        <div class="small text-muted">
+          Telefon: <span id="agPhone">–</span><br>
+          Kod Agen: <span id="agCode">–</span><br>
+          Slug: <span id="agSlug">–</span>
+        </div>
+      </div>
+      <div class="text-end">
+        <div class="small text-muted mb-1">Status</div>
+        <div id="agStatusBadge">–</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- RINGKASAN 916 -->
+  <div class="row g-3 mb-3">
+    <div class="col-md-4">
+      <div class="stat-card">
+        <div class="stat-label">Pelanggan berdaftar (bawah agen) — 916</div>
+        <div class="stat-value" id="statCust">0</div>
+      </div>
+    </div>
+    <div class="col-md-4">
+      <div class="stat-card">
+        <div class="stat-label">Jumlah berat emas 916 terjual</div>
+        <div class="stat-value" id="statGram">0.00 g</div>
+      </div>
+    </div>
+    <div class="col-md-4">
+      <div class="stat-card">
+        <div class="stat-label">Jumlah nilai belian 916</div>
+        <div class="stat-value" id="statRM">RM 0.00</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- RINGKASAN TABUNG -->
+  <div class="row g-3 mb-3">
+    <div class="col-md-4">
+      <div class="stat-card">
+        <div class="stat-label">Tabung — Bil. transaksi (Paid/Approved)</div>
+        <div class="stat-value" id="statTabungTx">0</div>
+      </div>
+    </div>
+    <div class="col-md-4">
+      <div class="stat-card">
+        <div class="stat-label">Tabung — Jumlah gram</div>
+        <div class="stat-value" id="statTabungGram">0.00 g</div>
+      </div>
+    </div>
+    <div class="col-md-4">
+      <div class="stat-card">
+        <div class="stat-label">Tabung — Jumlah RM</div>
+        <div class="stat-value" id="statTabungRM">RM 0.00</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- RINGKASAN GOLDBAR/COIN -->
+  <div class="row g-3 mb-3">
+    <div class="col-md-4">
+      <div class="stat-card">
+        <div class="stat-label">GoldBar/Coin — Bil. order (Paid/Approved)</div>
+        <div class="stat-value" id="statGBOrders">0</div>
+      </div>
+    </div>
+    <div class="col-md-4">
+      <div class="stat-card">
+        <div class="stat-label">GoldBar/Coin — Jumlah unit/gram</div>
+        <div class="stat-value" id="statGBGram">0.00</div>
+      </div>
+    </div>
+    <div class="col-md-4">
+      <div class="stat-card">
+        <div class="stat-label">GoldBar/Coin — Jumlah RM</div>
+        <div class="stat-value" id="statGBRM">RM 0.00</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- SENARAI PELANGGAN (916) -->
+  <h6 class="mt-2">Senarai Pelanggan Berdaftar (916)</h6>
+  <div class="small text-muted mb-1">
+    Ringkasan ini ikut jumlah <strong>PAID</strong> untuk J916 di bawah agen ini.
+  </div>
+  <div class="table-responsive mb-3">
+    <table class="table table-sm align-middle">
+      <thead class="table-light">
+        <tr>
+          <th style="width:150px">Tarikh Daftar</th>
+          <th>Pelanggan</th>
+          <th style="width:130px">Telefon</th>
+          <th style="width:130px" class="text-end">Jumlah Gram</th>
+          <th style="width:150px" class="text-end">Jumlah Belian (RM)</th>
+        </tr>
+      </thead>
+      <tbody id="tbodyCust">
+        <tr><td colspan="5" class="text-muted">Memuatkan…</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- SENARAI ORDER J916 -->
+  <h6 class="mt-2">Senarai Order 916 (PAID)</h6>
+  <div class="small text-muted mb-1">
+    Senarai penuh order 916 di bawah agen ini (status <strong>PAID</strong> sahaja).
+  </div>
+  <div class="table-responsive mb-3">
+    <table class="table table-sm align-middle">
+      <thead class="table-light">
+        <tr>
+          <th style="width:150px">Tarikh</th>
+          <th style="width:110px">Order</th>
+          <th>Pelanggan</th>
+          <th style="width:110px" class="text-end">Berat (g)</th>
+          <th style="width:80px"  class="text-end">Kuantiti</th>
+          <th style="width:140px" class="text-end">Jumlah (RM)</th>
+        </tr>
+      </thead>
+      <tbody id="tbodyOrders">
+        <tr><td colspan="6" class="text-muted">Memuatkan…</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- TABUNG -->
+  <div class="section-title">Tabung (Paid/Approved)</div>
+  <div class="small text-muted mb-1">
+    Auto cuba beberapa table & column. Match ikut pelanggan bawah agen.
+  </div>
+  <div class="table-responsive mb-3">
+    <table class="table table-sm align-middle">
+      <thead class="table-light">
+        <tr>
+          <th style="width:150px">Tarikh</th>
+          <th>Pelanggan</th>
+          <th style="width:130px">Telefon</th>
+          <th style="width:120px" class="text-end">Gram/Unit</th>
+          <th style="width:140px" class="text-end">Jumlah (RM)</th>
+          <th style="width:120px">Status</th>
+        </tr>
+      </thead>
+      <tbody id="tbodyTabung">
+        <tr><td colspan="6" class="text-muted">Memuatkan…</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- GOLDBAR/COIN -->
+  <div class="section-title">GoldBar/Coin (Paid/Approved)</div>
+  <div class="small text-muted mb-1">
+    Auto cuba table transaksi (schema BUY/SELL). Match ikut pelanggan bawah agen.
+  </div>
+  <div class="table-responsive mb-3">
+    <table class="table table-sm align-middle">
+      <thead class="table-light">
+        <tr>
+          <th style="width:150px">Tarikh</th>
+          <th style="width:110px">Ref</th>
+          <th>Pelanggan</th>
+          <th style="width:120px" class="text-end">Unit</th>
+          <th style="width:140px" class="text-end">Jumlah (RM)</th>
+          <th style="width:120px">Status</th>
+        </tr>
+      </thead>
+      <tbody id="tbodyGoldbar">
+        <tr><td colspan="6" class="text-muted">Memuatkan…</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="auth.js?v=13.1"></script>
+<script src="admin-guard.js?v=1"></script>
+<script>
+/* ========= Konfig ========= */
+const SB_URL = "https://dduizetstqqjrpsezbpi.supabase.co";
+const SB_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRkdWl6ZXRzdHFxanJwc2V6YnBpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTg3MzI0ODQsImV4cCI6MjA3NDMwODQ4NH0.CrlHXrmHtKgR9qc2192U6quRb5lpFEeOSgwG0Lb8KRM";
+
+window.sb = window.sb || window.supabase.createClient(SB_URL, SB_KEY);
+const sb = window.sb;
+
+const $  = id => document.getElementById(id);
+const money = n => "RM " + Number(n || 0).toFixed(2);
+const fmtG  = g => Number(g || 0).toFixed(2) + " g";
+
+function renderStatusBadge(status){
+  const s = (status || "").toUpperCase();
+  if (s === "ACTIVE")    return '<span class="status-badge bg-success text-white">Aktif</span>';
+  if (s === "PENDING")   return '<span class="status-badge bg-warning text-dark">Menunggu</span>';
+  if (s === "SUSPENDED") return '<span class="status-badge bg-danger text-white">Digantung</span>';
+  return '<span class="status-badge bg-secondary text-white">'+(status||"-")+'</span>';
+}
+
+function fmtDate(s){
+  if (!s) return "-";
+  try{
+    return new Date(s).toLocaleString("ms-MY",{dateStyle:"medium",timeStyle:"short"});
+  }catch(e){
+    return "-";
+  }
+}
+
+function toDigitsPhone(p){
+  const d = String(p||"").replace(/\D+/g,"");
+  if (!d) return "";
+  if (d.startsWith("0")) return "6"+d;      // 01x -> 601x
+  if (d.startsWith("6")) return d;          // 60...
+  return "6"+d;                              // fallback
+}
+
+function expandPhoneVariants(phoneRaw){
+  const d = toDigitsPhone(phoneRaw);
+  if (!d) return [];
+  const v = [];
+  v.push(d);                    // 6019...
+  v.push("+" + d);              // +6019...
+  if (d.startsWith("60")) v.push("0" + d.slice(2)); // 019...
+  return v;
+}
+
+function uniq(arr){
+  const seen = new Set();
+  const out = [];
+  for (const x of (arr||[])){
+    const v = (x==null) ? "" : String(x);
+    if (!v) continue;
+    if (seen.has(v)) continue;
+    seen.add(v);
+    out.push(v);
+  }
+  return out;
+}
+
+function sumNumber(list, getter){
+  let t = 0;
+  for (const x of (list || [])){
+    const v = Number(getter(x) || 0);
+    if (!Number.isNaN(v)) t += v;
+  }
+  return t;
+}
+
+function pick(o, keys, fallback){
+  for (const k of keys){
+    if (o && o[k] != null && o[k] !== "") return o[k];
+  }
+  return fallback;
+}
+
+/* ========= Auth ringkas ========= */
+(function initAuth(){
+  const statusEl = $("authStatus");
+  const btnLogout = $("btnLogout");
+  try{
+    const a = (window.auth_get && window.auth_get()) || null;
+    if (a){
+      statusEl.textContent = "Log masuk sebagai " + (a.name || a.phone || "admin");
+      btnLogout.onclick = ()=>{
+        window.auth_clear && window.auth_clear();
+        location.href = "login.html#login";
+      };
+    }else{
+      statusEl.textContent = "Tidak log masuk";
+      btnLogout.onclick = ()=> location.href = "login.html#login";
+    }
+  }catch(e){
+    console.warn("authStatus error:", e);
+  }
+})();
+
+/* ========= Util: dapatkan slug ========= */
+function getSlug(){
+  const qs = new URLSearchParams(location.search);
+  let slug = (qs.get("slug") || "").trim();
+
+  if (!slug && location.hash){
+    const m = location.hash.match(/slug=([^&]+)/);
+    if (m) slug = decodeURIComponent(m[1] || "");
+  }
+
+  if (!slug && window.sessionStorage){
+    try {
+      slug = (sessionStorage.getItem("agent_detail_slug") || "").trim();
+    } catch(e){
+      console.warn("sessionStorage gagal:", e);
+    }
+  }
+  return slug;
+}
+
+/* ========= Dapatkan pelanggan bawah agen (untuk Tabung/Goldbar) ========= */
+async function getCustomersUnderAgent(slug){
+  try{
+    const { data, error } = await sb
+      .from("customers")
+      .select("id,customer_name,phone,ref_agent_slug,agent_slug,created_at")
+      .or(`agent_slug.eq.${slug},ref_agent_slug.eq.${slug}`)
+      .order("created_at", { ascending:false });
+
+    if (error){
+      console.warn("[customers] error:", error);
+      return { ids: [], phones: [], rows: [] };
+    }
+
+    const rows = data || [];
+    const ids = uniq(rows.map(r=>r.id));
+
+    const phonesExpanded = uniq(
+      rows.flatMap(r => expandPhoneVariants(r.phone))
+    );
+
+    return { ids, phones: phonesExpanded, rows };
+  }catch(e){
+    console.warn("[customers] exception:", e);
+    return { ids: [], phones: [], rows: [] };
+  }
+}
+
+/* ========= Helper: cuba query table dgn beberapa cara ========= */
+const PAID_STATUSES = ["PAID","APPROVED","COMPLETED","SUCCESS","DONE"];
+
+async function tryQueryTable(table, builderFn){
+  try{
+    const q = builderFn(sb.from(table));
+    const res = await q;
+    return res;
+  }catch(e){
+    return { data: null, error: e };
+  }
+}
+
+/* ========= TABUNG: auto-detect table & column ========= */
+async function loadTabungByCustomers(customerIds, phones){
+  $("statTabungTx").textContent = "0";
+  $("statTabungGram").textContent = "0.00 g";
+  $("statTabungRM").textContent = money(0);
+
+  const tbody = $("tbodyTabung");
+  tbody.innerHTML = '<tr><td colspan="6" class="text-muted">Memuatkan…</td></tr>';
+
+  const TABUNG_TABLES = [
+    "tabung_txn",
+    "tabung_txns",
+    "tabung_transactions",
+    "tabung_orders",
+    "tabung_order"
+  ];
+
+  const idCols = ["customer_id","user_id","user_auth_id","auth_uid"];
+  const phoneCols = ["phone","customer_phone","user_phone","payer_phone"];
+
+  const gramCols = ["weight_g","grams","gram_g","amount_g","qty_g","units"];
+  const rmCols   = ["amount_rm","total","total_rm","grand_total_rm","amount","rm"];
+  const centsCols= ["amount_cents","total_cents","grand_total_cents"];
+
+  let foundAny = false;
+  let best = { rows: [], table: null };
+
+  for (const t of TABUNG_TABLES){
+    let res = null;
+
+    for (const col of idCols){
+      if (customerIds.length){
+        res = await tryQueryTable(t, (q)=> q
+          .select("*")
+          .in(col, customerIds)
+          .order("created_at", { ascending:false })
+          .limit(200)
+        );
+        if (!res.error && Array.isArray(res.data)){
+          foundAny = true;
+          best = { rows: res.data, table: t };
+          break;
+        }
+      }
+    }
+    if (foundAny) break;
+
+    for (const col of phoneCols){
+      if (phones.length){
+        res = await tryQueryTable(t, (q)=> q
+          .select("*")
+          .in(col, phones)
+          .order("created_at", { ascending:false })
+          .limit(200)
+        );
+        if (!res.error && Array.isArray(res.data)){
+          foundAny = true;
+          best = { rows: res.data, table: t };
+          break;
+        }
+      }
+    }
+    if (foundAny) break;
+  }
+
+  if (!foundAny){
+    tbody.innerHTML =
+      '<tr><td colspan="6" class="text-danger small">Tabung: table/column tak dapat dikesan. Beritahu saya nama table tabung sebenar (atau screenshot schema).</td></tr>';
+    return;
+  }
+
+  let rows = best.rows || [];
+  rows = rows.filter(r=>{
+    const st = String(pick(r, ["status"], "") || "").toUpperCase();
+    if (!st) return true;
+    return PAID_STATUSES.includes(st);
+  });
+
+  const totalGram = sumNumber(rows, r=> Number(pick(r, gramCols, 0) || 0));
+  const totalRM = sumNumber(rows, r=>{
+    const rm = pick(r, rmCols, null);
+    if (rm != null) return Number(rm);
+    const cents = pick(r, centsCols, null);
+    if (cents != null) return Number(cents)/100;
+    return 0;
+  });
+
+  $("statTabungTx").textContent = String(rows.length);
+  $("statTabungGram").textContent = fmtG(totalGram);
+  $("statTabungRM").textContent = money(totalRM);
+
+  if (!rows.length){
+    tbody.innerHTML =
+      `<tr><td colspan="6" class="text-muted">Tiada transaksi Tabung (Paid/Approved) untuk pelanggan bawah agen ini. (table: <code>${best.table}</code>)</td></tr>`;
+    return;
+  }
+
+  tbody.innerHTML = rows.map(r=>{
+    const dt = fmtDate(pick(r, ["paid_at","approved_at","created_at","updated_at"], null));
+    const name = pick(r, ["customer_name","user_name","name","payer_name"], "-");
+    const phone = pick(r, ["phone","user_phone","customer_phone"], "-");
+    const gram = Number(pick(r, gramCols, 0) || 0);
+    const rm = (()=> {
+      const v1 = pick(r, rmCols, null);
+      if (v1 != null) return Number(v1);
+      const v2 = pick(r, centsCols, null);
+      if (v2 != null) return Number(v2)/100;
+      return 0;
+    })();
+    const st = pick(r, ["status"], "-");
+
+    return `
+      <tr>
+        <td>${dt}</td>
+        <td>${name}</td>
+        <td>${phone}</td>
+        <td class="text-end">${gram.toFixed(2)}</td>
+        <td class="text-end">${money(rm)}</td>
+        <td>${st}</td>
+      </tr>
+    `;
+  }).join("");
+}
+
+/* ========= GOLDBAR/COIN: schema BUY/SELL ========= */
+async function loadGoldbarByCustomers(customerIds, phones){
+  $("statGBOrders").textContent = "0";
+  $("statGBGram").textContent = "0.00";
+  $("statGBRM").textContent = money(0);
+
+  const tbody = $("tbodyGoldbar");
+  tbody.innerHTML = '<tr><td colspan="6" class="text-muted">Memuatkan…</td></tr>';
+
+  const GB_TABLES = [
+    "goldbar_order",
+    "goldbar_orders",
+    "goldbar_coin_order",
+    "goldbar_coin_orders",
+    "goldbar_txn",
+    "goldbar_transactions"
+  ];
+
+  const idCols = ["user_id","customer_id","user_auth_id","auth_uid"];
+  const phoneCols = ["customer_phone","user_phone","phone"];
+
+  let foundAny = false;
+  let best = { rows: [], table: null };
+
+  for (const t of GB_TABLES){
+    let res = null;
+
+    for (const col of idCols){
+      if (customerIds.length){
+        res = await tryQueryTable(t, (q)=> q
+          .select("*")
+          .in(col, customerIds)
+          .order("created_at", { ascending:false })
+          .limit(200)
+        );
+        if (!res.error && Array.isArray(res.data)){
+          foundAny = true;
+          best = { rows: res.data, table: t };
+          break;
+        }
+      }
+    }
+    if (foundAny) break;
+
+    for (const col of phoneCols){
+      if (phones.length){
+        res = await tryQueryTable(t, (q)=> q
+          .select("*")
+          .in(col, phones)
+          .order("created_at", { ascending:false })
+          .limit(200)
+        );
+        if (!res.error && Array.isArray(res.data)){
+          foundAny = true;
+          best = { rows: res.data, table: t };
+          break;
+        }
+      }
+    }
+    if (foundAny) break;
+  }
+
+  if (!foundAny){
+    tbody.innerHTML =
+      '<tr><td colspan="6" class="text-danger small">GoldBar/Coin: table/column tak dapat dikesan. Beritahu saya nama table goldbar sebenar (atau screenshot schema).</td></tr>';
+    return;
+  }
+
+  let rows = best.rows || [];
+  rows = rows.filter(r=>{
+    const st = String(pick(r, ["status"], "") || "").toUpperCase();
+    if (!st) return true;
+    return PAID_STATUSES.includes(st);
+  });
+
+  const totalUnits = sumNumber(rows, r=> Number(pick(r, ["units","weight_g","grams","gram_g","qty"], 0) || 0));
+  const totalRM = sumNumber(rows, r=>{
+    const rm = pick(r, ["total","grand_total_rm","amount_rm","total_rm"], null);
+    if (rm != null) return Number(rm);
+    const cents = pick(r, ["amount_cents"], null);
+    if (cents != null) return Number(cents)/100;
+    return 0;
+  });
+
+  $("statGBOrders").textContent = String(rows.length);
+  $("statGBGram").textContent = Number(totalUnits||0).toFixed(2);
+  $("statGBRM").textContent = money(totalRM);
+
+  if (!rows.length){
+    tbody.innerHTML =
+      `<tr><td colspan="6" class="text-muted">Tiada order GoldBar/Coin (Paid/Approved) untuk pelanggan bawah agen ini. (table: <code>${best.table}</code>)</td></tr>`;
+    return;
+  }
+
+  tbody.innerHTML = rows.map(r=>{
+    const dt = fmtDate(pick(r, ["paid_at","approved_at","created_at","updated_at"], null));
+    const ref = pick(r, ["reference_1","order_code","bill_id_text","id"], "-");
+    const name = pick(r, ["customer_name","user_name","name"], "-");
+    const units = Number(pick(r, ["units","weight_g","grams","gram_g","qty"], 0) || 0);
+    const rm = (()=> {
+      const v1 = pick(r, ["total","grand_total_rm","amount_rm","total_rm"], null);
+      if (v1 != null) return Number(v1);
+      const v2 = pick(r, ["amount_cents"], null);
+      if (v2 != null) return Number(v2)/100;
+      return 0;
+    })();
+    const st = pick(r, ["status"], "-");
+
+    return `
+      <tr>
+        <td>${dt}</td>
+        <td><code>${ref}</code></td>
+        <td>${name}</td>
+        <td class="text-end">${units.toFixed(2)}</td>
+        <td class="text-end">${money(rm)}</td>
+        <td>${st}</td>
+      </tr>
+    `;
+  }).join("");
+}
+
+/* ========= Load utama ========= */
+async function loadPage(){
+  const slug = getSlug();
+  const alertSlug = $("alertSlug");
+
+  if (!slug){
+    alertSlug.classList.remove("d-none");
+    $("tbodyCust").innerHTML   = '<tr><td colspan="5" class="text-muted">—</td></tr>';
+    $("tbodyOrders").innerHTML = '<tr><td colspan="6" class="text-muted">—</td></tr>';
+    $("tbodyTabung").innerHTML = '<tr><td colspan="6" class="text-muted">—</td></tr>';
+    $("tbodyGoldbar").innerHTML = '<tr><td colspan="6" class="text-muted">—</td></tr>';
+    return;
+  }
+  alertSlug.classList.add("d-none");
+
+  const { data: ag, error: errAg } = await sb
+    .from("agents")
+    .select("id,name,phone,code,slug,status")
+    .eq("slug", slug)
+    .maybeSingle();
+
+  if (errAg){
+    alertSlug.textContent = "Ralat memuatkan maklumat agen.";
+    alertSlug.classList.remove("d-none");
+    return;
+  }
+  if (!ag){
+    alertSlug.textContent = "Agen dengan slug ini tidak ditemui.";
+    alertSlug.classList.remove("d-none");
+    return;
+  }
+
+  $("agName").textContent   = ag.name  || "-";
+  $("agPhone").textContent  = ag.phone || "-";
+  $("agCode").textContent   = ag.code  || "-";
+  $("agSlug").textContent   = ag.slug  || "-";
+  $("agStatusBadge").innerHTML = renderStatusBadge(ag.status);
+
+  let totalGram = 0;
+  let totalRM   = 0;
+
+  const { data: rows, error: errSum } = await sb.rpc("agent_dashboard_summary_v1", {
+    p_slug: slug
+  });
+
+  if (errSum){
+    console.warn("[agent_dashboard_summary_v1] error:", errSum);
+    $("tbodyCust").innerHTML =
+      '<tr><td colspan="5" class="text-danger small">SQL ringkasan agen belum disediakan (agent_dashboard_summary_v1).</td></tr>';
+
+    $("statCust").textContent = "0";
+    $("statGram").textContent = fmtG(0);
+    $("statRM").textContent   = money(0);
+  } else {
+    const list = rows || [];
+
+    if (!list.length){
+      $("tbodyCust").innerHTML =
+        '<tr><td colspan="5" class="text-muted">Data pelanggan belum tersedia.</td></tr>';
+    } else {
+      $("tbodyCust").innerHTML = list.map(r=>{
+        const g = Number(r.total_grams_916   ?? 0);
+        const rm = Number(r.total_amount_916 ?? 0);
+        totalGram += g;
+        totalRM   += rm;
+
+        const dt = r.registered_at
+          ? new Date(r.registered_at).toLocaleString("ms-MY",{dateStyle:"medium",timeStyle:"short"})
+          : "-";
+
+        return `
+          <tr>
+            <td>${dt}</td>
+            <td>${r.customer_name || "-"}</td>
+            <td>${r.customer_phone || "-"}</td>
+            <td class="text-end">${Number(g||0).toFixed(2)} g</td>
+            <td class="text-end">${money(rm)}</td>
+          </tr>
+        `;
+      }).join("");
+    }
+
+    $("statCust").textContent = String(list.length);
+    $("statGram").textContent = fmtG(totalGram);
+    $("statRM").textContent   = money(totalRM);
+  }
+
+  const { data: orders, error: errOrd } = await sb
+    .from("j916_orders")
+    .select("created_at,order_code,customer_name,phone,weight_g,qty,grand_total_rm,subtotal_rm,shipping_rm,pay_disc_rm,coupon_disc_rm,unit_rm,status,agent_slug")
+    .eq("agent_slug", slug)
+    .eq("status","PAID")
+    .order("created_at", { ascending:false });
+
+  if (errOrd){
+    console.warn("order list error:", errOrd);
+    $("tbodyOrders").innerHTML =
+      '<tr><td colspan="6" class="text-danger small">Ralat memuatkan senarai order 916.</td></tr>';
+  } else {
+    const listOrd = orders || [];
+    if (!listOrd.length){
+      $("tbodyOrders").innerHTML =
+        '<tr><td colspan="6" class="text-muted">Tiada order 916 PAID di bawah agen ini.</td></tr>';
+    }else{
+      $("tbodyOrders").innerHTML = listOrd.map(o=>{
+        const dt = o.created_at
+          ? new Date(o.created_at).toLocaleString("ms-MY",{dateStyle:"medium",timeStyle:"short"})
+          : "-";
+        const w  = Number(o.weight_g || 0);
+        const q  = Math.max(1, Number(o.qty || 1));
+
+        let lineRM;
+        if (o.grand_total_rm != null){
+          lineRM = Number(o.grand_total_rm);
+        }else if (o.subtotal_rm != null){
+          const sub   = Number(o.subtotal_rm || 0);
+          const ship  = Number(o.shipping_rm || 0);
+          const payD  = Number(o.pay_disc_rm || 0);
+          const coupD = Number(o.coupon_disc_rm || 0);
+          lineRM = sub + ship - payD - coupD;
+        }else{
+          lineRM = Number(o.unit_rm || 0) * q;
+        }
+
+        return `
+          <tr>
+            <td>${dt}</td>
+            <td><code>${o.order_code || "-"}</code></td>
+            <td>${o.customer_name || "-"}</td>
+            <td class="text-end">${w.toFixed(2)}</td>
+            <td class="text-end">${q}</td>
+            <td class="text-end">${money(lineRM)}</td>
+          </tr>
+        `;
+      }).join("");
+    }
+  }
+
+  const custPack = await getCustomersUnderAgent(slug);
+  const ids = custPack.ids || [];
+  const phones = uniq((custPack.phones || []).flatMap(p => expandPhoneVariants(p)));
+
+  await loadTabungByCustomers(ids, phones);
+  await loadGoldbarByCustomers(ids, phones);
+}
+
+document.addEventListener("DOMContentLoaded", loadPage);
+</script>
+</body>
+</html>

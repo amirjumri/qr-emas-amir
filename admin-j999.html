@@ -1,0 +1,1311 @@
+<!doctype html>
+<html lang="ms">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Admin-J999 • Senarai Order GoldBar/Coin — Emas Amir</title>
+
+  <!-- Libs (ORDER matters) -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="auth.js?v=13.1"></script>
+  <script src="admin-guard.js?v=1"></script>
+
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+  <style>
+    body{background:#fff}
+    .container-narrow{max-width:1200px}
+    .auth-pill{border:1px solid #e5e7eb;border-radius:999px;padding:.2rem .6rem;background:#fafafa;color:#555}
+    .btn-chip{border:1px solid #e5e7eb;background:#f8fafc;padding:6px 10px;border-radius:999px;font-size:.9rem}
+    .mono{font-family: ui-monospace,SFMono-Regular,Menlo,monospace}
+    .table-sticky thead th{position:sticky;top:0;background:#fff;z-index:5}
+    .toast-wrap{position:fixed;right:16px;bottom:16px;z-index:1080}
+  </style>
+</head>
+<body>
+<div class="container container-narrow py-3">
+  <!-- TOP BAR -->
+  <div class="d-flex justify-content-between align-items-center mb-2">
+    <div class="small auth-pill" id="authStatus">Memuatkan…</div>
+    <div class="d-flex flex-wrap gap-2">
+      <a class="btn btn-outline-secondary btn-chip" href="index.html">Halaman Utama</a>
+      <a class="btn btn-outline-secondary btn-chip" href="admin.html">Admin</a>
+      <a class="btn btn-outline-secondary btn-chip" href="admin-j916.html">Admin 916</a>
+      <a class="btn btn-outline-secondary btn-chip" href="adminstok-j916.html">Admin Stok 916</a>
+      <a class="btn btn-outline-secondary btn-chip" href="admintabung-simpan.html">Admin Tabung</a>
+      <a class="btn btn-outline-secondary btn-chip" href="account.html">Akaun</a>
+      <button id="btnLogin"  class="btn btn-outline-secondary btn-chip" type="button">Log masuk</button>
+      <button id="btnLogout" class="btn btn-outline-secondary btn-chip" type="button" style="display:none">Log keluar</button>
+    </div>
+  </div>
+  <hr class="mb-3">
+
+  <!-- HEADER + FILTER -->
+  <div class="d-flex align-items-center justify-content-between gap-2 flex-wrap">
+    <h1 class="h4 m-0">Admin-J999 — Senarai Order GoldBar/Coin</h1>
+    <div class="d-flex gap-2">
+      <button class="btn-chip" data-filter="ALL">Semua</button>
+      <button class="btn-chip" data-filter="PAID">Dah Bayar</button>
+      <button class="btn-chip" data-filter="PENDING">Menunggu</button>
+      <button class="btn-chip" data-filter="COMPLETED">Selesai</button>
+    </div>
+  </div>
+
+  <div class="input-group my-3" style="max-width:640px">
+    <span class="input-group-text">Cari</span>
+    <input id="searchBox" class="form-control" placeholder="Cari ref / phone / bill id / design">
+    <button id="refreshBtn" class="btn btn-outline-secondary">Refresh</button>
+  </div>
+
+  <!-- TABLE -->
+  <div class="table-responsive">
+    <table class="table table-sm align-middle table-sticky">
+      <thead>
+        <tr>
+          <th style="width:130px">Tarikh</th>
+          <th>Order</th>
+          <th>Pelanggan</th>
+          <th>Butiran</th>
+          <th class="text-end" style="width:120px">Jumlah</th>
+          <th style="width:120px">Status</th>
+          <th class="text-end" style="width:260px">Tindakan</th>
+        </tr>
+      </thead>
+      <tbody id="ordersTbody">
+        <tr><td colspan="7" class="text-muted py-4">Memuatkan…</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="d-flex justify-content-between align-items-center">
+    <small class="text-muted" id="resultInfo">0 rekod</small>
+    <div class="d-flex gap-2">
+      <button class="btn btn-outline-secondary btn-sm" id="prevPageBtn">Sebelumnya</button>
+      <button class="btn btn-outline-secondary btn-sm" id="nextPageBtn">Seterusnya</button>
+    </div>
+  </div>
+</div>
+
+<!-- Toast -->
+<div class="toast-wrap">
+  <div class="toast align-items-center text-bg-dark border-0" id="mainToast" role="status" aria-live="polite" aria-atomic="true">
+    <div class="d-flex">
+      <div class="toast-body" id="toastMsg">OK.</div>
+      <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Tutup"></button>
+    </div>
+  </div>
+</div>
+
+<!-- Confirm modal -->
+<div class="modal fade" id="confirmModal" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Sahkan Tindakan</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Tutup"></button>
+      </div>
+      <div class="modal-body"><p class="mb-0" id="confirmText">Anda pasti?</p></div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-light" data-bs-dismiss="modal">Batal</button>
+        <button type="button" class="btn btn-primary" id="confirmYesBtn">Teruskan</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Modal Alamat Pelanggan -->
+<div class="modal fade" id="alamatModal" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Alamat Pelanggan</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Tutup"></button>
+      </div>
+      <div class="modal-body">
+        <div class="mb-2">
+          <label class="form-label">Nama</label>
+          <input type="text" id="addr_name" class="form-control">
+        </div>
+        <div class="mb-2">
+          <label class="form-label">Alamat</label>
+          <textarea id="addr_address" class="form-control" rows="3"></textarea>
+        </div>
+        <div class="row">
+          <div class="col-4 mb-2">
+            <label class="form-label">Poskod</label>
+            <input type="text" id="addr_postcode" class="form-control">
+          </div>
+          <div class="col-4 mb-2">
+            <label class="form-label">Bandar</label>
+            <input type="text" id="addr_city" class="form-control">
+          </div>
+          <div class="col-4 mb-2">
+            <label class="form-label">Negeri</label>
+            <input type="text" id="addr_state" class="form-control">
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-light" data-bs-dismiss="modal">Tutup</button>
+        <button class="btn btn-primary" type="button" onclick="saveAlamatFromModal()">
+          Simpan & Guna
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Bootstrap JS -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+
+<script>
+/* =========================
+   Config & helpers
+   ========================= */
+const SB_URL = "https://dduizetstqqjrpsezbpi.supabase.co";
+const SB_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRkdWl6ZXRzdHFxanJwc2V6YnBpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTg3MzI0ODQsImV4cCI6MjA3NDMwODQ4NH0.CrlHXrmHtKgR9qc2192U6quRb5lpFEeOSgwG0Lb8KRM";
+
+window.sb = window.sb || window.supabase.createClient(SB_URL, SB_KEY);
+const sb = window.sb;
+
+
+// ===== Auto refresh (GLOBAL) =====
+let _tick = null;
+let _isRefreshing = false;
+const REFRESH_MS = 5000; // 5s – ubah ikut selera
+
+async function safeRefresh(){
+  if (_isRefreshing) return;
+  _isRefreshing = true;
+  try { await refreshOrders(); } finally { _isRefreshing = false; }
+}
+
+function startAutoRefresh(){
+  if (_tick) return;                     // elak gandaan interval
+  _tick = setInterval(safeRefresh, REFRESH_MS);
+  // bila tab kembali aktif, refresh sekali terus
+  document.addEventListener('visibilitychange', ()=>{
+    if (!document.hidden) safeRefresh();
+  });
+}
+
+function stopAutoRefresh(){
+  if (_tick){ clearInterval(_tick); _tick = null; }
+}
+window.addEventListener('beforeunload', stopAutoRefresh);
+
+
+const $ = id => document.getElementById(id);
+const ORD_PAGE_SIZE = 10;
+let ORD_CURRENT_PAGE = 1;
+let ORD_FILTER = 'ALL';
+let _pendingId = null;
+
+// Admin WA & OnSend (sama macam halaman jualan)
+const ADMIN_WA   = '601113230198';
+const ONSEND_BASE  = "https://onsend.io/api/v1";
+const ONSEND_TOKEN = "76a6f98cfc6e009e5d824e47acd98b9b59a6e5177e14b072fd210276309d91f6";
+function normMsisdn(s){ const d=String(s||'').replace(/\D/g,''); if(d.startsWith('60'))return d; if(d.startsWith('0'))return '6'+d; return d?('60'+d):''; }
+async function sendWA(msisdn, text){
+  const phone_number = normMsisdn(msisdn);
+  if(!phone_number) return false;
+  try{
+    const r = await fetch(ONSEND_BASE+"/send",{method:"POST",headers:{
+      "Accept":"application/json","Content-Type":"application/json","Authorization":"Bearer "+ONSEND_TOKEN
+    },body:JSON.stringify({phone_number,message:text,type:"text"})});
+    const j = await r.json().catch(()=>({}));
+    console.log("[OnSend]", r.status, j);
+    return r.ok && j.success===true;
+  }catch(e){ console.warn("OnSend error:", e); return false; }
+}
+
+function showToast(msg){
+  const el = $('mainToast'); $('toastMsg').textContent = msg||'OK';
+  new bootstrap.Toast(el,{delay:2000}).show();
+}
+function fmtMY(s){ const d=new Date(s); return d.toLocaleString('ms-MY',{hour12:false}); }
+function money(n){ return 'RM ' + Number(n||0).toFixed(2); }
+
+/* =========================
+   Topbar auth pill
+   ========================= */
+(function initTopbar(){
+  const status=$('authStatus'), btnLogin=$('btnLogin'), btnLogout=$('btnLogout');
+  try{
+    const a=(window.auth_get && window.auth_get())||null;
+    if(a){
+      status.textContent='Log masuk (admin) — '+(a.name||a.phone||'pengguna');
+      btnLogin.style.display='none'; btnLogout.style.display='';
+      btnLogout.onclick=()=>{ window.auth_clear && window.auth_clear(); location.href='login.html#login'; };
+    }else{
+      status.textContent='Tidak log masuk';
+      btnLogin.style.display=''; btnLogout.style.display='none';
+      btnLogin.onclick=()=> location.href='login.html#login';
+    }
+  }catch(_){}
+})();
+
+/* =========================
+   Rekod tindakan
+   ========================= */
+async function recordAction(orderId, action){
+  try{
+    await sb.from('goldbar_actions').upsert(
+      { order_id: orderId, action },
+      { onConflict: 'order_id,action' }
+    );
+  }catch(e){ console.warn('recordAction warn:', e); }
+}
+async function loadActions(ids){
+  try{
+    const { data } = await sb.from('goldbar_actions')
+      .select('order_id, action').in('order_id', ids);
+    const sent = new Set((data||[]).filter(x=>x.action==='sent_detail').map(x=>x.order_id));
+    return { sentDetail: sent };
+  }catch(e){ console.warn('loadActions warn:', e); return { sentDetail: new Set() }; }
+}
+
+/* =========================
+   AWB via GDEX (myGDEX Prime)
+   ========================= */
+
+// Simpan AWB dalam localStorage supaya boleh "Print / Track" walaupun refresh
+const AWB_STORAGE_KEY = 'j999_gdex_awb_v1';
+
+function loadAwbCache(){
+  try{
+    const raw = localStorage.getItem(AWB_STORAGE_KEY);
+    if (!raw) return {};
+    const obj = JSON.parse(raw);
+    return (obj && typeof obj === 'object') ? obj : {};
+  }catch(_){ return {}; }
+}
+function saveAwbCache(map){
+  try{ localStorage.setItem(AWB_STORAGE_KEY, JSON.stringify(map || {})); }catch(_){}
+}
+
+let awbCache = loadAwbCache();
+
+function getAwbForOrder(orderId){
+  if (!orderId) return null;
+  return awbCache[orderId] || null;
+}
+function setAwbForOrder(orderId, awb){
+  if (!orderId || !awb) return;
+  awbCache[orderId] = awb;
+  saveAwbCache(awbCache);
+}
+
+function clearAwbForOrder(orderId){
+  if (!orderId) return;
+  if (awbCache && Object.prototype.hasOwnProperty.call(awbCache, orderId)) {
+    delete awbCache[orderId];
+    saveAwbCache(awbCache);
+  }
+}
+
+// ===== Helper telefon untuk match customers.phone =====
+function normalizePhoneVariants(msisdn){
+  if (!msisdn) return [];
+  let x = (''+msisdn).replace(/\D/g,'');
+  const set = new Set();
+
+  if (x) set.add(x);              // 6012...
+
+  if (x.startsWith('60') && x.length > 2){
+    set.add('0' + x.slice(2));    // 012...
+  }
+
+  if (x.startsWith('0') && x.length >= 10 && x.length <= 11){
+    set.add(x);
+    set.add('60' + x.slice(1));   // 60 + buang 0 depan
+  }
+  return Array.from(set);
+}
+
+// Dapatkan alamat dari table customers sahaja (ikut phone)
+async function fetchAddressForOrder(order){
+  let result = {
+    name: order.customer_name || '',
+    address1: 'Alamat ujian 1',
+    address2: '',
+    address3: '',
+    postcode: '09000',
+    city: 'Kulim',
+    state: 'Kedah'
+  };
+
+  try{
+    const variants = normalizePhoneVariants(order.phone || '');
+    if (!variants.length) return result;
+
+    const { data: list } = await sb
+      .from('customers')
+      .select('name,alamat,postcode,city,state,phone')
+      .in('phone', variants);
+
+    if (list && list.length){
+      const c = list[0];
+      result.name     = c.name     || result.name;
+      result.address1 = c.alamat   || result.address1;
+      result.postcode = c.postcode || result.postcode;
+      result.city     = c.city     || result.city;
+      result.state    = c.state    || result.state;
+    }
+  }catch(e){
+    console.warn('fetchAddressForOrder gagal:', e);
+  }
+  return result;
+}
+
+// =====================
+// MODAL ALAMAT (ADMIN)
+// =====================
+let currentOrderForAddress = null;
+let alamatModalInstance = null;
+
+function getAlamatModalInstance(){
+  if (!alamatModalInstance){
+    const el = document.getElementById('alamatModal');
+    if (el){
+      alamatModalInstance = new bootstrap.Modal(el);
+    }
+  }
+  return alamatModalInstance;
+}
+
+// Buka modal bila admin klik butang "Alamat"
+window.openAlamatModalFromBtn = async function(orderId){
+  const row = (window._rowsCache && window._rowsCache[orderId]) || null;
+  if (!row){
+    alert('Order tidak dijumpai.');
+    return;
+  }
+
+  const modal = getAlamatModalInstance();
+  if (!modal){
+    alert('Modal alamat tidak ditemui.');
+    return;
+  }
+
+  currentOrderForAddress = row;
+
+  // Guna helper fetchAddressForOrder untuk ambil alamat dari customers
+  const addr = await fetchAddressForOrder(row);
+
+  document.getElementById('addr_name').value     = addr.name || row.customer_name || '';
+  document.getElementById('addr_address').value  = addr.address1 || '';
+  document.getElementById('addr_postcode').value = addr.postcode || '';
+  document.getElementById('addr_city').value     = addr.city || '';
+  document.getElementById('addr_state').value    = addr.state || '';
+
+  modal.show();
+};
+
+// Simpan alamat daripada modal ke table customers (ikut phone)
+window.saveAlamatFromModal = async function(){
+  if (!currentOrderForAddress) return;
+
+  const nama    = document.getElementById('addr_name').value.trim();
+  const alamat  = document.getElementById('addr_address').value.trim();
+  const poskod  = document.getElementById('addr_postcode').value.trim();
+  const bandar  = document.getElementById('addr_city').value.trim();
+  const negeri  = document.getElementById('addr_state').value.trim();
+
+  if (!alamat || !poskod || !bandar || !negeri){
+    alert('Sila lengkapkan alamat, poskod, bandar dan negeri.');
+    return;
+  }
+
+  const phone = currentOrderForAddress.phone || '';
+
+  try{
+    const variants = normalizePhoneVariants(phone);
+    if (!variants.length){
+      alert('Nombor telefon pelanggan tiada / tidak sah.');
+      return;
+    }
+
+    // Update customers ikut phone (varian 6012..., 012..., dll)
+    await sb.from('customers')
+      .update({
+        name:    nama || currentOrderForAddress.customer_name || null,
+        alamat:  alamat,
+        postcode: poskod,
+        city:     bandar,
+        state:    negeri
+      })
+      .in('phone', variants);
+
+    showToast('Alamat pelanggan dikemas kini.');
+    const modal = getAlamatModalInstance();
+    modal && modal.hide();
+  }catch(e){
+    alert('Ralat semasa simpan alamat: ' + (e?.message || e));
+  }
+};
+
+// Netlify function ke GDEX (sama macam J916)
+const GDEX_FN_URL = "/.netlify/functions/gdex-create-consignment";
+
+// Klik "Generate AWB"
+window.generateAwbFromBtn = async function(btn){
+  const id = btn.dataset.id;
+  if (!id) return;
+
+  // Kalau AWB dah ada, jangan ulang
+  const existing = getAwbForOrder(id);
+  if (existing){
+    alert('AWB sudah wujud: ' + existing);
+    return;
+  }
+
+  const row = (window._rowsCache && window._rowsCache[id]) || null;
+  if (!row){
+    alert('Order tidak dijumpai untuk AWB.');
+    return;
+  }
+
+  // Alamat & nama pelanggan
+  const addr = await fetchAddressForOrder(row);
+
+  const receiverName   = addr.name || row.customer_name || "Pelanggan";
+  const receiverMobile = row.phone || "60123456789";
+  const receiverEmail  = "";   // buat masa ni kosong
+
+  const receiverAddress1 = addr.address1;
+  const receiverAddress2 = addr.address2;
+  const receiverAddress3 = addr.address3;
+  const receiverPostcode = addr.postcode;
+  const receiverCity     = addr.city;
+  const receiverState    = addr.state;
+
+  const shipmentValue  = row.total_rm || 0; // RM
+  const weightKg       = row.weight_g && row.qty
+    ? (row.weight_g * row.qty / 1000)   // gram → kg
+    : 0.5;
+
+  const shipmentContent = [
+    row.kind,
+    row.card_type,
+    row.design_name
+  ].filter(Boolean).join(' ');
+
+  // UI: disable sekejap
+  btn.disabled    = true;
+  const oldText   = btn.textContent;
+  btn.textContent = 'Menjana AWB…';
+
+  try{
+    const res = await fetch(GDEX_FN_URL, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        orderCode: row.reference || row.id,
+        receiverName,
+        receiverMobile,
+        receiverEmail,
+        receiverAddress1,
+        receiverAddress2,
+        receiverAddress3,
+        receiverPostcode,
+        receiverCity,
+        receiverState,
+        shipmentContent,
+        shipmentValue,
+        shipmentWeight: weightKg
+      })
+    });
+
+    const json = await res.json().catch(()=> ({}));
+    console.log("[GDEX J999 create]", res.status, json);
+
+    if (!res.ok || !json.ok){
+      throw new Error(json.message || "GDEX API gagal");
+    }
+
+    const awb = json.awbNo || (json.raw && json.raw[0]?.cnNumber);
+    if (!awb){
+      throw new Error("AWB tidak dijumpai dalam response.");
+    }
+
+    // Simpan dalam cache & DB
+    setAwbForOrder(id, awb);
+
+    try{
+      await sb.from('goldbar_order')
+        .update({ tracking_no: awb })
+        .eq('id', id);
+    }catch(e){
+      console.warn("Gagal update tracking_no di Supabase:", e);
+    }
+
+    const trackUrl = `https://gdexpress.com/tracking/?consignmentno=${encodeURIComponent(awb)}`;
+
+    const msg = [
+      `${awb}   GDEX`,
+      '',
+      `Link tracking: ${trackUrl}`,
+      '',
+      'InsyaAllah postage akan jalan nanti ye, apa-apa update boleh check number tracking yang saya share.',
+      '',
+      'Proses parcel mungkin mengambil masa selama dua hari waktu bekerja, harap pihak tuan/puan memberi kerjasama.',
+      '',
+      'Sekiranya item yang tuan/puan order merupakan GoldBar/Coin bajet, mohon berhati-hati ketika pemakaian kerana item tersebut lembut dan mudah kemik/patah.',
+      '',
+      '*BARANG AKAN DILETAKKAN DI DALAM PACKAGING YANG SESUAI, TOLONG BERHATI-HATI*',
+      '',
+      '*Untuk claim warranty (jika ada), cust wajib bagi full video unboxing dan gambar. Warranty hanya 2 hari sahaja selepas barang sampai ke tangan cust*'
+    ].join('\n');
+
+    const ok = await sendWA(row.phone, msg);
+    if (!ok){
+      showToast('AWB dijana, tetapi WhatsApp gagal dihantar.');
+    }else{
+      showToast('AWB dijana & mesej tracking dihantar.');
+    }
+
+    await refreshOrders();
+
+  }catch(e){
+    alert('Ralat semasa jana AWB: ' + (e?.message || e));
+  }finally{
+    btn.disabled    = false;
+    btn.textContent = oldText;
+  }
+};
+
+// Print AWB ringkas (boleh upgrade ke label PDF)
+window.printAwb = function(orderId){
+  const awb = getAwbForOrder(orderId);
+  if (!awb){ alert('AWB belum dijana.'); return; }
+
+  const w = window.open('', '_blank');
+  if (!w) return;
+  w.document.write(`
+    <html>
+      <head><title>AWB ${awb}</title></head>
+      <body style="font-family:sans-serif;padding:20px">
+        <h2>Air Waybill</h2>
+        <p>Order ID: ${orderId}</p>
+        <p>AWB No: <strong>${awb}</strong></p>
+        <p><em>Label ringkas untuk testing. Nanti sambung ke PDF rasmi myGDEX.</em></p>
+      </body>
+    </html>
+  `);
+  w.document.close();
+};
+
+// Track AWB – buka laman tracking GDEX
+window.trackAwb = function(orderId){
+  const awb = getAwbForOrder(orderId);
+  if (!awb){ alert('AWB belum dijana.'); return; }
+
+  const url = `https://gdexpress.com/tracking/?consignmentno=${encodeURIComponent(awb)}`;
+  if (confirm('Buka laman tracking GDEX untuk AWB: ' + awb + ' ?')){
+    window.open(url, '_blank');
+  }
+};
+
+// (optional) Redo AWB untuk J999 – sama konsep macam J916
+window.redoAwbFromBtn = async function(orderId){
+  if (!orderId) return;
+
+  const currentAwb = getAwbForOrder(orderId) || '(tiada / tidak diketahui)';
+  const ok = confirm(
+    'AWB sedia ada: ' + currentAwb +
+    '\n\nPastikan consignment ini SUDAH DIBATALKAN di portal myGDEX.' +
+    '\n\nTeruskan jana AWB baru untuk order ' + orderId + ' ?'
+  );
+  if (!ok) return;
+
+  try{
+    clearAwbForOrder(orderId);
+    await sb.from('goldbar_order')
+      .update({ tracking_no: null })
+      .eq('id', orderId);
+  }catch(e){
+    console.warn('Gagal clear tracking_no sebelum redo AWB:', e);
+  }
+
+  const fakeBtn = {
+    dataset: { id: orderId },
+    disabled: false,
+    textContent: 'Redo AWB…'
+  };
+  await window.generateAwbFromBtn(fakeBtn);
+};
+
+
+// Tanda COMPLETED (guna table goldbar_order terus)
+async function rpcMarkDone(id){
+  const { error } = await sb
+    .from('goldbar_order')
+    .update({ status: 'COMPLETED' })
+    .eq('id', id);
+  if (error) throw error;
+}
+
+/* =========================
+   Bayar manual (J999)
+   ========================= */
+
+// Klik butang "Bayar manual"
+window.askManualPaidFromBtn = function(btn){
+  const id  = btn.dataset.id;
+  const row = window._rowsCache?.[id];
+  if (!row){ showToast('Order tidak dijumpai.'); return; }
+  if (row.status !== 'PENDING'){
+    showToast('Order bukan status PENDING.');
+    return;
+  }
+
+  const defVal = row.total_rm ? Number(row.total_rm).toFixed(2) : '';
+  const input  = prompt(
+    'Masukkan jumlah bayaran (RM) untuk order '+ row.reference +':',
+    defVal
+  );
+  if (input === null) return; // tekan Cancel
+
+  const cleaned = String(input).replace(/[^0-9.]/g,'');
+  const v = Number(cleaned);
+  if (!Number.isFinite(v) || v <= 0){
+    alert('Jumlah tidak sah. Sila cuba lagi.');
+    return;
+  }
+
+  doManualPaid(id, v);
+};
+
+// Proses tanda PAID manual (ikut group kalau ada checkout_group)
+async function doManualPaid(id, amountRM){
+  const row = window._rowsCache?.[id];
+  if (!row){
+    alert('Order tidak ditemui dalam senarai semasa.');
+    return;
+  }
+
+  const nowIso = new Date().toISOString();
+  const payloadMain = {
+    status: 'PAID',
+    paid_at: nowIso,
+    total_rm: Number(amountRM)
+  };
+
+  try{
+    if (row.checkout_group){
+      const grp = row.checkout_group;
+
+      // 1) Update order yang diklik (dengan jumlah RM yang admin masukkan)
+      let { error: e1 } = await sb
+        .from('goldbar_order')
+        .update(payloadMain)
+        .eq('id', id)
+        .eq('status','PENDING');
+      if (e1) throw e1;
+
+      // 2) Order lain dalam group -> hanya tukar status + paid_at
+      let { error: e2 } = await sb
+        .from('goldbar_order')
+        .update({ status:'PAID', paid_at: nowIso })
+        .eq('checkout_group', grp)
+        .neq('id', id)
+        .eq('status','PENDING');
+      if (e2) throw e2;
+    } else {
+      // Tiada group -> satu order sahaja
+      const { error } = await sb
+        .from('goldbar_order')
+        .update(payloadMain)
+        .eq('id', id)
+        .eq('status','PENDING');
+      if (error) throw error;
+    }
+
+    await recordAction(id, 'manual_paid');
+    showToast('Order ditanda sebagai PAID (manual).');
+    await refreshOrders();
+  }catch(e){
+    alert('Ralat semasa tanda PAID manual: ' + (e?.message || e));
+  }
+}
+
+// =========================
+//  LIST ORDER (baca dari goldbar_order)
+// =========================
+async function rpcList(page, pageSize, filter, q){
+  // asas: baca semua dari table goldbar_order
+  let query = sb
+    .from('goldbar_order')
+    .select('*', { count: 'exact' })
+    .order('created_at', { ascending: false });
+
+  // tapis status (PAID / PENDING / COMPLETED)
+  if (filter && filter !== 'ALL') {
+    query = query.eq('status', filter);
+  }
+
+  // carian bebas: ref / phone / bill / design / nama
+  if (q && q.trim()) {
+    const s = q.trim();
+    const like = `%${s}%`;
+    query = query.or([
+      `reference_1.ilike.${like}`,
+      `customer_name.ilike.${like}`,
+      `customer_phone.ilike.${like}`,
+      `bill_id_text.ilike.${like}`,
+      `design_name.ilike.${like}`
+    ].join(','));
+  }
+
+  // pagination
+  const from = (page - 1) * pageSize;
+  const to   = from + pageSize - 1;
+
+  const { data, error, count } = await query.range(from, to);
+  if (error) throw error;
+
+  const rows = Array.isArray(data) ? data : [];
+
+  // map supaya ikut bentuk yang refreshOrders/render guna
+  const items = rows.map(r => ({
+    id:              r.id,
+    reference:       r.reference_1 || r.id,
+    created_at:      r.created_at,
+    customer_name:   r.customer_name || '-',
+    phone:           r.customer_phone || '',
+    kind:            r.kind || '',
+    card_type:       r.card_type || '',
+    weight_g:        Number(r.weight_g || 0),
+    qty:             Number(r.qty || 1),
+    design_name:     r.design_name || '',
+    total_rm:        Number(r.total_rm || 0),
+    status:          String(r.status || '').toUpperCase(),
+    bill_id:         r.bill_id_text || null,
+    checkout_group:  r.checkout_group || null,
+    tracking_no:     r.tracking_no || null,
+    receipt_sent_at: r.receipt_sent_at || null
+  }));
+
+  const total  = count ?? items.length;
+  const hasPrev = from > 0;
+  const hasNext = to + 1 < (total || 0);
+
+  return { items, total, hasNext, hasPrev };
+}
+
+/* =========================
+   Render
+   ========================= */
+async function refreshOrders(){
+  const q = ($('searchBox')?.value||'').trim();
+  const { items, total, hasNext, hasPrev } = await rpcList(ORD_CURRENT_PAGE, ORD_PAGE_SIZE, ORD_FILTER, q);
+
+  // load action flags (sent_detail)
+  const { sentDetail } = await loadActions(items.map(x=>x.id));
+
+// Seed AWB cache daripada tracking_no yang sedia ada dalam DB
+  try{
+    (items || []).forEach(r => {
+      if (r.tracking_no && !awbCache[r.id]) {
+        awbCache[r.id] = r.tracking_no;
+      }
+    });
+    saveAwbCache(awbCache);
+  }catch(e){
+    console.warn('Seed awbCache gagal:', e);
+  }
+
+  /* 🔔 Detect PAID baharu -> main bunyi */
+  window._prevPaidJ999 = window._prevPaidJ999 || new Set();
+  const currentPaid = new Set((items||[]).filter(x => x.status === 'PAID').map(x => x.id));
+
+  if (window._prevPaidJ999.size > 0){
+    let hasNew = false;
+    for (const id of currentPaid){
+      if (!window._prevPaidJ999.has(id)){ hasNew = true; break; }
+    }
+    if (hasNew) { playCash(); }   // ka-ching
+  }
+  window._prevPaidJ999 = currentPaid;
+
+  const tb = $('ordersTbody');
+  if(!items.length){
+    tb.innerHTML = `<tr><td colspan="7" class="text-muted py-4">0 rekod</td></tr>`;
+    $('resultInfo').textContent = '0 rekod';
+    return;
+  }
+  tb.innerHTML = items.map(r=>{
+    const completed   = (r.status === 'COMPLETED');
+    const alreadySent = !!r.receipt_sent_at;
+    const billShort   = r.bill_id ? ('…' + String(r.bill_id).slice(-6)) : '-';
+
+    // URL resit:
+    // - Ada bill_id  → ?bill_id=...
+    // - Tiada        → ?order=REFERENCE  (bayaran manual)
+    const receiptUrl = (r.bill_id && String(r.bill_id).trim())
+      ? `${location.origin}/resit-j999.html?bill_id=${encodeURIComponent(r.bill_id)}`
+      : `${location.origin}/resit-j999.html?order=${encodeURIComponent(r.reference)}`;
+
+    // Link "Lihat resit" bila resit sudah dihantar
+    let receiptLinkHtml = "";
+    if (alreadySent){
+      const storeJs = r.bill_id
+        ? `try{ localStorage.setItem('j999_last_bill_id','${r.bill_id}'); }catch(_){ }`
+        : `try{ localStorage.setItem('j999_last_order','${r.reference}'); }catch(_){ }`;
+      receiptLinkHtml = `
+        <div class="mt-1">
+          <a class="small text-decoration-underline" target="_blank"
+             href="${receiptUrl}"
+             onclick="${storeJs}">
+            Lihat resit
+          </a>
+        </div>`;
+    }
+
+    const btnGroup = completed
+      ? `<span class="text-success fw-semibold">✓ Selesai</span>`
+      : `
+    <div class="btn-group btn-group-sm">
+      <button class="btn btn-outline-primary"
+              ${r.status==='PAID'?'':'disabled'}
+              onclick="sendDetailBelian('${r.id}')">
+        ${sentDetail.has(r.id)?'✔ Selesai hantar':'Hantar detail belian'}
+      </button>
+
+      <button class="btn btn-outline-secondary" 
+              ${(r.status==='PAID' && !alreadySent) ? '' : 'disabled'} 
+              data-receipt-btn="${r.id}"
+              onclick="sendReceipt('${r.id}')">
+        ${alreadySent ? '✔ Resit dihantar' : 'Hantar resit'}
+      </button>
+
+      <!-- Butang ALAMAT baharu -->
+      <button class="btn btn-outline-dark"
+              type="button"
+              onclick="openAlamatModalFromBtn('${r.id}')">
+        Alamat
+      </button>
+
+      <button class="btn btn-outline-success" 
+              ${r.status==='PENDING'?'':'disabled'}
+              data-id="${r.id}"
+              onclick="askManualPaidFromBtn(this)">
+        Bayar manual
+      </button>
+
+      <button class="btn btn-success"
+              ${r.status==='PAID'?'':'disabled'}
+              onclick="askComplete('${r.id}')">
+        Tanda Selesai
+      </button>
+    </div>
+    ${receiptLinkHtml}
+  `;
+
+    // AWB (dummy) – sama gaya macam admin 916
+    const awbNo = getAwbForOrder(r.id);
+   const awbHtml = awbNo
+      ? `<div class="mt-1 small text-muted">
+           AWB: ${awbNo}
+           <button class="btn btn-link btn-sm p-0 ms-1"
+                   type="button"
+                   onclick="printAwb('${r.id}')">
+             Print
+           </button>
+           <button class="btn btn-link btn-sm p-0 ms-1"
+                   type="button"
+                   onclick="trackAwb('${r.id}')">
+             Track
+           </button>
+           <button class="btn btn-link btn-sm p-0 ms-1 text-danger"
+                   type="button"
+                   onclick="redoAwbFromBtn('${r.id}')">
+             Redo
+           </button>
+         </div>`
+      : (r.status === 'PAID'
+          ? `<div class="mt-1">
+               <button class="btn btn-outline-dark btn-sm"
+                       type="button"
+                       data-id="${r.id}"
+                       onclick="generateAwbFromBtn(this)">
+                 Generate AWB
+               </button>
+             </div>`
+          : '');
+
+    return `
+    <tr id="row-${r.id}">
+      <td>${fmtMY(r.created_at)}</td>
+
+      <td>
+        <div class="fw-semibold mono">${r.reference}</div>
+        <div class="text-muted small">Bill: ${billShort}</div>
+        <div class="text-muted small">
+          Group: ${r.checkout_group ? (r.checkout_group.slice(0,8)+'…') : '-'}
+        </div>
+      </td>
+
+      <td>
+        <div>${r.customer_name}</div>
+        <div class="text-muted small">${r.phone||'-'}</div>
+      </td>
+
+      <td>
+        <div>${r.kind} • ${r.card_type}</div>
+        <div class="text-muted small">${r.weight_g.toFixed(3)}g × ${r.qty}</div>
+        <div class="text-muted small">${r.design_name}</div>
+      </td>
+
+      <td class="text-end fw-semibold">${money(r.total_rm)}</td>
+
+      <td>
+        <span class="badge ${
+          r.status==='PAID'
+            ? 'bg-success'
+            : (r.status==='PENDING'
+                ? 'bg-warning text-dark'
+                : (r.status==='COMPLETED'
+                    ? 'bg-primary'
+                    : 'bg-secondary'))
+        }">
+          ${r.status}
+        </span>
+      </td>
+
+      <td class="text-end">
+        ${btnGroup}
+        ${awbHtml}
+      </td>
+    </tr>`;
+  }).join('');
+
+  $('resultInfo').textContent = `${total} rekod`;
+  $('prevPageBtn').disabled = !hasPrev;
+  $('nextPageBtn').disabled = !hasNext;
+
+  // cache rows
+  window._rowsCache = Object.fromEntries(items.map(x=>[x.id, x]));
+}
+
+function askComplete(id){
+  _pendingId = id;
+  $('confirmText').textContent = 'Sahkan tanda order ini sebagai SELESAI?';
+  new bootstrap.Modal($('confirmModal')).show();
+}
+
+$('confirmYesBtn')?.addEventListener('click', async ()=>{
+  if(!_pendingId) return;
+  const btn = $('confirmYesBtn'); btn.disabled = true;
+  try{
+    await rpcMarkDone(_pendingId);        // persist -> status COMPLETED
+    await recordAction(_pendingId,'completed'); // rekod tindakan (optional)
+
+    // Kemas UI baris terus: tukar badge + buang butang WA
+    const tr = document.getElementById('row-'+_pendingId);
+    if (tr){
+      // status badge
+      const badge = tr.querySelector('td:nth-child(6) .badge');
+      if (badge){ badge.className='badge bg-primary'; badge.textContent='COMPLETED'; }
+      // tindakan
+      const tdAct = tr.querySelector('td:last-child');
+      if (tdAct){ tdAct.innerHTML = `<span class="text-success fw-semibold">✓ Selesai</span>`; }
+    }
+    showToast('Order ditandakan SELESAI.');
+  }catch(e){
+    alert('Ralat: ' + (e?.message || e));
+  }finally{
+    btn.disabled=false;
+    _pendingId=null;
+    bootstrap.Modal.getInstance($('confirmModal'))?.hide();
+  }
+});
+
+/* =========================
+   Hantar detail belian (OnSend)
+   ========================= */
+async function sendDetailBelian(id){
+  const r = window._rowsCache?.[id]; if(!r) return;
+  if (r.status!=='PAID'){ showToast('Perlu status PAID.'); return; }
+
+  const { msgCust, msgAdmin } = buildMessages(r);
+
+  // hantar kepada pelanggan
+  const okC = await sendWA(r.phone, msgCust);
+  // hantar kepada admin
+  const okA = await sendWA(ADMIN_WA, msgAdmin);
+
+  if (okC || okA){
+    await recordAction(id,'sent_detail'); // simpan supaya “✔ Selesai hantar”
+    // tukar label butang pada baris ini
+    const tr = document.getElementById('row-'+id);
+    if (tr){
+      const firstBtn = tr.querySelector('td:last-child .btn-group .btn');
+      if (firstBtn){ firstBtn.textContent='✔ Selesai hantar'; firstBtn.disabled=true; firstBtn.className='btn btn-outline-secondary btn-sm'; }
+    }
+    showToast('Detail belian dihantar.');
+  }else{
+    showToast('Gagal hantar WhatsApp.');
+  }
+}
+
+
+async function sendReceipt(id){
+  const row = (window._rowsCache && window._rowsCache[id]) || null;
+  if (!row){ showToast('Ralat: order tiada.'); return; }
+  if (row.status !== 'PAID'){ showToast('Perlu status PAID.'); return; }
+
+  // kunci butang
+  const btn = document.querySelector(`[data-receipt-btn="${id}"]`);
+  if (btn){
+    btn.disabled   = true;
+    btn.textContent = 'Menghantar…';
+  }
+
+  try{
+    // 1) Cuba dapatkan Bill ID (bill_id / bill_id_text)
+    let bill = (row.bill_id || '').trim();
+    if (!bill){
+      const { data } = await sb
+        .from('goldbar_order')
+        .select('bill_id_text')
+        .eq('id', row.id)
+        .maybeSingle();
+
+      bill = (data?.bill_id_text || '').trim();
+    }
+
+    // 2) Kalau masih tiada Bill → anggap bayaran manual, minta rujukan bank
+    if (!bill){
+      let manualRef = prompt(
+        'Bill ID tiada.\n\nJika bayaran dibuat secara manual (tunai / online transfer), ' +
+        'boleh isi No Rujukan / Reference bank di bawah.\n\n' +
+        'Jika tidak mahu isi, biarkan kosong dan tekan OK.',
+        ''
+      );
+
+      // Tekan Cancel → batalkan proses
+      if (manualRef === null){
+        if (btn){ btn.disabled = false; btn.textContent = 'Hantar resit'; }
+        showToast('Dibatalkan.');
+        return;
+      }
+
+      manualRef = manualRef.trim();
+      if (manualRef){
+        // Simpan rujukan manual ke bill_id_text
+        await sb.from('goldbar_order')
+          .update({ bill_id_text: manualRef })
+          .eq('id', row.id);
+        bill = manualRef;
+      }
+    }
+
+    // 3) Bina URL resit
+    let url;
+    if (bill){
+      // Laluan biasa: ada Bill ID
+      url = `${location.origin}/resit-j999.html?bill_id=${encodeURIComponent(bill)}`;
+      try{ localStorage.setItem('j999_last_bill_id', bill); }catch(_){}
+    } else {
+      // Masih tiada bill → guna param ?order=REFERENCE
+      url = `${location.origin}/resit-j999.html?order=${encodeURIComponent(row.reference)}`;
+      try{ localStorage.setItem('j999_last_order', row.reference); }catch(_){}
+    }
+
+    // 4) Hantar link resit melalui WhatsApp
+    const phone = row.phone || '';
+    const msg = [
+      'Resit pembelian GoldBar/Coin anda:',
+      url,
+      '',
+      'Terima kasih atas belian! 🙏'
+    ].join('\n');
+    await sendWA(phone, msg);
+
+    // 5) Tandakan resit dihantar
+    try{
+      const { error: rpcErr } = await sb.rpc('j999_mark_receipt_sent_v1', { p_order_id: row.id });
+      if (rpcErr) throw rpcErr;
+    }catch(_){
+      await sb.from('goldbar_order')
+        .update({ receipt_sent_at: new Date().toISOString() })
+        .eq('id', row.id);
+    }
+
+    // 6) Kemas UI
+    if (window._rowsCache){
+      window._rowsCache[id].receipt_sent_at = new Date().toISOString();
+    }
+    if (btn){
+      btn.textContent = '✔ Resit dihantar';
+      btn.className   = 'btn btn-outline-secondary';
+      btn.disabled    = true;
+    }
+
+    // 7) Buka tab resit
+    window.open(url, '_blank');
+    showToast('Resit dihantar & dibuka.');
+  }catch(e){
+    showToast('Gagal hantar resit: ' + (e?.message || e));
+    if (btn){
+      btn.disabled   = false;
+      btn.textContent = 'Hantar resit';
+    }
+  }
+}
+/* =========================
+   Events
+   ========================= */
+document.getElementById('refreshBtn')?.addEventListener('click', ()=>{ ORD_CURRENT_PAGE=1; refreshOrders(); startAutoRefresh(); });
+document.getElementById('searchBox')?.addEventListener('keydown', (e)=>{ if(e.key==='Enter'){ ORD_CURRENT_PAGE=1; refreshOrders(); startAutoRefresh(); } });
+document.getElementById('prevPageBtn')?.addEventListener('click', ()=>{ if(ORD_CURRENT_PAGE>1){ ORD_CURRENT_PAGE--; refreshOrders(); }});
+document.getElementById('nextPageBtn')?.addEventListener('click', ()=>{ ORD_CURRENT_PAGE++; refreshOrders(); });
+
+document.addEventListener('click', (e)=>{
+  const el = e.target?.closest?.('[data-filter]'); if(!el) return;
+  e.preventDefault();
+  ORD_FILTER = el.getAttribute('data-filter') || 'ALL';
+  ORD_CURRENT_PAGE = 1;
+  document.querySelectorAll('[data-filter]').forEach(b=> b.classList.remove('btn-primary'));
+  el.classList.add('btn-primary');
+  refreshOrders();
+});
+
+/* =========================
+   BOOT (admin guard + load)
+   ========================= */
+(async ()=>{
+  const pill = $('authStatus');
+  const set = t => pill && (pill.textContent=t);
+
+  let ok = false;
+  if (window.adminGuard && typeof adminGuard.require==='function'){
+    ok = await adminGuard.require({
+      onChecking: ()=> set('Mengesahkan akses…'),
+      onDenied:   ()=> set('Akses ditolak'),
+      onAllowed:  (phone)=> set('Log masuk (admin) — '+phone)
+    });
+  }else{
+    const a = (window.auth_get && window.auth_get()) || null;
+    if(!a){ location.href='login.html#login'; return; }
+    ok = true;
+  }
+  if(!ok) return;
+
+  await refreshOrders();
+  startAutoRefresh();
+})();
+</script>
+
+<!-- 🔊 Ka-ching audio -->
+<audio id="soundCash" preload="auto">
+  <source src="https://dduizetstqqjrpsezbpi.supabase.co/storage/v1/object/public/cash-emas/cashier-quotka-chingquot-sound-effect-129698.mp3?v=1" type="audio/mpeg">
+</audio>
+
+<div id="audioHint" class="small text-muted"
+     style="position:fixed;right:16px;bottom:72px;background:#fff;border:1px solid #e5e7eb;
+            border-radius:10px;padding:6px 10px;display:none;z-index:9999">
+  Bunyi dikunci — klik <button id="btnUnlockAudio" class="btn btn-sm btn-outline-dark">Aktifkan</button>
+</div>
+<script>
+window.addEventListener('load', ()=>{
+  const a = document.getElementById('soundCash');
+  if (!a) return;
+  setTimeout(()=>{
+    a.volume = 0.0;
+    a.play().then(()=>{
+      a.pause(); a.currentTime = 0; a.volume = 1.0;
+      console.log("AUDIO UNLOCK ✅");
+    }).catch(e=>{
+      console.log("AUDIO STILL LOCKED ❌", e.message);
+    });
+  }, 1000);
+});
+</script>
+<script>
+// Cuba main & reset untuk unlock
+function __tryUnlockAudio(){
+  const a = document.getElementById('soundCash');
+  if (!a) return false;
+  a.volume = 1.0; a.muted = false;
+  return a.play().then(()=>{
+    a.pause(); a.currentTime = 0;
+    window.__cashUnlocked = true;
+    console.log('🔓 Audio unlocked');
+    return true;
+  }).catch(()=>false);
+}
+
+// Tunjuk/sembunyi hint
+function __showHint(show){
+  const h = document.getElementById('audioHint');
+  if (h) h.style.display = show ? '' : 'none';
+}
+
+// Pasang listener untuk pastikan boleh unlock bila user sentuh/klik
+(function setupAudioUnlock(){
+  if (window.__audioUnlockReady) return;
+  window.__audioUnlockReady = true;
+
+  const handler = async ()=>{
+    if (window.__cashUnlocked) return cleanup();
+    const ok = await __tryUnlockAudio();
+    if (ok){ cleanup(); __showHint(false); }
+  };
+  function cleanup(){
+    window.removeEventListener('click',handler,true);
+    window.removeEventListener('touchstart',handler,true);
+    window.removeEventListener('keydown',handler,true);
+  }
+  window.addEventListener('click',handler,true);
+  window.addEventListener('touchstart',handler,true);
+  window.addEventListener('keydown',handler,true);
+
+  // Tunjuk hint jika masih terkunci selepas 1s
+  setTimeout(()=>{ if (!window.__cashUnlocked) __showHint(true); }, 1000);
+
+  // Butang manual
+  document.getElementById('btnUnlockAudio')?.addEventListener('click', handler);
+})();
+
+// Main bunyi ka-ching
+function playCash(){
+  const a = document.getElementById('soundCash');
+  if (!a) return;
+
+  const doPlay = ()=>{ a.currentTime = 0; a.play().catch(()=>{}); };
+
+  if (!window.__cashUnlocked){
+    const once = async ()=>{
+      const ok = await __tryUnlockAudio();
+      if (ok) doPlay();
+      cleanup();
+    };
+    function cleanup(){
+      window.removeEventListener('click',once,true);
+      window.removeEventListener('touchstart',once,true);
+      window.removeEventListener('keydown',once,true);
+    }
+    window.addEventListener('click',once,true);
+    window.addEventListener('touchstart',once,true);
+    window.addEventListener('keydown',once,true);
+    return;
+  }
+  doPlay();
+}
+</script>
+<script>
+document.addEventListener('DOMContentLoaded', ()=>{
+  const bar = document.querySelector('.d-flex.align-items-center.mb-2 .d-flex.flex-wrap');
+  if (!bar || document.getElementById('btnTestSound')) return;
+  const btn = document.createElement('button');
+  btn.id='btnTestSound'; btn.className='btn btn-outline-dark btn-sm';
+  btn.textContent='Uji Bunyi 🔊';
+  btn.style.marginLeft='8px';
+  btn.onclick = ()=>playCash();
+  bar.appendChild(btn);
+});
+</script>
+</body>
+</html>

@@ -1,0 +1,691 @@
+<!doctype html>
+<html lang="ms">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Live Host — Emas Amir</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css">
+
+  <!-- LiveKit JS SDK (CDN) -->
+  <script src="https://cdn.jsdelivr.net/npm/livekit-client/dist/livekit-client.umd.min.js"></script>
+
+  <style>
+    body{background:#f9fafb;}
+    .container-narrow{max-width:1100px}
+    .video-box{
+      background:#000;
+      border-radius:16px;
+      overflow:hidden;
+      position:relative;
+      min-height:260px;
+    }
+    video{
+      width:100%;
+      height:100%;
+      object-fit:cover;
+      background:#000;
+    }
+    .pill{display:inline-block;background:#f3f4f6;border-radius:999px;padding:2px 10px;font-size:12px;border:1px solid #e5e7eb}
+    .badge-live{background:#e11d48;color:#fff;border-radius:999px;padding:2px 8px;font-size:12px;font-weight:700}
+    .live-card{border:1px solid #eee;border-radius:14px;overflow:hidden;background:#fff}
+    .live-img{width:100%;height:220px;object-fit:cover;background:#f6f6f6}
+    .mono{font-family:ui-monospace,Menlo,Consolas,monospace}
+    .price-wrap{display:flex;gap:.5rem;align-items:baseline}
+    .price-old{text-decoration:line-through;color:#6b7280;font-weight:600}
+    .price-new{color:#dc2626;font-weight:800}
+
+    /* ===== Overlay chat dalam video (HOST) ===== */
+    .overlay-chat-host{
+      position:absolute;
+      left:10px;
+      bottom:10px;
+      width:65%;
+      max-width:280px;
+      display:flex;
+      flex-direction:column;
+      gap:4px;
+      pointer-events:none;
+      font-size:0.8rem;
+      z-index:20;
+    }
+    .chat-bubble{
+      display:inline-flex;
+      align-items:center;
+      gap:4px;
+      max-width:100%;
+      padding:4px 8px;
+      border-radius:999px;
+      background:rgba(0,0,0,0.55);
+      color:#f9fafb;
+      backdrop-filter:blur(10px);
+      -webkit-backdrop-filter:blur(10px);
+      white-space:nowrap;
+      overflow:hidden;
+      text-overflow:ellipsis;
+      animation:fadeIn 0.2s ease-out;
+    }
+    .chat-bubble strong{font-weight:700;}
+    .chat-bubble.fade-out{
+      animation:fadeOut 2s forwards;
+    }
+    @keyframes fadeIn{
+      from{opacity:0;transform:translateY(6px);}
+      to{opacity:1;transform:translateY(0);}
+    }
+    @keyframes fadeOut{
+      to{opacity:0;transform:translateY(-6px);}
+    }
+
+    /* Panel komen */
+    .card-chat-panel{
+      background:#ffffff;
+      border-radius:14px;
+      border:1px solid #e5e7eb;
+      color:#111827;
+    }
+    .card-chat-panel .card-header{
+      border-bottom-color:#e5e7eb;
+      background:#f9fafb;
+    }
+    #chatListPanel{
+      max-height:260px;
+      overflow-y:auto;
+      font-size:0.9rem;
+    }
+    #chatListPanel hr.my-1{border-color:#e5e7eb;}
+
+    @media (max-width:768px){
+      .overlay-chat-host{
+        max-width:80%;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="container container-narrow py-3">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+      <div>
+        <div class="pill mb-1">Live Host • Emas Amir</div>
+        <h3 class="m-0">Panel Host Live</h3>
+        <small class="text-muted">Guna halaman ini untuk ON kamera & kawal live di emasamir.app</small>
+      </div>
+      <a href="index.html" class="btn btn-outline-secondary btn-sm">← Kembali ke Utama</a>
+    </div>
+
+    <!-- Kawalan sambungan -->
+    <div class="card mb-3">
+      <div class="card-body">
+        <div class="row g-3 align-items-end">
+          <div class="col-md-4">
+            <label class="form-label">Nama Host</label>
+            <input type="text" id="hostName" class="form-control" placeholder="contoh: Amir">
+          </div>
+          <div class="col-md-4">
+            <label class="form-label">Nama Bilik</label>
+            <input type="text" id="roomName" class="form-control" value="emasamir-live">
+            <div class="form-text">Biarkan <code>emasamir-live</code> untuk satu bilik utama.</div>
+          </div>
+          <div class="col-md-4 text-md-end">
+            <div class="mb-2">
+              <span id="statusBadge" class="badge rounded-pill bg-secondary">Belum sambung</span>
+            </div>
+            <button id="btnJoin" class="btn btn-primary me-2">🚀 Mula Live (Host)</button>
+            <button id="btnLeave" class="btn btn-outline-danger" disabled>❌ Tamat</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Video + Status + Komen -->
+    <div class="row g-3 mb-4">
+      <div class="col-lg-8">
+        <div class="card h-100">
+          <div class="card-header d-flex justify-content-between align-items-center">
+            <span>Video Host</span>
+            <div class="d-flex gap-2">
+              <button id="btnCamFront" class="btn btn-sm btn-outline-secondary" disabled>📷 Kamera Depan</button>
+              <button id="btnCamBack" class="btn btn-sm btn-outline-secondary" disabled>📷 Kamera Belakang</button>
+            </div>
+          </div>
+          <div class="card-body">
+            <div class="video-box">
+              <video id="hostVideo" autoplay playsinline muted></video>
+
+              <!-- Overlay chat dalam video -->
+              <div class="overlay-chat-host" id="overlayChat"></div>
+            </div>
+            <small class="text-muted d-block mt-2">
+              Nota: Host akan nampak diri sendiri di sini. Penonton akan lihat stream yang sama di halaman <code>live.html</code>.
+            </small>
+          </div>
+        </div>
+      </div>
+
+      <div class="col-lg-4">
+        <div class="card h-100 mb-3 mb-lg-3">
+          <div class="card-header">
+            Status Sistem
+          </div>
+          <div class="card-body small" id="logBox" style="max-height:130px;overflow:auto;font-family:ui-monospace,Menlo,Consolas,monospace;">
+            <div>[init] Sedia untuk sambung LiveKit…</div>
+          </div>
+        </div>
+
+        <!-- Panel komen host boleh scroll -->
+        <div class="card card-chat-panel h-100">
+          <div class="card-header d-flex justify-content-between align-items-center">
+            <span>💬 Komen Live</span>
+            <small id="chatStatus" class="text-muted">Menyambung chat…</small>
+          </div>
+          <div class="card-body">
+            <div id="chatListPanel"></div>
+            <small class="text-muted d-block mt-2">
+              Host boleh baca komen lama dengan scroll ke atas. Komen baru akan masuk automatik.
+            </small>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Barang Live Sekarang (guna view sama seperti index) -->
+    <div class="d-flex justify-content-between align-items-center mb-2">
+      <h5 class="m-0">🔴 Barang Live Sekarang</h5>
+      <button id="btnRefreshLive" class="btn btn-sm btn-outline-primary">Refresh Senarai</button>
+    </div>
+    <div id="liveGrid" class="row g-3 mb-5"></div>
+    <div id="liveEmpty" class="text-muted small" style="display:none">Belum ada barang ditanda LIVE di adminstok-j916.</div>
+  </div>
+
+  <!-- Supabase + Auth/Admin guard -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="auth.js?v=13.1"></script>
+  <script src="admin-guard.js?v=1"></script>
+
+  <script>
+  // ========= Helper log =========
+  function log(msg){
+    const box = document.getElementById('logBox');
+    if(!box) return;
+    const div = document.createElement('div');
+    div.textContent = '[' + new Date().toLocaleTimeString('ms-MY',{hour12:true}) + '] ' + msg;
+    box.appendChild(div);
+    box.scrollTop = box.scrollHeight;
+    console.log(msg);
+  }
+  </script>
+
+  <script>
+  // ========= LiveKit Host Logic =========
+  const { Room, RoomEvent, createLocalVideoTrack, createLocalAudioTrack, VideoPresets } = LivekitClient;
+
+  let room = null;
+  let videoTrack = null;
+  let audioTrack = null;
+  let currentFacing = 'user'; // 'user' atau 'environment'
+
+  const btnJoin   = document.getElementById('btnJoin');
+  const btnLeave  = document.getElementById('btnLeave');
+  const btnFront  = document.getElementById('btnCamFront');
+  const btnBack   = document.getElementById('btnCamBack');
+  const badge     = document.getElementById('statusBadge');
+  const videoEl   = document.getElementById('hostVideo');
+
+  function setStatus(text, type){
+    badge.textContent = text;
+    badge.className = 'badge rounded-pill ' + (type || 'bg-secondary');
+  }
+
+  function setControlsConnected(connected){
+    btnJoin.disabled  = connected;
+    btnLeave.disabled = !connected;
+    btnFront.disabled = !connected;
+    btnBack.disabled  = !connected;
+  }
+
+  async function getToken(role){
+    const name = document.getElementById('hostName').value.trim() || 'Host';
+    const roomName = document.getElementById('roomName').value.trim() || 'emasamir-live';
+
+    const res = await fetch('/.netlify/functions/livekit-token', {
+      method: 'POST',
+      headers: { 'Content-Type':'application/json' },
+      body: JSON.stringify({
+        role: role,
+        room: roomName,
+        identity: name + '-' + role
+      })
+    });
+    if(!res.ok){
+      const txt = await res.text();
+      throw new Error('Gagal dapat token: ' + txt);
+    }
+    return res.json();
+  }
+
+  async function startTracks(withFacing){
+    currentFacing = withFacing || currentFacing || 'user';
+
+    // hentikan track lama jika ada
+    if(videoTrack){
+      try{
+        videoTrack.stop();
+        if(room){
+          room.localParticipant.unpublishTrack(videoTrack);
+        }
+      }catch(e){}
+      videoTrack = null;
+    }
+
+    if(audioTrack){
+      try{
+        audioTrack.stop();
+        if(room){
+          room.localParticipant.unpublishTrack(audioTrack);
+        }
+      }catch(e){}
+      audioTrack = null;
+    }
+
+    // cipta track baru
+    log('Mula kamera ('+currentFacing+')…');
+    videoTrack = await createLocalVideoTrack({
+      facingMode: currentFacing,
+      resolution: VideoPresets.h720.resolution
+    });
+    audioTrack = await createLocalAudioTrack();
+
+    if(room){
+      await room.localParticipant.publishTrack(videoTrack);
+      await room.localParticipant.publishTrack(audioTrack);
+    }
+
+    if(videoEl && videoTrack){
+      videoTrack.attach(videoEl);
+    }
+  }
+
+  btnJoin.addEventListener('click', async ()=>{
+    try{
+      setStatus('Menyambung…','bg-warning');
+      setControlsConnected(true);
+      log('Meminta token host dari livekit-token…');
+      const info = await getToken('host');
+      log('Token diterima, sambung ke '+info.url+' bilik '+info.room);
+
+      room = new Room({
+        adaptiveStream: true,
+        dynacast: true,
+        videoCaptureDefaults: {
+          facingMode: currentFacing,
+          resolution: VideoPresets.h720.resolution
+        }
+      });
+
+      room.on(RoomEvent.Connected, () => {
+        log('✔ Berjaya sambung ke LiveKit.');
+        setStatus('Sedang LIVE','bg-danger');
+      });
+      room.on(RoomEvent.Disconnected, () => {
+        log('Terputus dari LiveKit.');
+        setStatus('Terputus','bg-secondary');
+        setControlsConnected(false);
+      });
+      room.on(RoomEvent.ConnectionStateChanged, (state)=>{
+        log('Keadaan sambungan: '+state);
+      });
+
+      await room.connect(info.url, info.token);
+      await startTracks('user'); // mula dengan kamera depan
+    }catch(e){
+      console.error(e);
+      log('❌ Ralat: '+ (e.message || e));
+      setStatus('Ralat','bg-danger');
+      setControlsConnected(false);
+    }
+  });
+
+  btnLeave.addEventListener('click', async ()=>{
+    try{
+      if(videoTrack){ videoTrack.stop(); videoTrack = null; }
+      if(audioTrack){ audioTrack.stop(); audioTrack = null; }
+      if(room){
+        await room.disconnect();
+        room = null;
+      }
+      if(videoEl) videoEl.srcObject = null;
+      setStatus('Tamat','bg-secondary');
+      setControlsConnected(false);
+      log('Host keluar dari bilik.');
+    }catch(e){
+      console.error(e);
+      log('❌ Ralat tamat: ' + (e.message || e));
+    }
+  });
+
+  btnFront.addEventListener('click', async ()=>{
+    if(!room){ return; }
+    try{
+      await startTracks('user');
+      log('Tukar ke kamera depan.');
+    }catch(e){
+      log('❌ Gagal tukar kamera depan: ' + (e.message || e));
+    }
+  });
+
+  btnBack.addEventListener('click', async ()=>{
+    if(!room){ return; }
+    try{
+      await startTracks('environment');
+      log('Tukar ke kamera belakang (jika ada).');
+    }catch(e){
+      log('❌ Gagal tukar kamera belakang: ' + (e.message || e));
+    }
+  });
+  </script>
+
+  <script>
+  // ========= Supabase: senarai barang LIVE + Komen =========
+  const SB_URL = "https://dduizetstqqjrpsezbpi.supabase.co";
+  const SB_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRkdWl6ZXRzdHFxanJwc2V6YnBpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTg3MzI0ODQsImV4cCI6MjA3NDMwODQ4NH0.CrlHXrmHtKgR9qc2192U6quRb5lpFEeOSgwG0Lb8KRM";
+  const sb = supabase.createClient(SB_URL, SB_KEY);
+
+  const liveGrid  = document.getElementById('liveGrid');
+  const liveEmpty = document.getElementById('liveEmpty');
+  const btnRefreshLive = document.getElementById('btnRefreshLive');
+
+  const money = n => (Number(n||0)).toFixed(2);
+
+  function toCard(row){
+    const code  = String(row?.code || '').toUpperCase();
+    const name  = row?.name || row?.product_name || row?.design_name || code || 'Barang 916';
+    const berat = Number(row?.weight_g || 0);
+
+    const candidates = [
+      row?._img_from_rpc,
+      row?.img,
+      row?.img1,
+      row?.product_img1,
+      row?.design_img1,
+      row?.design_img1_url,
+      row?.image_url,
+      row?.img_url,
+      row?.image1,
+      row?.photo_url
+    ];
+    const firstImg = candidates.find(u => u && String(u).trim().length > 5);
+    const img = firstImg || ('https://placehold.co/640x480?text=' + encodeURIComponent(code || 'EMAS 916'));
+
+    const basePerG = Number(
+      row?.base_price_per_g ??
+      row?.price_per_g_current ?? 0
+    );
+    const baseUpah = Number(
+      row?.base_upah_rm ??
+      row?.upah_default_rm ?? 0
+    );
+    const g = berat;
+    const calc = (pg,g,u)=>((pg*g)+u)*1.08;
+
+    const normalRM = (
+      row?.normal_price_rm != null
+        ? Number(row.normal_price_rm)
+        : calc(basePerG,g,baseUpah)
+    );
+
+    const ovPerG_raw = (row?.ov_price_per_g ?? row?.override_price_per_g ?? row?.price_per_g_live);
+    const ovUpah_raw = (row?.ov_upah_rm     ?? row?.upah_override_rm     ?? row?.upah_live);
+
+    const perG_eff = (ovPerG_raw != null) ? Number(ovPerG_raw) : basePerG;
+    const upah_eff = (ovUpah_raw != null) ? Number(ovUpah_raw) : baseUpah;
+
+    const liveRM = (
+      row?.live_price_rm != null
+        ? Number(row.live_price_rm)
+        : calc(perG_eff,g,upah_eff)
+    );
+
+    const hasDrop = (liveRM > 0 && normalRM > 0 && (normalRM - liveRM) > 0.005);
+    const hargaHTML = hasDrop
+      ? `<div class="price-wrap h6 mt-1 mb-2">
+           <div class="price-old">RM ${normalRM.toFixed(2)}</div>
+           <div class="price-new">RM ${liveRM.toFixed(2)}</div>
+         </div>`
+      : `<div class="h6 mt-1 mb-2">RM ${liveRM.toFixed(2)}</div>`;
+
+    return `
+      <div class="col-12 col-sm-6 col-lg-4">
+        <div class="live-card h-100">
+          <img class="live-img" src="${img}" alt="${name}"
+            onerror="if(!this.dataset.f){this.dataset.f=1;this.src='https://placehold.co/640x480?text=${code}'}">
+          <div class="p-3">
+            <div class="d-flex align-items-center justify-content-between">
+              <span class="badge-live">LIVE</span>
+              <small class="text-muted mono">${code}</small>
+            </div>
+            <div class="mt-1">${name}</div>
+            <div class="text-muted small">Berat: ${berat.toFixed(2)} g</div>
+            ${hargaHTML}
+            <a href="j916.html#checkout?code=${encodeURIComponent(code)}&checkout=1" class="btn btn-danger w-100">
+              Lock Sekarang
+            </a>
+          </div>
+        </div>
+      </div>
+    `;
+  }
+
+  async function loadLiveCards(){
+    try{
+      const { data: rows, error } = await sb
+        .from('j916_live_cards_pricing_v1')
+        .select('*')
+        .order('ts',{ascending:false})
+        .limit(24);
+      if(error) throw error;
+
+      if(!rows || !rows.length){
+        liveGrid.innerHTML = '';
+        liveEmpty.style.display = '';
+        return;
+      }
+      liveEmpty.style.display = 'none';
+
+      liveGrid.innerHTML = rows.map(toCard).join('');
+    }catch(e){
+      console.warn('Live cards error:', e);
+      liveGrid.innerHTML = '';
+      liveEmpty.style.display = '';
+    }
+  }
+
+  btnRefreshLive?.addEventListener('click', loadLiveCards);
+  loadLiveCards();
+  setInterval(loadLiveCards, 20000);
+
+  // ========= Live Chat: hanya baca (untuk HOST) =========
+  const CHAT_ROOM = 'emasamir-live';
+
+  const overlayChat   = document.getElementById('overlayChat');
+  const chatListPanel = document.getElementById('chatListPanel');
+  const chatStatus    = document.getElementById('chatStatus');
+
+  const shownIds = new Set();
+  let lastCreatedAt = null;
+
+  function setChatStatus(text){
+    if (chatStatus) chatStatus.textContent = text;
+  }
+
+  function formatTime(iso){
+    try{
+      return new Date(iso).toLocaleTimeString('ms-MY',{hour:'2-digit',minute:'2-digit',hour12:true});
+    }catch{ return ''; }
+  }
+
+  function escapeHtml(str){
+    return String(str || '').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+  }
+
+  // Bubble dalam video (host view)
+  function addOverlayBubble(row){
+    if (!overlayChat || !row) return;
+    const name = row.name || 'Tetamu';
+    const msg  = row.message || '';
+
+    const div = document.createElement('div');
+    div.className = 'chat-bubble';
+    div.innerHTML = `<strong>${escapeHtml(name)}</strong> ${escapeHtml(msg)}`;
+    overlayChat.appendChild(div);
+
+    // maksimum 10 bubble
+    while (overlayChat.children.length > 10){
+      overlayChat.removeChild(overlayChat.firstChild);
+    }
+
+    // lambat hilang: 20s sebelum fade, 26s buang betul-betul
+    setTimeout(()=> div.classList.add('fade-out'), 20000);
+    setTimeout(()=> { if (div.parentNode) div.parentNode.removeChild(div); }, 26000);
+  }
+
+  // Panel komen scrollable
+  function renderPanelMessage(row){
+    if (!chatListPanel || !row) return;
+    const div = document.createElement('div');
+
+    const name   = row.name || 'Tetamu';
+    const phone4 = (row.phone4 || '').trim();
+    const time   = formatTime(row.created_at);
+    const msg    = row.message || '';
+
+    const head = phone4 ? `${name} (${phone4})` : name;
+
+    div.innerHTML = `
+      <div>
+        <strong>${escapeHtml(head)}</strong>
+        <span class="text-muted small">• ${escapeHtml(time)}</span>
+      </div>
+      <div>${escapeHtml(msg)}</div>
+      <hr class="my-1">
+    `;
+    chatListPanel.appendChild(div);
+    chatListPanel.scrollTop = chatListPanel.scrollHeight;
+  }
+
+  function registerSeen(row){
+    if (!row) return;
+    if (row.id) shownIds.add(row.id);
+    if (row.created_at){
+      if (!lastCreatedAt || row.created_at > lastCreatedAt){
+        lastCreatedAt = row.created_at;
+      }
+    }
+  }
+
+  // Muat komen 3 jam terakhir
+  async function loadChatInitial(){
+    try{
+      setChatStatus('Muat naik komen…');
+
+      const since = new Date(Date.now() - 3 * 60 * 60 * 1000).toISOString(); // 3 jam
+      const { data, error } = await sb
+        .from('live_chat_messages')
+        .select('*')
+        .eq('room', CHAT_ROOM)
+        .gte('created_at', since)
+        .order('created_at', { ascending: true })
+        .limit(200);
+
+      if (error) throw error;
+      if (chatListPanel) chatListPanel.innerHTML = '';
+
+      (data || []).forEach(row => {
+        registerSeen(row);
+        renderPanelMessage(row);
+      });
+
+      setChatStatus('Chat live aktif.');
+    }catch(e){
+      console.warn('chat load error', e);
+      setChatStatus('Gagal muat komen (cuba refresh).');
+    }
+  }
+
+  // Polling komen baru (backup)
+  async function pollNewChats(){
+    try{
+      if (!lastCreatedAt){
+        return;
+      }
+      const { data, error } = await sb
+        .from('live_chat_messages')
+        .select('*')
+        .eq('room', CHAT_ROOM)
+        .gt('created_at', lastCreatedAt)
+        .order('created_at', { ascending: true })
+        .limit(50);
+
+      if (error) throw error;
+      (data || []).forEach(row => {
+        if (row.id && shownIds.has(row.id)) return;
+        registerSeen(row);
+        addOverlayBubble(row);
+        renderPanelMessage(row);
+      });
+    }catch(e){
+      console.warn('chat poll error', e);
+    }
+  }
+
+  // Realtime komen orang lain
+  try{
+    sb.channel('live-chat-room-host')
+      .on(
+        'postgres_changes',
+        {
+          event: 'INSERT',
+          schema: 'public',
+          table: 'live_chat_messages',
+          filter: 'room=eq.' + CHAT_ROOM
+        },
+        (payload) => {
+          const row = payload.new;
+          if (row.id && shownIds.has(row.id)) return;
+          registerSeen(row);
+          addOverlayBubble(row);
+          renderPanelMessage(row);
+        }
+      )
+      .subscribe((status) => {
+        if (status === 'SUBSCRIBED'){
+          setChatStatus('Chat live aktif.');
+        }
+      });
+  }catch(e){
+    console.warn('chat realtime error', e);
+  }
+
+  // Mula chat
+  loadChatInitial();
+  setInterval(pollNewChats, 2000);
+  </script>
+
+  <script>
+  // ========= Admin-Only Guard =========
+  (async () => {
+    try{
+      const ok = await adminGuard.require({});
+      if (!ok){
+        document.body.innerHTML = `
+          <div class="container py-5">
+            <h3>Akses Terhad</h3>
+            <p>Halaman ini khas untuk <strong>admin Emas Amir</strong> sahaja.</p>
+          </div>
+        `;
+      }
+    }catch(e){
+      console.error('adminGuard error', e);
+    }
+  })();
+  </script>
+</body>
+</html>

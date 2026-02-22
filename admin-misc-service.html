@@ -1,0 +1,899 @@
+<!doctype html>
+<html lang="ms">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Admin • Misc Servis — Emas Amir</title>
+
+  <!-- Libs -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="auth.js?v=13.1"></script>
+  <script src="admin-guard.js?v=1"></script>
+
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+
+  <style>
+    body{background:#fff}
+    .container-narrow{max-width:1200px}
+    .auth-pill{border:1px solid #e5e7eb;border-radius:999px;padding:.2rem .6rem;background:#fafafa;color:#555}
+    .btn-chip{border:1px solid #e5e7eb;background:#f8fafc;padding:6px 10px;border-radius:999px;font-size:.9rem}
+    .btn-chip.btn-primary{background:#0d6efd;color:#fff;border-color:#0d6efd}
+    .table-sticky thead th{position:sticky;top:0;background:#fff;z-index:5}
+    .mono{font-family:ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace}
+    .small-note{font-size:12px;color:#6b7280}
+  </style>
+</head>
+
+<body>
+<div class="container container-narrow py-3">
+
+  <!-- TOP BAR -->
+  <div class="d-flex justify-content-between align-items-center mb-2">
+    <div class="small auth-pill" id="authStatus">Memuatkan…</div>
+    <div class="d-flex flex-wrap gap-2">
+      <a class="btn btn-outline-secondary btn-chip" href="index.html">Halaman Utama</a>
+      <a class="btn btn-outline-secondary btn-chip" href="admin.html">Admin</a>
+      <a class="btn btn-outline-secondary btn-chip" href="admin-report.html">Admin Report</a>
+      <a class="btn btn-outline-secondary btn-chip" href="admin-j916.html">Admin 916</a>
+      <a class="btn btn-outline-secondary btn-chip" href="admin-j999.html">Admin 999</a>
+      <a class="btn btn-outline-secondary btn-chip" href="admintabung-simpan.html">Admin Tabung</a>
+      <a class="btn btn-outline-secondary btn-chip" href="account.html">Akaun</a>
+      <button id="btnLogin"  class="btn btn-outline-secondary btn-chip" type="button">Log masuk</button>
+      <button id="btnLogout" class="btn btn-outline-secondary btn-chip" type="button" style="display:none">Log keluar</button>
+    </div>
+  </div>
+  <hr class="mb-3">
+
+  <div class="d-flex align-items-center justify-content-between gap-2 flex-wrap">
+    <div>
+      <h1 class="h4 m-0">Admin • Misc Servis</h1>
+      <div class="small text-muted">Repair / Tindik / Servis lain — rekod & report</div>
+    </div>
+  </div>
+
+  <!-- FILTER -->
+  <div class="card mt-3">
+    <div class="card-body">
+      <div class="row g-2 align-items-end">
+        <div class="col-md-3">
+          <label class="form-label">Dari</label>
+          <input id="dateStart" type="date" class="form-control">
+          <div class="small-note mt-1">Tapisan ikut <span class="mono">sale_date</span>.</div>
+        </div>
+        <div class="col-md-3">
+          <label class="form-label">Hingga</label>
+          <input id="dateEnd" type="date" class="form-control">
+          <div class="small-note mt-1 d-flex gap-2 flex-wrap">
+            <button class="btn btn-sm btn-outline-secondary py-0" id="btnToday" type="button">Hari ini</button>
+            <button class="btn btn-sm btn-outline-secondary py-0" id="btn1M" type="button">1 Bulan</button>
+            <button class="btn btn-sm btn-outline-secondary py-0" id="btn3M" type="button">3 Bulan</button>
+          </div>
+        </div>
+        <div class="col-md-3">
+          <label class="form-label">Status</label>
+          <select id="statusPick" class="form-select">
+            <option value="PAID" selected>PAID</option>
+            <option value="ALL">ALL (debug)</option>
+          </select>
+        </div>
+        <div class="col-md-3 d-flex gap-2 justify-content-md-end">
+          <button class="btn btn-outline-secondary" id="btnLoad" type="button">Load</button>
+          <button class="btn btn-outline-secondary" id="btnExportCsv" type="button" disabled>Export CSV</button>
+          <button class="btn btn-outline-secondary" id="btnPrint" type="button" disabled>Print (A4)</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ADD FORM -->
+  <div class="card mt-3">
+    <div class="card-body">
+      <div class="fw-semibold mb-2">Tambah Misc Servis</div>
+
+      <div class="row g-2">
+        <div class="col-md-2">
+          <label class="form-label">Tarikh</label>
+          <input id="fSaleDate" type="date" class="form-control">
+        </div>
+
+        <div class="col-md-2">
+          <label class="form-label">Kategori</label>
+          <select id="fCategory" class="form-select">
+            <option value="REPAIR">REPAIR</option>
+            <option value="TINDIK">TINDIK</option>
+            <option value="SERVICE" selected>SERVICE</option>
+            <option value="LAIN">LAIN</option>
+          </select>
+        </div>
+
+        <div class="col-md-2">
+          <label class="form-label">Staff</label>
+          <input id="fStaff" class="form-control" placeholder="Nama staff">
+        </div>
+
+        <div class="col-md-3">
+          <label class="form-label">Customer (optional)</label>
+          <input id="fCustomer" class="form-control" placeholder="Nama customer">
+        </div>
+
+        <div class="col-md-3">
+          <label class="form-label">Phone (optional)</label>
+          <input id="fPhone" class="form-control" placeholder="01xxxxxxxxx">
+        </div>
+
+        <div class="col-md-6">
+          <label class="form-label">Butiran</label>
+          <input id="fDesc" class="form-control" placeholder="Contoh: Repair rantai putus / Tindik 1 lubang / Cucuk batu">
+        </div>
+
+        <div class="col-md-2">
+          <label class="form-label">Jumlah (RM)</label>
+          <input id="fAmount" type="number" step="0.01" class="form-control" placeholder="0.00">
+        </div>
+
+        <div class="col-md-2">
+          <label class="form-label">Bayaran</label>
+          <select id="fPayMethod" class="form-select">
+            <option value="MAYBANK">MAYBANK</option>
+            <option value="CASH">CASH</option>
+            <option value="CARD">CARD</option>
+            <option value="ATOME">ATOME</option>
+          </select>
+        </div>
+
+        <div class="col-md-2">
+          <label class="form-label">Ref (optional)</label>
+          <input id="fRef" class="form-control" placeholder="No rujukan">
+        </div>
+
+        <div class="col-md-12">
+          <label class="form-label">Nota (optional)</label>
+          <input id="fNote" class="form-control" placeholder="Nota tambahan (jika ada)">
+        </div>
+
+        <div class="col-md-12 d-flex gap-2 justify-content-end mt-2">
+          <button class="btn btn-outline-secondary" id="btnClear" type="button">Clear</button>
+          <button class="btn btn-primary" id="btnAdd" type="button">Simpan</button>
+        </div>
+
+        <div class="small-note mt-2">
+          * Rekod guna status <span class="mono">PAID</span>. Kalau salah, tekan <span class="mono">VOID</span> (tak delete, audit selamat).
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- SUMMARY + LIST -->
+  <div class="row g-3 mt-1">
+    <div class="col-lg-4">
+
+      <div class="card">
+        <div class="card-body">
+          <div class="text-muted small">Summary</div>
+
+          <div class="d-flex justify-content-between mt-2">
+            <div>Bil Transaksi</div>
+            <div class="fw-semibold" id="sumCount">0</div>
+          </div>
+          <div class="d-flex justify-content-between">
+            <div>Total (RM)</div>
+            <div class="fw-semibold" id="sumTotal">RM 0.00</div>
+          </div>
+
+          <div class="small-note mt-2">
+            Tapisan ikut <span class="mono">sale_date</span>. Status default: <span class="mono">PAID</span>.
+          </div>
+        </div>
+      </div>
+
+      <div class="card mt-3">
+        <div class="card-body">
+          <div class="fw-semibold mb-2">Pecahan ikut kategori</div>
+          <div class="table-responsive">
+            <table class="table table-sm align-middle mb-0">
+              <thead>
+                <tr>
+                  <th>category</th>
+                  <th class="text-end">Count</th>
+                  <th class="text-end">Total</th>
+                </tr>
+              </thead>
+              <tbody id="byCatTbody">
+                <tr><td colspan="3" class="text-center text-muted py-3">Belum load…</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <div class="card mt-3">
+        <div class="card-body">
+          <div class="fw-semibold mb-2">Pecahan ikut bayaran</div>
+          <div class="table-responsive">
+            <table class="table table-sm align-middle mb-0">
+              <thead>
+                <tr>
+                  <th>pay_method</th>
+                  <th class="text-end">Count</th>
+                  <th class="text-end">Total</th>
+                </tr>
+              </thead>
+              <tbody id="byPayTbody">
+                <tr><td colspan="3" class="text-center text-muted py-3">Belum load…</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+    <div class="col-lg-8">
+      <div class="card">
+        <div class="card-body">
+          <div class="d-flex justify-content-between align-items-center flex-wrap gap-2">
+            <div>
+              <div class="fw-semibold">Misc Servis (Detail)</div>
+              <div class="small text-muted">1 row = 1 transaksi servis</div>
+            </div>
+            <div class="input-group" style="max-width:560px">
+              <span class="input-group-text">Cari</span>
+              <input id="searchBox" class="form-control" placeholder="staff / customer / phone / desc / ref / pay_method / category">
+            </div>
+          </div>
+
+          <div class="table-responsive mt-3" style="max-height:520px">
+            <table class="table table-sm align-middle table-sticky">
+              <thead>
+                <tr>
+                  <th style="width:110px">sale_date</th>
+                  <th style="width:165px">created_at</th>
+                  <th style="width:95px">category</th>
+                  <th style="width:120px">staff</th>
+                  <th>description</th>
+                  <th style="width:140px">customer</th>
+                  <th style="width:90px">pay</th>
+                  <th style="width:105px" class="text-end">amount</th>
+                  <th style="width:105px">ref</th>
+                  <th style="width:80px">status</th>
+                  <th style="width:160px" class="text-end">actions</th>
+                </tr>
+              </thead>
+              <tbody id="listTbody">
+                <tr><td colspan="11" class="text-center text-muted py-4">Belum load…</td></tr>
+              </tbody>
+            </table>
+          </div>
+
+          <div class="small text-muted mt-2" id="resultInfo">0 rekod</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+/* ========================== Config ========================== */
+const SB_URL = "https://dduizetstqqjrpsezbpi.supabase.co";
+const SB_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRkdWl6ZXRzdHFxanJwc2V6YnBpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTg3MzI0ODQsImV4cCI6MjA3NDMwODQ4NH0.CrlHXrmHtKgR9qc2192U6quRb5lpFEeOSgwG0Lb8KRM";
+window.sb = window.sb || window.supabase.createClient(SB_URL, SB_KEY);
+const sb = window.sb;
+
+const TABLE = 'misc_service_txn';
+const RESIT_PAGE = 'resit-misc-service.html'; // ✅ pastikan file ini wujud
+
+const $ = (id)=>document.getElementById(id);
+function safeStr(x){ return (x==null?'':String(x)); }
+function money(x){ const n = Number(x||0); return 'RM ' + n.toFixed(2); }
+function fmtDateTime(d){
+  try{ return new Date(d).toLocaleString('ms-MY',{hour12:false}); }
+  catch(_){ return safeStr(d); }
+}
+
+/* ========================== Topbar auth ========================== */
+(function(){
+  const pill=$('authStatus'),login=$('btnLogin'),logout=$('btnLogout');
+  try{
+    const a=(window.auth_get&&window.auth_get())||null;
+    if(a){
+      pill.textContent='Log masuk (admin) — '+(a.phone||a.msisdn||'');
+      login.style.display='none'; logout.style.display='';
+      logout.onclick=()=>{window.auth_clear&&window.auth_clear();location.reload();};
+    }else{
+      pill.textContent='Tidak log masuk';
+      login.style.display=''; logout.style.display='none';
+      login.onclick=()=>location.href='login.html#login';
+    }
+  }catch(_){}
+})();
+
+/* ========================== Admin guard ========================== */
+async function requireAdmin(){
+  if(window.adminGuard && typeof adminGuard.require==='function'){
+    return await adminGuard.require({
+      onChecking:()=> $('authStatus').textContent="Mengesahkan akses…",
+      onDenied:()=> $('authStatus').textContent="Akses ditolak",
+      onAllowed:(p)=> $('authStatus').textContent="Log masuk (admin) — "+p
+    });
+  }
+  const a=(window.auth_get&&window.auth_get())||null;
+  if(!a){ location.href="login.html#login"; return false; }
+  return true;
+}
+
+/* ==========================
+   DATE RANGE HELPERS
+========================== */
+function clampRange(){
+  const s = $('dateStart').value;
+  const e = $('dateEnd').value;
+  if(!s || !e) return true;
+  if(s > e){
+    $('dateStart').value = e;
+    $('dateEnd').value = s;
+  }
+  return true;
+}
+function setRangeDays(days){
+  const end = new Date();
+  const start = new Date();
+  start.setDate(end.getDate() - days);
+
+  const y1 = start.getFullYear();
+  const m1 = String(start.getMonth()+1).padStart(2,'0');
+  const d1 = String(start.getDate()).padStart(2,'0');
+
+  const y2 = end.getFullYear();
+  const m2 = String(end.getMonth()+1).padStart(2,'0');
+  const d2 = String(end.getDate()).padStart(2,'0');
+
+  $('dateStart').value = `${y1}-${m1}-${d1}`;
+  $('dateEnd').value = `${y2}-${m2}-${d2}`;
+  clampRange();
+}
+
+/* ==========================
+   DATA STATE
+========================== */
+let _rows = [];
+let _view = [];
+let _csvEnabled = false;
+
+/* ==========================
+   SEARCH
+========================== */
+function applySearch(){
+  const q = safeStr($('searchBox').value).trim().toLowerCase();
+  if(!q){ _view = _rows.slice(); return; }
+
+  _view = _rows.filter(r=>{
+    const hay = [
+      r.sale_date,
+      r.created_at,
+      r.category,
+      r.staff_name,
+      r.description,
+      r.customer_name,
+      r.customer_phone,
+      r.pay_method,
+      r.ref_no,
+      r.status,
+      r.note,
+      r.id
+    ].map(safeStr).join(' ').toLowerCase();
+    return hay.includes(q);
+  });
+}
+
+/* ==========================
+   LOAD
+========================== */
+async function loadRows(dateStart, dateEnd, status){
+  const wantPaidOnly = (status || 'PAID') !== 'ALL';
+
+  let q = sb.from(TABLE)
+    .select('id,created_at,sale_date,category,staff_name,customer_name,customer_phone,description,amount_rm,pay_method,ref_no,status,note')
+    .gte('sale_date', dateStart)
+    .lte('sale_date', dateEnd)
+    .order('sale_date', { ascending:true })
+    .order('created_at', { ascending:true });
+
+  if(wantPaidOnly) q = q.eq('status','PAID');
+
+  const r = await q;
+  if(r.error) throw r.error;
+
+  return (r.data||[]).map(x=>({
+    ...x,
+    amount_rm: Number(x.amount_rm||0),
+    sale_date: safeStr(x.sale_date||''),
+    category: safeStr(x.category||''),
+    staff_name: safeStr(x.staff_name||''),
+    customer_name: safeStr(x.customer_name||''),
+    customer_phone: safeStr(x.customer_phone||''),
+    description: safeStr(x.description||''),
+    pay_method: safeStr(x.pay_method||''),
+    ref_no: safeStr(x.ref_no||''),
+    status: safeStr(x.status||''),
+    note: safeStr(x.note||'')
+  }));
+}
+
+/* ==========================
+   RENDER
+========================== */
+function renderSummary(rows){
+  $('sumCount').textContent = String(rows.length);
+  const total = rows.reduce((s,r)=> s + Number(r.amount_rm||0), 0);
+  $('sumTotal').textContent = money(total);
+
+  // by category
+  const mapC = {};
+  for(const r of rows){
+    const k = safeStr(r.category||'-').trim() || '-';
+    if(!mapC[k]) mapC[k] = { k, count:0, sum:0 };
+    mapC[k].count += 1;
+    mapC[k].sum += Number(r.amount_rm||0);
+  }
+  const listC = Object.values(mapC).sort((a,b)=> b.sum - a.sum);
+  const tbC = $('byCatTbody');
+  if(!listC.length){
+    tbC.innerHTML = `<tr><td colspan="3" class="text-center text-muted py-3">Tiada data.</td></tr>`;
+  }else{
+    tbC.innerHTML = listC.map(x=>`
+      <tr>
+        <td class="mono">${x.k}</td>
+        <td class="text-end">${x.count}</td>
+        <td class="text-end">${money(x.sum)}</td>
+      </tr>
+    `).join('');
+  }
+
+  // by pay_method
+  const mapP = {};
+  for(const r of rows){
+    const k = safeStr(r.pay_method||'-').trim() || '-';
+    if(!mapP[k]) mapP[k] = { k, count:0, sum:0 };
+    mapP[k].count += 1;
+    mapP[k].sum += Number(r.amount_rm||0);
+  }
+  const listP = Object.values(mapP).sort((a,b)=> b.sum - a.sum);
+  const tbP = $('byPayTbody');
+  if(!listP.length){
+    tbP.innerHTML = `<tr><td colspan="3" class="text-center text-muted py-3">Tiada data.</td></tr>`;
+  }else{
+    tbP.innerHTML = listP.map(x=>`
+      <tr>
+        <td class="mono">${x.k}</td>
+        <td class="text-end">${x.count}</td>
+        <td class="text-end">${money(x.sum)}</td>
+      </tr>
+    `).join('');
+  }
+}
+
+function openResit(id){
+  if(!id) return;
+  try{
+    localStorage.setItem('misc_service_last_id', id);
+  }catch(_){}
+  const url = `${RESIT_PAGE}?id=${encodeURIComponent(id)}`;
+  window.open(url, '_blank', 'noopener');
+}
+
+function renderList(rows){
+  const tb = $('listTbody');
+  if(!rows.length){
+    tb.innerHTML = `<tr><td colspan="11" class="text-center text-muted py-4">Tiada rekod.</td></tr>`;
+    $('resultInfo').textContent = '0 rekod';
+    return;
+  }
+
+  tb.innerHTML = rows.map(r=>{
+    const cust = (safeStr(r.customer_name)||'-') + (safeStr(r.customer_phone) ? `<div class="small text-muted">${safeStr(r.customer_phone)}</div>` : '');
+    const ref = safeStr(r.ref_no)||'-';
+    const st = safeStr(r.status)||'-';
+
+    const resitBtn = `<button class="btn btn-sm btn-outline-secondary" data-resit="${r.id}">RESIT</button>`;
+    const voidBtn = (st === 'PAID')
+      ? `<button class="btn btn-sm btn-outline-danger" data-void="${r.id}">VOID</button>`
+      : `<span class="text-muted small">—</span>`;
+
+    return `
+      <tr>
+        <td class="mono">${safeStr(r.sale_date) || '-'}</td>
+        <td>${fmtDateTime(r.created_at)}</td>
+        <td class="mono">${safeStr(r.category) || '-'}</td>
+        <td>${safeStr(r.staff_name) || '-'}</td>
+        <td>
+          <div>${safeStr(r.description) || '-'}</div>
+          ${safeStr(r.note) ? `<div class="small text-muted">Nota: ${safeStr(r.note)}</div>` : ``}
+        </td>
+        <td>${cust}</td>
+        <td class="mono">${safeStr(r.pay_method) || '-'}</td>
+        <td class="text-end fw-semibold">${money(r.amount_rm||0)}</td>
+        <td class="mono">${ref}</td>
+        <td class="mono">${st}</td>
+        <td class="text-end d-flex gap-2 justify-content-end">
+          ${resitBtn}
+          ${voidBtn}
+        </td>
+      </tr>
+    `;
+  }).join('');
+
+  $('resultInfo').textContent = `${rows.length} rekod (paparan)`;
+
+  // wire resit buttons
+  tb.querySelectorAll('[data-resit]').forEach(btn=>{
+    btn.addEventListener('click', ()=>{
+      const id = btn.getAttribute('data-resit');
+      openResit(id);
+    });
+  });
+
+  // wire void buttons
+  tb.querySelectorAll('[data-void]').forEach(btn=>{
+    btn.addEventListener('click', async ()=>{
+      const id = btn.getAttribute('data-void');
+      await doVoid(id);
+    });
+  });
+}
+
+/* ==========================
+   ADD / VOID
+========================== */
+function todayISO(){
+  const now = new Date();
+  const y = now.getFullYear();
+  const m = String(now.getMonth()+1).padStart(2,'0');
+  const d = String(now.getDate()).padStart(2,'0');
+  return `${y}-${m}-${d}`;
+}
+
+function clearForm(){
+  $('fSaleDate').value = todayISO();
+  $('fCategory').value = 'SERVICE';
+  $('fStaff').value = '';
+  $('fCustomer').value = '';
+  $('fPhone').value = '';
+  $('fDesc').value = '';
+  $('fAmount').value = '';
+  $('fPayMethod').value = 'MAYBANK';
+  $('fRef').value = '';
+  $('fNote').value = '';
+}
+
+async function doAdd(){
+  const sale_date = $('fSaleDate').value || todayISO();
+  const category = safeStr($('fCategory').value).trim() || 'SERVICE';
+  const staff_name = safeStr($('fStaff').value).trim();
+  const customer_name = safeStr($('fCustomer').value).trim() || null;
+  const customer_phone = safeStr($('fPhone').value).trim() || null;
+  const description = safeStr($('fDesc').value).trim();
+  const amount_rm = Number($('fAmount').value || 0);
+  const pay_method = safeStr($('fPayMethod').value).trim();
+  const ref_no = safeStr($('fRef').value).trim() || null;
+  const note = safeStr($('fNote').value).trim() || null;
+
+  if(!staff_name){ alert('Sila isi nama staff.'); return; }
+  if(!description){ alert('Sila isi butiran servis.'); return; }
+  if(!(amount_rm > 0)){ alert('Jumlah (RM) mesti lebih dari 0.'); return; }
+
+  $('btnAdd').disabled = true;
+  $('btnAdd').textContent = 'Menyimpan…';
+
+  try{
+    const payload = {
+      sale_date,
+      category,
+      staff_name,
+      customer_name,
+      customer_phone,
+      description,
+      amount_rm,
+      pay_method,
+      ref_no,
+      status: 'PAID',
+      note
+    };
+
+    const r = await sb.from(TABLE).insert(payload).select('id').single();
+    if(r.error) throw r.error;
+
+    clearForm();
+    await doLoad();
+  }catch(e){
+    console.error(e);
+    alert('Ralat simpan: ' + (e?.message || e));
+  }finally{
+    $('btnAdd').disabled = false;
+    $('btnAdd').textContent = 'Simpan';
+  }
+}
+
+async function doVoid(id){
+  if(!id) return;
+  if(!confirm('Confirm VOID transaksi ini? (Tak delete, hanya tukar status)')) return;
+
+  try{
+    const r = await sb.from(TABLE)
+      .update({ status:'VOID' })
+      .eq('id', id);
+
+    if(r.error) throw r.error;
+
+    await doLoad();
+  }catch(e){
+    console.error(e);
+    alert('Ralat VOID: ' + (e?.message || e));
+  }
+}
+
+/* ==========================
+   CSV
+========================== */
+function makeCsv(rows){
+  const header = [
+    'sale_date','created_at','category','staff_name',
+    'customer_name','customer_phone','description',
+    'amount_rm','pay_method','ref_no','status','note','id'
+  ];
+  const esc = (v)=>{
+    const s = safeStr(v);
+    if(/[,"\n]/.test(s)) return '"' + s.replace(/"/g,'""') + '"';
+    return s;
+  };
+  const lines = [header.join(',')];
+  for(const r of rows){
+    lines.push([
+      r.sale_date,
+      r.created_at,
+      r.category,
+      r.staff_name,
+      r.customer_name,
+      r.customer_phone,
+      r.description,
+      Number(r.amount_rm||0).toFixed(2),
+      r.pay_method,
+      r.ref_no,
+      r.status,
+      r.note,
+      r.id
+    ].map(esc).join(','));
+  }
+  return lines.join('\n');
+}
+
+function downloadText(filename, text){
+  const blob = new Blob([text], {type:'text/csv;charset=utf-8'});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = filename;
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+  setTimeout(()=>URL.revokeObjectURL(url), 5000);
+}
+
+/* ==========================
+   PRINT A4
+========================== */
+function escapeHtml(s){
+  const x = safeStr(s);
+  return x
+    .replace(/&/g,'&amp;')
+    .replace(/</g,'&lt;')
+    .replace(/>/g,'&gt;')
+    .replace(/"/g,'&quot;')
+    .replace(/'/g,'&#39;');
+}
+
+function printA4(){
+  if(!_rows || !_rows.length){
+    alert('Tiada data. Sila Load dulu.');
+    return;
+  }
+
+  const s = $('dateStart').value || '';
+  const e = $('dateEnd').value || '';
+  const st = $('statusPick').value || 'PAID';
+  const nowStr = new Date().toLocaleString('ms-MY',{hour12:false});
+
+  const rows = (_view && _view.length) ? _view : _rows;
+
+  const sumTotal = _rows.reduce((a,r)=>a+Number(r.amount_rm||0),0);
+
+  const tableRows = rows.map((r,i)=>`
+    <tr>
+      <td style="width:28px">${i+1}</td>
+      <td style="width:90px" class="mono">${escapeHtml(r.sale_date||'-')}</td>
+      <td style="width:150px">${escapeHtml(fmtDateTime(r.created_at))}</td>
+      <td style="width:80px" class="mono">${escapeHtml(r.category||'-')}</td>
+      <td style="width:110px">${escapeHtml(r.staff_name||'-')}</td>
+      <td>
+        <div>${escapeHtml(r.description||'-')}</div>
+        ${r.note ? `<div class="muted" style="font-size:11px">Nota: ${escapeHtml(r.note)}</div>` : ``}
+      </td>
+      <td style="width:130px">
+        <div>${escapeHtml(r.customer_name||'-')}</div>
+        ${r.customer_phone ? `<div class="muted" style="font-size:11px">${escapeHtml(r.customer_phone)}</div>` : ``}
+      </td>
+      <td style="width:70px" class="mono">${escapeHtml(r.pay_method||'-')}</td>
+      <td style="width:90px;text-align:right">${escapeHtml(money(r.amount_rm||0))}</td>
+      <td style="width:100px" class="mono">${escapeHtml(r.ref_no||'-')}</td>
+      <td style="width:60px" class="mono">${escapeHtml(r.status||'-')}</td>
+    </tr>
+  `).join('');
+
+  const w = window.open('', '_blank', 'width=980,height=720');
+  if(!w){
+    alert('Popup block. Sila allow popup untuk print.');
+    return;
+  }
+
+  const doc = w.document;
+  doc.open();
+  doc.write(`<!doctype html>
+<html lang="ms">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Print A4 • Misc Servis</title>
+  <style>
+    @page{ size:A4; margin:12mm; }
+    body{ font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Arial; color:#111; }
+    .mono{ font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace; }
+    h1{ font-size:18px; margin:0 0 4px 0; }
+    .sub{ color:#666; font-size:12px; margin:0 0 10px 0; }
+    .box{ border:1px solid #ddd; border-radius:10px; padding:10px; margin:10px 0; }
+    .row{ display:flex; gap:12px; flex-wrap:wrap; }
+    .kpi{ flex:1; min-width:200px; }
+    .kpi .label{ color:#666; font-size:12px; }
+    .kpi .val{ font-weight:900; font-size:18px; }
+    table{ width:100%; border-collapse:collapse; font-size:11px; }
+    th, td{ border:1px solid #ddd; padding:6px 8px; vertical-align:top; }
+    th{ background:#f6f7f9; text-align:left; }
+    .muted{ color:#666; }
+    .tot{ font-weight:900; }
+  </style>
+</head>
+<body>
+  <h1>EMAS AMIR SDN BHD(202301019252) — Misc Servis</h1>
+  <p class="sub">Range: <span class="mono">${escapeHtml(s)}</span> → <span class="mono">${escapeHtml(e)}</span> | Status: <span class="mono">${escapeHtml(st)}</span> | Printed: <span class="mono">${escapeHtml(nowStr)}</span></p>
+
+  <div class="box">
+    <div class="row">
+      <div class="kpi">
+        <div class="label">Bil Transaksi</div>
+        <div class="val">${escapeHtml(String(_rows.length))}</div>
+      </div>
+      <div class="kpi">
+        <div class="label">Total (RM)</div>
+        <div class="val">${escapeHtml(money(sumTotal))}</div>
+      </div>
+    </div>
+    <div class="muted" style="font-size:11px;margin-top:6px">
+      Nota: Print ikut carian jika ada (Search box). Jika search kosong, print semua data dalam range.
+    </div>
+  </div>
+
+  <table>
+    <thead>
+      <tr>
+        <th>#</th>
+        <th>sale_date</th>
+        <th>created_at</th>
+        <th>category</th>
+        <th>staff</th>
+        <th>description</th>
+        <th>customer</th>
+        <th>pay</th>
+        <th style="text-align:right">amount</th>
+        <th>ref</th>
+        <th>status</th>
+      </tr>
+    </thead>
+    <tbody>
+      ${tableRows || `<tr><td colspan="11" class="muted">Tiada data.</td></tr>`}
+      <tr class="tot">
+        <td colspan="8" style="text-align:right">TOTAL</td>
+        <td style="text-align:right">${escapeHtml(money(sumTotal))}</td>
+        <td colspan="2"></td>
+      </tr>
+    </tbody>
+  </table>
+
+  <script>
+    window.onload = function(){ setTimeout(function(){ window.print(); }, 150); };
+  <\/script>
+</body>
+</html>`);
+  doc.close();
+}
+
+/* ==========================
+   LOAD / EXPORT actions
+========================== */
+async function doLoad(){
+  const ds = $('dateStart').value;
+  const de = $('dateEnd').value;
+  if(!ds || !de){ alert('Sila pilih tarikh Dari dan Hingga.'); return; }
+  clampRange();
+
+  $('btnLoad').disabled = true;
+  $('btnLoad').textContent = 'Loading…';
+  $('btnExportCsv').disabled = true;
+  $('btnPrint').disabled = true;
+
+  try{
+    const status = $('statusPick').value || 'PAID';
+    const rows = await loadRows($('dateStart').value, $('dateEnd').value, status);
+
+    _rows = rows;
+    applySearch();
+    renderSummary(_rows);
+    renderList(_view);
+
+    $('btnExportCsv').disabled = (_rows.length === 0);
+    _csvEnabled = (_rows.length > 0);
+    $('btnPrint').disabled = (_rows.length === 0);
+  }catch(e){
+    console.error(e);
+    alert('Ralat load: ' + (e?.message || e));
+  }finally{
+    $('btnLoad').disabled = false;
+    $('btnLoad').textContent = 'Load';
+  }
+}
+
+function doExport(){
+  if(!_csvEnabled) return;
+  const s = $('dateStart').value || 'unknown';
+  const e = $('dateEnd').value || 'unknown';
+  const tag = `${s}_to_${e}`;
+  const csv = makeCsv(_rows);
+  downloadText(`misc_service_${tag}.csv`, csv);
+}
+
+/* ==========================
+   Wire
+========================== */
+$('btnLoad').addEventListener('click', doLoad);
+$('btnExportCsv').addEventListener('click', doExport);
+$('btnPrint').addEventListener('click', printA4);
+
+$('searchBox').addEventListener('input', ()=>{
+  applySearch();
+  renderList(_view);
+});
+
+$('btnAdd').addEventListener('click', doAdd);
+$('btnClear').addEventListener('click', clearForm);
+
+(async ()=>{
+  const ok = await requireAdmin();
+  if(!ok) return;
+
+  // preset buttons
+  $('btnToday').addEventListener('click', ()=> setRangeDays(0));
+  $('btn1M').addEventListener('click', ()=> setRangeDays(30));
+  $('btn3M').addEventListener('click', ()=> setRangeDays(90));
+
+  // default range + form date = hari ini
+  const t = todayISO();
+  $('dateStart').value = t;
+  $('dateEnd').value = t;
+  clearForm();
+  clampRange();
+
+  // auto load first
+  await doLoad();
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,1113 @@
+<!doctype html>
+<html lang="ms">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Admin • Audit RFID 916 — Emas Amir</title>
+
+  <!-- Supabase & Auth -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="auth.js?v=13.1"></script>
+  <script src="admin-guard.js?v=1"></script>
+
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+  <style>
+    body{background:#fff}
+    .container-narrow{max-width:1100px}
+    .auth-pill{
+      border:1px solid #e5e7eb;
+      border-radius:999px;
+      padding:.2rem .6rem;
+      background:#fafafa;
+      color:#555;
+      font-size:13px;
+    }
+    .btn-chip{
+      border:1px solid #e5e7eb;
+      background:#f8fafc;
+      padding:6px 10px;
+      border-radius:999px;
+      font-size:.9rem;
+    }
+    .mono{font-family:ui-monospace,Menlo,monospace}
+    .right{text-align:right}
+    .badge-tray-ok{background:#dcfce7;color:#166534}
+    .badge-tray-wrong{background:#fee2e2;color:#991b1b}
+    .badge-unknown{background:#fef9c3;color:#854d0e}
+    .badge-missing{background:#e0f2fe;color:#075985}
+    .badge-hold{background:#ede9fe;color:#5b21b6}
+    .badge-live{background:#0ea5e9;color:#fff}
+    .badge-locked{background:#111827;color:#fff}
+    .table-fixed-head thead th{
+      position:sticky;
+      top:0;
+      z-index:5;
+      background:#f9fafb;
+    }
+    .muted{color:#6b7280}
+
+    /* PRINT */
+    @media print{
+      @page { size: A4 portrait; margin: 10mm; }
+      .no-print{display:none !important}
+      .print-title{display:block !important}
+      body{background:#fff}
+      .table{font-size:11px}
+      .table-fixed-head thead th{position:static !important}
+      .tab-content{border:none !important}
+      .nav-tabs{display:none !important}
+      .card{border:1px solid #ddd !important}
+    }
+    .print-title{display:none}
+  </style>
+</head>
+<body>
+<div class="container container-narrow py-3">
+
+  <!-- TOP BAR -->
+  <div class="d-flex justify-content-between align-items-center mb-2 no-print">
+    <div class="small auth-pill" id="authStatus">Memuatkan…</div>
+    <div class="d-flex flex-wrap gap-2">
+      <a class="btn btn-outline-secondary btn-chip" href="index.html">Halaman Utama</a>
+      <a class="btn btn-outline-secondary btn-chip" href="admin.html">Admin</a>
+      <a class="btn btn-outline-secondary btn-chip" href="admin-j916.html">Admin 916</a>
+      <a class="btn btn-outline-secondary btn-chip" href="adminstok-j916.html">Stok 916</a>
+      <a class="btn btn-outline-secondary btn-chip" href="account.html">Akaun</a>
+      <button id="btnLogin"  class="btn btn-outline-secondary btn-chip" type="button">Log masuk</button>
+      <button id="btnLogout" class="btn btn-outline-secondary btn-chip" type="button" style="display:none">Log keluar</button>
+    </div>
+  </div>
+  <hr class="mb-3 no-print">
+
+  <!-- PRINT HEADER -->
+  <div class="print-title mt-2">
+    <div class="text-center">
+      <div class="fw-bold" style="font-size:18px">EMAS AMIR SDN BHD(202301019252)</div>
+      <div class="text-muted">Audit RFID Stok 916</div>
+      <div class="text-muted small" id="printLine">—</div>
+    </div>
+    <hr>
+  </div>
+
+  <!-- HEADER -->
+  <div class="d-flex justify-content-between align-items-end flex-wrap gap-2 mb-3">
+    <div>
+      <h1 class="h4 mb-1">Audit RFID Stok 916</h1>
+      <div class="text-muted small" id="trayInfo">Memuatkan kategori…</div>
+      <div class="small text-muted">
+        Mode stabil: EPC yang hilang sekejap akan masuk <span class="badge badge-hold">HOLD</span> dulu (tak terus “terkeluar”).
+      </div>
+    </div>
+    <div class="text-end small">
+      <div>Tarikh / Masa: <span id="nowTs">—</span></div>
+      <div class="mt-1 d-flex gap-2 justify-content-end flex-wrap">
+        <span class="badge badge-live" id="pillLive" style="display:none">LIVE</span>
+        <span class="badge badge-locked" id="pillLocked" style="display:none">LOCKED</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- CONTROL BAR -->
+  <div class="card mb-3 no-print">
+    <div class="card-body">
+      <div class="row g-2 align-items-end">
+        <div class="col-md-4">
+          <label class="form-label">Setting Stabilize</label>
+          <div class="input-group">
+            <span class="input-group-text">OK window (s)</span>
+            <input id="okWin" class="form-control" type="number" step="1" min="1" value="3">
+            <span class="input-group-text">HOLD (s)</span>
+            <input id="holdWin" class="form-control" type="number" step="1" min="5" value="15">
+          </div>
+          <div class="small text-muted mt-1">Cadangan: OK 3s, HOLD 15s (realistik kedai).</div>
+        </div>
+
+        <div class="col-md-8">
+          <div class="d-flex flex-wrap gap-2 justify-content-md-end">
+            <button class="btn btn-outline-secondary" type="button" id="btnLive">
+              LIVE: OFF
+            </button>
+            <button class="btn btn-outline-secondary" type="button" id="btnLock">
+              Kunci Kiraan (Snapshot)
+            </button>
+            <button class="btn btn-outline-secondary" type="button" id="btnUnlock" disabled>
+              Buka Kunci
+            </button>
+            <button class="btn btn-outline-secondary" type="button" id="btnClearSession">
+              Reset Session
+            </button>
+            <button class="btn btn-success" type="button" id="btnSaveAudit" disabled>
+              Simpan Audit
+            </button>
+            <button class="btn btn-outline-secondary" type="button" id="btnPrint" disabled>
+              Print A4
+            </button>
+          </div>
+          <div class="small text-muted mt-2">
+            Flow senang: ON LIVE → scan/paste berulang → bila dah cukup tekan <b>Kunci Kiraan</b> → cari yang <b>MISSING</b> → paste lagi → kunci semula.
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- PANEL INPUT EPC -->
+  <div class="card mb-3 no-print">
+    <div class="card-body">
+      <div class="d-flex justify-content-between align-items-center mb-2">
+        <div>
+          <div class="fw-semibold">Senarai EPC dari reader</div>
+          <div class="small text-muted">
+            Paste output reader di sini (1 EPC setiap baris / ruang). LIVE akan auto proses tiap 0.7s.
+          </div>
+        </div>
+        <button class="btn btn-outline-secondary btn-sm" type="button" id="btnClearEpc">Kosongkan</button>
+      </div>
+
+      <textarea id="epcText" class="form-control mono" rows="8"
+                placeholder="Contoh:
+E2806B1234ABCDEFFEDC0001
+E2806B1234ABCDEFFEDC0002
+E2806B1234ABCDEFFEDC0003"></textarea>
+
+      <div class="d-flex justify-content-between align-items-center mt-2">
+        <div class="small text-muted">
+          EPC unik dikesan (session): <span id="epcCount">0</span>
+          <span class="muted">| Last update: <span id="lastUpdate">—</span></span>
+        </div>
+        <div class="d-flex gap-2">
+          <button class="btn btn-outline-secondary btn-sm" type="button" id="btnSample">
+            Contoh Data
+          </button>
+          <button class="btn btn-primary" type="button" id="btnProcess">
+            Proses Audit
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- RINGKASAN -->
+  <div class="card mb-3">
+    <div class="card-body">
+      <div class="fw-semibold mb-2">Ringkasan Audit</div>
+      <div class="row g-2 small">
+        <div class="col-md-3">
+          <div class="border rounded p-2 h-100">
+            <div class="text-muted">Item dalam DB (tray ini)</div>
+            <div class="h5 mb-0" id="sumDbTray">0</div>
+          </div>
+        </div>
+        <div class="col-md-3">
+          <div class="border rounded p-2 h-100">
+            <div class="text-muted">OK (tray betul)</div>
+            <div class="h5 mb-0" id="sumOk">0</div>
+          </div>
+        </div>
+        <div class="col-md-3">
+          <div class="border rounded p-2 h-100">
+            <div class="text-muted">HOLD (baru hilang)</div>
+            <div class="h5 mb-0" id="sumHold">0</div>
+          </div>
+        </div>
+        <div class="col-md-3">
+          <div class="border rounded p-2 h-100">
+            <div class="text-muted">Tray lain</div>
+            <div class="h5 mb-0" id="sumWrongTray">0</div>
+          </div>
+        </div>
+      </div>
+      <div class="row g-2 small mt-2">
+        <div class="col-md-3">
+          <div class="border rounded p-2 h-100">
+            <div class="text-muted">Tak dikenali</div>
+            <div class="h5 mb-0" id="sumUnknown">0</div>
+          </div>
+        </div>
+        <div class="col-md-3">
+          <div class="border rounded p-2 h-100">
+            <div class="text-muted">MISSING (confirm)</div>
+            <div class="h5 mb-0" id="sumMissing">0</div>
+          </div>
+        </div>
+        <div class="col-md-6">
+          <div class="border rounded p-2 h-100">
+            <div class="text-muted">Nota</div>
+            <div class="small">
+              MISSING dikira bila EPC item DB untuk tray ini <b>tak pernah dikesan</b> dalam snapshot (LOCKED).
+              Jadi bila tekan <b>Kunci Kiraan</b>, kiraan jadi stabil walaupun anda berhenti scan sekejap.
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- HASIL TERPERINCI -->
+  <ul class="nav nav-tabs no-print" role="tablist">
+    <li class="nav-item">
+      <button class="nav-link active" data-bs-toggle="tab" data-bs-target="#tabOk" type="button" role="tab">
+        ✅ OK
+      </button>
+    </li>
+    <li class="nav-item">
+      <button class="nav-link" data-bs-toggle="tab" data-bs-target="#tabHold" type="button" role="tab">
+        🟣 HOLD
+      </button>
+    </li>
+    <li class="nav-item">
+      <button class="nav-link" data-bs-toggle="tab" data-bs-target="#tabWrong" type="button" role="tab">
+        ⚠️ Tray Salah
+      </button>
+    </li>
+    <li class="nav-item">
+      <button class="nav-link" data-bs-toggle="tab" data-bs-target="#tabUnknown" type="button" role="tab">
+        ❓ Tak Dikenali
+      </button>
+    </li>
+    <li class="nav-item">
+      <button class="nav-link" data-bs-toggle="tab" data-bs-target="#tabMissing" type="button" role="tab">
+        🚫 MISSING
+      </button>
+    </li>
+  </ul>
+
+  <div class="tab-content border-start border-end border-bottom p-3 mb-4" style="min-height:260px">
+    <!-- OK -->
+    <div class="tab-pane fade show active" id="tabOk" role="tabpanel">
+      <div class="small text-muted mb-1">
+        EPC yang dikesan untuk tray ini (dalam snapshot / session).
+      </div>
+      <div class="table-responsive table-fixed-head" style="max-height:360px;overflow:auto">
+        <table class="table table-sm align-middle">
+          <thead>
+            <tr>
+              <th>EPC</th>
+              <th>Kod</th>
+              <th>Nama</th>
+              <th>Kategori</th>
+              <th class="right">Berat</th>
+              <th>Status</th>
+              <th class="right">Last Seen</th>
+            </tr>
+          </thead>
+          <tbody id="tOk"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- HOLD -->
+    <div class="tab-pane fade" id="tabHold" role="tabpanel">
+      <div class="small text-muted mb-1">
+        EPC pernah jumpa, tapi hilang sekejap (mengikut HOLD window) — hanya untuk LIVE monitoring.
+      </div>
+      <div class="table-responsive table-fixed-head" style="max-height:360px;overflow:auto">
+        <table class="table table-sm align-middle">
+          <thead>
+            <tr>
+              <th>EPC</th>
+              <th>Kod</th>
+              <th>Nama</th>
+              <th>Kategori</th>
+              <th class="right">Berat</th>
+              <th>Status</th>
+              <th class="right">Last Seen</th>
+            </tr>
+          </thead>
+          <tbody id="tHold"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Wrong tray -->
+    <div class="tab-pane fade" id="tabWrong" role="tabpanel">
+      <div class="small text-muted mb-1">
+        EPC wujud dalam sistem tetapi kategori sebenar bukan tray ini.
+      </div>
+      <div class="table-responsive table-fixed-head" style="max-height:360px;overflow:auto">
+        <table class="table table-sm align-middle">
+          <thead>
+            <tr>
+              <th>EPC</th>
+              <th>Kod</th>
+              <th>Nama</th>
+              <th>Kategori Sebenar</th>
+              <th class="right">Berat</th>
+              <th>Status</th>
+              <th class="right">Last Seen</th>
+            </tr>
+          </thead>
+          <tbody id="tWrong"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Unknown -->
+    <div class="tab-pane fade" id="tabUnknown" role="tabpanel">
+      <div class="small text-muted mb-1">
+        EPC yang reader baca tetapi tiada dalam database.
+      </div>
+      <div class="table-responsive table-fixed-head" style="max-height:360px;overflow:auto">
+        <table class="table table-sm align-middle">
+          <thead>
+            <tr>
+              <th>EPC</th>
+              <th class="right">Last Seen</th>
+            </tr>
+          </thead>
+          <tbody id="tUnknown"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Missing -->
+    <div class="tab-pane fade" id="tabMissing" role="tabpanel">
+      <div class="small text-muted mb-1">
+        Item DB untuk tray ini (aktif + AVAILABLE + ada EPC) tetapi EPC tersebut <b>tidak dikesan dalam snapshot</b>.
+      </div>
+      <div class="table-responsive table-fixed-head" style="max-height:360px;overflow:auto">
+        <table class="table table-sm align-middle">
+          <thead>
+            <tr>
+              <th>EPC</th>
+              <th>Kod</th>
+              <th>Nama</th>
+              <th class="right">Berat</th>
+              <th>Status</th>
+              <th class="right">Last Seen</th>
+            </tr>
+          </thead>
+          <tbody id="tMissing"></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+/* ===== Config & helpers ===== */
+const SB_URL = "https://dduizetstqqjrpsezbpi.supabase.co";
+const SB_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRkdWl6ZXRzdHFxanJwc2V6YnBpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTg3MzI0ODQsImV4cCI6MjA3NDMwODQ4NH0.CrlHXrmHtKgR9qc2192U6quRb5lpFEeOSgwG0Lb8KRM";
+
+window.sb = window.sb || window.supabase.createClient(SB_URL, SB_KEY);
+const sb = window.sb;
+const $  = (id)=>document.getElementById(id);
+
+function nowStr(){
+  const d = new Date();
+  return d.toLocaleString("ms-MY",{hour12:false});
+}
+function getQueryParam(name){
+  const u = new URL(window.location.href);
+  return u.searchParams.get(name) || "";
+}
+function fmtTime(ts){
+  if(!ts) return "-";
+  try{
+    const d = new Date(ts);
+    return d.toLocaleTimeString("ms-MY",{hour12:false});
+  }catch(_){
+    return "-";
+  }
+}
+function fmtDT(ts){
+  if(!ts) return "-";
+  try{
+    const d = new Date(ts);
+    return d.toLocaleString("ms-MY",{hour12:false});
+  }catch(_){
+    return String(ts);
+  }
+}
+function n2(x){
+  const n = Number(x||0);
+  return Number.isFinite(n) ? n : 0;
+}
+
+// Buang invisible char & standardise EPC
+function cleanEpcString(str){
+  if (!str) return "";
+  return String(str)
+    .toUpperCase()
+    .replace(/[\u200B-\u200D\uFEFF]/g, "") // invisible unicode
+    .replace(/O/g, "0");                   // huruf O -> nombor 0
+}
+
+// Ambil 1 EPC dari string (E280 + 20 hex = 24 char)
+function extractEpc(str){
+  if (!str) return "";
+  const up = cleanEpcString(str);
+  const m  = up.match(/E280[0-9A-F]{20}/);
+  return m ? m[0] : "";
+}
+
+/* ===== Auth top bar ===== */
+(function(){
+  const pill=$('authStatus'), login=$('btnLogin'), logout=$('btnLogout');
+  try{
+    const a=(window.auth_get&&window.auth_get())||null;
+    if(a){
+      pill.textContent='Log masuk (admin) — '+(a.phone||a.msisdn||'');
+      login.style.display='none';
+      logout.style.display='';
+      logout.onclick=()=>{window.auth_clear&&window.auth_clear();location.href="login.html#login";};
+    }else{
+      pill.textContent='Tidak log masuk';
+      login.style.display='';
+      logout.style.display='none';
+      login.onclick=()=>location.href='login.html#login';
+    }
+  }catch(_){}
+})();
+
+async function fallbackRequireAdmin(){
+  const a=(window.auth_get&&window.auth_get())||null;
+  if(!a){ location.href="login.html#login"; return false; }
+  let phone=(a.phone||a.msisdn||a.username||"");
+  phone = String(phone || "");
+
+  let digits = phone.replace(/\D/g,''); // 013.. / +6013.. semua jadi digits
+  if(digits.startsWith("0")) digits = "6" + digits;      // 013... -> 6013...
+  else if(!digits.startsWith("60") && digits.length >= 9) digits = "6" + digits;
+
+  const tryA = digits;        // 6013...
+  const tryB = "+" + digits;  // +6013...
+
+  const {data,error}=await sb
+    .from("admin_users")
+    .select("phone,is_active")
+    .in("phone", [tryA, tryB])
+    .eq("is_active", true)
+    .maybeSingle();
+
+  if(error||!data){
+    alert("Akses terhad (bukan admin).");
+    location.href="index.html";
+    return false;
+  }
+  return true;
+}
+
+/* ===== Data global ===== */
+const TRAY_CAT = (getQueryParam("cat") || "").toUpperCase();
+let _allItems = [];
+let _mapByEpc = new Map();
+
+/* ===== Session scan state (stabil) =====
+   - seenMap: epc -> { lastSeenAt, firstSeenAt }
+*/
+let seenMap = new Map();
+let lockedSnapshot = null; // { ts, lockMs, epcSet, rowsComputed }
+let liveOn = false;
+let liveTimer = null;
+let lastTextHash = "";
+
+/* ===== Load item dari DB ===== */
+async function loadItems(){
+  $('trayInfo').textContent = TRAY_CAT
+    ? `Audit RFID untuk tray kategori: ${TRAY_CAT}`
+    : `Audit RFID (kategori tidak ditentukan dalam URL, contoh: ?cat=RT)`;
+
+  $('nowTs').textContent = nowStr();
+
+  try{
+    const { data, error } = await sb.rpc("j916_admin_items_list_v1", { p_query: null });
+    if(error) throw error;
+
+    const rows = Array.isArray(data) ? data : [];
+
+    _allItems = [];
+    _mapByEpc = new Map();
+
+    for (const r of rows){
+      const epc = extractEpc(r.rfid_epc || "");
+
+      // 1) ambil cat_code dari RPC (kalau ada)
+      let cat = String(r.cat_code || r.category || "").toUpperCase().trim();
+
+      // 2) kalau kosong, derive dari prefix kod unik (RL0004471 -> RL)
+      if(!cat){
+        const m = String(r.code || "").toUpperCase().trim().match(/^([A-Z]{2})\d+/);
+        if(m) cat = m[1];
+      }
+
+      const item = {
+        id: r.id,
+        code: r.code,
+        name: r.name,
+        cat_code: cat,
+        weight_g: n2(r.weight_g || 0),
+        status: r.status || "AVAILABLE",
+        is_active: !!r.is_active,
+        epc: epc
+      };
+
+      _allItems.push(item);
+      if (epc) _mapByEpc.set(epc, item);
+    }
+
+    // expected tray count (aktif + AVAILABLE + ada epc)
+    const trayRows = _allItems.filter(r =>
+      r.cat_code === TRAY_CAT &&
+      r.is_active &&
+      String(r.status).toUpperCase() === "AVAILABLE" &&
+      r.epc
+    );
+    $('sumDbTray').textContent = trayRows.length;
+
+  }catch(e){
+    console.error("loadItems error", e);
+    alert("Ralat memuatkan data stok (RFID).");
+  }
+}
+
+/* ===== Parse EPC dari textarea (ambil semua EPC valid) ===== */
+function parseEpcListFromText(text){
+  let txt = cleanEpcString(text || "");
+  if (!txt.trim()) return [];
+  const matches = txt.match(/E280[0-9A-F]{20}/g) || [];
+  return matches;
+}
+
+function updateSeenFromTextarea(){
+  const txt = $('epcText').value || "";
+  const hash = String(txt.length) + "|" + (txt.slice(-200)); // ringan tapi cukup
+  if(hash === lastTextHash) return false;
+  lastTextHash = hash;
+
+  const epcs = parseEpcListFromText(txt);
+  if(!epcs.length){
+    $('epcCount').textContent = String(seenMap.size);
+    return false;
+  }
+
+  const now = Date.now();
+  for(const raw of epcs){
+    const epc = extractEpc(raw);
+    if(!epc) continue;
+    const prev = seenMap.get(epc);
+    if(prev){
+      prev.lastSeenAt = now;
+    }else{
+      seenMap.set(epc, { firstSeenAt: now, lastSeenAt: now });
+    }
+  }
+
+  $('epcCount').textContent = String(seenMap.size);
+  $('lastUpdate').textContent = fmtTime(now);
+  return true;
+}
+
+/* ===== Core audit compute =====
+   mode:
+   - "LIVE": ok/hold ikut window
+   - "LOCKED": OK = semua EPC tray betul yang pernah dikesan dalam session (stabil)
+*/
+function computeAuditFromSeen(mode, lockMs){
+  const okWinS = Math.max(1, n2($('okWin').value || 3));
+  const holdWinS = Math.max(5, n2($('holdWin').value || 15));
+  const okMs = okWinS * 1000;
+  const holdMs = holdWinS * 1000;
+
+  const now = (mode === "LOCKED" && Number.isFinite(lockMs)) ? lockMs : Date.now();
+
+  const ok = [];
+  const hold = [];
+  const wrongTray = [];
+  const unknown = [];
+
+  // EPC yang pernah seen (session)
+  for(const [epc, meta] of seenMap.entries()){
+    const age = now - meta.lastSeenAt;
+
+    const row = _mapByEpc.get(epc);
+    const lastSeenLabel = fmtTime(meta.lastSeenAt);
+
+    if(!row){
+      unknown.push({ epc, lastSeenAt: meta.lastSeenAt, lastSeenLabel });
+      continue;
+    }
+
+    const pack = {
+      epc,
+      row,
+      lastSeenAt: meta.lastSeenAt,
+      lastSeenLabel
+    };
+
+    const trayMatch = row.cat_code === TRAY_CAT;
+
+    if(!trayMatch){
+      // tray lain
+      wrongTray.push(pack);
+      continue;
+    }
+
+    if(mode === "LOCKED"){
+      // ✅ LOCKED: kira OK berdasarkan "pernah dikesan", bukan ikut window
+      ok.push(pack);
+    }else{
+      // LIVE: ikut window ok/hold
+      const inOk = age <= okMs;
+      const inHold = age > okMs && age <= holdMs;
+      if(inOk) ok.push(pack);
+      else if(inHold) hold.push(pack);
+    }
+  }
+
+  // expected tray count (aktif + AVAILABLE + ada epc)
+  const expected = _allItems.filter(r =>
+    r.cat_code === TRAY_CAT &&
+    r.is_active &&
+    String(r.status).toUpperCase() === "AVAILABLE" &&
+    r.epc
+  );
+
+  // present set:
+  // - LIVE: ok+hold
+  // - LOCKED: semua ok (ever seen)
+  const presentSet = new Set();
+  if(mode === "LOCKED"){
+    for(const x of ok) presentSet.add(x.epc);
+  }else{
+    for(const x of ok) presentSet.add(x.epc);
+    for(const x of hold) presentSet.add(x.epc);
+  }
+
+  const missing = [];
+  for(const item of expected){
+    if(!item.epc) continue;
+    if(presentSet.has(item.epc)) continue;
+
+    const meta = seenMap.get(item.epc);
+    const lastSeenLabel = meta ? fmtTime(meta.lastSeenAt) : "-";
+
+    missing.push({
+      epc: item.epc,
+      row: item,
+      lastSeenAt: meta ? meta.lastSeenAt : null,
+      lastSeenLabel
+    });
+  }
+
+  ok.sort((a,b)=> (b.lastSeenAt||0)-(a.lastSeenAt||0));
+  hold.sort((a,b)=> (b.lastSeenAt||0)-(a.lastSeenAt||0));
+  wrongTray.sort((a,b)=> (b.lastSeenAt||0)-(a.lastSeenAt||0));
+  unknown.sort((a,b)=> (b.lastSeenAt||0)-(a.lastSeenAt||0));
+  missing.sort((a,b)=> (b.lastSeenAt||0)-(a.lastSeenAt||0));
+
+  return { ok, hold, wrongTray, unknown, missing, okWinS, holdWinS };
+}
+
+/* ===== Render UI ===== */
+function renderAudit(res){
+  const ok = res.ok || [];
+  const hold = res.hold || [];
+  const wrongTray = res.wrongTray || [];
+  const unknown = res.unknown || [];
+  const missing = res.missing || [];
+
+  $('sumOk').textContent = ok.length;
+  $('sumHold').textContent = hold.length;
+  $('sumWrongTray').textContent = wrongTray.length;
+  $('sumUnknown').textContent = unknown.length;
+  $('sumMissing').textContent = missing.length;
+
+  $('btnPrint').disabled = false;
+
+  const tOk = $('tOk');
+  const tHold = $('tHold');
+  const tWrong = $('tWrong');
+  const tUnknown = $('tUnknown');
+  const tMissing = $('tMissing');
+
+  tOk.innerHTML = ok.length
+    ? ok.map(x => `
+      <tr>
+        <td class="mono"><span class="badge badge-tray-ok">${x.epc}</span></td>
+        <td class="mono">${x.row.code || '-'}</td>
+        <td>${x.row.name || '-'}</td>
+        <td>${x.row.cat_code || '-'}</td>
+        <td class="right">${n2(x.row.weight_g).toFixed(2)}g</td>
+        <td>${x.row.status || '-'}</td>
+        <td class="right">${x.lastSeenLabel}</td>
+      </tr>
+    `).join("")
+    : `<tr><td colspan="7" class="text-muted">Tiada.</td></tr>`;
+
+  tHold.innerHTML = hold.length
+    ? hold.map(x => `
+      <tr>
+        <td class="mono"><span class="badge badge-hold">${x.epc}</span></td>
+        <td class="mono">${x.row.code || '-'}</td>
+        <td>${x.row.name || '-'}</td>
+        <td>${x.row.cat_code || '-'}</td>
+        <td class="right">${n2(x.row.weight_g).toFixed(2)}g</td>
+        <td>${x.row.status || '-'}</td>
+        <td class="right">${x.lastSeenLabel}</td>
+      </tr>
+    `).join("")
+    : `<tr><td colspan="7" class="text-muted">Tiada.</td></tr>`;
+
+  tWrong.innerHTML = wrongTray.length
+    ? wrongTray.map(x => `
+      <tr>
+        <td class="mono"><span class="badge badge-tray-wrong">${x.epc}</span></td>
+        <td class="mono">${x.row.code || '-'}</td>
+        <td>${x.row.name || '-'}</td>
+        <td>${x.row.cat_code || '-'}</td>
+        <td class="right">${n2(x.row.weight_g).toFixed(2)}g</td>
+        <td>${x.row.status || '-'}</td>
+        <td class="right">${x.lastSeenLabel}</td>
+      </tr>
+    `).join("")
+    : `<tr><td colspan="7" class="text-muted">Tiada.</td></tr>`;
+
+  tUnknown.innerHTML = unknown.length
+    ? unknown.map(x => `
+      <tr>
+        <td class="mono"><span class="badge badge-unknown">${x.epc}</span></td>
+        <td class="right">${x.lastSeenLabel}</td>
+      </tr>
+    `).join("")
+    : `<tr><td colspan="2" class="text-muted">Tiada.</td></tr>`;
+
+  tMissing.innerHTML = missing.length
+    ? missing.map(x => `
+      <tr>
+        <td class="mono"><span class="badge badge-missing">${(x.epc || '').toUpperCase()}</span></td>
+        <td class="mono">${x.row.code || '-'}</td>
+        <td>${x.row.name || '-'}</td>
+        <td class="right">${n2(x.row.weight_g).toFixed(2)}g</td>
+        <td>${x.row.status || '-'}</td>
+        <td class="right">${x.lastSeenLabel}</td>
+      </tr>
+    `).join("")
+    : `<tr><td colspan="6" class="text-muted">Tiada.</td></tr>`;
+
+  const lockedText = lockedSnapshot ? ` | LOCKED: ${fmtDT(lockedSnapshot.ts)}` : "";
+  $('printLine').textContent = `Kategori: ${TRAY_CAT || '-'} | OK ${res.okWinS}s | HOLD ${res.holdWinS}s | Masa: ${nowStr()}${lockedText}`;
+}
+
+/* ====================== SAVE AUDIT (SUPABASE) ====================== */
+function buildAuditSummary(res){
+  const note = lockedSnapshot ? `LOCKED: ${fmtDT(lockedSnapshot.ts)}` : "";
+  return {
+    db_tray_count: n2($('sumDbTray').textContent),
+    ok_count: res.ok.length,
+    hold_count: res.hold.length,
+    wrong_tray_count: res.wrongTray.length,
+    unknown_count: res.unknown.length,
+    missing_count: res.missing.length,
+    note
+  };
+}
+
+function buildAuditLines(res){
+  const lines = [];
+
+  for(const x of res.ok){
+    lines.push({
+      bucket: "OK",
+      epc: x.epc,
+      item_id: x.row.id,
+      code: x.row.code,
+      name: x.row.name,
+      cat_code: x.row.cat_code,
+      status: x.row.status,
+      is_active: x.row.is_active,
+      weight_g: x.row.weight_g
+    });
+  }
+
+  for(const x of res.hold){
+    lines.push({
+      bucket: "HOLD",
+      epc: x.epc,
+      item_id: x.row.id,
+      code: x.row.code,
+      name: x.row.name,
+      cat_code: x.row.cat_code,
+      status: x.row.status,
+      is_active: x.row.is_active,
+      weight_g: x.row.weight_g
+    });
+  }
+
+  for(const x of res.wrongTray){
+    lines.push({
+      bucket: "WRONG",
+      epc: x.epc,
+      item_id: x.row.id,
+      code: x.row.code,
+      name: x.row.name,
+      cat_code: x.row.cat_code,
+      status: x.row.status,
+      is_active: x.row.is_active,
+      weight_g: x.row.weight_g
+    });
+  }
+
+  for(const x of res.unknown){
+    lines.push({
+      bucket: "UNKNOWN",
+      epc: x.epc
+    });
+  }
+
+  for(const x of res.missing){
+    lines.push({
+      bucket: "MISSING",
+      epc: x.epc,
+      item_id: x.row.id,
+      code: x.row.code,
+      name: x.row.name,
+      cat_code: x.row.cat_code,
+      status: x.row.status,
+      is_active: x.row.is_active,
+      weight_g: x.row.weight_g
+    });
+  }
+
+  return lines;
+}
+
+async function saveAuditToSupabase(res){
+  const a=(window.auth_get&&window.auth_get())||null;
+
+  let phoneRaw = a?.phone || a?.msisdn || a?.username || "";
+  phoneRaw = String(phoneRaw || "");
+
+  let phoneDigits = phoneRaw.replace(/\D/g,'');
+  if(phoneDigits.startsWith("0")) phoneDigits = "6" + phoneDigits;
+  else if(!phoneDigits.startsWith("60") && phoneDigits.length >= 9) {
+    phoneDigits = "6" + phoneDigits;
+  }
+
+  const phone = phoneDigits || null;
+
+  const payload = {
+    p_cat: TRAY_CAT || "",
+    p_created_by_phone: phone,
+    p_ok_window_s: Math.max(1, n2($('okWin').value || 3)),
+    p_hold_s: Math.max(5, n2($('holdWin').value || 15)),
+    p_summary: buildAuditSummary(res),
+    p_lines: buildAuditLines(res)
+  };
+
+  const r = await sb.rpc("j916_rfid_audit_save_v1", payload);
+  if(r.error) throw r.error;
+
+  return r.data; // uuid audit_id
+}
+
+function buildPrintUrl(auditId){
+  return `${location.origin}/admin-rfid-print.html?id=${auditId}`;
+}
+
+async function onSaveAuditClick(){
+  try{
+    if(!lockedSnapshot){
+      alert("Sila tekan 'Kunci Kiraan (Snapshot)' dulu, baru Simpan Audit.");
+      return;
+    }
+
+    const res = lockedSnapshot.rowsComputed;
+
+    $('btnSaveAudit').disabled = true;
+    $('btnSaveAudit').textContent = "Menyimpan…";
+
+    const auditId = await saveAuditToSupabase(res);
+    const url = buildPrintUrl(auditId);
+
+    // ✅ FIX: copied hanya declare sekali
+    let copied = false;
+    try{
+      await navigator.clipboard.writeText(url);
+      copied = true;
+    }catch(_){}
+
+    try{
+      if(navigator.share){
+        await navigator.share({ title:"Audit RFID", text:url, url });
+      }
+    }catch(_){}
+
+    const openNow = confirm(
+      "Audit disimpan ✅\n\n" +
+      "ID: " + auditId + "\n\n" +
+      "Link print:\n" + url + "\n\n" +
+      (copied ? "✅ Link dah copy.\n\n" : "") +
+      "Tekan OK untuk buka halaman print sekarang."
+    );
+
+    if(openNow){
+      window.open(url, "_blank");
+    }
+
+  }catch(e){
+    console.error(e);
+    alert("Gagal simpan audit: " + (e?.message || e));
+  }finally{
+    $('btnSaveAudit').textContent = "Simpan Audit";
+    $('btnSaveAudit').disabled = !lockedSnapshot; // ✅ kekal ikut LOCKED
+  }
+}
+
+/* ===== Actions ===== */
+function doProcess(){
+  if(lockedSnapshot){
+    renderAudit(lockedSnapshot.rowsComputed);
+    return;
+  }
+
+  updateSeenFromTextarea();
+  const res = computeAuditFromSeen("LIVE");
+  renderAudit(res);
+}
+
+function setLive(on){
+  liveOn = !!on;
+  $('btnLive').textContent = liveOn ? "LIVE: ON" : "LIVE: OFF";
+  $('pillLive').style.display = liveOn ? "" : "none";
+
+  if(liveTimer){
+    clearInterval(liveTimer);
+    liveTimer = null;
+  }
+  if(liveOn){
+    liveTimer = setInterval(()=>{
+      if(lockedSnapshot) return;
+      const changed = updateSeenFromTextarea();
+      if(changed) {
+        const res = computeAuditFromSeen("LIVE");
+        renderAudit(res);
+      }
+    }, 700);
+  }
+}
+
+function lockSnapshot(){
+  // ambil snapshot stabil:
+  updateSeenFromTextarea();
+
+  const lockMs = Date.now();
+  const res = computeAuditFromSeen("LOCKED", lockMs);
+
+  lockedSnapshot = {
+    ts: new Date(lockMs).toISOString(),
+    lockMs,
+    epcSet: new Set(Array.from(seenMap.keys())),
+    rowsComputed: res
+  };
+
+  $('pillLocked').style.display = "";
+  $('btnUnlock').disabled = false;
+  $('btnLock').disabled = true;
+
+  // ✅ enable save bila locked
+  $('btnSaveAudit').disabled = false;
+
+  renderAudit(res);
+}
+
+function unlockSnapshot(){
+  lockedSnapshot = null;
+  $('pillLocked').style.display = "none";
+  $('btnUnlock').disabled = true;
+  $('btnLock').disabled = false;
+
+  $('btnSaveAudit').disabled = true;
+
+  doProcess();
+}
+
+function resetSession(){
+  seenMap = new Map();
+  lockedSnapshot = null;
+  $('epcCount').textContent = "0";
+  $('lastUpdate').textContent = "—";
+  $('pillLocked').style.display = "none";
+  $('btnUnlock').disabled = true;
+  $('btnLock').disabled = false;
+
+  $('btnSaveAudit').disabled = true;
+
+  $('sumOk').textContent = "0";
+  $('sumHold').textContent = "0";
+  $('sumWrongTray').textContent = "0";
+  $('sumUnknown').textContent = "0";
+  $('sumMissing').textContent = "0";
+  $('btnPrint').disabled = true;
+
+  $('tOk').innerHTML = "";
+  $('tHold').innerHTML = "";
+  $('tWrong').innerHTML = "";
+  $('tUnknown').innerHTML = "";
+  $('tMissing').innerHTML = "";
+}
+
+function doPrint(){
+  if(lockedSnapshot){
+    renderAudit(lockedSnapshot.rowsComputed);
+  }else{
+    doProcess();
+  }
+  window.print();
+}
+
+/* ===== Event ===== */
+$('btnProcess').addEventListener('click', doProcess);
+
+$('btnClearEpc').addEventListener('click', () => {
+  $('epcText').value = "";
+  lastTextHash = "";
+});
+
+$('btnSample').addEventListener('click', () => {
+  const sample =
+`E2806B1234ABCDEFFEDC0001
+E2806B1234ABCDEFFEDC0002
+E2806B1234ABCDEFFEDC0003`;
+  $('epcText').value = sample;
+  lastTextHash = "";
+  doProcess();
+});
+
+$('btnLive').addEventListener('click', () => setLive(!liveOn));
+$('btnLock').addEventListener('click', lockSnapshot);
+$('btnUnlock').addEventListener('click', unlockSnapshot);
+$('btnClearSession').addEventListener('click', resetSession);
+$('btnPrint').addEventListener('click', doPrint);
+$('btnSaveAudit').addEventListener('click', onSaveAuditClick);
+
+$('okWin').addEventListener('change', ()=>{ if(!lockedSnapshot) doProcess(); });
+$('holdWin').addEventListener('change', ()=>{ if(!lockedSnapshot) doProcess(); });
+
+/* ===== Boot ===== */
+(async ()=>{
+  const pill=$('authStatus'); const set=(t)=> pill && (pill.textContent=t);
+  let ok=false;
+  if(window.adminGuard&&typeof adminGuard.require==='function'){
+    ok=await adminGuard.require({
+      onChecking:()=>set("Mengesahkan akses…"),
+      onDenied:()=>set("Akses ditolak"),
+      onAllowed:(p)=>set("Log masuk (admin) — "+p)
+    });
+  }else{
+    ok=await fallbackRequireAdmin();
+    if(ok) set("Log masuk (admin)");
+  }
+  if(!ok) return;
+
+  $('nowTs').textContent = nowStr();
+  await loadItems();
+
+  setLive(false);
+  doProcess();
+})();
+</script>
+</body>
+</html>

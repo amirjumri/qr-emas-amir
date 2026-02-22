@@ -1,0 +1,320 @@
+<!doctype html>
+<html lang="ms">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Loket Nama — Customizer</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+  <!-- Google Fonts untuk pilihan font -->
+  <link href="https://fonts.googleapis.com/css2?family=Great+Vibes&family=Lobster&family=Pacifico&family=Playfair+Display:wght@600&family=Poppins:wght@600&family=Satisfy&display=swap" rel="stylesheet">
+  <style>
+    body{background:#fff}
+    .container-narrow{max-width:1100px}
+    .canvas-wrap{position:relative;width:100%;background:#f7f7f7;border:1px dashed #e5e7eb;border-radius:12px}
+    canvas{width:100%;height:auto;display:block;border-radius:12px}
+    .thumb{width:64px;height:64px;border:1px solid #eee;border-radius:8px;object-fit:cover}
+    .label-min{font-size:.825rem;color:#6b7280}
+  </style>
+</head>
+<body>
+<div class="container container-narrow py-4">
+  <h1 class="h4 mb-3">Loket Nama — Pratonton & Sunting</h1>
+
+  <div class="row g-4">
+    <div class="col-lg-7">
+      <div class="canvas-wrap p-2">
+        <canvas id="cv" width="1200" height="1200"></canvas>
+      </div>
+      <div class="d-flex align-items-center gap-3 mt-3">
+        <button id="btnDownload" class="btn btn-primary">Muat Turun PNG</button>
+        <button id="btnSpec" class="btn btn-outline-secondary">Muat Turun Spesifikasi (.json)</button>
+        <div class="label-min ms-auto">*Ini hanyalah mockup untuk pengesahan pelanggan.</div>
+      </div>
+    </div>
+
+    <div class="col-lg-5">
+      <div class="card">
+        <div class="card-body">
+          <div class="mb-3">
+            <label class="form-label">Gambar Loket</label>
+            <input type="file" id="fileInput" accept="image/*" class="form-control">
+            <div class="form-text">Upload gambar loket kosong (transparensi lebih cantik, tapi JPG pun boleh).</div>
+          </div>
+
+          <div class="mb-3">
+            <label class="form-label">Nama pada loket</label>
+            <input type="text" id="txtName" class="form-control" placeholder="cth: Nurul" maxlength="18" value="Nurul">
+            <div class="form-text">Tip: 3–8 aksara paling cun. Sistem akan auto-fit bila panjang.</div>
+          </div>
+
+          <div class="row g-3">
+            <div class="col-6">
+              <label class="form-label">Font</label>
+              <select id="selFont" class="form-select">
+                <option value="'Great Vibes', cursive">Great Vibes (skrip lembut)</option>
+                <option value="'Pacifico', cursive">Pacifico (skrip tebal)</option>
+                <option value="'Lobster', cursive">Lobster (skrip retro)</option>
+                <option value="'Satisfy', cursive">Satisfy (skrip halus)</option>
+                <option value="'Playfair Display', serif">Playfair (serif elegan)</option>
+                <option value="'Poppins', sans-serif">Poppins (moden)</option>
+              </select>
+            </div>
+            <div class="col-6">
+              <label class="form-label">Gaya Ukiran</label>
+              <select id="selStyle" class="form-select">
+                <option value="normal">Biasa</option>
+                <option value="italic">Condong</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="row g-3 mt-1">
+            <div class="col-6">
+              <label class="form-label">Warna Teks</label>
+              <select id="selColor" class="form-select">
+                <option value="#ffffff">Putih (ukiran cerah)</option>
+                <option value="#111111">Hitam (ukiran gelap)</option>
+                <option value="#f7e7a7">Emas muda</option>
+              </select>
+            </div>
+            <div class="col-6">
+              <label class="form-label">Saiz (auto-fit)</label>
+              <input type="range" min="32" max="220" value="160" id="rngSize" class="form-range">
+            </div>
+          </div>
+
+          <div class="row g-3 mt-1">
+            <div class="col-6">
+              <label class="form-label">Lengkung (arc)</label>
+              <input type="range" min="-35" max="35" value="0" id="rngArc" class="form-range">
+            </div>
+            <div class="col-6">
+              <label class="form-label">Kedudukan Y</label>
+              <input type="range" min="-200" max="200" value="0" id="rngY" class="form-range">
+            </div>
+          </div>
+
+          <div class="row g-3 mt-1">
+            <div class="col-6">
+              <label class="form-label">Bayang (emboss)</label>
+              <input type="range" min="0" max="16" value="6" id="rngShadow" class="form-range">
+            </div>
+            <div class="col-6">
+              <label class="form-label">Garis Tepi</label>
+              <input type="range" min="0" max="6" value="1" id="rngStroke" class="form-range">
+            </div>
+          </div>
+
+          <div class="mt-3">
+            <label class="form-label">Pra-tetapan contoh</label><br>
+            <button class="btn btn-sm btn-outline-secondary me-2" data-demo="eija">“eija”</button>
+            <button class="btn btn-sm btn-outline-secondary me-2" data-demo="nita">“nita”</button>
+            <button class="btn btn-sm btn-outline-secondary" data-demo="Nurul">“Nurul”</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="mt-3 small text-muted">
+        Integrasi “Add to Cart”: simpan nilai <code>spec</code> (JSON) ke item cart supaya bengkel ikut tepat font/arc.
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+(function(){
+  const cv = document.getElementById('cv');
+  const ctx = cv.getContext('2d');
+
+  // Elemen kawalan
+  const el = id => document.getElementById(id);
+  const txtName = el('txtName');
+  const selFont = el('selFont');
+  const selStyle = el('selStyle');
+  const selColor = el('selColor');
+  const rngSize = el('rngSize');
+  const rngArc = el('rngArc');
+  const rngY = el('rngY');
+  const rngShadow = el('rngShadow');
+  const rngStroke = el('rngStroke');
+
+  // Gambar asas (placeholder emas sekiranya tiada upload)
+  const baseImg = new Image();
+  const placeholder = `
+  <svg xmlns="http://www.w3.org/2000/svg" width="1200" height="1200" viewBox="0 0 1200 1200">
+    <defs>
+      <linearGradient id="g" x1="0" y1="0" x2="1" y2="1">
+        <stop offset="0%" stop-color="#f8e08a"/>
+        <stop offset="50%" stop-color="#cda22f"/>
+        <stop offset="100%" stop-color="#ffd46a"/>
+      </linearGradient>
+      <filter id="shadow" x="-50%" y="-50%" width="200%" height="200%">
+        <feGaussianBlur in="SourceAlpha" stdDeviation="30" result="blur"/>
+        <feOffset dy="10" result="off"/>
+        <feMerge><feMergeNode in="off"/><feMergeNode in="SourceGraphic"/></feMerge>
+      </filter>
+    </defs>
+    <rect width="1200" height="1200" fill="#f5f5f5"/>
+    <g filter="url(#shadow)">
+      <path d="M600 980 C 250 860, 150 620, 220 470 C 300 290, 520 260, 600 400 C 680 260, 900 290, 980 470 C 1050 620, 950 860, 600 980 Z" fill="url(#g)" stroke="#b8860b" stroke-width="12"/>
+    </g>
+  </svg>`;
+  baseImg.src = 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(placeholder);
+
+  // Upload imej loket sebenar
+  el('fileInput').addEventListener('change', (e)=>{
+    const f = e.target.files[0];
+    if(!f) return;
+    const reader = new FileReader();
+    reader.onload = ev => { baseImg.src = ev.target.result; };
+    reader.readAsDataURL(f);
+  });
+
+  // Demo butang nama cepat
+  document.querySelectorAll('[data-demo]').forEach(b=>{
+    b.addEventListener('click', ()=>{ txtName.value = b.dataset.demo; draw(); });
+  });
+
+  // Auto-fit: kecilkan font hingga muat lebar sasaran
+  function computeFontSizeToFit(text, basePx, maxWidth, fontFamily, fontStyle){
+    let size = parseInt(basePx, 10);
+    for(let i=0;i<24;i++){
+      ctx.font = `${fontStyle} ${size}px ${fontFamily}`;
+      const w = ctx.measureText(text).width;
+      if (w <= maxWidth) break;
+      size -= 2; if (size < 24) { size = 24; break; }
+    }
+    return size;
+  }
+
+  // Teks melengkung ringkas
+  function drawArcText(text, x, y, radius, arcDeg, style, fill, strokeW, shadowBlur){
+    if (!text) return;
+    const angle = (arcDeg * Math.PI)/180;
+    const centerAngle = 0; // mula dari tengah
+    const metrics = ctx.measureText(text);
+    // anggaran panjang; jika radius kecil/arc kecil, lukis biasa sahaja
+    if (Math.abs(arcDeg) < 1 || radius < 10){
+      ctx.fillText(text, x - metrics.width/2, y);
+      if (strokeW>0) ctx.strokeText(text, x - metrics.width/2, y);
+      return;
+    }
+    const totalAngle = angle;
+    // agih setiap aksara mengikut sudut
+    const chars = [...text];
+    const charAngles = totalAngle / Math.max(chars.length-1,1);
+    let curAngle = centerAngle - totalAngle/2;
+    chars.forEach(ch=>{
+      const halfW = ctx.measureText(ch).width/2;
+      // kedudukan setiap aksara
+      const cx = x + radius * Math.sin(curAngle);
+      const cy = y - radius * Math.cos(curAngle);
+      ctx.save();
+      ctx.translate(cx, cy);
+      ctx.rotate(curAngle);
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      if (shadowBlur>0){ ctx.shadowBlur = shadowBlur; ctx.shadowColor = 'rgba(0,0,0,.35)'; }
+      if (strokeW>0){ ctx.lineWidth = strokeW; ctx.strokeText(ch, 0, 0); }
+      ctx.fillText(ch, 0, 0);
+      ctx.restore();
+      curAngle += charAngles;
+    });
+  }
+
+  function draw(){
+    // asas
+    ctx.clearRect(0,0,cv.width,cv.height);
+    ctx.drawImage(baseImg, 0, 0, cv.width, cv.height);
+
+    const text = txtName.value.trim();
+    const fontFamily = selFont.value;
+    const fontStyle = selStyle.value;
+    const color = selColor.value;
+    const baseSize = parseInt(rngSize.value,10);
+    const arc = parseInt(rngArc.value,10);
+    const yOffset = parseInt(rngY.value,10);
+    const shadowBlur = parseInt(rngShadow.value,10);
+    const stroke = parseInt(rngStroke.value,10);
+
+    // sasaran lebar (bahagian tengah hati), laras ikut gambar; 70% drp lebar kanvas
+    const targetWidth = cv.width * 0.70;
+
+    // kira saiz muat
+    const finalSize = computeFontSizeToFit(text, baseSize, targetWidth, fontFamily, fontStyle);
+    ctx.font = `${fontStyle} ${finalSize}px ${fontFamily}`;
+    ctx.fillStyle = color;
+    ctx.lineJoin = 'round';
+    ctx.lineCap = 'round';
+    ctx.miterLimit = 2;
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+
+    // sedikit emboss: stroke halus + bayang lembut
+    ctx.shadowBlur = shadowBlur;
+    ctx.shadowColor = 'rgba(0,0,0,.35)';
+    if (stroke>0){ ctx.lineWidth = stroke; ctx.strokeStyle = 'rgba(0,0,0,.25)'; }
+
+    const centerX = cv.width/2;
+    const centerY = cv.height/2 + yOffset;
+
+    if (Math.abs(arc) >= 1){
+      // radius ikut panjang teks (lebih panjang -> radius lebih besar)
+      const radius = Math.max(140, Math.min(380, targetWidth/3));
+      if (stroke>0) { ctx.strokeStyle = 'rgba(0,0,0,.35)'; }
+      drawArcText(text, centerX, centerY, radius, arc, fontStyle, color, stroke, shadowBlur);
+    } else {
+      if (stroke>0) ctx.strokeText(text, centerX, centerY);
+      ctx.fillText(text, centerX, centerY);
+    }
+    // reset shadow
+    ctx.shadowBlur = 0;
+  }
+
+  // Triger perubahan
+  ['input','change'].forEach(ev=>{
+    [txtName, selFont, selStyle, selColor, rngSize, rngArc, rngY, rngShadow, rngStroke].forEach(elm=>{
+      elm.addEventListener(ev, draw);
+    });
+  });
+
+  baseImg.onload = draw;
+
+  // Muat turun PNG
+  document.getElementById('btnDownload').addEventListener('click', ()=>{
+    const a = document.createElement('a');
+    a.download = `loket-nama-${(txtName.value||'custom').toLowerCase()}.png`;
+    a.href = cv.toDataURL('image/png');
+    a.click();
+  });
+
+  // Muat turun spesifikasi JSON (untuk order/cart)
+  document.getElementById('btnSpec').addEventListener('click', ()=>{
+    const spec = {
+      product: "loket_nama",
+      name: txtName.value.trim(),
+      font_family: selFont.value,
+      font_style: selStyle.value,
+      color: selColor.value,
+      base_size_px: parseInt(rngSize.value,10),
+      final_size_px: parseInt(ctx.font.match(/(\d+)px/)[1],10),
+      arc_degree: parseInt(rngArc.value,10),
+      y_offset: parseInt(rngY.value,10),
+      shadow_blur: parseInt(rngShadow.value,10),
+      stroke_px: parseInt(rngStroke.value,10),
+      canvas_size: {w: cv.width, h: cv.height},
+      generated_at: new Date().toISOString()
+    };
+    const blob = new Blob([JSON.stringify(spec,null,2)], {type: 'application/json'});
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `loket-nama-${(txtName.value||'custom').toLowerCase()}.json`;
+    a.click();
+    URL.revokeObjectURL(url);
+  });
+
+})();
+</script>
+</body>
+</html>

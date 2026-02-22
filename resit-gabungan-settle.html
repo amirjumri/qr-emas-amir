@@ -1,0 +1,638 @@
+<!doctype html>
+<html lang="ms">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Resit Gabungan Settle — Emas Amir</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+  <style>
+    body{background:#fff}
+    .sheet{max-width:980px;margin:24px auto;padding:24px;border:1px solid #eee;border-radius:14px}
+    .h-logo{font-weight:900;font-size:20px}
+    .muted{color:#6b7280}
+    .mono{font-family:ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,"Liberation Mono","Courier New",monospace}
+    .pill{display:inline-block;padding:3px 10px;border:1px solid #e5e7eb;border-radius:999px;background:#fafafa;font-size:12px}
+    .card-soft{border:1px solid #e5e7eb;border-radius:14px;padding:14px}
+    .table-sm td,.table-sm th{padding:.42rem .5rem}
+    .big{font-size:18px;font-weight:900}
+    .tot{font-size:22px;font-weight:900}
+    .warn{background:#fff1f2;border:1px solid #fecdd3;color:#9f1239;border-radius:12px;padding:12px}
+    @media print{
+      .no-print{display:none!important}
+      .sheet{border:none;margin:0;padding:0}
+      a[href]:after{content:""}
+    }
+  </style>
+</head>
+<body>
+
+<div class="sheet">
+  <div class="d-flex justify-content-between align-items-start gap-3 flex-wrap">
+    <div>
+      <div class="h-logo">Emas Amir Sdn Bhd (202301019252)</div>
+      <div class="small muted">+60168055916 • perniagaanemasamir@gmail.com</div>
+      <div class="small muted">3H Jalan Belibis Taman Tunku Putra 09000 Kulim Kedah</div>
+      <div class="mt-2"><span class="pill">RESIT GABUNGAN SETTLE</span></div>
+    </div>
+
+    <div class="text-end">
+      <div class="fw-bold">RESIT</div>
+      <div class="small" id="resitNo">No Resit: –</div>
+      <div class="small" id="resitDate">Tarikh: –</div>
+      <div class="small">Rujukan: <span class="mono" id="resitRef">–</span></div>
+      <div class="mt-2 no-print">
+        <button class="btn btn-outline-secondary btn-sm" onclick="window.print()">Cetak</button>
+      </div>
+    </div>
+  </div>
+
+  <hr>
+
+  <div id="warnBox" class="warn mb-3" style="display:none"></div>
+
+  <div class="row g-2 mb-3">
+    <!-- ================= Pelanggan ================= -->
+    <div class="col-12 col-lg-6">
+      <div class="card-soft">
+        <div class="fw-semibold mb-1">Pelanggan</div>
+
+        <div id="custName">–</div>
+
+        <div class="small muted">
+          Telefon: <span class="mono" id="custPhone">–</span>
+        </div>
+
+        <div class="small muted">
+          Alamat: <span id="custAddr">–</span>
+        </div>
+
+        <div class="mt-2">
+          <div class="small muted">
+            Kaedah bayaran:
+            <span class="fw-semibold" id="payMethod">–</span>
+          </div>
+
+          <!-- Bank info (hanya muncul bila TRANSFER) -->
+          <div id="bankWrap" style="display:none" class="mt-1">
+            <div class="small muted">
+              Bank:
+              <span class="fw-semibold" id="bankName">–</span>
+            </div>
+            <div class="small muted">
+              Nama akaun:
+              <span class="fw-semibold" id="bankAccName">–</span>
+            </div>
+            <div class="small muted">
+              No akaun:
+              <span class="fw-semibold mono" id="bankAccNo">–</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ================= Catatan ================= -->
+    <div class="col-12 col-lg-6">
+      <div class="card-soft">
+        <div class="fw-semibold mb-1">Catatan</div>
+
+        <div class="small muted">
+          Nota: <span id="noteText">–</span>
+        </div>
+        <div class="small muted">
+          Cash out method:
+          <span class="mono" id="methodText">–</span>
+        </div>
+        <div class="small muted">
+          Ref:
+          <span class="mono" id="refText">–</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Ringkasan -->
+  <div class="row g-2 mb-3">
+    <div class="col-12 col-lg-6">
+      <div class="card-soft">
+        <div class="d-flex justify-content-between align-items-center">
+          <div class="fw-semibold">Sale J916</div>
+          <div class="small muted mono">Order: <span id="saleOrder">–</span></div>
+        </div>
+        <table class="table table-sm mb-0">
+          <tbody>
+            <tr><td class="muted">Tarikh</td><td class="text-end" id="saleDate">–</td></tr>
+            <tr><td class="muted">Status</td><td class="text-end" id="saleStatus">–</td></tr>
+            <tr><td class="muted">Kaedah</td><td class="text-end" id="saleMethod">–</td></tr>
+            <tr><td class="muted">Subtotal</td><td class="text-end mono" id="saleSub">RM 0.00</td></tr>
+            <tr><td class="muted">Shipping</td><td class="text-end mono" id="saleShip">RM 0.00</td></tr>
+            <tr><td class="muted">Diskaun (Pay)</td><td class="text-end mono" id="salePayD">RM 0.00</td></tr>
+            <tr><td class="muted">Diskaun (Kupon)</td><td class="text-end mono" id="saleCoupD">RM 0.00</td></tr>
+            <tr class="table-light">
+              <th>Jumlah Sale</th>
+              <th class="text-end tot mono" id="saleTotal">RM 0.00</th>
+            </tr>
+          </tbody>
+        </table>
+        <div class="small muted mt-2">*Jumlah Sale ikut <span class="mono">amount_cents</span> jika ada, kalau kosong guna <span class="mono">grand_total_rm</span> / kiraan.</div>
+      </div>
+    </div>
+
+    <div class="col-12 col-lg-6">
+      <div class="card-soft">
+        <div class="d-flex justify-content-between align-items-center">
+          <div class="fw-semibold">Trade In</div>
+          <div class="small muted mono">ID: <span id="tradeIdShort">–</span></div>
+        </div>
+        <table class="table table-sm mb-2">
+          <tbody>
+            <tr><td class="muted">Tarikh</td><td class="text-end" id="tradeDate">–</td></tr>
+            <tr><td class="muted">Status</td><td class="text-end" id="tradeStatus">–</td></tr>
+            <tr class="table-light">
+              <th>Jumlah Trade In</th>
+              <th class="text-end tot mono" id="tradeTotal">RM 0.00</th>
+            </tr>
+          </tbody>
+        </table>
+
+        <div class="fw-semibold mb-2">Senarai item trade-in</div>
+        <div class="table-responsive">
+          <table class="table table-sm align-middle mb-0">
+            <thead class="table-light">
+              <tr>
+                <th style="width:40px">#</th>
+                <th>Barang</th>
+                <th class="text-end">Berat (g)</th>
+                <th class="text-end">Harga (RM/g)</th>
+                <th class="text-end">Jumlah (RM)</th>
+              </tr>
+            </thead>
+            <tbody id="tradeItemsTbody">
+              <tr><td colspan="5" class="text-muted">Memuatkan…</td></tr>
+            </tbody>
+          </table>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+  <!-- NET -->
+  <div class="card-soft">
+    <div class="d-flex justify-content-between align-items-center flex-wrap gap-2">
+      <div class="big">NET (Sale - Trade In)</div>
+      <div class="tot mono" id="netTotal">RM 0.00</div>
+    </div>
+    <div class="muted mt-1" id="netHint">–</div>
+  </div>
+
+  <div class="small muted mt-3">* Resit ini dijana secara automatik oleh sistem Emas Amir.</div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script>
+/* =========================
+   Supabase
+   ========================= */
+const SB_URL="https://dduizetstqqjrpsezbpi.supabase.co";
+const SB_KEY="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRkdWl6ZXRzdHFxanJwc2V6YnBpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTg3MzI0ODQsImV4cCI6MjA3NDMwODQ4NH0.CrlHXrmHtKgR9qc2192U6quRb5lpFEeOSgwG0Lb8KRM";
+const sb = window.supabase.createClient(SB_URL, SB_KEY);
+
+/* =========================
+   Helpers
+   ========================= */
+const $=id=>document.getElementById(id);
+const money=n=>'RM '+Number(n||0).toFixed(2);
+const fmtMY=(s)=> s ? new Date(s).toLocaleString('ms-MY',{hour12:false}) : '-';
+function esc(s){ return String(s ?? '').replace(/[&<>"']/g, m=>({ "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;" }[m])); }
+function setText(id, val, fb='-'){ const el=$(id); if(el) el.textContent = (val!=null && String(val).trim()!=='') ? String(val) : fb; }
+
+const digitsOnly = (v)=> String(v||'').replace(/\D/g,'');
+
+function normalizePhoneVariants(msisdn){
+  if (!msisdn) return [];
+  let x = digitsOnly(msisdn);
+  const set = new Set();
+  if (x) set.add(x);
+  if (x.startsWith('60') && x.length > 2) set.add('0'+x.slice(2));
+  if (x.startsWith('0') && x.length >= 10 && x.length <= 11){
+    set.add(x);
+    set.add('60'+x.slice(1));
+  }
+  if (String(msisdn||'').trim().startsWith('+')) set.add(digitsOnly(msisdn));
+  return Array.from(set);
+}
+
+function calcSaleRM(r){
+  if(!r) return 0;
+
+  const cents = Number(r.amount_cents);
+  if(Number.isFinite(cents) && cents > 0) return cents/100;
+
+  const gt = Number(r.grand_total_rm);
+  if(Number.isFinite(gt) && gt > 0) return gt;
+
+  const sub   = Number(r.subtotal_rm) || 0;
+  const ship  = Number(r.shipping_rm) || 0;
+  const payD  = Number(r.pay_disc_rm) || 0;
+  const coupD = Number(r.coupon_disc_rm) || 0;
+  const computed = sub + ship - payD - coupD;
+
+  return Number.isFinite(computed) && computed > 0 ? computed : 0;
+}
+
+// breakdown utk table (subtotal sum, shipping/discount ambil dari row pertama sahaja)
+function calcSaleBreakdown(rows){
+  if (!Array.isArray(rows) || !rows.length) {
+    return { sub:0, ship:0, payD:0, coupD:0 };
+  }
+  const any = rows[0] || {};
+  const sub = rows.reduce((sum, r) => sum + Number(r.subtotal_rm || 0), 0);
+  return {
+    sub: Number(sub.toFixed(2)),
+    ship: Number((any.shipping_rm || 0).toFixed ? any.shipping_rm : Number(any.shipping_rm||0)),
+    payD: Number((any.pay_disc_rm || 0).toFixed ? any.pay_disc_rm : Number(any.pay_disc_rm||0)),
+    coupD: Number((any.coupon_disc_rm || 0).toFixed ? any.coupon_disc_rm : Number(any.coupon_disc_rm||0)),
+  };
+}
+
+function resitNo(saleCode, tradeId, createdAt){
+  const d = createdAt ? new Date(createdAt) : new Date();
+  const ymd =
+    d.getFullYear() +
+    String(d.getMonth()+1).padStart(2,'0') +
+    String(d.getDate()).padStart(2,'0');
+
+  const a = (saleCode || 'SALE').slice(0,4).toUpperCase();
+  const b = (tradeId  || 'TRAD').slice(0,4).toUpperCase();
+
+  return `EA-SET-${ymd}-${a}-${b}`;
+}
+
+function warn(msg){
+  const w = $('warnBox');
+  if (!w) return;
+  w.style.display = '';
+  w.innerHTML = msg;
+}
+
+function parseSaleList(str){
+  return String(str||'')
+    .split(',')
+    .map(s=>s.trim())
+    .filter(Boolean);
+}
+
+function isGroupKey(x){
+  const s = String(x||'');
+  return s.toUpperCase().startsWith('GROUP:');
+}
+
+function groupIdFromKey(x){
+  const s = String(x||'');
+  if(!isGroupKey(s)) return '';
+  return s.slice(6).trim(); // lepas "GROUP:"
+}
+
+/* =========================
+   Boot
+   ========================= */
+(async()=>{
+  try{
+    const qs=new URLSearchParams(location.search);
+
+    // =====================
+    // 0) MODE BARU: sid
+    // =====================
+    const sid = (qs.get('sid')||'').trim();
+
+    // mode query (lama + baru)
+    let sale = (qs.get('sale')||'').trim();
+    let trade = (qs.get('trade')||'').trim();
+    let sale_group = (qs.get('sale_group')||'').trim();
+    let sale_list  = (qs.get('sale_list')||'').trim();
+    let note = (qs.get('note')||'').trim();
+    let ref  = (qs.get('ref')||'').trim();
+    let method = (qs.get('method')||'').trim();
+
+    // kalau ada sid, override dari DB settlement_txn
+    if(sid){
+      const st = await sb.from('settlement_txn')
+        .select('id,created_at,sale_order_code,tradein_id,sale_rm,trade_rm,net_rm,note,ref,cashout_method')
+        .eq('id', sid)
+        .maybeSingle();
+      if(st.error) throw st.error;
+
+      const row = st.data;
+      if(!row){
+        warn(
+          `<b>Settlement tidak dijumpai.</b><br>
+           SID: <span class="mono">${esc(sid)}</span>`
+        );
+        return;
+      }
+
+      sale   = row.sale_order_code || sale;
+      trade  = row.tradein_id || trade;
+      note   = (row.note ?? note) || '';
+      ref    = (row.ref ?? ref) || '';
+      method = (row.cashout_method ?? method) || '';
+
+      // header resit berdasarkan created_at settlement
+      const baseDate = row.created_at || new Date().toISOString();
+      $('resitDate').textContent = 'Tarikh: ' + fmtMY(baseDate);
+      $('resitNo').textContent   = 'No Resit: ' + resitNo(sale, String(trade||''), baseDate);
+
+      // rujukan
+      setText('resitRef', ref || '-', '-');
+
+      // jika sale disimpan sebagai GROUP:<id>
+      if(isGroupKey(sale)){
+        sale_group = groupIdFromKey(sale);
+      }
+    }
+
+    // =====================
+    // 1) fallback localStorage (kalau query hilang)
+    // =====================
+    if(!sale || !trade){
+      try{
+        const raw = localStorage.getItem('settle_preview');
+        if(raw){
+          const j = JSON.parse(raw);
+          sale   = sale   || (j.sale||'');
+          trade  = trade  || (j.trade||'');
+          sale_group = sale_group || (j.sale_group||'');
+          sale_list  = sale_list  || (j.sale_list||'');
+          note   = note   || (j.note||'');
+          ref    = ref    || (j.ref||'');
+          method = method || (j.method||'');
+        }
+      }catch(_){}
+    }
+
+    // =====================
+    // 2) validasi
+    // =====================
+    if((!sale && !sale_group && !sale_list) || !trade){
+      warn(
+        `<b>Param tak cukup.</b><br>
+         Buka ikut format:<br>
+         <span class="mono">resit-gabungan-settle.html?sid=SETTLEMENT_ID</span><br>
+         atau<br>
+         <span class="mono">resit-gabungan-settle.html?sale_group=CHECKOUT_GROUP&trade=TRADEIN_ID</span><br>
+         atau<br>
+         <span class="mono">resit-gabungan-settle.html?sale=ORDER_CODE&trade=TRADEIN_ID</span><br><br>
+         <span class="muted">Tip: Pastikan buka dari butang “Preview Resit Gabungan” atau link “Lihat resit gabungan”.</span>`
+      );
+      setText('resitNo', 'No Resit: –');
+      setText('resitDate', 'Tarikh: –');
+      setText('resitRef', '-');
+      setText('noteText', '-'); setText('refText', '-'); setText('methodText', '-');
+      return;
+    }
+
+    // catatan
+    setText('noteText', note || '-', '-');
+    setText('refText', ref || '-', '-');
+    setText('methodText', method || '-', '-');
+    setText('resitRef', ref || '-', '-');
+
+    // kalau TAK ada sid, isi header ikut tarikh guess (macam asal)
+    if(!sid){
+      const baseDateGuess = new Date().toISOString();
+      $('resitDate').textContent = 'Tarikh: ' + fmtMY(baseDateGuess);
+      $('resitNo').textContent   = 'No Resit: ' + resitNo(sale_group ? ('GROUP:'+sale_group) : sale, String(trade||''), baseDateGuess);
+    }
+
+    // =====================
+    // 3) FETCH SALE ROWS (GROUP / LIST / SINGLE)
+    // =====================
+    let saleRows = [];
+    let saleRow  = null; // row pertama utk status/kaedah dsb
+    let effectiveGroup = (sale_group||'').trim();
+    let effectiveCodes = parseSaleList(sale_list);
+
+    // A) Jika sale_group ada → ambil semua dalam group
+    if(effectiveGroup){
+      const g = await sb.from('j916_orders')
+        .select('order_code,created_at,status,pay_method,customer_name,phone,amount_cents,subtotal_rm,shipping_rm,pay_disc_rm,coupon_disc_rm,grand_total_rm,paid_at,checkout_group,qty,unit_rm')
+        .eq('checkout_group', effectiveGroup)
+        .in('status', ['PENDING','PAID','COMPLETED'])
+        .order('created_at', { ascending: true });
+
+      if(g.error) throw g.error;
+      if(Array.isArray(g.data) && g.data.length){
+        saleRows = g.data;
+        saleRow = g.data[0];
+      }
+    }
+
+    // B) Jika tiada group tapi sale_list ada → ambil ikut order_code list
+    if(!saleRows.length && effectiveCodes.length){
+      const ql = await sb.from('j916_orders')
+        .select('order_code,created_at,status,pay_method,customer_name,phone,amount_cents,subtotal_rm,shipping_rm,pay_disc_rm,coupon_disc_rm,grand_total_rm,paid_at,checkout_group,qty,unit_rm')
+        .in('order_code', effectiveCodes)
+        .order('created_at', { ascending: true });
+
+      if(ql.error) throw ql.error;
+      if(Array.isArray(ql.data) && ql.data.length){
+        saleRows = ql.data;
+        saleRow = ql.data[0];
+        // kalau semua ada checkout_group yang sama, set effectiveGroup
+        const cg = saleRow?.checkout_group || '';
+        if(cg && ql.data.every(r => r.checkout_group === cg)) effectiveGroup = cg;
+      }
+    }
+
+    // C) Jika masih tiada, guna sale=order_code (cara lama)
+    if(!saleRows.length && sale){
+      const s = await sb.from('j916_orders')
+        .select('order_code,created_at,status,pay_method,customer_name,phone,amount_cents,subtotal_rm,shipping_rm,pay_disc_rm,coupon_disc_rm,grand_total_rm,paid_at,checkout_group,qty,unit_rm')
+        .eq('order_code', sale)
+        .maybeSingle();
+      if(s.error) throw s.error;
+
+      saleRow = s.data || null;
+      saleRows = saleRow ? [saleRow] : [];
+
+      // kalau ada checkout_group → ambil semua item dalam group (PENDING/PAID/COMPLETED)
+      if (saleRow?.checkout_group) {
+        const g = await sb.from('j916_orders')
+          .select('order_code,created_at,status,pay_method,customer_name,phone,amount_cents,subtotal_rm,shipping_rm,pay_disc_rm,coupon_disc_rm,grand_total_rm,paid_at,checkout_group,qty,unit_rm')
+          .eq('checkout_group', saleRow.checkout_group)
+          .in('status', ['PENDING','PAID','COMPLETED'])
+          .order('created_at', { ascending: true });
+
+        if (g.error) throw g.error;
+        if (Array.isArray(g.data) && g.data.length) {
+          saleRows = g.data;
+          saleRow = g.data[0];
+          effectiveGroup = saleRow.checkout_group || effectiveGroup;
+        }
+      }
+    }
+
+    // =====================
+    // 4) FETCH TRADE HEAD
+    // =====================
+    const t = await sb.from('tradein_txn')
+      .select('id,created_at,status,customer_name,customer_phone,subtotal_rm')
+      .eq('id', trade)
+      .maybeSingle();
+    if(t.error) throw t.error;
+
+    const tradeRow = t.data;
+
+    if(!saleRow) warn(`<b>Rekod Sale J916 tidak dijumpai</b>.`);
+    if(!tradeRow) warn((($('warnBox').style.display==='')?$('warnBox').innerHTML+'<br><br>':'' ) + `<b>Rekod Trade In tidak dijumpai</b> untuk ID <span class="mono">${esc(trade)}</span>.`);
+
+    // header resit (kalau sid tak ada, guna tarikh sebenar sale/trade)
+    if(!sid){
+      const baseDate = (saleRow && saleRow.created_at) ? saleRow.created_at : (tradeRow && tradeRow.created_at) ? tradeRow.created_at : new Date().toISOString();
+      $('resitDate').textContent = 'Tarikh: ' + fmtMY(baseDate);
+      $('resitNo').textContent   = 'No Resit: ' + resitNo((effectiveGroup ? ('GROUP:'+effectiveGroup) : (saleRow?.order_code||sale)), trade, baseDate);
+    }
+
+    // pelanggan (utamakan saleRow)
+    const cn = (saleRow && saleRow.customer_name) || (tradeRow && tradeRow.customer_name) || '-';
+    const cp = (saleRow && saleRow.phone) || (tradeRow && tradeRow.customer_phone) || '-';
+    setText('custName', cn);
+    setText('custPhone', cp);
+
+    // ===== Kaedah bayaran (utamakan sale) =====
+    const pm = String((saleRow?.pay_method || tradeRow?.pay_method || 'MANUAL')).toUpperCase();
+    setText('payMethod', pm);
+
+    // ===== Alamat + Bank (auto dari customers ikut phone) =====
+    let addr = '-';
+    let bank = { bank_name:'', bank_account_name:'', bank_account_no:'' };
+
+    const variants = normalizePhoneVariants(cp);
+    if(variants.length){
+      const qc = await sb.from('customers')
+        .select('alamat,postcode,city,state,bank_name,bank_account_name,bank_account_no')
+        .in('phone', variants)
+        .limit(1);
+
+      if(!qc.error && qc.data && qc.data[0]){
+        const c = qc.data[0];
+        const parts = [c.alamat, c.postcode, c.city, c.state].filter(x => x!=null && String(x).trim()!=='');
+        if(parts.length) addr = parts.join(', ');
+        bank = {
+          bank_name: c.bank_name || '',
+          bank_account_name: c.bank_account_name || '',
+          bank_account_no: c.bank_account_no || ''
+        };
+      }
+    }
+    setText('custAddr', addr);
+
+    // bank info: papar bila SALE transfer ATAU bila cashout_method TRANSFER (kedai bayar balik via transfer)
+    const bankWrap = $('bankWrap');
+    const cashout = String(method || '').toUpperCase();
+    const shouldShowBank = (pm === 'TRANSFER') || (cashout === 'TRANSFER');
+
+    if (shouldShowBank) {
+      if (bankWrap) bankWrap.style.display = '';
+      setText('bankName', bank.bank_name || '-', '-');
+      setText('bankAccName', bank.bank_account_name || '-', '-');
+      setText('bankAccNo', bank.bank_account_no || '-', '-');
+    } else {
+      if (bankWrap) bankWrap.style.display = 'none';
+    }
+
+    // =====================
+    // 5) SALE RENDER (GROUP-AWARE)
+    // =====================
+    const codes = saleRows.map(r=>r.order_code).filter(Boolean);
+    const orderLabel = effectiveGroup
+      ? (`GROUP ${String(effectiveGroup).slice(0,8)}… (${codes.length} item)`)
+      : (saleRow?.order_code || sale);
+
+    // papar ringkas list code (kalau group)
+    if(effectiveGroup){
+      const shortList = codes.slice(0,5).join(', ') + (codes.length>5 ? ` +${codes.length-5} lagi` : '');
+      setText('saleOrder', `${orderLabel} • ${shortList}`);
+    }else{
+      setText('saleOrder', orderLabel);
+    }
+
+    setText('saleDate', fmtMY(saleRow?.created_at));
+    setText('saleStatus', (saleRow?.status||'-').toUpperCase());
+    setText('saleMethod', (saleRow?.pay_method||'-').toUpperCase());
+
+    // breakdown table (subtotal sum, ship/discount row pertama)
+    const bd = calcSaleBreakdown(saleRows);
+    $('saleSub').textContent   = money(bd.sub);
+    $('saleShip').textContent  = money(bd.ship || 0);
+    $('salePayD').textContent  = money(bd.payD || 0);
+    $('saleCoupD').textContent = money(bd.coupD || 0);
+
+    // total sale (SUM semua row dengan priority amount_cents → grand_total_rm → kiraan)
+    const saleTotal = Number(saleRows.reduce((sum, r)=> sum + calcSaleRM(r), 0).toFixed(2));
+    $('saleTotal').textContent = money(saleTotal);
+
+    // =====================
+    // 6) TRADE RENDER
+    // =====================
+    const tradeShort = String(tradeRow?.id || trade).slice(0,8) + '…';
+    setText('tradeIdShort', tradeShort);
+    setText('tradeDate', fmtMY(tradeRow?.created_at));
+    setText('tradeStatus', (tradeRow?.status||'-').toUpperCase());
+    const tradeTotal = Number(tradeRow?.subtotal_rm || 0);
+    $('tradeTotal').textContent = money(tradeTotal);
+
+    // trade items
+    const it = await sb.from('tradein_items')
+      .select('item_name,weight_g,price_rm_g,amount_rm,created_at')
+      .eq('tradein_id', trade)
+      .order('created_at',{ascending:true});
+    if(it.error) throw it.error;
+    const items = Array.isArray(it.data) ? it.data : [];
+
+    const tb = $('tradeItemsTbody');
+    if(!items.length){
+      tb.innerHTML = `<tr><td colspan="5" class="text-muted">Tiada item.</td></tr>`;
+    }else{
+      tb.innerHTML = items.map((r,i)=>{
+        const wt = Number(r.weight_g||0);
+        const pr = Number(r.price_rm_g||0);
+        const amt= Number(r.amount_rm||0);
+        return `<tr>
+          <td>${i+1}</td>
+          <td>${esc(r.item_name||'-')}</td>
+          <td class="text-end mono">${wt.toFixed(4)}</td>
+          <td class="text-end mono">${money(pr)}</td>
+          <td class="text-end mono">${money(amt)}</td>
+        </tr>`;
+      }).join('');
+    }
+
+    // =====================
+    // 7) NET
+    // =====================
+    const net = Number((saleTotal - tradeTotal).toFixed(2));
+    $('netTotal').textContent = money(net);
+
+    if(net > 0){
+      $('netHint').textContent = `Pelanggan perlu tambah ${money(net)} (cash in).`;
+    }else if(net < 0){
+      $('netHint').textContent = `Kedai perlu bayar balik ${money(Math.abs(net))} (cash out).`;
+    }else{
+      $('netHint').textContent = `Tiada beza (0).`;
+    }
+
+    // simpan last (nice-to-have)
+    try{
+      localStorage.setItem('settle_last_receipt', JSON.stringify({ sid:sid||null, sale, sale_group:effectiveGroup||null, sale_list:codes.join(','), trade, note, ref, method, at:new Date().toISOString() }));
+    }catch(_){}
+
+  }catch(e){
+    console.error(e);
+    warn('Ralat muat resit: ' + esc(e?.message||e));
+  }
+})();
+</script>
+</body>
+</html>

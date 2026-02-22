@@ -1,0 +1,1125 @@
+<!doctype html>
+<html lang="ms">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Admin • Cashbook (Close Day) — Emas Amir</title>
+
+  <!-- Libs -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="auth.js?v=13.1"></script>
+  <script src="admin-guard.js?v=1"></script>
+
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+
+  <style>
+    body{background:#fff}
+    .container-narrow{max-width:1200px}
+    .auth-pill{border:1px solid #e5e7eb;border-radius:999px;padding:.2rem .6rem;background:#fafafa;color:#555}
+    .btn-chip{border:1px solid #e5e7eb;background:#f8fafc;padding:6px 10px;border-radius:999px;font-size:.9rem}
+    .btn-chip.btn-primary{background:#0d6efd;color:#fff;border-color:#0d6efd}
+    .mono{font-family:ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,"Liberation Mono","Courier New",monospace}
+    .small-note{font-size:12px;color:#6b7280}
+    .card{border-radius:14px}
+    .kpi{font-size:26px;font-weight:900}
+    .kpi-sm{font-size:18px;font-weight:800}
+    .pill{display:inline-flex;align-items:center;gap:8px;padding:6px 10px;border-radius:999px;background:#eef1f4;font-size:12px;color:#495057}
+    .table-sticky thead th{position:sticky;top:0;background:#fff;z-index:5}
+    .muted{color:#6b7280}
+    .warn{color:#b45309}
+.status-badge{
+    display:inline-flex; align-items:center; gap:8px;
+    padding:6px 10px; border-radius:999px;
+    font-size:12px; font-weight:800;
+    border:1px solid #e5e7eb;
+    background:#f8fafc; color:#374151;
+  }
+  .status-badge.closed{
+    background:#fee2e2;   /* merah cair */
+    border-color:#fecaca;
+    color:#991b1b;        /* merah gelap */
+  }
+  .status-badge.open{
+    background:#dcfce7;   /* hijau cair */
+    border-color:#bbf7d0;
+    color:#166534;
+  }
+  </style>
+
+  <!-- PRINT A4 -->
+  <style>
+    @media print{
+      @page { size: A4 portrait; margin: 10mm; }
+      body{background:#fff}
+      .no-print{display:none !important}
+      .print-title{display:block !important}
+      .card{border:1px solid #ddd !important}
+      .table{font-size:12px}
+    }
+    .print-title{display:none}
+  </style>
+</head>
+
+<body>
+<div class="container container-narrow py-3">
+
+  <!-- TOP BAR -->
+  <div class="d-flex justify-content-between align-items-center mb-2 no-print">
+    <div class="small auth-pill" id="authStatus">Memuatkan…</div>
+    <div class="d-flex flex-wrap gap-2">
+      <a class="btn btn-outline-secondary btn-chip" href="index.html">Halaman Utama</a>
+      <a class="btn btn-outline-secondary btn-chip" href="admin.html">Admin</a>
+      <a class="btn btn-outline-secondary btn-chip" href="admin-belanja.html">Belanja</a>
+      <a class="btn btn-outline-secondary btn-chip" href="admin-report.html">Admin Report</a>
+      <a class="btn btn-outline-secondary btn-chip" href="admin-j916.html">Admin 916</a>
+      <a class="btn btn-outline-secondary btn-chip" href="admin-j999.html">Admin 999</a>
+      <a class="btn btn-outline-secondary btn-chip" href="admintabung-simpan.html">Admin Tabung</a>
+      <a class="btn btn-outline-secondary btn-chip" href="account.html">Akaun</a>
+      <button id="btnLogin"  class="btn btn-outline-secondary btn-chip" type="button">Log masuk</button>
+      <button id="btnLogout" class="btn btn-outline-secondary btn-chip" type="button" style="display:none">Log keluar</button>
+    </div>
+  </div>
+  <hr class="mb-3 no-print">
+
+  <div class="d-flex align-items-center justify-content-between gap-2 flex-wrap">
+    <div>
+      <div class="d-flex align-items-center gap-2 flex-wrap">
+  <h1 class="h4 m-0">Admin • Cashbook (Close Day)</h1>
+  <span id="dayStatusBadge" class="status-badge">—</span>
+</div>
+      <div class="small text-muted">
+        Tujuan: kira duit masuk/keluar ikut pay_method + semak cash fizikal hujung hari.
+      </div>
+      <div class="small-note mt-1">
+        Formula ringkas:
+        <span class="mono">Expected End Cash = Start Cash + Cash In - Cash Out</span>.
+        Lepas tu banding dengan <span class="mono">Counted Cash</span> (cash kiraan).
+      </div>
+    </div>
+
+    <div class="d-flex gap-2 flex-wrap no-print">
+      <button class="btn btn-outline-secondary" id="btnLoad" type="button">Load</button>
+      <button class="btn btn-outline-secondary" id="btnSave" type="button" disabled>Save (Snapshot)</button>
+      <button class="btn btn-primary" id="btnClose" type="button" disabled>Close Day</button>
+      <button class="btn btn-outline-secondary" id="btnPrint" type="button" disabled>Print A4</button>
+    </div>
+  </div>
+
+  <!-- PRINT HEADER -->
+  <div class="print-title mt-3">
+    <div class="text-center">
+      <div class="fw-bold" style="font-size:18px">PERNIAGAAN EMAS AMIR</div>
+      <div class="text-muted">Cashbook Close Day</div>
+      <div class="text-muted small" id="printLine">—</div>
+    </div>
+    <hr>
+  </div>
+
+  <!-- DAY PICK -->
+  <div class="card mt-3 no-print">
+    <div class="card-body">
+      <div class="row g-2 align-items-end">
+        <div class="col-md-3">
+          <label class="form-label">Tarikh (Day)</label>
+          <input id="dayPick" type="date" class="form-control">
+          <div class="small-note mt-1">1 row = 1 hari. Buka hari ini → close hari ini.</div>
+        </div>
+
+        <div class="col-md-3">
+          <label class="form-label">Start Cash (RM) <span class="text-muted">(locked)</span></label>
+          <input id="startCash" type="number" step="0.01" class="form-control" placeholder="Auto dari semalam" readonly>
+          <div class="small-note mt-1">
+            Auto carry-forward dari semalam. <span class="mono">Start Cash tak boleh ubah.</span>
+          </div>
+        </div>
+
+        <div class="col-md-3">
+          <label class="form-label">Counted Cash (RM)</label>
+          <input id="countedCash" type="number" step="0.01" class="form-control" placeholder="Cash kiraan hujung hari">
+          <div class="small-note mt-1">Isi selepas staff kira cash fizikal.</div>
+        </div>
+
+        <div class="col-md-3">
+          <label class="form-label">Atome Fee % (selamat)</label>
+          <div class="input-group">
+            <input id="atomeFeePct" type="number" step="0.0001" class="form-control" placeholder="0.0700">
+            <span class="input-group-text">contoh 0.07 = 7%</span>
+          </div>
+          <div class="small-note mt-1">Ini “budget selamat” untuk kira net Atome.</div>
+        </div>
+
+        <div class="col-md-12 mt-2">
+          <label class="form-label">Nota (optional)</label>
+          <input id="note" class="form-control" placeholder="Contoh: cash kurang sebab staff topup petrol, dsb.">
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- KPI SUMMARY -->
+  <div class="row g-3 mt-1">
+    <div class="col-lg-4">
+      <div class="card">
+        <div class="card-body">
+          <div class="text-muted small">Ringkasan Cash</div>
+
+          <div class="d-flex justify-content-between align-items-end mt-2">
+            <div>Expected End Cash</div>
+            <div class="kpi" id="kpiExpected">RM 0.00</div>
+          </div>
+
+          <div class="d-flex justify-content-between">
+            <div>Counted Cash</div>
+            <div class="kpi-sm" id="kpiCounted">RM 0.00</div>
+          </div>
+
+          <div class="d-flex justify-content-between">
+            <div>Diff (Counted - Expected)</div>
+            <div class="kpi-sm" id="kpiDiff">RM 0.00</div>
+          </div>
+
+          <hr>
+
+          <div class="small-note">
+            Diff:
+            <span class="mono">0.00</span> = ngam,
+            <span class="mono">+</span> = cash lebih,
+            <span class="mono">-</span> = cash kurang.
+          </div>
+
+          <div class="mt-3 d-flex flex-wrap gap-2">
+            <span class="pill">Start: <span class="mono" id="pillStart">RM 0.00</span></span>
+            <span class="pill">Cash In: <span class="mono" id="pillCashIn">RM 0.00</span></span>
+            <span class="pill">Cash Out: <span class="mono" id="pillCashOut">RM 0.00</span></span>
+          </div>
+
+          <div class="small-note mt-2">
+            Cash In/Out datang dari:
+            <span class="mono">Auto Sources (CASH)</span> + <span class="mono">Manual Entries (CASH)</span>.
+          </div>
+
+          <div class="mt-3 small-note warn" id="warnBox" style="display:none"></div>
+        </div>
+      </div>
+
+      <div class="card mt-3">
+        <div class="card-body">
+          <div class="fw-semibold mb-2">Total Duit Masuk (Net) ikut pay_method</div>
+          <div class="table-responsive">
+            <table class="table table-sm align-middle mb-0">
+              <thead>
+                <tr>
+                  <th>pay_method</th>
+                  <th class="text-end">IN</th>
+                  <th class="text-end">OUT</th>
+                  <th class="text-end">NET</th>
+                </tr>
+              </thead>
+              <tbody id="paySummaryTbody">
+                <tr><td colspan="4" class="text-center text-muted py-3">Belum load…</td></tr>
+              </tbody>
+            </table>
+          </div>
+          <div class="small-note mt-2">
+            NET = IN - OUT. (Untuk jualan biasanya OUT=0. Trade-in/belanja boleh jadi OUT.)
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- DETAIL -->
+    <div class="col-lg-8">
+      <div class="card">
+        <div class="card-body">
+          <div class="fw-semibold">Auto Sources (Audit)</div>
+          <div class="small text-muted">
+            Ringkasan auto: Sales Journal 916 + Misc Postage + Misc Service − Trade-in − Atome fee.
+          </div>
+
+          <div class="table-responsive mt-3">
+            <table class="table table-sm align-middle table-sticky">
+              <thead>
+                <tr>
+                  <th>Source</th>
+                  <th class="text-end">CASH</th>
+                  <th class="text-end">MAYBANK</th>
+                  <th class="text-end">CARD</th>
+                  <th class="text-end">ATOME</th>
+                  <th class="text-end">TOTAL</th>
+                </tr>
+              </thead>
+              <tbody id="autoTbody">
+                <tr><td colspan="6" class="text-center text-muted py-3">Belum load…</td></tr>
+              </tbody>
+            </table>
+          </div>
+
+          <hr class="my-4">
+
+          <div class="d-flex justify-content-between align-items-center flex-wrap gap-2">
+            <div>
+              <div class="fw-semibold">Manual Entries (Belanja / Runner / Petty Cash)</div>
+              <div class="small text-muted">Ambil dari <span class="mono">cashbook_line</span> (status POSTED sahaja)</div>
+            </div>
+            <a class="btn btn-outline-secondary btn-sm no-print" href="admin-belanja.html">Pergi Belanja</a>
+          </div>
+
+          <div class="table-responsive mt-3">
+            <table class="table table-sm align-middle table-sticky">
+              <thead>
+                <tr>
+                  <th>Source</th>
+                  <th class="text-end">CASH</th>
+                  <th class="text-end">MAYBANK</th>
+                  <th class="text-end">CARD</th>
+                  <th class="text-end">ATOME</th>
+                  <th class="text-end">TOTAL</th>
+                </tr>
+              </thead>
+              <tbody id="manualTbody">
+                <tr><td colspan="6" class="text-center text-muted py-3">Belum load…</td></tr>
+              </tbody>
+            </table>
+          </div>
+
+          <div class="small-note mt-2">
+            Contoh belanja guna Maybank: buat Manual Entry <span class="mono">OUT + MAYBANK</span>.
+            Cash tetap tak berubah (bagus untuk audit).
+          </div>
+
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+/* ========================== Supabase Config ========================== */
+const SB_URL = "https://dduizetstqqjrpsezbpi.supabase.co";
+const SB_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRkdWl6ZXRzdHFxanJwc2V6YnBpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTg3MzI0ODQsImV4cCI6MjA3NDMwODQ4NH0.CrlHXrmHtKgR9qc2192U6quRb5lpFEeOSgwG0Lb8KRM";
+window.sb = window.sb || window.supabase.createClient(SB_URL, SB_KEY);
+const sb = window.sb;
+
+/* ========================== TABLES ========================== */
+const TABLE_DAY  = 'cashbook_day';
+const TABLE_LINE = 'cashbook_line';
+
+/* ==========================
+   CONFIG AUTO SOURCES (WAJIB CHECK)
+========================== */
+const SRC_SALES_916 = {
+  name: 'Sales Journal 916',
+  table: 'j916_orders',
+  dateFieldCandidates: ['paid_at','created_at'],
+  statusField: 'status',
+  statusPaid: 'PAID',
+  payField: 'pay_method',
+  amountField: '__AUTO__',          // ✅ guna reader auto (kita override cara baca)
+  mode: 'SALES_EXCL_SHIPPING'       // ✅ mode baru: tolak shipping supaya tak double
+};
+
+const SRC_POSTAGE = {
+  name: 'Misc Postage',
+  table: 'j916_orders',
+  dateFieldCandidates: ['paid_at','created_at'],
+  statusField: 'status',
+  statusPaid: 'PAID',
+  payField: 'pay_method',          // fallback method akan kita handle
+  mode: 'POSTAGE'                  // ✅ special mode ambil shipping_rm/cents
+};
+
+const SRC_SERVICE = {
+  name: 'Misc Service',
+  table: 'misc_service_txn',
+  dateFieldCandidates: ['sale_date','created_at'],
+  statusField: 'status',
+  statusPaid: 'PAID',
+  payField: 'pay_method',
+  amountField: 'amount_rm'
+};
+
+const SRC_TRADEIN = {
+  name: 'Trade-in (tolak)',
+  table: 'tradein_txn',
+  dateFieldCandidates: ['created_at'],
+  statusField: 'status',
+  statusPaid: 'PAID',
+  payField: 'pay_method',
+  amountField: 'subtotal_rm',
+  sign: -1,
+  mode: 'TRADEIN_SPLIT'
+};
+
+/* ========================== Helpers ========================== */
+const $ = (id)=>document.getElementById(id);
+function safeStr(x){ return (x==null?'':String(x)); }
+function n2(x){ const n=Number(x||0); return Number.isFinite(n)?n:0; }
+function money(x){ const n=n2(x); return 'RM ' + n.toFixed(2); }
+function todayISO(){
+  const now = new Date();
+  const y = now.getFullYear();
+  const m = String(now.getMonth()+1).padStart(2,'0');
+  const d = String(now.getDate()).padStart(2,'0');
+  return `${y}-${m}-${d}`;
+}
+
+/* ========================== Topbar auth ========================== */
+(function(){
+  const pill=$('authStatus'),login=$('btnLogin'),logout=$('btnLogout');
+  try{
+    const a=(window.auth_get&&window.auth_get())||null;
+    if(a){
+      pill.textContent='Log masuk (admin) — '+(a.phone||a.msisdn||'');
+      login.style.display='none'; logout.style.display='';
+      logout.onclick=()=>{window.auth_clear&&window.auth_clear();location.reload();};
+    }else{
+      pill.textContent='Tidak log masuk';
+      login.style.display=''; logout.style.display='none';
+      login.onclick=()=>location.href='login.html#login';
+    }
+  }catch(_){}
+})();
+
+/* ========================== Admin guard ========================== */
+async function requireAdmin(){
+  if(window.adminGuard && typeof adminGuard.require==='function'){
+    return await adminGuard.require({
+      onChecking:()=> $('authStatus').textContent="Mengesahkan akses…",
+      onDenied:()=> $('authStatus').textContent="Akses ditolak",
+      onAllowed:(p)=> $('authStatus').textContent="Log masuk (admin) — "+p
+    });
+  }
+  const a=(window.auth_get&&window.auth_get())||null;
+  if(!a){ location.href="login.html#login"; return false; }
+  return true;
+}
+
+/* ==========================
+   Core state for computed totals
+========================== */
+const PAY = ['CASH','MAYBANK','CARD','ATOME'];
+function blankPayObj(){
+  return { CASH:{in:0,out:0}, MAYBANK:{in:0,out:0}, CARD:{in:0,out:0}, ATOME:{in:0,out:0} };
+}
+function addInOut(t, pay, kind, amt){
+  const p = (safeStr(pay).toUpperCase() || 'CASH');
+  if(!t[p]) t[p] = {in:0,out:0};
+  if(kind === 'IN') t[p].in += amt;
+  else t[p].out += amt;
+}
+function payNet(t, p){ return n2(t[p]?.in) - n2(t[p]?.out); }
+function payTotalNet(t){
+  let s=0; for(const p of PAY) s += payNet(t,p);
+  return s;
+}
+function payRowHtml(label, t){
+  const row = PAY.map(p=>`<td class="text-end">${money(payNet(t,p))}</td>`).join('');
+  const total = money(payTotalNet(t));
+  return `<tr><td>${label}</td>${row}<td class="text-end fw-semibold">${total}</td></tr>`;
+}
+
+/* ==========================
+   AUTO SOURCE LOADER (robust)
+========================== */
+async function trySelectDateField(table, candidates){
+  for(const f of candidates){
+    const r = await sb.from(table).select(f).limit(1);
+    if(!r.error) return f;
+  }
+  return null;
+}
+
+function normalizePayMethod(v){
+  const x = safeStr(v).toUpperCase().trim();
+  if(!x) return 'CASH';
+  if(x.includes('ATOME')) return 'ATOME';
+  if(x.includes('MAYBANK') || x.includes('FPX') || x.includes('BANK')) return 'MAYBANK';
+  if(x.includes('CARD')) return 'CARD';
+  if(x.includes('CASH')) return 'CASH';
+  return x;
+}
+
+function readRmFromRowAuto(row){
+  // cuba semua kemungkinan amount RM
+  const rmCandidates = [
+    row.amount_rm,
+    row.total_rm,
+    row.net_rm,
+    row.value_rm,
+    row.amount,
+row.total_amount_rm,
+    row.amount_total_rm,
+  ];
+  for(const v of rmCandidates){
+    const n = Number(v);
+    if(Number.isFinite(n)) return n;
+  }
+
+  // fallback cents
+  const centsCandidates = [
+    row.amount_cents,
+    row.total_cents,
+    row.net_cents,
+    row.value_cents,
+  ];
+  for(const v of centsCandidates){
+    const n = Number(v);
+    if(Number.isFinite(n)) return n/100;
+  }
+
+  return 0;
+}
+
+function readShippingRmFromOrder(row){
+  const a = Number(row.shipping_rm);
+  if(Number.isFinite(a)) return a;
+  return 0;
+}
+
+async function loadRowsPaidOrCreated(table, fields, statusField, statusPaid, day){
+  const dayStart = `${day}T00:00:00`;
+  const dayEnd   = `${day}T23:59:59`;
+
+  // A: paid_at in range
+  let qA = sb.from(table)
+    .select(fields)
+    .gte('paid_at', dayStart)
+    .lte('paid_at', dayEnd)
+    .order('paid_at', { ascending:true });
+
+  // B: paid_at null, created_at in range
+  let qB = sb.from(table)
+    .select(fields)
+    .is('paid_at', null)
+    .gte('created_at', dayStart)
+    .lte('created_at', dayEnd)
+    .order('created_at', { ascending:true });
+
+  // status filter (PAID)
+  if(statusField && statusPaid){
+    qA = qA.eq(statusField, statusPaid);
+    qB = qB.eq(statusField, statusPaid);
+  }
+
+  const [ra, rb] = await Promise.all([qA, qB]);
+  if(ra.error) throw ra.error;
+  if(rb.error) throw rb.error;
+
+  const A = Array.isArray(ra.data) ? ra.data : [];
+  const B = Array.isArray(rb.data) ? rb.data : [];
+
+  const merged = [...A, ...B].map(r=>({
+    ...r,
+    effective_ts: r.paid_at || r.created_at
+  }));
+
+  merged.sort((x,y)=> new Date(x.effective_ts) - new Date(y.effective_ts));
+  return merged;
+}
+
+
+async function loadSourceGeneric(cfg, day){
+  const warn = [];
+  const out = blankPayObj();
+
+  if(!cfg?.table){
+    warn.push(`${cfg?.name||'Unknown'}: table kosong`);
+    return { name: cfg?.name||'Unknown', totals: out, warn };
+  }
+
+  const candidates = (cfg.dateFieldCandidates || []).map(safeStr);
+
+  // ✅ General case: mana-mana table yang ada paid_at + created_at
+  //    (tradein_txn pun selalu paid_at null, jadi kena fallback created_at)
+  const usePaidOrCreated =
+    candidates.includes('paid_at') &&
+    candidates.includes('created_at');
+
+  // ✅ fields selection
+  let fields = '';
+  if(cfg.mode === 'POSTAGE'){
+    // Untuk postage, kita WAJIB ada paid_at & created_at dalam select (untuk effective_ts)
+    fields = [
+      'paid_at',
+      'created_at',
+      cfg.statusField,
+      cfg.payField,
+      'tracking_no',
+      'shipping_rm'
+    ].filter(Boolean).join(',');
+
+  } else if(cfg.mode === 'SALES_EXCL_SHIPPING'){
+    // ✅ untuk elak double: jualan ambil NET tanpa shipping
+    fields = [
+      'paid_at',
+      'created_at',
+      cfg.statusField,
+      cfg.payField,
+      'subtotal_rm',
+      'pay_disc_rm',
+      'coupon_disc_rm',
+      'grand_total_rm',
+      'shipping_rm'
+    ].filter(Boolean).join(',');
+
+} else if(cfg.mode === 'TRADEIN_SPLIT'){
+  fields = [
+    'created_at',          // ✅ tradein_txn ada created_at sahaja
+    cfg.statusField,
+    cfg.payField,
+    'subtotal_rm',
+    'pay_cash_rm',
+    'pay_transfer_rm'
+  ].filter(Boolean).join(',');
+
+} else if(cfg.amountField === '__AUTO__'){
+    // untuk table yang ada paid_at+created_at, elok kita pastikan dua field ni ada
+    // (kalau select '*', memang ada — tapi ini kekal selamat & jelas)
+    fields = '*';
+
+  } else {
+    if(usePaidOrCreated){
+      // supaya effective_ts boleh dibina
+      fields = [
+        'paid_at',
+        'created_at',
+        cfg.statusField,
+        cfg.payField,
+        cfg.amountField
+      ].filter(Boolean).join(',');
+    } else {
+      const dateField = await trySelectDateField(cfg.table, candidates);
+      if(!dateField){
+        warn.push(`${cfg.name}: tak jumpa date field (${candidates.join(', ')}) dalam ${cfg.table}`);
+        return { name: cfg.name, totals: out, warn };
+      }
+      fields = [
+        dateField,
+        cfg.statusField,
+        cfg.payField,
+        cfg.amountField
+      ].filter(Boolean).join(',');
+    }
+  }
+
+  let rows = [];
+
+  try{
+    if(usePaidOrCreated){
+      // ✅ A+B merge (macam admin-report)
+      rows = await loadRowsPaidOrCreated(
+        cfg.table,
+        fields,
+        cfg.statusField,
+        cfg.statusPaid,
+        day
+      );
+    } else {
+      // ✅ normal path: pakai 1 date field yang wujud
+      const dateField = await trySelectDateField(cfg.table, candidates);
+      if(!dateField){
+        warn.push(`${cfg.name}: tak jumpa date field (${candidates.join(', ')}) dalam ${cfg.table}`);
+        return { name: cfg.name, totals: out, warn };
+      }
+
+      const dayStart = `${day}T00:00:00`;
+      const dayEnd   = `${day}T23:59:59`;
+
+      let q = sb.from(cfg.table).select(fields).limit(10000);
+      let r = await q.gte(dateField, dayStart).lte(dateField, dayEnd);
+
+      if(r.error){
+        r = await sb.from(cfg.table).select(fields).gte(dateField, day).lte(dateField, day);
+      }
+
+      if(r.error){
+        warn.push(`${cfg.name}: query fail (${cfg.table}.${dateField}) — ${r.error.message}`);
+        return { name: cfg.name, totals: out, warn };
+      }
+
+      rows = r.data || [];
+    }
+  }catch(e){
+    warn.push(`${cfg.name}: query fail — ${e?.message || e}`);
+    return { name: cfg.name, totals: out, warn };
+  }
+
+  for(const row of rows){
+    // Kalau guna paid_or_created, status dah ditapis dalam helper — tapi takpe double-check
+    const st = safeStr(row[cfg.statusField]).toUpperCase();
+    if(cfg.statusPaid && st && st !== safeStr(cfg.statusPaid).toUpperCase()) continue;
+
+    const payRaw = (row[cfg.payField] != null) ? row[cfg.payField] : row.method;
+    const pay = normalizePayMethod(payRaw);
+
+    let amt = 0;
+
+    if(cfg.mode === 'POSTAGE'){
+      // ✅ ikut admin-report: tracking_no mesti ada & bukan kosong
+      if(safeStr(row.tracking_no).trim() === '') continue;
+      amt = readShippingRmFromOrder(row);
+
+    } else if(cfg.mode === 'SALES_EXCL_SHIPPING'){
+      const ship = n2(row.shipping_rm);
+
+      // NET kalau ada grand_total_rm
+      let net = n2(row.grand_total_rm);
+
+      // fallback: gross - disc
+      if(!(net > 0)){
+        const gross = n2(row.subtotal_rm);
+        const disc  = n2(row.pay_disc_rm) + n2(row.coupon_disc_rm);
+        net = gross - disc;
+      }
+
+      amt = net - ship;
+
+} else if(cfg.mode === 'TRADEIN_SPLIT'){
+  const cashPart = n2(row.pay_cash_rm);
+  const trfPart  = n2(row.pay_transfer_rm);
+  const sign = (cfg.sign == null ? 1 : Number(cfg.sign));
+
+  // ✅ kalau ada split, terus guna CASH + MAYBANK
+  if((cashPart > 0) || (trfPart > 0)){
+    if(sign < 0){
+      if(cashPart > 0) addInOut(out, 'CASH', 'OUT', cashPart);
+      if(trfPart  > 0) addInOut(out, 'MAYBANK', 'OUT', trfPart);
+    }else{
+      if(cashPart > 0) addInOut(out, 'CASH', 'IN', cashPart);
+      if(trfPart  > 0) addInOut(out, 'MAYBANK', 'IN', trfPart);
+    }
+    continue; // ✅ dah settle
+  }
+
+  // ✅ fallback untuk row lama (tiada split)
+  amt = n2(row.subtotal_rm);
+
+  // trade-in lama biasanya pay_method = TRANSFER -> kira MAYBANK (trade-in sahaja)
+  const payRaw2 = (row[cfg.payField] != null) ? row[cfg.payField] : row.method;
+  const pay2 = (safeStr(payRaw2).toUpperCase().trim() === 'TRANSFER')
+    ? 'MAYBANK'
+    : normalizePayMethod(payRaw2);
+
+  if(!(amt > 0)) continue;
+
+  if(sign < 0) addInOut(out, pay2, 'OUT', amt);
+  else addInOut(out, pay2, 'IN', amt);
+
+  continue;
+
+    } else if(cfg.amountField === '__AUTO__'){
+      amt = readRmFromRowAuto(row);
+
+    } else {
+      amt = n2(row[cfg.amountField]);
+    }
+
+    if(!(amt > 0)) continue;
+
+    const sign = (cfg.sign == null ? 1 : Number(cfg.sign));
+    if(sign >= 0){
+      addInOut(out, pay, 'IN', amt);
+    }else{
+      addInOut(out, pay, 'OUT', amt);
+    }
+  }
+
+  return { name: cfg.name, totals: out, warn };
+}/* ==========================
+   MANUAL ENTRIES LOADER (cashbook_line)
+========================== */
+async function loadManual(day){
+  const out = blankPayObj();
+  const warn = [];
+
+  const r = await sb.from(TABLE_LINE)
+    .select('id,day,kind,pay_method,amount_rm,status')
+    .eq('day', day)
+    .eq('status', 'POSTED')
+    .limit(10000);
+
+  if(r.error){
+    warn.push(`Manual Entries: query fail — ${r.error.message}`);
+    return { name:'Manual Entries', totals: out, warn };
+  }
+
+  for(const row of (r.data||[])){
+    const pay = normalizePayMethod(row.pay_method);
+    const kind = safeStr(row.kind).toUpperCase();
+    const amt = n2(row.amount_rm);
+    if(!(amt > 0)) continue;
+    if(kind === 'IN') addInOut(out, pay, 'IN', amt);
+    else addInOut(out, pay, 'OUT', amt);
+  }
+
+  return { name:'Manual Entries', totals: out, warn };
+}
+
+/* ==========================
+   ATOME FEE (tolak dari ATOME IN)
+========================== */
+function calcAtomeFee(autoTotals, pct){
+  const out = blankPayObj();
+  const grossAtome = n2(autoTotals.ATOME?.in);
+  const fee = grossAtome * n2(pct);
+  if(fee > 0){
+    addInOut(out, 'ATOME', 'OUT', fee);
+  }
+  return { name:'Atome Fee (tolak)', totals: out, fee_rm: fee };
+}
+
+/* ==========================
+   Render tables
+========================== */
+function renderSourceTable(tbodyId, rows){
+  const tb = $(tbodyId);
+  if(!rows.length){
+    tb.innerHTML = `<tr><td colspan="6" class="text-center text-muted py-3">Tiada data.</td></tr>`;
+    return;
+  }
+  tb.innerHTML = rows.map(r=>payRowHtml(r.name, r.totals)).join('');
+}
+
+function renderPaySummary(t){
+  const tb = $('paySummaryTbody');
+
+  tb.innerHTML = PAY.map(p=>{
+    const _in  = n2(t[p]?.in);
+    const _out = n2(t[p]?.out);
+    const net  = _in - _out;
+    return `
+      <tr>
+        <td class="mono">${p}</td>
+        <td class="text-end">${money(_in)}</td>
+        <td class="text-end">${money(_out)}</td>
+        <td class="text-end fw-semibold">${money(net)}</td>
+      </tr>
+    `;
+  }).join('');
+}
+
+/* ==========================
+   Compute cash KPI
+========================== */
+function computeCashKpi(startCash, combined){
+  const cashIn  = n2(combined.CASH?.in);
+  const cashOut = n2(combined.CASH?.out);
+  const expected = n2(startCash) + cashIn - cashOut;
+  return { cashIn, cashOut, expected };
+}
+
+function showWarn(list){
+  const w = list.filter(Boolean).join('\n');
+  const box = $('warnBox');
+  if(!w){
+    box.style.display = 'none';
+    box.textContent = '';
+    return;
+  }
+  box.style.display = '';
+  box.textContent = w;
+}
+
+/* ==========================
+   CASHBOOK DAY: get_or_create (carry forward)
+   - Ini yang betulkan masalah “start cash revert 10k”
+========================== */
+async function getOrCreateDay(day){
+  const r = await sb.rpc('cashbook_day_get_or_create', { p_day: day });
+  if(r.error) throw r.error;
+  if(!r.data) throw new Error('RPC cashbook_day_get_or_create return kosong');
+  return r.data;
+}
+
+async function updateDayFields(day, payload){
+  const r = await sb.from(TABLE_DAY).update(payload).eq('day', day).select('*').maybeSingle();
+  if(r.error) throw r.error;
+  return r.data;
+}
+
+function applyDayStatusUI(dayRow){
+  const st = safeStr(dayRow?.status || 'OPEN').toUpperCase();
+  const badge = $('dayStatusBadge');
+
+  // set badge text + color
+  if(badge){
+    badge.classList.remove('open','closed');
+    if(st === 'CLOSED'){
+      badge.classList.add('closed');
+      badge.textContent = 'CLOSED';
+    }else{
+      badge.classList.add('open');
+      badge.textContent = 'OPEN';
+    }
+  }
+
+  const isClosed = (st === 'CLOSED');
+
+  // lock inputs bila CLOSED
+$('countedCash').readOnly = isClosed;
+$('note').readOnly = isClosed;
+$('atomeFeePct').readOnly = isClosed;
+
+  // lock actions bila CLOSED
+  // - still boleh Print
+  $('btnSave').disabled  = isClosed;
+  $('btnClose').disabled = isClosed;
+
+  // kalau closed, bagi hint pada user
+  
+}
+
+/* ==========================
+   MAIN LOAD FLOW
+========================== */
+let _computed = null;
+let _dayRow = null;
+
+async function doLoad(){
+  const day = $('dayPick').value;
+  if(!day){ alert('Sila pilih tarikh'); return; }
+
+  $('btnLoad').disabled = true;
+  $('btnLoad').textContent = 'Loading…';
+  $('btnSave').disabled = true;
+  $('btnClose').disabled = true;
+  $('btnPrint').disabled = true;
+
+  try{
+    const warns = [];
+
+    // 1) Ensure day row exists + start_cash carry forward
+    const dayRow = await getOrCreateDay(day);
+_dayRow = dayRow;
+
+// Prefill fields from DB
+$('startCash').value = String(n2(dayRow.start_cash));
+$('startCash').readOnly = true;
+
+$('countedCash').value = (dayRow.counted_cash == null ? '' : String(n2(dayRow.counted_cash)));
+$('note').value = safeStr(dayRow.note||'');
+
+if(dayRow.atome_fee_pct != null){
+  $('atomeFeePct').value = String(n2(dayRow.atome_fee_pct));
+}else{
+  if(!$('atomeFeePct').value) $('atomeFeePct').value = '0.0700';
+}
+
+// ✅ BARU panggil lepas semua field siap
+applyDayStatusUI(dayRow);
+
+    // AUTO SOURCES
+    const s1 = await loadSourceGeneric(SRC_SALES_916, day);
+    const s2 = await loadSourceGeneric(SRC_POSTAGE, day);
+    const s3 = await loadSourceGeneric(SRC_SERVICE, day);
+    const s4 = await loadSourceGeneric(SRC_TRADEIN, day);
+
+    warns.push(...(s1.warn||[]), ...(s2.warn||[]), ...(s3.warn||[]), ...(s4.warn||[]));
+
+    // Combine auto totals
+    const autoCombined = blankPayObj();
+    for(const src of [s1,s2,s3,s4]){
+      for(const p of PAY){
+        autoCombined[p].in  += n2(src.totals[p]?.in);
+        autoCombined[p].out += n2(src.totals[p]?.out);
+      }
+    }
+
+    // ATOME fee (budget)
+    const feePct = n2($('atomeFeePct').value || 0);
+    const feeRow = calcAtomeFee(autoCombined, feePct);
+
+    // manual entries
+    const manual = await loadManual(day);
+    warns.push(...(manual.warn||[]));
+
+    // Render tables
+    renderSourceTable('autoTbody', [s1,s2,s3,s4, {name: feeRow.name, totals: feeRow.totals}]);
+    renderSourceTable('manualTbody', [manual]);
+
+    // Combine ALL totals (auto + fee + manual)
+    const all = blankPayObj();
+    for(const p of PAY){
+      all[p].in  = n2(autoCombined[p].in)  + n2(manual.totals[p].in);
+      all[p].out = n2(autoCombined[p].out) + n2(feeRow.totals[p].out) + n2(manual.totals[p].out);
+    }
+
+    // KPI cash
+    const startCash = n2($('startCash').value || 0);
+    const k = computeCashKpi(startCash, all);
+
+    $('pillStart').textContent = money(startCash);
+    $('pillCashIn').textContent = money(k.cashIn);
+    $('pillCashOut').textContent = money(k.cashOut);
+
+    $('kpiExpected').textContent = money(k.expected);
+
+    const counted = n2($('countedCash').value || 0);
+    $('kpiCounted').textContent = money(counted);
+
+    const diff = counted - k.expected;
+    $('kpiDiff').textContent = money(diff);
+
+    renderPaySummary(all);
+
+    $('printLine').textContent = `Tarikh: ${day} | Printed: ${new Date().toLocaleString('ms-MY',{hour12:false})}`;
+
+    showWarn(warns);
+
+    _computed = {
+      day,
+      start_cash: startCash,
+      counted_cash: ($('countedCash').value === '' ? null : counted),
+      atome_fee_pct: feePct,
+      note: safeStr($('note').value||''),
+      totals: all,
+      sources: {
+        auto: {
+          sales_916: s1.totals,
+          postage: s2.totals,
+          service: s3.totals,
+          tradein: s4.totals,
+          atome_fee: feeRow.totals,
+          atome_fee_rm: feeRow.fee_rm
+        },
+        manual: manual.totals
+      },
+      kpi: {
+        cash_in: k.cashIn,
+        cash_out: k.cashOut,
+        expected_end_cash: k.expected,
+        diff: diff
+      }
+    };
+
+    $('btnSave').disabled = false;
+    $('btnClose').disabled = false;
+    $('btnPrint').disabled = false;
+
+  }catch(e){
+    console.error(e);
+    alert('Ralat load: ' + (e?.message || e));
+  }finally{
+    $('btnLoad').disabled = false;
+    $('btnLoad').textContent = 'Load';
+  }
+}
+
+/* ==========================
+   Save snapshot / close day
+   - Penting: TAK UPDATE start_cash (locked)
+========================== */
+async function doSave(isCloseDay){
+  if(!_computed){ alert('Sila Load dulu'); return; }
+
+  const a=(window.auth_get&&window.auth_get())||null;
+  const phone = a?.phone || a?.msisdn || null;
+
+  const day = _computed.day;
+
+  const counted_cash = ($('countedCash').value === '' ? null : n2($('countedCash').value || 0));
+  const atome_fee_pct = n2($('atomeFeePct').value || 0);
+  const note = safeStr($('note').value||'');
+
+  // payload update (tanpa start_cash)
+  const payload = {
+    counted_cash: counted_cash,
+    note: note,
+    created_by_phone: phone
+  };
+
+  // optional fields (kalau kolum ada)
+  payload.atome_fee_pct = atome_fee_pct;
+  payload.totals = _computed.totals;
+  payload.sources = _computed.sources;
+
+  if(isCloseDay){
+    payload.status = 'CLOSED';
+    payload.closed_at = new Date().toISOString();
+  }
+
+  const btn = isCloseDay ? $('btnClose') : $('btnSave');
+  btn.disabled = true;
+  const old = btn.textContent;
+  btn.textContent = isCloseDay ? 'Closing…' : 'Saving…';
+
+  try{
+    await updateDayFields(day, payload);
+    alert((isCloseDay ? 'Close Day' : 'Snapshot') + ' disimpan: OK');
+    await doLoad();
+  }catch(e){
+    console.error(e);
+    alert('Ralat save: ' + (e?.message || e));
+  }finally{
+    btn.disabled = false;
+    btn.textContent = old;
+  }
+}
+
+function doPrint(){
+  if(!_computed){ alert('Sila Load dulu'); return; }
+  window.print();
+}
+
+/* ==========================
+   Auto recompute KPI when inputs change
+========================== */
+function refreshKpiOnly(){
+  if(!_computed) return;
+
+  const startCash = n2($('startCash').value || 0);
+  const counted = n2($('countedCash').value || 0);
+
+  const all = _computed.totals || blankPayObj();
+  const k = computeCashKpi(startCash, all);
+
+  $('pillStart').textContent = money(startCash);
+  $('pillCashIn').textContent = money(k.cashIn);
+  $('pillCashOut').textContent = money(k.cashOut);
+
+  $('kpiExpected').textContent = money(k.expected);
+  $('kpiCounted').textContent = money(counted);
+
+  const diff = counted - k.expected;
+  $('kpiDiff').textContent = money(diff);
+
+  _computed.kpi = {
+    cash_in: k.cashIn,
+    cash_out: k.cashOut,
+    expected_end_cash: k.expected,
+    diff: diff
+  };
+}
+
+/* ==========================
+   Wire
+========================== */
+$('btnLoad').addEventListener('click', doLoad);
+$('btnSave').addEventListener('click', ()=>doSave(false));
+$('btnClose').addEventListener('click', ()=>doSave(true));
+$('btnPrint').addEventListener('click', doPrint);
+
+// startCash locked: no listener needed
+$('countedCash').addEventListener('input', refreshKpiOnly);
+$('atomeFeePct').addEventListener('input', async ()=>{ if(_computed) await doLoad(); });
+$('note').addEventListener('input', ()=>{});
+
+$('dayPick').addEventListener('change', async ()=>{ await doLoad(); });
+
+(async ()=>{
+  const ok = await requireAdmin();
+  if(!ok) return;
+
+  const t = todayISO();
+  $('dayPick').value = t;
+
+  // jangan hardcode 10000 lagi
+  if(!$('atomeFeePct').value) $('atomeFeePct').value = '0.0700';
+
+  await doLoad();
+})();
+</script>
+</body>
+</html>

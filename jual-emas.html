@@ -1,0 +1,300 @@
+<!doctype html>
+<html lang="ms">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Jual Emas — Emas Amir</title>
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+<style>
+  :root{ --border:#e9ecef; --muted:#6c757d; }
+  body{background:#fafafa}
+  .page-wrap{max-width:1000px;margin:18px auto 48px;padding:0 12px}
+  .section-card{background:#fff;border:1px solid var(--border);border-radius:14px;padding:18px}
+  .top-actions{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-bottom:12px}
+  .btn-chip{border-radius:999px;padding:.35rem .9rem}
+  .pill{display:inline-block;background:#f3f4f6;border:1px solid #e5e7eb;border-radius:999px;padding:4px 10px;font-size:12px}
+  .muted{color:var(--muted)}
+  .price-lg{font-size:2rem;font-weight:800}
+  .table-sm td,.table-sm th{padding:.6rem .6rem}
+  .hint{font-size:.9rem;color:#0d6efd}
+</style>
+</head>
+<body>
+<div class="page-wrap">
+
+  <!-- Top actions -->
+  <div class="top-actions">
+    <span id="authPill" class="pill">Memuatkan…</span>
+    <a class="btn btn-outline-secondary btn-chip" href="index.html">Halaman Utama</a>
+    <a class="btn btn-outline-secondary btn-chip" href="tabung.html">Tabung</a> 
+    <a class="btn btn-outline-secondary btn-chip" href="goldbar-coin.html">GoldBar/Coin Fizikal</a> 
+    <a class="btn btn-outline-secondary btn-chip" href="policy.html">Polisi</a>
+    <a class="btn btn-outline-secondary btn-chip" href="account.html">Akaun</a>
+    <a class="btn btn-outline-secondary btn-chip ms-auto" id="btnLogin" href="login.html#login">Log masuk/Daftar</a>
+    <button class="btn btn-outline-secondary btn-chip" id="btnLogout" style="display:none">Log keluar</button>
+    
+  </div>
+
+  <h3 class="mb-3">🪙 <b>Jual Emas Anda</b></h3>
+
+  <!-- KAD: Harga Jual Balik (per 1g) -->
+  <div class="section-card mb-3">
+    <div class="d-flex justify-content-between align-items-center mb-2">
+      <div class="h5 m-0">Harga Jual Balik (per 1g)</div>
+      <div class="small text-muted" id="sellLatestTime">Terkini: memuatkan…</div>
+    </div>
+    <div class="table-responsive">
+      <table class="table table-sm align-middle">
+        <thead class="table-light">
+          <tr>
+            <th>Tarikh & Masa</th>
+            <th class="text-end">Emas 999.9 (1g)</th>
+            <th class="text-end">Emas 916 (1g)</th>
+          </tr>
+        </thead>
+        <tbody id="sellTableBody">
+          <tr><td colspan="3" class="text-muted">Memuatkan…</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- KALKULATOR -->
+  <div class="section-card">
+    <div class="row g-3">
+      <div class="col-lg-4">
+        <label class="form-label">Mutu Emas</label>
+        <select id="mutu" class="form-select">
+          <option value="9999">999.9</option>
+          <option value="916">916</option>
+        </select>
+      </div>
+      <div class="col-lg-4">
+        <label class="form-label">Berat (gram)</label>
+        <input id="berat" class="form-control" placeholder="cth: 5.23" inputmode="decimal">
+      </div>
+      <div class="col-lg-4">
+        <label class="form-label">Harga Jual Balik Semasa (per 1g)</label>
+        <input id="hargaPerG" class="form-control" readonly value="RM 0.00">
+      </div>
+    </div>
+
+    <div class="mt-3">
+      <div class="hint">🧮 Harga Anggaran:</div>
+      <div id="anggaran" class="price-lg">RM 0.00</div>
+    </div>
+
+    <div class="d-flex align-items-center gap-2 mt-3">
+      <a id="btnWA" class="btn btn-success" href="#" rel="noopener">
+        WhatsApp Admin
+      </a>
+      <div class="small text-muted">Admin akan sahkan berat & mutu sebelum harga akhir dimuktamadkan.</div>
+    </div>
+
+    <div class="alert alert-warning mt-3 mb-0">
+      <b>Peringatan:</b> Harga ini hanyalah <u>anggaran</u>. Berat & mutu akan disahkan di kedai.
+      Emas perlu diperiksa (ditimbang & diuji; mungkin dibakar) sebelum harga akhir dimuktamadkan.
+    </div>
+  </div>
+</div>
+
+<!-- Supabase client & auth helper -->
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="auth.js?v=13.1"></script>
+
+<script>
+(function(){
+  "use strict";
+  const $ = id => document.getElementById(id);
+  const money = n => "RM " + Number(n||0).toFixed(2);
+
+  // ===== ADMIN ikut mutu (NO PENERIMA) =====
+  const ADMIN_MAP = {
+    "9999": "601113230198",  // Admin Gold Coin (betul: 1323 0198)
+    "916":  "60168055916"    // Admin 916
+  };
+
+  // ===== AUTH UI =====
+  (function authUI(){
+    try{
+      const a = (window.auth_get && window.auth_get()) || null;
+      const pill = $("authPill");
+      if(a){
+        pill.textContent = "Log masuk sebagai " + (a.name || a.phone || "pengguna");
+        $("btnLogin").style.display = "none";
+        $("btnLogout").style.display = "";
+        $("btnLogout").onclick = ()=>{ window.auth_clear && window.auth_clear(); location.reload(); };
+      }else{
+        pill.textContent = "Tidak log masuk";
+        $("btnLogin").style.display = "";
+        $("btnLogout").style.display = "none";
+      }
+    }catch(e){ console.warn("auth pill:", e); }
+  })();
+
+  // ===== ONSEND CONFIG (TOKEN PENGHANTAR IKUT MUTU) =====
+  const ONSEND_BASE  = "https://onsend.io/api/v1";
+  const ONSEND_TOKEN_MAP = {
+    "9999": "76a6f98cfc6e009e5d824e47acd98b9b59a6e5177e14b072fd210276309d91f6", // device: Admin Gold Coin (999.9)
+    "916":  "4b879470cc16ca8f06c5ab9878a4578880cfd0fd7b7cfe0121499f3ab017dd04"  // device: Admin 916
+  };
+  const ONSEND_TOKEN_DEFAULT = ONSEND_TOKEN_MAP["9999"];
+  const toMsisdn = v => { const d = String(v||"").replace(/\D+/g,""); return d.startsWith("6") ? d : "6"+d; };
+
+  async function sendWA(msisdn, text, tokenOverride){
+    const token = tokenOverride || ONSEND_TOKEN_DEFAULT;
+    try{
+      const r = await fetch(ONSEND_BASE + "/send", {
+        method: "POST",
+        headers: {
+          "Accept":"application/json",
+          "Content-Type":"application/json",
+          "Authorization":"Bearer " + token
+        },
+        body: JSON.stringify({ phone_number: msisdn, message: text, type: "text" })
+      });
+      const j = await r.json().catch(()=>({}));
+      console.log("OnSend resp:", r.status, j);
+      return r.ok && j.success === true;
+    }catch(e){
+      console.warn("OnSend error:", e);
+      return false;
+    }
+  }
+
+  // ===== SUPABASE =====
+  const sb = window.sb;
+
+  // Harga DB disimpan per 0.1g — kita tukar ke per 1g untuk paparan
+  const sell = { per01g_9999: 0, per01g_916: 0, at: null };
+
+  async function loadLatestSell(){
+    try{
+      const { data, error } = await sb
+        .from("gold_sell_prices")
+        .select("ddate, price_9999, price_916")
+        .order("ddate",{ascending:false})
+        .limit(1);
+      if (error) throw error;
+
+      const row = (data && data[0]) || null;
+      if (!row){
+        $("sellTableBody").innerHTML = `<tr><td colspan="3" class="text-muted">Tiada data.</td></tr>`;
+        return;
+      }
+
+      sell.per01g_9999 = Number(row.price_9999 || 0);
+      sell.per01g_916  = Number(row.price_916 || 0);
+      sell.at          = row.ddate;
+
+      // Tukar per 0.1g → per 1g
+      const perG9999 = sell.per01g_9999 * 10;
+      const perG916  = sell.per01g_916  * 10;
+
+      const dt = new Date(row.ddate);
+      const when = dt.toLocaleString("ms-MY", {year:"numeric",month:"long",day:"numeric", hour:"numeric", minute:"2-digit"});
+
+      $("sellLatestTime").textContent =
+        `Terkini: ${when} — 999.9: ${money(perG9999)}, 916: ${money(perG916)}`;
+
+      $("sellTableBody").innerHTML = `
+        <tr>
+          <td>${when}</td>
+          <td class="text-end">${money(perG9999)}</td>
+          <td class="text-end">${money(perG916)}</td>
+        </tr>
+      `;
+
+      refreshCalc(); // set input per 1g & anggaran
+    }catch(err){
+      console.warn("loadLatestSell:", err);
+      $("sellTableBody").innerHTML = `<tr><td colspan="3" class="text-danger">Ralat muat harga jual balik.</td></tr>`;
+    }
+  }
+
+  function refreshCalc(){
+    const gram = parseFloat(($("berat").value||"").replace(",",".")) || 0;
+    const mutu = $("mutu").value; // "9999" / "916"
+
+    // per 1g = (per 0.1g × 10)
+    const perG = (mutu === "9999")
+      ? sell.per01g_9999 * 10
+      : sell.per01g_916  * 10;
+
+    $("hargaPerG").value = money(perG);
+    $("anggaran").textContent = money(perG * gram);
+
+    // ===== WhatsApp via OnSend (WAJIB LOGIN + ikut mutu) =====
+    const adminPhone   = (mutu === "9999") ? ADMIN_MAP["9999"]       : ADMIN_MAP["916"];         // penerima
+    const tokenForMutu = (mutu === "9999") ? ONSEND_TOKEN_MAP["9999"] : ONSEND_TOKEN_MAP["916"]; // penghantar
+    const btn = $("btnWA");
+    btn.removeAttribute("href");
+
+   btn.onclick = async (e)=>{
+  e.preventDefault();
+
+  // 1) WAJIB LOGIN
+  const user = (window.auth_get && window.auth_get()) || null;
+  if (!user) {
+    const next = encodeURIComponent("jual-emas.html"); // tukar jika nama fail lain
+    location.href = `login.html?next=${next}#login`;
+    return;
+  }
+
+  // 2) Data pelanggan
+  const custName  = user.name  || user.phone || "Pelanggan";
+  const custPhone = toMsisdn(user.phone || "");
+
+  // 3) Mesej untuk ADMIN
+  const msgAdmin = `Assalamualaikum, saya ingin JUAL EMAS.
+
+Nama pelanggan: ${custName}
+Telefon pelanggan: ${custPhone || "-"}
+
+Mutu: ${mutu === "9999" ? "999.9" : "916"}
+Berat: ${gram.toFixed(2)} g
+Harga anggaran: ${money(perG * gram)}
+(Harga per 1g semasa: ${money(perG)})
+
+Sila sahkan berat & mutu di kedai. Terima kasih.`;
+
+  // 4) Mesej untuk PELANGGAN (pengesahan + nombor admin)
+  const msgCust = `Terima kasih ${custName}! Permintaan jual emas anda telah dihantar.
+
+Mutu: ${mutu === "9999" ? "999.9" : "916"}
+Berat diisi: ${gram.toFixed(2)} g
+Anggaran: ${money(perG * gram)}
+
+Admin akan hubungi anda sebentar lagi.
+No. admin: ${toMsisdn(adminPhone)}`;
+
+  // 5) Hantar DUA mesej via OnSend (guna token ikut mutu untuk konsisten branding)
+  btn.disabled = true; const old = btn.textContent; btn.textContent = "Menghantar…";
+
+  const [okAdmin, okCust] = await Promise.all([
+    sendWA(toMsisdn(adminPhone), msgAdmin, tokenForMutu), // → kepada ADMIN
+    sendWA(custPhone,            msgCust,  tokenForMutu)  // → kepada PELANGGAN
+  ]);
+
+  btn.textContent = old; btn.disabled = false;
+
+  if (okAdmin && okCust) {
+    alert("Mesej telah dihantar kepada admin & pelanggan.");
+  } else if (okAdmin) {
+    alert("Mesej kepada admin berjaya, tetapi mesej kepada pelanggan gagal.");
+  } else if (okCust) {
+    alert("Mesej kepada pelanggan berjaya, tetapi mesej kepada admin gagal.");
+  } else {
+    alert("Gagal menghantar mesej. Semak peranti OnSend & cuba lagi.");
+  }
+};
+  }
+
+  $("mutu").addEventListener("change", refreshCalc);
+  $("berat").addEventListener("input", refreshCalc);
+
+  loadLatestSell();
+})();
+</script>
+</body>
+</html>

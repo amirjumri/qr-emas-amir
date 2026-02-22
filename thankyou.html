@@ -1,0 +1,156 @@
+<!doctype html>
+<html lang="ms">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Terima Kasih – Emas Amir</title>
+<style>
+  :root{
+    --red:#c81e1e;
+    --text:#111;
+    --muted:#6b7280;
+    --line:#e5e7eb;
+    --bg:#fafafa;
+    --card:#ffffff;
+    --ok:#16a34a;
+  }
+  *{box-sizing:border-box}
+  body{font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;margin:0;background:var(--bg);color:var(--text)}
+  .wrap{max-width:760px;margin:40px auto;padding:16px}
+  .card{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:24px}
+  .center{text-align:center}
+  h1{margin:0 0 10px;font-size:26px;line-height:1.25}
+  p{margin:8px 0}
+  .muted{color:var(--muted)}
+  .ref{margin:10px 0 0;font-weight:700;color:#374151}
+  .okBadge{
+    display:inline-flex;align-items:center;gap:10px;
+    background:#ecfdf5;border:1px solid #bbf7d0;color:var(--ok);
+    padding:10px 14px;border-radius:999px;font-weight:700;margin-bottom:12px
+  }
+  .okBadge svg{width:18px;height:18px}
+  .btns{display:flex;flex-wrap:wrap;gap:10px;justify-content:center;margin-top:18px}
+  .btn{
+    display:inline-block;text-decoration:none;border:0;cursor:pointer;
+    padding:12px 18px;border-radius:12px;font-weight:800;font-size:16px
+  }
+  .btn-primary{background:var(--red);color:#fff}
+  .btn-ghost{background:#fff;border:1px solid var(--line);color:#111}
+  .btn-wa{background:#25d366;color:#063; }
+  .small{font-size:13px}
+
+  /* Ringkasan */
+  .summary{margin-top:18px;border-top:1px dashed var(--line);padding-top:14px}
+  .row{display:flex;justify-content:space-between;gap:12px;margin:6px 0}
+  .title{font-weight:700}
+  .value{font-variant-numeric:tabular-nums}
+  .total{border-top:1px solid var(--line);margin-top:10px;padding-top:10px;font-weight:800}
+
+  /* Confetti mini untuk mood gembira */
+  .confetti{position:fixed;inset:0;pointer-events:none;overflow:hidden}
+  .c{position:absolute;top:-10px;font-size:14px;animation:fall linear forwards}
+  @keyframes fall{
+    to{transform:translateY(110vh) rotate(360deg);opacity:.9}
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="card center">
+    <div class="okBadge">
+      <!-- ikon tick -->
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/>
+        <path d="M22 4 12 14.01l-3-3"/>
+      </svg>
+      Tempahan berjaya!
+    </div>
+    <h1>Terima kasih atas tempahan!</h1>
+    <p class="muted">Admin akan hubungi anda di WhatsApp sekejap lagi.</p>
+    <p id="ref" class="ref">Rujukan: -</p>
+
+    <!-- Ringkasan order (muncul jika ada param) -->
+    <div id="sum" class="summary" style="display:none">
+      <div class="row"><div class="title">Produk</div><div id="s_name" class="value">-</div></div>
+      <div class="row"><div class="title">SKU</div><div id="s_sku" class="value">-</div></div>
+      <div class="row"><div>Harga</div><div id="s_price" class="value">RM 0.00</div></div>
+      <div class="row"><div>Upah/Pos</div><div id="s_fee" class="value">RM 0.00</div></div>
+      <div class="row total"><div>Jumlah</div><div id="s_total" class="value">RM 0.00</div></div>
+      <div class="small muted" id="s_ship" style="margin-top:8px"></div>
+    </div>
+
+    <div class="btns">
+      <a id="goAccount" class="btn btn-primary">Kembali ke Akaun Anda</a>
+      <a id="goHome" class="btn btn-ghost">Kembali ke Checkout</a>
+      <a id="goWA" class="btn btn-wa">Buka WhatsApp Admin</a>
+    </div>
+
+    <p class="small muted" style="margin-top:14px">Simpan rujukan anda untuk rujukan masa depan.</p>
+  </div>
+</div>
+
+<!-- Confetti -->
+<div class="confetti" id="confetti"></div>
+
+<script>
+  // ===== util =====
+  const $ = sel => document.querySelector(sel);
+  const params = new URLSearchParams(location.search);
+  const money = n => (Math.round((+n+Number.EPSILON)*100)/100).toFixed(2);
+
+  // ===== rujukan =====
+  const ref = params.get("ref") || "-";
+  $("#ref").textContent = "Rujukan: " + ref;
+
+  // ===== bina link kembali =====
+  // bawa ref balik ke order agar QR data tak hilang (server kita auto isi ikut ref)
+  const nextOrder = "order.html?ref=" + encodeURIComponent(ref);
+  $("#goAccount").href = "account.html?next=" + encodeURIComponent(nextOrder);
+  $("#goHome").href    = nextOrder;
+
+  // ===== butang WhatsApp (jika perlu hantar bukti/cepat chat admin) =====
+  const ADMIN_PHONE = "60168055916";
+  const waText = `Assalamualaikum, saya dah buat tempahan.\nRujukan: ${ref}\nMohon semak ya.`;
+  $("#goWA").href = "https://wa.me/" + ADMIN_PHONE + "?text=" + encodeURIComponent(waText);
+
+  // ===== ringkasan order (optional dari query) =====
+  const name  = params.get("name")   || params.get("produk") || "";
+  const sku   = params.get("sku")    || "";
+  const price = params.get("price")  || params.get("harga")  || "";
+  const fee   = params.get("fee")    || params.get("upah")   || "";
+  const total = params.get("total")  || params.get("jumlah") || "";
+  const ship  = params.get("shipping") || "";
+  const alamat= params.get("alamat") || "";
+
+  const hasSummary = (name || sku || price || fee || total || ship);
+  if(hasSummary){
+    $("#sum").style.display = "block";
+    $("#s_name").textContent  = name || "-";
+    $("#s_sku").textContent   = sku  || "-";
+    $("#s_price").textContent = "RM " + (price? money(price) : "0.00");
+    $("#s_fee").textContent   = "RM " + (fee? money(fee) : "0.00");
+    $("#s_total").textContent = "RM " + (total? money(total) : money(+price + +fee));
+    let shipTxt = (ship ? ("Penghantaran: " + ship) : "Penghantaran: -");
+    if (ship==="Pos" && alamat) shipTxt += " • " + alamat;
+    $("#s_ship").textContent = shipTxt;
+  }
+
+  // ===== confetti kecil (ringan) =====
+  const confetti = $("#confetti");
+  const pieces = 24;
+  const colors = ["#f59e0b","#10b981","#3b82f6","#ef4444","#8b5cf6","#22c55e"];
+  const chars  = ["◆","●","▲","★","✦","■"];
+  for(let i=0;i<pieces;i++){
+    const el = document.createElement("div");
+    el.className="c";
+    el.textContent = chars[Math.floor(Math.random()*chars.length)];
+    el.style.left = Math.random()*100 + "vw";
+    el.style.color = colors[Math.floor(Math.random()*colors.length)];
+    el.style.animationDuration = (6 + Math.random()*3) + "s";
+    el.style.fontSize = (12 + Math.random()*10) + "px";
+    confetti.appendChild(el);
+  }
+  setTimeout(()=>confetti.remove(), 9000); // auto buang supaya ringan
+</script>
+</body>
+</html>

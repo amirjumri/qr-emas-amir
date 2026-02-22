@@ -1,0 +1,2 @@
+[functions.billplz-callback]
+verify_jwt = false

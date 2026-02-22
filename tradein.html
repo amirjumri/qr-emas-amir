@@ -1,0 +1,860 @@
+<!doctype html>
+<html lang="ms">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Trade In — Emas Amir</title>
+
+  <!-- Libs -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="auth.js?v=13.1"></script>
+
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+  <style>
+    body{background:#fff}
+    .container-narrow{max-width:1100px}
+    .auth-pill{border:1px solid #e5e7eb;border-radius:999px;padding:.2rem .6rem;background:#fafafa;color:#555}
+    .btn-chip{border:1px solid #e5e7eb;background:#f8fafc;padding:6px 10px;border-radius:999px;font-size:.9rem}
+    .table-sticky thead th{position:sticky;top:0;background:#fff;z-index:5}
+    .mono{font-family:ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,"Liberation Mono","Courier New",monospace}
+    .small-muted{font-size:12px;color:#6b7280}
+    .calc-pill{background:#f8fafc;border:1px solid #e5e7eb;border-radius:12px;padding:10px 12px}
+    .row-compact td, .row-compact th{padding:.45rem .5rem}
+    .card-soft{border:1px solid #e5e7eb;border-radius:14px}
+  </style>
+</head>
+<body>
+<div class="container container-narrow py-3">
+
+  <!-- TOP BAR -->
+  <div class="d-flex justify-content-between align-items-center mb-2">
+    <div class="small auth-pill" id="authStatus">Memuatkan…</div>
+    <div class="d-flex flex-wrap gap-2">
+      <a class="btn btn-outline-secondary btn-chip" href="index.html">Halaman Utama</a>
+      <a class="btn btn-outline-secondary btn-chip" href="admin.html">Admin</a>
+      <a class="btn btn-outline-secondary btn-chip" href="admin-tradein.html">Admin Trade In</a>
+      <a class="btn btn-outline-secondary btn-chip" href="account.html">Akaun</a>
+      <button id="btnLogin"  class="btn btn-outline-secondary btn-chip" type="button">Log masuk</button>
+      <button id="btnLogout" class="btn btn-outline-secondary btn-chip" type="button" style="display:none">Log keluar</button>
+    </div>
+  </div>
+  <hr class="mb-3">
+
+  <div class="d-flex align-items-center justify-content-between gap-2 flex-wrap">
+    <h1 class="h4 m-0">Trade In</h1>
+    <div class="small text-muted">Isi no pelanggan → tambah item → kiraan auto → simpan</div>
+  </div>
+
+  <!-- CUSTOMER LOOKUP -->
+  <div class="card border-0 shadow-sm mt-3">
+    <div class="card-body">
+      <div class="row g-2 align-items-end">
+        <div class="col-12 col-md-8">
+          <label class="form-label">No telefon pelanggan</label>
+          <input id="phoneInput" class="form-control" placeholder="Contoh: 0168055916 / 60168055916">
+          <div class="small text-muted mt-1">Tekan Enter atau klik Cari.</div>
+        </div>
+        <div class="col-12 col-md-4 d-flex gap-2">
+          <button id="btnCari" class="btn btn-dark w-100" type="button">Cari</button>
+          <button id="btnResetCust" class="btn btn-outline-secondary w-100" type="button">Reset</button>
+        </div>
+      </div>
+
+      <hr class="my-3">
+
+      <div class="row g-2">
+        <div class="col-12 col-md-4">
+          <label class="form-label">Nama</label>
+          <input id="custName" class="form-control" readonly>
+        </div>
+        <div class="col-12 col-md-4">
+          <label class="form-label">Phone (DB)</label>
+          <input id="custPhoneDB" class="form-control mono" readonly>
+        </div>
+        <div class="col-12 col-md-4">
+          <label class="form-label">Customer ID</label>
+          <input id="custId" class="form-control mono" readonly>
+        </div>
+
+        <div class="col-12">
+          <label class="form-label">Alamat (ringkas)</label>
+          <input id="custAddr" class="form-control" readonly>
+        </div>
+
+        <div class="col-12 mt-1">
+          <span id="custFoundBadge" class="badge text-bg-secondary">Belum cari</span>
+        </div>
+      </div>
+
+      <!-- PAY METHOD + TRADE TYPE + BANK -->
+      <div class="card-soft p-3 mt-3">
+        <div class="row g-2 align-items-end">
+          <div class="col-12 col-md-4">
+            <label class="form-label">Kaedah bayaran (admin)</label>
+            <select id="pay_method" class="form-select">
+              <option value="CASH" selected>CASH</option>
+              <option value="TRANSFER">TRANSFER</option>
+              <option value="MIXED">MIXED (CASH + TRANSFER)</option>
+            </select>
+            <div class="small text-muted mt-1">Jika TRANSFER/MIXED, resit boleh papar bank pelanggan.</div>
+          </div>
+
+          <div class="col-12 col-md-4">
+            <label class="form-label">Jenis trade</label>
+            <select id="trade_kind" class="form-select">
+              <option value="TRADEIN" selected>Trade In</option>
+              <option value="T_CASH">T Cash (jual sahaja)</option>
+            </select>
+            <div class="small text-muted mt-1">Default untuk item yang ditambah.</div>
+          </div>
+
+          <div class="col-12 col-md-4">
+            <button id="btnApplyTradeKindAll" class="btn btn-outline-secondary w-100" type="button">
+              Apply Jenis Trade → Semua Item
+            </button>
+          </div>
+
+          <!-- MIXED BOX -->
+          <div class="col-12" id="mixedBox" style="display:none">
+            <div class="row g-2 mt-2">
+              <div class="col-12 col-md-4">
+                <label class="form-label">Bayar CASH (RM)</label>
+                <input id="pay_cash_rm" class="form-control mono" placeholder="Contoh: 200.00">
+                <div class="small-muted mt-1">Isi amaun cash. Baki akan auto jadi transfer.</div>
+              </div>
+              <div class="col-12 col-md-4">
+                <label class="form-label">Bayar TRANSFER (RM)</label>
+                <input id="pay_transfer_rm" class="form-control mono" placeholder="Auto (baki) / boleh edit">
+                <div class="small-muted mt-1">Jika kosong, sistem auto kira baki.</div>
+              </div>
+              <div class="col-12 col-md-4">
+                <div class="calc-pill h-100 d-flex flex-column justify-content-center">
+                  <div class="text-muted">Semak jumlah</div>
+                  <div class="fw-semibold mono" id="mixedCheckLabel">RM 0.00</div>
+                  <div class="small-muted" id="mixedCheckHint">-</div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="col-12" id="bankBox" style="display:none">
+            <div class="row g-2 mt-2">
+              <div class="col-12 col-md-4">
+                <label class="form-label">Bank (pelanggan)</label>
+                <input id="cust_bank_name" class="form-control" readonly placeholder="Contoh: Maybank">
+              </div>
+              <div class="col-12 col-md-4">
+                <label class="form-label">Nama akaun</label>
+                <input id="cust_bank_acc_name" class="form-control" readonly placeholder="Nama akaun">
+              </div>
+              <div class="col-12 col-md-4">
+                <label class="form-label">No akaun</label>
+                <input id="cust_bank_acc_no" class="form-control mono" readonly placeholder="No akaun">
+              </div>
+            </div>
+            <div class="small-muted mt-1">Jika kosong: pelanggan belum isi maklumat bank dalam sistem.</div>
+          </div>
+        </div>
+      </div>
+      <!-- /PAY METHOD + TRADE TYPE + BANK -->
+
+    </div>
+  </div>
+
+  <!-- ITEMS -->
+  <div class="card border-0 shadow-sm mt-3">
+    <div class="card-body">
+      <div class="d-flex align-items-center justify-content-between flex-wrap gap-2">
+        <h2 class="h6 m-0">Item Trade In</h2>
+        <div class="d-flex gap-2">
+          <button id="btnAddRow" class="btn btn-outline-primary btn-sm" type="button">+ Tambah Item</button>
+          <button id="btnClearItems" class="btn btn-outline-secondary btn-sm" type="button">Kosongkan Item</button>
+        </div>
+      </div>
+
+      <div class="table-responsive mt-2">
+        <table class="table table-sm align-middle table-sticky">
+          <thead>
+            <tr>
+              <th style="width:60px">#</th>
+              <th style="width:130px">Jenis trade</th>
+              <th style="width:120px">Jenis emas</th>
+              <th>Nama barang</th>
+              <th style="width:140px">Berat (g)</th>
+              <th style="width:170px">Harga jual (RM/g) — admin</th>
+              <th style="width:160px" class="text-end">Jumlah (auto)</th>
+              <th style="width:80px"></th>
+            </tr>
+          </thead>
+          <tbody id="itemsTbody">
+            <!-- rows injected -->
+          </tbody>
+        </table>
+      </div>
+
+      <div class="calc-pill mt-2">
+        <div class="d-flex justify-content-between">
+          <div class="text-muted">Subtotal</div>
+          <div class="fw-semibold" id="subtotalLabel">RM 0.00</div>
+        </div>
+        <div class="small-muted mt-1">
+          Nota: jumlah = berat(g) × harga(RM/g). Setiap item kira satu-per-satu.
+        </div>
+      </div>
+
+      <div class="row g-2 mt-3">
+        <div class="col-12 col-md-6">
+          <label class="form-label">No resit / rujukan J916 (jika ada)</label>
+          <input id="refJ916" class="form-control" placeholder="Contoh: J916-xxxx / Bill ID / rujukan">
+        </div>
+        <div class="col-12 col-md-6">
+          <label class="form-label">Nota admin (optional)</label>
+          <input id="adminNote" class="form-control" placeholder="Contoh: trade-in cincin lama / tukar gelang">
+        </div>
+      </div>
+
+      <div class="d-flex gap-2 mt-3 flex-wrap">
+        <button id="btnSubmit" class="btn btn-success" type="button">Trade In (Simpan)</button>
+        <a class="btn btn-outline-dark" href="admin-tradein.html">Buka Admin Trade In</a>
+      </div>
+
+      <div class="mt-3">
+        <div class="border rounded-3 p-3 bg-light">
+          <div class="fw-semibold mb-1">Ringkasan</div>
+          <div id="summaryBox" class="small text-muted">-</div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+/* ========================== Konfigurasi ========================== */
+const SB_URL = "https://dduizetstqqjrpsezbpi.supabase.co";
+const SB_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFciOiJzdXBhYmFzZSIsInJlZiI6ImRkdWl6ZXRzdHFxanJwc2V6YnBpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTg3MzI0ODQsImV4cCI6MjA3NDMwODQ4NH0.CrlHXrmHtKgR9qc2192U6quRb5lpFEeOSgwG0Lb8KRM";
+window.sb = window.sb || window.supabase.createClient(SB_URL, SB_KEY);
+const sb = window.sb;
+
+/* ========================== Helpers ========================== */
+const $ = (id)=>document.getElementById(id);
+const money = (n)=> 'RM ' + (Number(n||0)).toFixed(2);
+
+function normalize(msisdn){
+  if(!msisdn) return null;
+  let x = (''+msisdn).replace(/\D/g,'');
+  if(!x) return null;
+  if(x.startsWith('60')) return x;
+  if(x.startsWith('0')) return '6'+x;
+  return '60'+x;
+}
+function normalizePhoneVariants(msisdn){
+  if (!msisdn) return [];
+  let x = (''+msisdn).replace(/\D/g,'');
+  const set = new Set();
+  if (x) set.add(x);
+  if (x.startsWith('60') && x.length > 2) set.add('0'+x.slice(2));
+  if (x.startsWith('0') && x.length >= 10 && x.length <= 11){
+    set.add(x);
+    set.add('60'+x.slice(1));
+  }
+  return Array.from(set);
+}
+function num(val){
+  const s = String(val ?? '').trim();
+  if(!s) return 0;
+  const cleaned = s.replace(/[^0-9.]/g,'');
+  const v = Number(cleaned);
+  return Number.isFinite(v) ? v : 0;
+}
+function clamp2(n){
+  const v = Number(n||0);
+  if(!Number.isFinite(v)) return 0;
+  return Math.round(v*100)/100;
+}
+function near2(a,b){
+  return Math.abs(clamp2(a)-clamp2(b)) <= 0.01;
+}
+function escapeHtml(s){
+  return String(s||'').replace(/[&<>"']/g, m=>({ "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;" }[m]));
+}
+function labelTradeKind(v){
+  const x = (String(v||'').toUpperCase());
+  if(x === 'T_CASH') return 'T Cash (jual sahaja)';
+  return 'Trade In';
+}
+
+/* IMPORTANT: UI boleh MIXED, tapi DB pay_method hanya CASH/TRANSFER */
+function getPayMethodUI(){
+  return (document.getElementById('pay_method')?.value || 'CASH').toUpperCase();
+}
+function getPayMethodDB(){
+  const ui = getPayMethodUI();
+  if(ui === 'MIXED') return 'TRANSFER';  // ✅ supaya lepas constraint DB
+  return ui;
+}
+
+/* ========================== Topbar Auth UI ========================== */
+(function(){
+  const pill=$('authStatus'),login=$('btnLogin'),logout=$('btnLogout');
+  try{
+    const a=(window.auth_get&&window.auth_get())||null;
+    if(a){
+      pill.textContent='Log masuk — '+(a.phone||a.msisdn||'');
+      login.style.display='none'; logout.style.display='';
+      logout.onclick=()=>{window.auth_clear&&window.auth_clear();location.reload();};
+    }else{
+      pill.textContent='Tidak log masuk';
+      login.style.display=''; logout.style.display='none';
+      login.onclick=()=>location.href='login.html#login';
+    }
+  }catch(_){}
+})();
+
+/* ========================== State ========================== */
+let customer = null;
+let items = [];
+let _custBank = { bank_name:'', bank_account_name:'', bank_account_no:'' };
+
+/* ========================== Pay method + bank + mixed UI ========================== */
+function setMixedUI(){
+  const ui = getPayMethodUI();
+  const isMixed = (ui === 'MIXED');
+  const box = document.getElementById('mixedBox');
+  if (box) box.style.display = isMixed ? '' : 'none';
+
+  if(!isMixed){
+    const a = document.getElementById('pay_cash_rm');
+    const b = document.getElementById('pay_transfer_rm');
+    if(a) a.value = '';
+    if(b) b.value = '';
+    const lbl = document.getElementById('mixedCheckLabel');
+    const hint= document.getElementById('mixedCheckHint');
+    if(lbl) lbl.textContent = money(0);
+    if(hint) hint.textContent = '-';
+  }
+
+  updateSummary();
+}
+
+function setBankUI(){
+  const ui = getPayMethodUI();
+  const show = (ui === 'TRANSFER' || ui === 'MIXED');
+  const box = document.getElementById('bankBox');
+  if (box) box.style.display = show ? '' : 'none';
+
+  document.getElementById('cust_bank_name').value     = _custBank.bank_name || '';
+  document.getElementById('cust_bank_acc_name').value = _custBank.bank_account_name || '';
+  document.getElementById('cust_bank_acc_no').value   = _custBank.bank_account_no || '';
+
+  updateSummary();
+}
+
+function recalcMixedAmounts(){
+  const ui = getPayMethodUI();
+  if(ui !== 'MIXED') return;
+
+  const sub = calcSubtotal();
+  const cashEl = document.getElementById('pay_cash_rm');
+  const trfEl  = document.getElementById('pay_transfer_rm');
+  const lbl = document.getElementById('mixedCheckLabel');
+  const hint= document.getElementById('mixedCheckHint');
+
+  const cash = clamp2(num(cashEl?.value));
+  let transfer = num(trfEl?.value);
+
+  if(!String(trfEl?.value ?? '').trim()){
+    transfer = clamp2(sub - cash);
+    if(trfEl) trfEl.value = transfer.toFixed(2);
+  }else{
+    transfer = clamp2(transfer);
+  }
+
+  const total = clamp2(cash + transfer);
+
+  if(lbl) lbl.textContent = money(total);
+  if(hint){
+    if(near2(total, sub)){
+      hint.textContent = '✅ Sama dengan subtotal';
+    }else{
+      hint.textContent = `⚠️ Tak sama subtotal (${money(sub)})`;
+    }
+  }
+
+  updateSummary();
+}
+
+document.getElementById('pay_method')?.addEventListener('change', ()=>{
+  setMixedUI();
+  setBankUI();
+  recalcMixedAmounts();
+});
+document.getElementById('trade_kind')?.addEventListener('change', ()=>{
+  updateSummary();
+});
+document.getElementById('pay_cash_rm')?.addEventListener('input', ()=>{
+  const ui = getPayMethodUI();
+  if(ui !== 'MIXED') return;
+  const sub = calcSubtotal();
+  const cash = clamp2(num(document.getElementById('pay_cash_rm')?.value));
+  const transfer = clamp2(sub - cash);
+  const trfEl = document.getElementById('pay_transfer_rm');
+  if(trfEl) trfEl.value = transfer.toFixed(2);
+  recalcMixedAmounts();
+});
+document.getElementById('pay_transfer_rm')?.addEventListener('input', recalcMixedAmounts);
+
+/* ========================== UI: Items ========================== */
+function makeRow(idx, it){
+  const tr = document.createElement('tr');
+  tr.className = 'row-compact';
+  tr.dataset.idx = String(idx);
+
+  tr.innerHTML = `
+    <td class="text-muted">${idx+1}</td>
+
+    <td>
+      <select class="form-select form-select-sm" data-f="trade_kind">
+        <option value="TRADEIN">Trade In</option>
+        <option value="T_CASH">T Cash</option>
+      </select>
+    </td>
+
+    <td>
+      <select class="form-select form-select-sm" data-f="gold_type">
+        <option value="999.9">999.9</option>
+        <option value="999">999</option>
+        <option value="916" selected>916</option>
+        <option value="835">835</option>
+        <option value="750">750</option>
+      </select>
+    </td>
+
+    <td>
+      <input class="form-control form-control-sm" data-f="item_name" placeholder="Contoh: cincin / rantai / gelang">
+    </td>
+
+    <td>
+      <input class="form-control form-control-sm mono" data-f="weight_g" placeholder="Contoh: 10.25">
+      <div class="small-muted mt-1">g</div>
+    </td>
+
+    <td>
+      <input class="form-control form-control-sm mono" data-f="price_rm_g" placeholder="Contoh: 505.00">
+      <div class="small-muted mt-1">RM/g</div>
+    </td>
+
+    <td class="text-end">
+      <div class="fw-semibold mono" data-f="amount_rm">RM 0.00</div>
+    </td>
+
+    <td class="text-end">
+      <button class="btn btn-outline-danger btn-sm" type="button" data-act="remove">Buang</button>
+    </td>
+  `;
+
+  const headerTK = (document.getElementById('trade_kind')?.value || 'TRADEIN').toUpperCase();
+
+  tr.querySelector('[data-f="trade_kind"]').value = (it.trade_kind || headerTK || 'TRADEIN');
+  tr.querySelector('[data-f="gold_type"]').value  = it.gold_type || '916';
+  tr.querySelector('[data-f="item_name"]').value  = it.item_name || '';
+  tr.querySelector('[data-f="weight_g"]').value   = (it.weight_g!=null && it.weight_g!==0) ? String(it.weight_g) : '';
+  tr.querySelector('[data-f="price_rm_g"]').value = (it.price_rm_g!=null && it.price_rm_g!==0) ? String(it.price_rm_g) : '';
+
+  const recalc = ()=>{
+    const weight = num(tr.querySelector('[data-f="weight_g"]').value);
+    const price  = num(tr.querySelector('[data-f="price_rm_g"]').value);
+    const amt    = Number((weight * price).toFixed(2));
+    tr.querySelector('[data-f="amount_rm"]').textContent = money(amt);
+    updateStateFromUI();
+    updateSummary();
+    recalcMixedAmounts();
+  };
+
+  tr.querySelectorAll('input,select').forEach(el=>{
+    el.addEventListener('input', recalc);
+    el.addEventListener('change', recalc);
+  });
+
+  tr.querySelector('[data-act="remove"]').addEventListener('click', ()=>{
+    const i = Number(tr.dataset.idx);
+    if(Number.isFinite(i)) items.splice(i,1);
+    renderItems();
+  });
+
+  setTimeout(recalc, 0);
+  return tr;
+}
+
+function renderItems(){
+  const tb = $('itemsTbody');
+  tb.innerHTML = '';
+  if(!items.length){
+    const headerTK = (document.getElementById('trade_kind')?.value || 'TRADEIN').toUpperCase();
+    items = [{ trade_kind: headerTK, gold_type:'916', item_name:'', weight_g:0, price_rm_g:0 }];
+  }
+  items.forEach((it, idx)=> tb.appendChild(makeRow(idx, it)));
+  updateSummary();
+  recalcMixedAmounts();
+}
+
+function updateStateFromUI(){
+  const rows = Array.from(document.querySelectorAll('#itemsTbody tr'));
+  items = rows.map(tr=>{
+    return {
+      trade_kind: (tr.querySelector('[data-f="trade_kind"]')?.value || 'TRADEIN').trim(),
+      gold_type: (tr.querySelector('[data-f="gold_type"]').value || '').trim(),
+      item_name: (tr.querySelector('[data-f="item_name"]').value || '').trim(),
+      weight_g:  num(tr.querySelector('[data-f="weight_g"]').value),
+      price_rm_g:num(tr.querySelector('[data-f="price_rm_g"]').value),
+    };
+  });
+}
+
+function calcSubtotal(){
+  const clean = items.map(it=>{
+    const w = Number(it.weight_g||0);
+    const p = Number(it.price_rm_g||0);
+    return Number((w*p).toFixed(2));
+  });
+  return Number(clean.reduce((s,a)=>s+a,0).toFixed(2));
+}
+
+function updateSummary(){
+  const sub = calcSubtotal();
+  $('subtotalLabel').textContent = money(sub);
+
+  const uiPay = getPayMethodUI();
+
+  let bankLine = '';
+  if(uiPay === 'TRANSFER'){
+    bankLine = `<div>Kaedah: <b>TRANSFER</b></div>` +
+      `<div>Bank: <b>${escapeHtml(_custBank.bank_name||'-')}</b> • Nama: <b>${escapeHtml(_custBank.bank_account_name||'-')}</b> • No: <b>${escapeHtml(_custBank.bank_account_no||'-')}</b></div>`;
+  }else if(uiPay === 'MIXED'){
+    const cash = clamp2(num(document.getElementById('pay_cash_rm')?.value));
+    const transfer = clamp2(num(document.getElementById('pay_transfer_rm')?.value));
+    bankLine = `<div>Kaedah: <b>MIXED</b> • CASH: <b>${money(cash)}</b> • TRANSFER: <b>${money(transfer)}</b></div>` +
+      `<div>Bank: <b>${escapeHtml(_custBank.bank_name||'-')}</b> • Nama: <b>${escapeHtml(_custBank.bank_account_name||'-')}</b> • No: <b>${escapeHtml(_custBank.bank_account_no||'-')}</b></div>`;
+  }else{
+    bankLine = `<div>Kaedah: <b>CASH</b></div>`;
+  }
+
+  const headerTK = (document.getElementById('trade_kind')?.value || 'TRADEIN').toUpperCase();
+  const tradeLine = `<div>Jenis trade: <b>${escapeHtml(labelTradeKind(headerTK))}</b></div>`;
+
+  const custLine = customer
+    ? `<div>Pelanggan: <b>${escapeHtml(customer.name||'-')}</b> (${escapeHtml(customer.phone||'-')})</div>`
+    : `<div>Pelanggan: <b>-</b></div>`;
+
+  const itemLines = items.map((it, i)=>{
+    const amt = Number(((it.weight_g||0)*(it.price_rm_g||0)).toFixed(2));
+    const name = it.item_name ? ` • ${escapeHtml(it.item_name)}` : '';
+    const tk = labelTradeKind(it.trade_kind || headerTK);
+    return `<div>${i+1}) <b>${escapeHtml(tk)}</b> • ${escapeHtml(it.gold_type||'-')}${name} • Berat: <b>${Number(it.weight_g||0).toFixed(4)}g</b> • Harga: <b>${money(it.price_rm_g||0)}/g</b> • Jumlah: <b>${money(amt)}</b></div>`;
+  }).join('');
+
+  const ref = escapeHtml(($('refJ916').value||'').trim() || '-');
+  const note= escapeHtml(($('adminNote').value||'').trim() || '-');
+
+  $('summaryBox').innerHTML =
+    custLine +
+    `<div class="mt-1">${bankLine}</div>` +
+    `<div class="mt-1">${tradeLine}</div>` +
+    `<div class="mt-2 fw-semibold">Item:</div>` +
+    (itemLines || `<div>-</div>`) +
+    `<div class="mt-2">Rujukan J916: <b>${ref}</b></div>` +
+    `<div>Nota admin: <b>${note}</b></div>` +
+    `<div class="mt-2">Subtotal: <b>${money(sub)}</b></div>`;
+}
+
+/* ========================== Customer Lookup ========================== */
+async function findCustomer(){
+  const raw = $('phoneInput').value.trim();
+  if(!raw){ alert("Sila isi no telefon."); return; }
+
+  const variants = normalizePhoneVariants(raw);
+  if(!variants.length){ alert("No telefon tidak sah."); return; }
+
+  $('custFoundBadge').className = 'badge text-bg-secondary';
+  $('custFoundBadge').textContent = 'Mencari…';
+
+  try{
+    const { data, error } = await sb
+      .from('customers')
+      .select('id,name,phone,alamat,postcode,city,state,bank_name,bank_account_name,bank_account_no')
+      .in('phone', variants)
+      .limit(1);
+
+    if(error) throw error;
+
+    const c = (data && data[0]) ? data[0] : null;
+    if(!c){
+      customer = null;
+      _custBank = { bank_name:'', bank_account_name:'', bank_account_no:'' };
+      $('custName').value = '';
+      $('custPhoneDB').value = '';
+      $('custId').value = '';
+      $('custAddr').value = '';
+      $('custFoundBadge').className = 'badge text-bg-danger';
+      $('custFoundBadge').textContent = 'Pelanggan tidak ditemui';
+      setBankUI();
+      setMixedUI();
+      updateSummary();
+      return;
+    }
+
+    customer = {
+      id: c.id,
+      name: c.name || '',
+      phone: c.phone || '',
+      alamat: c.alamat || '',
+      postcode: c.postcode || '',
+      city: c.city || '',
+      state: c.state || ''
+    };
+
+    _custBank = {
+      bank_name: c.bank_name || '',
+      bank_account_name: c.bank_account_name || '',
+      bank_account_no: c.bank_account_no || ''
+    };
+
+    $('custName').value = customer.name;
+    $('custPhoneDB').value = customer.phone;
+    $('custId').value = customer.id;
+
+    const addr = [customer.alamat, customer.postcode, customer.city, customer.state].filter(Boolean).join(', ');
+    $('custAddr').value = addr;
+
+    $('custFoundBadge').className = 'badge text-bg-success';
+    $('custFoundBadge').textContent = 'Pelanggan ditemui ✅';
+
+    setBankUI();
+    setMixedUI();
+    updateSummary();
+    recalcMixedAmounts();
+
+  }catch(e){
+    console.error(e);
+    $('custFoundBadge').className = 'badge text-bg-danger';
+    $('custFoundBadge').textContent = 'Ralat cari pelanggan';
+    alert("Ralat cari pelanggan: " + (e?.message || e));
+  }
+}
+
+function resetCustomer(){
+  customer = null;
+  _custBank = { bank_name:'', bank_account_name:'', bank_account_no:'' };
+
+  $('phoneInput').value = '';
+  $('custName').value = '';
+  $('custPhoneDB').value = '';
+  $('custId').value = '';
+  $('custAddr').value = '';
+  $('custFoundBadge').className = 'badge text-bg-secondary';
+  $('custFoundBadge').textContent = 'Belum cari';
+
+  $('pay_method').value = 'CASH';
+  setMixedUI();
+  setBankUI();
+
+  $('trade_kind').value = 'TRADEIN';
+
+  updateSummary();
+  recalcMixedAmounts();
+}
+
+/* ========================== Submit to Supabase ========================== */
+async function submitTradeIn(){
+  const phone = customer?.phone || normalize($('phoneInput').value);
+  if(!phone){
+    alert("Sila isi no telefon pelanggan.");
+    return;
+  }
+
+  updateStateFromUI();
+
+  const tradeKindHeader = (document.getElementById('trade_kind')?.value || 'TRADEIN').toUpperCase();
+
+  const cleanItems = items
+    .map(it=>{
+      const trade_kind = (it.trade_kind || tradeKindHeader || 'TRADEIN').toUpperCase();
+      const gold_type = (it.gold_type||'').trim();
+      const item_name = (it.item_name||'').trim() || null;
+      const weight_g  = Number(it.weight_g||0);
+      const price_rm_g= Number(it.price_rm_g||0);
+      const amount_rm = Number((weight_g * price_rm_g).toFixed(2));
+      return { trade_kind, gold_type, item_name, weight_g, price_rm_g, amount_rm };
+    })
+    .filter(it => it.gold_type && it.weight_g > 0 && it.price_rm_g > 0);
+
+  if(!cleanItems.length){
+    alert("Sila tambah sekurang-kurangnya 1 item yang lengkap (jenis + berat + harga).");
+    return;
+  }
+
+  const subtotal = Number(cleanItems.reduce((s,x)=>s+(x.amount_rm||0),0).toFixed(2));
+  const refJ916  = ($('refJ916').value||'').trim() || null;
+  const note0    = ($('adminNote').value||'').trim() || null;
+
+  const payMethodUI = getPayMethodUI();   // UI boleh MIXED
+  const payMethodDB = getPayMethodDB();   // DB hanya CASH/TRANSFER
+
+  let payCash = null;
+  let payTransfer = null;
+
+  if(payMethodUI === 'MIXED'){
+    payCash = clamp2(num(document.getElementById('pay_cash_rm')?.value));
+    payTransfer = clamp2(num(document.getElementById('pay_transfer_rm')?.value));
+
+    if(!String(document.getElementById('pay_transfer_rm')?.value ?? '').trim()){
+      payTransfer = clamp2(subtotal - payCash);
+      document.getElementById('pay_transfer_rm').value = payTransfer.toFixed(2);
+    }
+
+    const total = clamp2(payCash + payTransfer);
+    if(!near2(total, subtotal)){
+      alert(`Jumlah MIXED tak sama subtotal.\nSubtotal: ${money(subtotal)}\nCASH: ${money(payCash)}\nTRANSFER: ${money(payTransfer)}\nJumlah: ${money(total)}`);
+      return;
+    }
+    if(payCash < 0 || payTransfer < 0){
+      alert("Amaun CASH/TRANSFER tak boleh negatif.");
+      return;
+    }
+  }
+
+  let createdByPhone = null;
+  try{
+    const a = (window.auth_get && window.auth_get()) || null;
+    createdByPhone = a ? normalize(a.phone||a.msisdn||a.username||"") : null;
+  }catch(_){}
+
+  const btn = $('btnSubmit');
+  btn.disabled = true;
+  const old = btn.textContent;
+  btn.textContent = 'Menyimpan…';
+
+  async function insertTxn(baseRow, cashRm, transferRm){
+    // cuba simpan breakdown kalau column wujud
+    if(payMethodUI === 'MIXED'){
+      const rowTry = { ...baseRow, pay_cash_rm: cashRm, pay_transfer_rm: transferRm };
+      const { data, error } = await sb.from('tradein_txn').insert([rowTry]).select('id').single();
+      if(!error) return { data, usedFallback:false };
+
+      const msg = String(error?.message || '');
+      const missingCol = msg.includes('column') && (msg.includes('pay_cash_rm') || msg.includes('pay_transfer_rm'));
+      if(!missingCol) throw error;
+
+      // fallback: simpan tanpa column breakdown
+      const { data: d2, error: e2 } = await sb.from('tradein_txn').insert([baseRow]).select('id').single();
+      if(e2) throw e2;
+      return { data: d2, usedFallback:true };
+    }
+
+    const { data, error } = await sb.from('tradein_txn').insert([baseRow]).select('id').single();
+    if(error) throw error;
+    return { data, usedFallback:false };
+  }
+
+  try{
+    // nota tambahan untuk MIXED (sentiasa masuk supaya rekod kekal walau DB tak ada column)
+    let noteExtra = null;
+    if(payMethodUI === 'MIXED'){
+      noteExtra = `[PAY_UI=MIXED] CASH=${(payCash??0).toFixed(2)} TRANSFER=${(payTransfer??0).toFixed(2)} • BANK=${_custBank.bank_name||'-'} • ACC=${_custBank.bank_account_no||'-'}`;
+    }
+
+    const mergedNote = (()=>{
+      if(!note0 && !noteExtra) return null;
+      if(note0 && noteExtra) return `${note0}\n${noteExtra}`;
+      return note0 || noteExtra;
+    })();
+
+    const baseTxnRow = {
+      customer_id: customer?.id || null,
+      customer_phone: phone,
+      customer_name: customer?.name || null,
+      customer_address: ($('custAddr').value||'').trim() || null,
+      ref_j916: refJ916,
+      admin_note: mergedNote,
+      subtotal_rm: subtotal,
+      pay_method: payMethodDB,        // ✅ DB: TRANSFER bila UI MIXED
+      trade_kind: tradeKindHeader,
+      status: 'DRAFT',
+      created_by_phone: createdByPhone
+    };
+
+    const { data: txn, usedFallback } = await insertTxn(baseTxnRow, payCash ?? 0, payTransfer ?? 0);
+
+    const payloadItems = cleanItems.map(it => ({
+      tradein_id: txn.id,
+      trade_kind: it.trade_kind,
+      gold_type: it.gold_type,
+      item_name: it.item_name,
+      weight_g: it.weight_g,
+      price_rm_g: it.price_rm_g,
+      amount_rm: it.amount_rm
+    }));
+
+    const { error: e2 } = await sb.from('tradein_items').insert(payloadItems);
+    if(e2) throw e2;
+
+    if(usedFallback && payMethodUI === 'MIXED'){
+      alert("Trade-in disimpan ✅\nNota: DB belum ada kolum pay_cash_rm/pay_transfer_rm, amaun MIXED disimpan dalam Nota Admin.");
+    }else{
+      alert("Trade-in disimpan ✅");
+    }
+
+    location.href = `admin-tradein.html?id=${encodeURIComponent(txn.id)}`;
+
+  }catch(e){
+    console.error(e);
+    alert("Ralat simpan trade-in: " + (e?.message || e));
+  }finally{
+    btn.disabled = false;
+    btn.textContent = old;
+  }
+}
+
+/* ========================== Wire ========================== */
+$('btnCari').addEventListener('click', findCustomer);
+$('btnResetCust').addEventListener('click', resetCustomer);
+$('phoneInput').addEventListener('keydown', (e)=>{
+  if(e.key === 'Enter'){ e.preventDefault(); findCustomer(); }
+});
+
+$('btnAddRow').addEventListener('click', ()=>{
+  updateStateFromUI();
+  const headerTK = (document.getElementById('trade_kind')?.value || 'TRADEIN').toUpperCase();
+  items.push({ trade_kind: headerTK, gold_type:'916', item_name:'', weight_g:0, price_rm_g:0 });
+  renderItems();
+});
+
+$('btnClearItems').addEventListener('click', ()=>{
+  if(!confirm("Kosongkan semua item?")) return;
+  const headerTK = (document.getElementById('trade_kind')?.value || 'TRADEIN').toUpperCase();
+  items = [{ trade_kind: headerTK, gold_type:'916', item_name:'', weight_g:0, price_rm_g:0 }];
+  renderItems();
+});
+
+$('btnApplyTradeKindAll')?.addEventListener('click', ()=>{
+  const tk = (document.getElementById('trade_kind')?.value || 'TRADEIN').toUpperCase();
+  updateStateFromUI();
+  items = items.map(it => ({ ...it, trade_kind: tk }));
+  renderItems();
+});
+
+$('refJ916').addEventListener('input', updateSummary);
+$('adminNote').addEventListener('input', updateSummary);
+$('btnSubmit').addEventListener('click', submitTradeIn);
+
+/* boot */
+renderItems();
+setMixedUI();
+setBankUI();
+updateSummary();
+recalcMixedAmounts();
+</script>
+</body>
+</html>

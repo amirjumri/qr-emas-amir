@@ -1,0 +1,697 @@
+<!doctype html>
+<html lang="ms">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Chat – Emas Amir</title>
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+<style>
+  body{background:#f6f7f9}
+  .wrap{max-width:980px;margin:16px auto;padding:12px}
+  .card{border-radius:16px}
+  .chatbox{height:60vh;overflow:auto;background:#fff;border:1px solid #e9ecef;border-radius:16px;padding:12px}
+  .msg{display:flex;gap:10px;margin:10px 0}
+  .bubble{max-width:78%;padding:10px 12px;border-radius:14px;white-space:pre-wrap;word-break:break-word}
+  .me{justify-content:flex-end}
+  .me .bubble{background:#111827;color:#fff;border-top-right-radius:6px}
+  .ai .bubble{background:#f3f4f6;color:#111827;border-top-left-radius:6px}
+  .meta{font-size:12px;color:#6b7280;margin-top:2px}
+  .pill{display:inline-flex;align-items:center;gap:8px;padding:6px 10px;border-radius:999px;background:#eef1f4;font-size:12px;color:#495057}
+  .mono{font-family:ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace}
+
+  /* attachment UI */
+  .attach-bar{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+  .attach-pill{display:inline-flex;align-items:center;gap:8px;padding:8px 10px;border-radius:999px;background:#eef1f4;font-size:13px;color:#111;border:1px solid #e5e7eb}
+  .attach-pill .name{max-width:340px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .attach-thumb{width:140px;height:140px;border-radius:12px;object-fit:cover;border:1px solid #e5e7eb;background:#fff}
+  .bubble a{color:inherit;text-decoration:underline}
+  .me .bubble a{color:#fff}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="d-flex align-items-center justify-content-between mb-2">
+    <div>
+      <div class="h4 mb-0">Chat Emas Amir</div>
+      <div class="text-muted">Pembantu sistem (AI)</div>
+    </div>
+    <div class="d-flex gap-2">
+      <button id="btnReset" class="btn btn-outline-secondary btn-sm">Reset</button>
+      <a href="index.html" class="btn btn-outline-secondary btn-sm">Home</a>
+    </div>
+  </div>
+
+  <div class="card p-3">
+
+    <!-- STEP: PHONE -->
+    <div id="stepPhone" class="mb-3">
+      <div class="p-3 bg-white border rounded-4">
+        <div class="d-flex align-items-center justify-content-between">
+          <div>
+            <div class="fw-bold">Masukkan nombor WhatsApp</div>
+            <div class="text-muted">Malaysia & Singapore disokong</div>
+          </div>
+          <span class="pill">Contoh: 0134456002 / +60134456002 / +6591234567</span>
+        </div>
+        <div class="mt-3 d-flex gap-2">
+          <input id="inPhone" class="form-control form-control-lg" placeholder="01XXXXXXXX atau +65XXXXXXXX" inputmode="tel">
+          <button id="btnStart" class="btn btn-dark btn-lg">Mula Chat</button>
+        </div>
+        <div id="phoneErr" class="meta mt-2"></div>
+      </div>
+    </div>
+
+    <!-- STEP: CHAT -->
+    <div id="stepChat" style="display:none">
+      <div class="d-flex align-items-center justify-content-between mb-2">
+        <div class="meta">
+          Nombor: <span id="lblPhone" class="mono"></span>
+          <span class="mx-2">•</span>
+          Thread: <span id="lblThread" class="mono"></span>
+        </div>
+        <div id="loginBox" class="meta"></div>
+      </div>
+
+      <!-- ✅ FLOW BANNER (LOCK STATUS) -->
+      <div id="flowBanner" class="mt-2" style="display:none">
+        <div class="p-3 bg-white border rounded-4">
+          <div class="d-flex align-items-start justify-content-between gap-2">
+            <div>
+              <div id="flowTitle" class="fw-bold">Status</div>
+              <div id="flowDesc" class="text-muted" style="white-space:pre-wrap"></div>
+            </div>
+            <button id="btnFlowRefresh" type="button" class="btn btn-outline-secondary btn-sm">Refresh status</button>
+          </div>
+          <div id="flowItems" class="mt-2" style="white-space:pre-wrap"></div>
+        </div>
+      </div>
+
+      <div id="chatbox" class="chatbox"></div>
+
+      <div id="ctaRegister" class="mt-3" style="display:none">
+        <div class="p-3 bg-white border rounded-4">
+          <div class="fw-bold">Untuk LOCK LIVE / LOCK BARANG, perlu daftar akaun</div>
+          <div class="text-muted">Lepas daftar, anda akan kembali ke chat yang sama.</div>
+          <div class="mt-2 d-flex gap-2">
+            <a id="btnDaftar" class="btn btn-danger" href="login.html">Daftar / Log masuk untuk Lock</a>
+            <button id="btnHideCta" class="btn btn-outline-secondary" type="button">Nanti dulu</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- ✅ ATTACHMENTS BAR -->
+      <div class="mt-3">
+        <div class="attach-bar">
+          <input id="file" type="file" class="form-control"
+                 accept="image/*,application/pdf"
+                 style="max-width:420px" />
+          <span class="meta">Boleh hantar gambar atau PDF (contoh: screenshot tag berat/size).</span>
+        </div>
+
+        <div id="filePreview" class="mt-2" style="display:none">
+          <div class="d-flex gap-2 align-items-center flex-wrap">
+            <span class="attach-pill">
+              <span>📎</span>
+              <span id="fileName" class="name"></span>
+              <span id="fileType" class="meta"></span>
+            </span>
+            <button id="btnRemoveFile" type="button" class="btn btn-outline-secondary btn-sm">Buang fail</button>
+          </div>
+          <div id="fileThumbWrap" class="mt-2" style="display:none">
+            <img id="fileThumb" class="attach-thumb" alt="preview">
+          </div>
+        </div>
+      </div>
+
+      <div class="mt-3 d-flex gap-2">
+        <input id="txt" class="form-control form-control-lg" placeholder="Taip mesej…" />
+        <button id="btnSend" class="btn btn-dark btn-lg">Hantar</button>
+      </div>
+
+      <div id="status" class="meta mt-2"></div>
+    </div>
+
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="auth.js?v=13.1"></script>
+
+<script>
+(function(){
+  const $ = (id) => document.getElementById(id);
+
+  const KEY_PHONE  = "ea_chat_phone";
+  const KEY_THREAD = "ea_chat_thread";
+
+  const stepPhone = $("stepPhone");
+  const stepChat  = $("stepChat");
+  const chatbox   = $("chatbox");
+  const inPhone   = $("inPhone");
+  const phoneErr  = $("phoneErr");
+  const lblPhone  = $("lblPhone");
+  const lblThread = $("lblThread");
+  const statusEl  = $("status");
+  const txt       = $("txt");
+  const btnSend   = $("btnSend");
+  const btnStart  = $("btnStart");
+  const btnReset  = $("btnReset");
+
+  const ctaRegister = $("ctaRegister");
+  const btnDaftar   = $("btnDaftar");
+  const btnHideCta  = $("btnHideCta");
+
+  // ✅ attachment elements
+  const fileInput    = $("file");
+  const filePreview  = $("filePreview");
+  const fileNameEl   = $("fileName");
+  const fileTypeEl   = $("fileType");
+  const btnRemoveFile= $("btnRemoveFile");
+  const fileThumbWrap= $("fileThumbWrap");
+  const fileThumb    = $("fileThumb");
+
+  // ✅ flow banner elements
+  const flowBanner = $("flowBanner");
+  const flowTitle  = $("flowTitle");
+  const flowDesc   = $("flowDesc");
+  const flowItems  = $("flowItems");
+  const btnFlowRefresh = $("btnFlowRefresh");
+
+  let pendingFile = null;
+
+  function normalizePhone(raw){
+    let d = String(raw||"").replace(/\D+/g,"");
+    if(!d) return {ok:false, error:"Nombor kosong"};
+
+    if(d.startsWith("00")) d = d.slice(2);
+    if(d.startsWith("0")) d = "60" + d.slice(1);
+    if(d.length===8 && (d.startsWith("8") || d.startsWith("9"))) d = "65" + d;
+
+    const isMY = d.startsWith("60") && (d.length===11 || d.length===12);
+    const isSG = d.startsWith("65") && d.length===10;
+
+    if(!isMY && !isSG){
+      return {ok:false, error:"Nombor tak sah. MY: 01xxxxxxxx / +60..., SG: +65xxxxxxxx"};
+    }
+    return {ok:true, e164:d, country: isMY?"MY":"SG"};
+  }
+
+  function now(){
+    const d = new Date();
+    return d.toLocaleTimeString("ms-MY", {hour:"2-digit", minute:"2-digit"});
+  }
+
+  function escapeText(s){
+    return String(s||"");
+  }
+
+  function addMsg(role, text, time, attachment){
+    const row = document.createElement("div");
+    row.className = "msg " + (role==="me" ? "me" : "ai");
+    const bubble = document.createElement("div");
+    bubble.className = "bubble";
+
+    // text
+    if (text && String(text).trim()){
+      bubble.appendChild(document.createTextNode(escapeText(text)));
+    }
+
+    // attachment display
+    if (attachment && attachment.url){
+      const block = document.createElement("div");
+      block.style.marginTop = (text && String(text).trim()) ? "10px" : "0";
+
+      const isImg = /^image\//i.test(attachment.mime || "");
+      const isPdf = (attachment.mime || "").toLowerCase() === "application/pdf";
+
+      // clickable thumbnail for image
+      if (isImg){
+        const linkImg = document.createElement("a");
+        linkImg.href = attachment.url;
+        linkImg.target = "_blank";
+        linkImg.rel = "noopener";
+        linkImg.dataset.kind = "thumb"; // ✅ penting
+
+        const img = document.createElement("img");
+        img.src = attachment.url;
+        img.alt = attachment.name || "gambar";
+        img.className = "attach-thumb";
+
+        linkImg.appendChild(img);
+        block.appendChild(linkImg);
+      }
+
+      // file link
+      const fileLink = document.createElement("a");
+      fileLink.href = attachment.url;
+      fileLink.target = "_blank";
+      fileLink.rel = "noopener";
+      fileLink.dataset.kind = "file"; // ✅ penting
+      fileLink.textContent = attachment.name
+        ? ("Buka " + (isPdf ? "PDF" : "fail") + ": " + attachment.name)
+        : (isPdf ? "Buka PDF" : "Buka fail");
+
+      const p = document.createElement("div");
+      p.style.marginTop = isImg ? "8px" : "0";
+      p.appendChild(fileLink);
+
+      block.appendChild(p);
+      bubble.appendChild(block);
+    }
+
+    row.appendChild(bubble);
+
+    const meta = document.createElement("div");
+    meta.className = "meta";
+    meta.textContent = (role==="me" ? "Anda" : "Emas Amir") + " • " + (time||now());
+
+    const wrap = document.createElement("div");
+    wrap.appendChild(row);
+    wrap.appendChild(meta);
+
+    chatbox.appendChild(wrap);
+    chatbox.scrollTop = chatbox.scrollHeight;
+    return wrap;
+  }
+
+  function setStatus(s){ statusEl.textContent = s || ""; }
+
+  function getAuthUser(){
+    try{
+      if (typeof window.auth_get === "function") return window.auth_get();
+      const raw = localStorage.getItem("ea_user");
+      return raw ? JSON.parse(raw) : null;
+    }catch{ return null }
+  }
+
+  function isLoggedIn(){
+    const u = getAuthUser();
+    return !!(u && u.phone);
+  }
+
+  function buildDaftarLink(phone, thread){
+    const url = new URL("login.html", location.origin + location.pathname);
+    url.searchParams.set("next", "/chat");
+    url.searchParams.set("phone", phone);
+    url.searchParams.set("thread", thread);
+    return url.toString();
+  }
+
+  function showRegisterCTA(phone, thread){
+    btnDaftar.href = buildDaftarLink(phone, thread);
+    ctaRegister.style.display = "block";
+  }
+
+  function hideRegisterCTA(){
+    ctaRegister.style.display = "none";
+  }
+
+  function loadFromUrlOrStorage(){
+    const qs = new URLSearchParams(location.search);
+    const uPhone = qs.get("phone");
+    const uThread = qs.get("thread");
+
+    if (uPhone) localStorage.setItem(KEY_PHONE, uPhone);
+    if (uThread) localStorage.setItem(KEY_THREAD, uThread);
+
+    const sPhone = localStorage.getItem(KEY_PHONE);
+    const sThread = localStorage.getItem(KEY_THREAD);
+
+    return { phone: sPhone || "", thread: sThread || "" };
+  }
+
+  function openChat(phone, thread){
+    lblPhone.textContent = phone;
+    lblThread.textContent = thread || "-";
+    stepPhone.style.display = "none";
+    stepChat.style.display = "block";
+
+    const loginBox = $("loginBox");
+    if (isLoggedIn()){
+      loginBox.innerHTML = "Status: <b>Logged in</b>";
+    } else {
+      loginBox.innerHTML = "Status: <b>Guest</b> (Daftar bila nak lock)";
+    }
+
+    // ✅ refresh flow banner bila buka chat
+    refreshFlowSnapshot().catch(()=>{});
+  }
+
+  // ===== FLOW SNAPSHOT (banner) =====
+  function stepLabelFromStatus(status){
+    const s = String(status||"").toUpperCase();
+    if (s === "LOCK_WAIT_TAG") return "LOCK: Tunggu gambar/tag";
+    if (s === "LOCK_WAIT_PRICE") return "LOCK: Tunggu harga LIVE";
+    if (s === "LOCK_WAIT_SHIP") return "LOCK: Pilih ambil/pos";
+    if (s === "LOCK_WAIT_CUT_LEN") return "LOCK: Panjang potong";
+    if (s === "LOCK_WAIT_PAY") return "LOCK: Bayaran";
+    if (s === "LOCK_DONE") return "LOCK: Selesai (tunggu tindakan)";
+    if (s.startsWith("LOCK_")) return "LOCK: Proses berjalan";
+    return "Chat biasa";
+  }
+
+  function showFlowBanner(title, desc, itemsText){
+    flowTitle.textContent = title || "Status";
+    flowDesc.textContent  = desc || "";
+    flowItems.textContent = itemsText || "";
+    flowBanner.style.display = "block";
+  }
+
+  function hideFlowBanner(){
+    flowBanner.style.display = "none";
+    flowTitle.textContent = "";
+    flowDesc.textContent = "";
+    flowItems.textContent = "";
+  }
+
+  async function fetchSnapshot(phone, threadId){
+    if (!phone) return null;
+
+    const r = await fetch("/.netlify/functions/chat-snapshot", {
+      method: "POST",
+      headers: { "Content-Type":"application/json" },
+      body: JSON.stringify({ phone, thread_id: threadId || null })
+    });
+    const j = await r.json().catch(()=>({}));
+    if (!r.ok || j.ok !== true) return null;
+    return j;
+  }
+
+  async function refreshFlowSnapshot(){
+    const phone = localStorage.getItem(KEY_PHONE) || "";
+    const threadId = localStorage.getItem(KEY_THREAD) || "";
+
+    const snap = await fetchSnapshot(phone, threadId);
+    if (!snap || !snap.thread) {
+      hideFlowBanner();
+      return;
+    }
+
+    if (snap.thread.id){
+      localStorage.setItem(KEY_THREAD, snap.thread.id);
+      lblThread.textContent = snap.thread.id;
+    }
+
+    const st = String(snap.thread.status || "OPEN").toUpperCase();
+    const label = stepLabelFromStatus(st);
+
+    if (!st.startsWith("LOCK_")){
+      showFlowBanner(
+        "🟢 " + label,
+        "Anda sedang dalam chat biasa.\nJika nak LOCK barang LIVE, tulis: “nak lock” / “lock live”.",
+        ""
+      );
+      return;
+    }
+
+    const lock = snap.lock || {};
+    const items = lock.items || [];
+    const lines = (items || []).map(it => {
+      const p = (it.price_rm != null) ? ("RM " + Number(it.price_rm).toFixed(2)) : "(harga belum set)";
+      const tag = it.tag_raw || [it.size_text ? ("S:" + it.size_text) : "", it.weight_g ? ("W:" + it.weight_g + "gm") : ""].filter(Boolean).join(" / ");
+      const cut = it.wants_cut ? (" • POTONG → " + (it.cut_to_cm ? (it.cut_to_cm + "cm") : "?")) : "";
+      return `• Item ${it.seq}: ${p}${tag ? " (" + tag + ")" : ""}${cut}`;
+    }).join("\n");
+
+    const shipLine = lock.ship_label ? `• ${lock.ship_label}: RM ${Number(lock.ship_fee || 0).toFixed(2)}` : "";
+    const totalLine = (lock.total != null) ? `✅ Total: RM ${Number(lock.total).toFixed(2)}` : "";
+
+    const desc =
+      `Anda sedang dalam proses LOCK.\n` +
+      `Step sekarang: ${label}\n\n` +
+      `Tip: Kalau anda nak sambung, ikut soalan terakhir yang sistem tanya ya.`;
+
+    const itemsText =
+      `Ringkasan LOCK:\n` +
+      (lines || "• (Tiada item lock lagi)") +
+      (shipLine ? ("\n" + shipLine) : "") +
+      (totalLine ? ("\n\n" + totalLine) : "");
+
+    showFlowBanner("🟠 " + label, desc, itemsText);
+  }
+
+  if (btnFlowRefresh){
+    btnFlowRefresh.onclick = () => {
+      refreshFlowSnapshot().catch(()=>{});
+    };
+  }
+
+  btnReset.onclick = ()=>{
+    localStorage.removeItem(KEY_PHONE);
+    localStorage.removeItem(KEY_THREAD);
+    location.href = "/chat";
+  };
+
+  btnHideCta.onclick = hideRegisterCTA;
+
+  btnStart.onclick = ()=>{
+    phoneErr.textContent = "";
+    const p = normalizePhone(inPhone.value);
+    if(!p.ok){ phoneErr.textContent = p.error; return; }
+    localStorage.setItem(KEY_PHONE, p.e164);
+    localStorage.removeItem(KEY_THREAD);
+    openChat(p.e164, "");
+    addMsg("ai", "Assalamualaikum 🙂 Boleh saya bantu? (Contoh: “916 berapa”, “nak lock live”)");
+    refreshFlowSnapshot().catch(()=>{});
+  };
+
+  // ✅ attachment preview handlers
+  function clearPendingFile(){
+    pendingFile = null;
+    fileInput.value = "";
+    filePreview.style.display = "none";
+    fileThumbWrap.style.display = "none";
+    try{ fileThumb.src = ""; }catch{}
+  }
+
+  btnRemoveFile.onclick = clearPendingFile;
+
+  fileInput.addEventListener("change", () => {
+    const f = fileInput.files && fileInput.files[0] ? fileInput.files[0] : null;
+    if (!f){ clearPendingFile(); return; }
+
+    // allow only image/pdf
+    const okImg = /^image\//i.test(f.type);
+    const okPdf = (f.type === "application/pdf");
+    if (!okImg && !okPdf){
+      alert("Fail tak disokong. Sila pilih gambar atau PDF.");
+      clearPendingFile();
+      return;
+    }
+
+    pendingFile = f;
+
+    fileNameEl.textContent = f.name || "fail";
+    fileTypeEl.textContent = f.type ? ("(" + f.type + ")") : "";
+    filePreview.style.display = "block";
+
+    if (okImg){
+      fileThumbWrap.style.display = "block";
+      const url = URL.createObjectURL(f);
+      fileThumb.src = url;
+    } else {
+      fileThumbWrap.style.display = "none";
+    }
+  });
+
+  function safeName(name){
+    const n = String(name||"file").trim();
+    return n
+      .replace(/[^\w.\-]+/g, "_")
+      .replace(/_+/g, "_")
+      .slice(0, 120);
+  }
+
+  // ✅ upload to Supabase Storage (bucket: chat-media)
+  async function uploadAttachment(phoneE164, threadId, file){
+    const sb = window.sb; // from auth.js
+    if (!sb || !sb.storage) throw new Error("Supabase client (sb) belum sedia.");
+
+    const bucket = "chat-media"; // ✅ pastikan bucket ini wujud & public
+    const tid = threadId || "new";
+    const ts = Date.now();
+    const path = `chat/${phoneE164}/${tid}/${ts}_${safeName(file.name)}`;
+
+    const up = await sb.storage.from(bucket).upload(path, file, {
+      contentType: file.type || "application/octet-stream",
+      upsert: false
+    });
+
+    if (up.error) throw up.error;
+
+    const pub = sb.storage.from(bucket).getPublicUrl(path);
+    const url = pub?.data?.publicUrl || "";
+
+    if (!url) throw new Error("Gagal dapat public URL (bucket kena public).");
+
+    return {
+      url,
+      mime: file.type || "",
+      name: file.name || ""
+    };
+  }
+
+  async function sendMsg(){
+    const rawPhone = localStorage.getItem(KEY_PHONE) || "";
+    const threadId = localStorage.getItem(KEY_THREAD) || "";
+    const message = String(txt.value||"").trim();
+
+    // allow send if message OR attachment exists
+    if (!message && !pendingFile) return;
+
+    txt.value = "";
+    hideRegisterCTA();
+
+    // show in UI (optimistic)
+    let optimisticAttachment = null;
+
+    if (pendingFile) {
+      const blobUrl = URL.createObjectURL(pendingFile); // ✅ bagi URL sementara untuk preview
+      optimisticAttachment = { url: blobUrl, mime: pendingFile.type, name: pendingFile.name };
+    }
+
+    const optimisticWrap = addMsg(
+      "me",
+      message || "(lampiran)",
+      null,
+      optimisticAttachment
+    );
+    setStatus("Sedang proses…");
+
+    let attachment = null;
+
+    try{
+      // upload first if any
+      if (pendingFile){
+        setStatus("Upload fail…");
+        const phone = rawPhone;
+        attachment = await uploadAttachment(phone, threadId, pendingFile);
+        clearPendingFile();
+      }
+
+      // ✅ update bubble optimistic supaya guna public URL (bukan blob)
+      try {
+        if (optimisticWrap && attachment && attachment.url) {
+
+          // update thumbnail img (kalau image)
+          const img = optimisticWrap.querySelector("img.attach-thumb");
+          if (img && /^image\//i.test(attachment.mime || "")) {
+            img.src = attachment.url;
+            try { URL.revokeObjectURL(optimisticAttachment.url); } catch(e) {}
+          }
+
+          // update link thumbnail (a[data-kind="thumb"])
+          const aThumb = optimisticWrap.querySelector('a[data-kind="thumb"]');
+          if (aThumb) aThumb.href = attachment.url;
+
+          // update file link text (a[data-kind="file"])
+          const aFile = optimisticWrap.querySelector('a[data-kind="file"]');
+          if (aFile) {
+            aFile.href = attachment.url;
+            aFile.textContent = attachment.name
+              ? ("Buka fail: " + attachment.name)
+              : "Buka fail";
+          }
+        }
+      } catch(e) {}
+
+      setStatus("Sedang proses…");
+
+      const payload = {
+        phone: rawPhone,
+        thread_id: threadId || null,
+        message: message || "",
+        attachment: attachment, // ✅ new
+        is_logged_in: isLoggedIn()
+      };
+
+      const r = await fetch("/.netlify/functions/chat-send", {
+        method:"POST",
+        headers:{ "Content-Type":"application/json" },
+        body: JSON.stringify(payload)
+      });
+
+      const j = await r.json().catch(()=>({}));
+      if(!r.ok || j.ok !== true){
+        setStatus("Ralat: " + (j.error || ("HTTP " + r.status)));
+        addMsg("ai", "Maaf, ada ralat sekejap. Cuba lagi ya.");
+        return;
+      }
+
+      if (j.thread_id){
+        localStorage.setItem(KEY_THREAD, j.thread_id);
+        lblThread.textContent = j.thread_id;
+      }
+
+      // AI reply
+      addMsg("ai", j.reply || "OK.");
+
+      // ✅ refresh flow banner (supaya step/total sentiasa betul)
+      refreshFlowSnapshot().catch(()=>{});
+
+      if (j.action === "require_login"){
+        const phone = localStorage.getItem(KEY_PHONE) || rawPhone;
+        const th = localStorage.getItem(KEY_THREAD) || j.thread_id || "";
+        showRegisterCTA(phone, th);
+      }
+
+      setStatus("");
+
+    }catch(e){
+      setStatus("Ralat: " + (e.message||e));
+      addMsg("ai", "Maaf, connection bermasalah. Cuba lagi ya.");
+    }
+  }
+
+  btnSend.onclick = sendMsg;
+  txt.addEventListener("keydown", (e)=>{
+    if(e.key==="Enter") sendMsg();
+  });
+
+  // auto open jika ada dalam storage (atau balik dari login dengan params)
+const st = loadFromUrlOrStorage();
+
+if (st.phone){
+  openChat(st.phone, st.thread);
+
+  addMsg("ai", "Assalamualaikum 🙂 Boleh saya bantu? (Contoh: “916 berapa”, “nak lock live”)");
+
+  refreshFlowSnapshot().catch(()=>{});
+
+  // ✅ AUTO REFRESH setiap 15 saat (start sekali sahaja)
+  if (!window.__ea_flow_interval_started) {
+    window.__ea_flow_interval_started = true;
+    setInterval(() => {
+      refreshFlowSnapshot().catch(()=>{});
+    }, 15000);
+  }
+
+} else {
+
+  // cuba auto-fill jika user dah login
+  const u = getAuthUser();
+  if (u && u.phone){
+    const p = normalizePhone(u.phone);
+    if (p.ok){
+      localStorage.setItem(KEY_PHONE, p.e164);
+      openChat(p.e164, "");
+
+      addMsg("ai", "Assalamualaikum 🙂 Boleh saya bantu? (Contoh: “916 berapa”, “nak lock live”)");
+
+      refreshFlowSnapshot().catch(()=>{});
+
+      // ✅ AUTO REFRESH setiap 15 saat (start sekali sahaja)
+      if (!window.__ea_flow_interval_started) {
+        window.__ea_flow_interval_started = true;
+        setInterval(() => {
+          refreshFlowSnapshot().catch(()=>{});
+        }, 15000);
+      }
+    }
+  }
+
+}
+})();
+</script>
+</body>
+</html>

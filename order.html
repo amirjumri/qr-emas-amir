@@ -1,0 +1,483 @@
+<!doctype html>
+<html lang="ms">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Checkout – Emas Amir</title>
+<style>
+  :root{--red:#c81e1e}
+  body{font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;margin:0;background:#fafafa}
+  .wrap{max-width:720px;margin:16px auto;padding:16px}
+  .card{background:#fff;border:1px solid #eee;border-radius:12px;position:relative;padding:18px;padding-top:96px}
+  h1{font-size:22px;margin:0 0 12px}
+  h2{font-size:18px;margin:16px 0 10px}
+  label{display:block;margin:8px 0 6px;font-weight:600}
+  input,select,textarea{width:100%;padding:12px;border:1px solid #ddd;border-radius:10px;font-size:16px}
+  .row{display:flex;gap:12px;flex-wrap:wrap}
+  .row>div{flex:1;min-width:220px}
+  .muted{color:#777;font-size:13px}
+  .ok{color:#0b7a0b;font-weight:700}
+  .err{color:#b91c1c;font-weight:700}
+  .btn{padding:12px 16px;border-radius:10px;border:0;background:var(--red);color:#fff;font-weight:700;cursor:pointer}
+  .btn-outline{padding:10px 14px;border-radius:10px;border:1px solid #ddd;background:#fff;font-weight:700;cursor:pointer}
+  .section{border-top:1px dashed #eee;margin-top:16px;padding-top:12px}
+  .disabled{opacity:.55;pointer-events:none}
+  .badge{display:inline-block;background:#f3f4f6;border:1px solid #e5e7eb;border-radius:999px;padding:4px 10px;font-size:12px}
+  .topright{position:absolute;right:18px;top:12px;background:#f3f4f6;border:1px solid #e5e7eb;border-radius:999px;padding:4px 10px;font-size:13px;line-height:1.2;max-width:55ch;text-align:right;word-break:break-word}
+  .topright .link{color:#111;text-decoration:underline;cursor:pointer}
+  .actions{position:absolute;right:18px;top:58px}
+  .actions #btnAccount{padding:8px 12px;font-size:13px}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="card">
+    <div class="topright" id="loginArea"></div>
+    <div class="actions"><button id="btnAccount" class="btn-outline" type="button">👤 Akaun</button></div>
+
+    <h1>Checkout – Emas Amir</h1>
+    <div id="meta" class="muted"></div>
+
+    <!-- 1) Produk -->
+    <h2>1) Butiran Produk</h2>
+    <div class="row">
+      <div>
+        <label>Produk</label>
+        <input id="name" readonly>
+        <div class="muted">SKU: <span id="sku" class="badge"></span></div>
+      </div>
+      <div>
+        <label>Harga (RM)</label>
+        <input id="price" type="number" step="0.01" readonly>
+      </div>
+    </div>
+
+    <div class="row">
+      <div>
+        <label>Upah/Pos (RM)</label>
+        <input id="fee" type="number" step="0.01" readonly>
+      </div>
+      <div>
+        <label>Jumlah (RM)</label>
+        <input id="total" type="number" step="0.01" readonly>
+      </div>
+    </div>
+
+    <!-- 2) Pengesahan nombor -->
+    <div id="otpGate" class="section">
+      <h2>2) Pengesahan Nombor Telefon</h2>
+      <div class="row">
+        <div>
+          <label>4 Digit Terakhir (dari Live)</label>
+          <input id="last4_mask" value="xxxx" readonly>
+          <input id="last4_real" type="hidden">
+          <div class="muted">Untuk keselamatan, kod sebenar disembunyikan.</div>
+        </div>
+        <div>
+          <label>Nombor Telefon Penuh</label>
+          <input id="phone" inputmode="numeric" placeholder="01XXXXXXXX">
+        </div>
+      </div>
+      <button id="verify" class="btn" type="button">Sahkan Nombor</button>
+      <div id="last4_status" class="muted">Masukkan nombor penuh, kemudian tekan <b>Sahkan Nombor</b>.</div>
+    </div>
+
+    <!-- 2A) OTP WhatsApp -->
+    <div id="otpSection" class="section" style="display:none">
+      <h2>2A) OTP WhatsApp</h2>
+      <p class="muted">Tekan <b>Minta OTP</b> → WhatsApp (app/web) dibuka → hantar mesej pra-isi. Kemudian masukkan kod OTP di bawah.</p>
+      <div class="row" style="align-items:end">
+        <div><button id="sendOtp" class="btn" type="button">Minta OTP (WhatsApp)</button></div>
+        <div>
+          <label>Kod OTP (6 digit)</label>
+          <input id="otpInput" inputmode="numeric" maxlength="6" placeholder="••••••">
+          <button id="verifyOtp" class="btn-outline" type="button" style="margin-top:8px">Sahkan OTP</button>
+        </div>
+      </div>
+      <div id="otpStatus" class="muted">OTP belum dihantar.</div>
+    </div>
+
+    <!-- 3) Pilihan (aktif selepas OTP sah / login) -->
+    <div id="afterVerify" class="section disabled">
+      <h2>3) Pilihan & Penghantaran</h2>
+
+      <div class="row">
+        <div>
+          <label>No. Kad Pengenalan (IC)</label>
+          <input id="ic" placeholder="cth: 900101011234">
+          <div class="muted">Format 12 digit (dengan/tanpa sengkang).</div>
+        </div>
+        <div>
+          <label>Potong</label>
+          <select id="potong">
+            <option value="Tidak">Tidak</option>
+            <option value="Ya">Ya</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="row">
+        <div>
+          <label>Penghantaran</label>
+          <select id="shipping">
+            <option value="Pickup">Pickup</option>
+            <option value="Pos">Pos</option>
+          </select>
+        </div>
+      </div>
+
+      <div id="alamat_wrap" style="display:none">
+        <label>Alamat Penghantaran</label>
+        <textarea id="alamat" rows="3" placeholder="Nama, alamat penuh, poskod, bandar, negeri"></textarea>
+      </div>
+
+      <div class="row" style="margin-top:10px">
+        <div><button id="whatsapp" class="btn-outline" type="button">WhatsApp Admin</button></div>
+      </div>
+      <p class="muted">Dengan menghantar ke WhatsApp, anda bersetuju dengan Terma & Syarat Emas Amir.</p>
+      <p id="lockMsg" class="err" style="display:none">Link/QR ini telah digunakan dan tidak boleh dihantar lagi.</p>
+      <p id="saveStatus" class="muted"></p>
+    </div>
+  </div>
+</div>
+
+<!-- 1) Supabase (CDN) -->
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+<!-- 2) Stubs guard (kalau auth.js belum load) -->
+<script>
+if (typeof window.auth_get       !== 'function') window.auth_get        = () => ({});
+if (typeof window.auth_set       !== 'function') window.auth_set        = () => {};
+if (typeof window.auth_clear     !== 'function') window.auth_clear      = () => {};
+if (typeof window.is_logged_in   !== 'function') window.is_logged_in    = () => false;
+if (typeof window.used_refs_has  !== 'function') window.used_refs_has   = () => false;
+if (typeof window.used_refs_add  !== 'function') window.used_refs_add   = () => {};
+if (typeof window.onlyDigits     !== 'function') window.onlyDigits      = s => (s||"").replace(/\D+/g,"");
+</script>
+
+<!-- 3) auth helpers -->
+<script src="auth.js?v=13.1"></script>
+
+<script>
+/* ====== SETTING ====== */
+const ADMIN_PHONE   = "60168055916";
+const BANK_NAME     = "Maybank";
+const BANK_ACC_NAME = "Emas Amir Sdn Bhd";
+const BANK_ACC_NO   = "552031155695";
+const BANK_QR_URL   = "https://lucky-cactus-75dad5.netlify.app/maybank-qr.png";
+
+/* Supabase client: guna window.sb kalau ada (dari auth.js) */
+const SB_URL = "https://dduizetstqqjrpsezbpi.supabase.co";
+const SB_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRkdWl6ZXRzdHFxanJwc2V6YnBpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTg3MzI0ODQsImV4cCI6MjA3NDMwODQ4NH0.CrlHXrmHtKgR9qc2192U6quRb5lpFEeOSgwG0Lb8KRM";
+const sb = window.sb || (window.supabase && window.supabase.createClient ? window.supabase.createClient(SB_URL, SB_KEY) : null);
+
+/* ====== Helpers ====== */
+const $ = (id) => document.getElementById(id);
+const params = new URLSearchParams(location.search);
+const money  = n => (Math.round((+n + Number.EPSILON)*100)/100).toFixed(2);
+const genOTP = () => Math.floor(100000 + Math.random()*900000).toString();
+const digits = s => String(s||"").replace(/\D+/g,"");
+
+/* Prefill dari query */
+const produk = params.get("produk") ?? params.get("name") ?? "";
+const harga  = params.get("harga")  ?? params.get("price") ?? "0";
+const upah   = params.get("upah")   ?? params.get("fee")   ?? "0";
+const jumlah = params.get("jumlah");
+const sku    = params.get("sku")    ?? "";
+const refRaw = params.get("ref")    ?? (Date.now()+"-"+Math.random().toString(36).slice(2,8).toUpperCase());
+let last4    = params.get("last4") || "";
+if (!last4 && /^EA-\d{8}-\d{4}$/.test(refRaw)) last4 = refRaw.slice(-4);
+
+const data = {
+  sku,
+  name:  produk,
+  price: parseFloat(harga || "0"),
+  fee:   parseFloat(upah  || "0"),
+  total: (jumlah!==null && jumlah!=="") ? parseFloat(jumlah) : (parseFloat(harga||"0")+parseFloat(upah||"0")),
+  last4,
+  ref: refRaw
+};
+
+/* Isi UI awal */
+$("sku").textContent = data.sku || "-";
+$("name").value = data.name || "";
+$("price").value= money(data.price);
+$("fee").value  = money(data.fee);
+$("total").value= money(data.total);
+$("meta").textContent = `Rujukan: ${data.ref}`;
+$("last4_real").value = data.last4 || "";
+$("shipping").addEventListener("change", ()=>{
+  $("alamat_wrap").style.display = $("shipping").value==="Pos" ? "block" : "none";
+});
+
+/* Login ringkas + prefill */
+function renderLogin(){
+  const area = $("loginArea");
+  if (window.is_logged_in && window.is_logged_in()) {
+    const a = window.auth_get ? window.auth_get() : {};
+    area.innerHTML = `Log masuk sebagai <b>${a.name || a.phone}</b> · <span class="link" id="logout">Log keluar</span>`;
+    const btn = $("logout");
+    if (btn) btn.onclick = () => { window.auth_clear && window.auth_clear(); location.reload(); };
+
+    // Skip OTP & prefill
+    $("otpGate").style.display = "none";
+    setAfterVerifyEnabled(true);
+    if (a.phone) $("phone").value = a.phone;
+    if (a.ic)    $("ic").value    = a.ic;
+    if (a.alamat){
+      $("alamat").value = a.alamat;
+      $("shipping").value = "Pos";
+      $("alamat_wrap").style.display = "block";
+    }
+  } else {
+    const next = encodeURIComponent(location.href);
+    area.innerHTML = `<a class="link" href="login.html?next=${next}#login">Log masuk</a>`;
+  }
+}
+renderLogin();
+
+/* Akaun: pergi login kalau belum login */
+document.getElementById('btnAccount').addEventListener('click', function(){
+  const next = encodeURIComponent(location.href);
+  if (window.is_logged_in && window.is_logged_in()) {
+    location.href = 'account.html?next=' + next;
+  } else {
+    location.href = 'login.html?next=' + next + '#login';
+  }
+});
+
+/* Enable/disable Section 3 */
+function setAfterVerifyEnabled(enabled){
+  $("afterVerify").classList.toggle("disabled", !enabled);
+  [...$("afterVerify").querySelectorAll("input,select,textarea,button")]
+    .forEach(el=> el.disabled = !enabled);
+}
+setAfterVerifyEnabled(false);
+
+/* Skip OTP bila dah login */
+if(window.is_logged_in && window.is_logged_in()){
+  $("otpGate").style.display = "none";
+  setAfterVerifyEnabled(true);
+  const a = window.auth_get();
+  if(a.phone) $("phone").value = a.phone;
+  if(a.ic)    $("ic").value    = a.ic;
+  if(a.alamat){ $("alamat").value = a.alamat; $("shipping").value="Pos"; $("alamat_wrap").style.display="block"; }
+}
+
+/* Lock rujukan (client-side) */
+if(window.used_refs_has && window.used_refs_has(data.ref)){
+  $("lockMsg").style.display = "block";
+  setAfterVerifyEnabled(false);
+}
+
+/* ====== 2) Verify 4 digit ====== */
+$("verify").onclick = ()=>{
+  const p = digits($("phone").value);
+  const last4Real = $("last4_real").value.trim();
+  if(!/^\d{9,12}$/.test(p)){
+    $("last4_status").textContent="Nombor telefon penuh tidak sah."; $("last4_status").className="err"; hideOtp(); return;
+  }
+  if(last4Real && p.slice(-4) !== last4Real){
+    $("last4_status").textContent = `❌ 4 digit terakhir tidak padan.`; $("last4_status").className = "err"; hideOtp(); return;
+  }
+  $("last4_status").textContent = "✅ 4 digit disahkan. Sila teruskan OTP."; $("last4_status").className = "ok";
+  $("otpSection").style.display = "block";
+};
+function hideOtp(){ $("otpSection").style.display = "none"; $("otpStatus").textContent = "OTP belum dihantar."; window._otp = null; setAfterVerifyEnabled(false); }
+
+/* ====== 2A) OTP via WhatsApp (universal: app/desktop/web) ====== */
+$("sendOtp").onclick = ()=>{
+  const p = digits($("phone").value);
+  if(!/^\d{9,12}$/.test(p)){ alert("Isi nombor telefon penuh yang sah dahulu."); return; }
+  const otp = genOTP(); window._otp = otp; window._otp_ts = Date.now();
+
+  const msg = `OTP Emas Amir
+Ref: ${data.ref}
+Telefon Pelanggan: ${p}
+Kod OTP: ${otp}
+
+(Tekan Send untuk sahkan tempahan)`;
+
+  $("otpStatus").textContent = "OTP dijana. WhatsApp akan dibuka—tekan Send.";
+  // sentiasa buka ke wa.me → akan pilih App / WhatsApp Web ikut peranti
+  window.open("https://wa.me/"+ADMIN_PHONE+"?text="+encodeURIComponent(msg), "_blank");
+};
+
+$("verifyOtp").onclick = ()=>{
+  const code = digits($("otpInput").value);
+  if(!/^\d{6}$/.test(code)){ $("otpStatus").textContent="Masukkan OTP 6 digit."; $("otpStatus").className="err"; return; }
+  if(window._otp_ts && Date.now() - window._otp_ts > 5*60*1000){
+    $("otpStatus").textContent="OTP tamat tempoh. Sila minta OTP semula."; $("otpStatus").className="err"; return;
+  }
+  if(code === window._otp){
+    $("otpStatus").textContent="✅ OTP disahkan."; $("otpStatus").className="ok"; setAfterVerifyEnabled(true);
+  }else{
+    $("otpStatus").textContent="❌ OTP salah."; $("otpStatus").className="err"; setAfterVerifyEnabled(false);
+  }
+};
+
+/* Validasi IC */
+function validateIC(raw){ const d = digits(raw); return /^\d{12}$/.test(d) ? d : ""; }
+
+/* ====== Simpan ke Supabase ====== */
+async function save_to_supabase(payload){
+  if(!sb) return { ok:false, err:"Supabase tak dikonfigurasi" };
+
+  try{
+    // 1) Cuba RPC create_order (server akan jana ref baru)
+    const { data, error } = await sb.rpc('create_order', {
+      in_phone:        payload.phone,
+      in_sku:          payload.sku,
+      in_product_name: payload.product_name,
+      in_price:        payload.price,
+      in_fee:          payload.fee,
+      in_total:        payload.total,
+      in_name:         payload.name || '',
+      in_ic:           payload.ic || '',
+      in_alamat:       payload.alamat || '',
+      in_shipping:     payload.shipping || '',
+      in_potong:       payload.potong || ''
+    });
+
+    if (error) throw error;
+
+    const row = Array.isArray(data) ? data[0] : data; // { id, ref }
+    return { ok:true, id: row?.id, ref: row?.ref };
+
+  } catch (rpcErr){
+    // 2) Fallback manual jika RPC tak ada / gagal
+    try{
+      const up = await sb.rpc('upsert_customer', {
+        in_name:   payload.name || '',
+        in_phone:  payload.phone,
+        in_ic:     payload.ic || '',
+        in_alamat: payload.alamat || ''
+      });
+      if(up.error) return { ok:false, err: up.error.message };
+      const customer_id = Array.isArray(up.data) ? up.data[0] : up.data;
+
+      const ins = await sb.from('orders').insert([{
+        ref: payload.ref,               // fallback: kekalkan ref sedia ada dalam data.ref
+        sku: payload.sku,
+        product_name: payload.product_name,
+        price: payload.price,
+        fee: payload.fee,
+        total: payload.total,
+        customer_id,
+        shipping: payload.shipping,
+        alamat: payload.alamat || null,
+        potong: payload.potong || null
+      }]).select('id, ref').single();
+
+      if(ins.error) return { ok:false, err: ins.error.message };
+      return { ok:true, id: ins.data.id, ref: ins.data.ref };
+
+    }catch(e){
+      return { ok:false, err:String(e) };
+    }
+  }
+}
+
+/* ====== WhatsApp Admin ====== */
+$("whatsapp").onclick = async ()=>{
+  if($("afterVerify").classList.contains("disabled")){ alert("Sahkan nombor/OTP atau log masuk dahulu."); return; }
+  if(window.used_refs_has && window.used_refs_has(data.ref)){ alert("Link ini telah digunakan."); return; }
+
+  const p  = digits($("phone").value);
+  const ic = validateIC($("ic").value);
+  if(!ic){ alert("Sila isi No. Kad Pengenalan (12 digit)."); return; }
+  if($("shipping").value==="Pos" && !$("alamat").value.trim()){ alert("Sila isi alamat penghantaran."); return; }
+
+  // simpan profile untuk sesi akan datang
+  window.auth_set && window.auth_set({
+    phone:p, ic,
+    alamat: $("shipping").value==="Pos" ? $("alamat").value : ""
+  });
+
+ // ambil profil jika sudah login
+const prof = (window.auth_get && window.auth_get()) || {};
+
+const payload = {
+  // ref: JANGAN hantar (server jana)
+  sku: data.sku,
+
+  // ========== PRODUK ==========
+  product_name: $("name").value,   // ✅ buang simbol #
+  price: parseFloat($("price").value),
+  fee:   parseFloat($("fee").value),
+  total: parseFloat($("total").value),
+
+  // ========== PELANGGAN ==========
+  name:   prof.name || "",
+  phone:  p,
+  ic:     ic,
+  alamat: $("shipping").value === "Pos" ? $("alamat").value : "",
+  shipping: $("shipping").value,
+  potong:   $("potong").value
+};
+
+  // ===== Simpan ke DB =====
+  $("saveStatus").textContent = "Menyimpan tempahan…";
+const res = await save_to_supabase(payload);
+
+if (res.ok) {
+  if (res.ref) {
+    data.ref = res.ref;                       // pakai ref dari server
+    $("meta").textContent = `Rujukan: ${data.ref}`;
+  }
+  $("saveStatus").textContent = "Tempahan disimpan. Membuka WhatsApp…";
+  if (window.used_refs_add) window.used_refs_add(data.ref);
+  localStorage.setItem('ea_last_ref', data.ref);
+} else {
+  console.error("Simpan order gagal:", res.err);
+  $("saveStatus").textContent = "⚠️ Gagal simpan ke sistem: " + res.err;
+  // masih teruskan WhatsApp supaya jualan tak tersekat
+}
+
+const ADMIN_CONFIRM_URL = "https://emasamir.app/order-confirm.html";
+
+const msg = `Order Baru (Ref: ${data.ref})
+SKU: ${data.sku}
+Produk: ${$("name").value}
+Harga: RM ${$("price").value}
+Upah/Pos: RM ${$("fee").value}
+Jumlah: RM ${$("total").value}
+
+4 Digit Terakhir: ${$("last4_real").value || "—"}
+Telefon: ${p}
+IC (e-Invoice): ${ic}
+
+Potong: ${$("potong").value}
+Penghantaran: ${$("shipping").value}
+Alamat: ${$("shipping").value==="Pos" ? $("alamat").value : "-"}
+
+----------------------------------
+Pembayaran boleh dibuat ke:
+
+🏦 ${BANK_NAME}
+Nama Akaun: ${BANK_ACC_NAME}
+No Akaun: ${BANK_ACC_NO}
+
+🛠 Admin Sahkan / Batal:
+${ADMIN_CONFIRM_URL}?ref=${encodeURIComponent(data.ref)}
+
+📸 QR Maybank: ${BANK_QR_URL}`;
+
+
+// Buka WhatsApp — guna redirect untuk elak popup block
+location.href = "https://wa.me/" + ADMIN_PHONE + "?text=" + encodeURIComponent(msg);
+};
+
+/* Redirect ke thankyou bila user kembali dari WhatsApp */
+document.addEventListener('visibilitychange', () => {
+  if (document.visibilityState === 'visible') {
+    const lastRef = localStorage.getItem('ea_last_ref');
+    if (lastRef) {
+      localStorage.removeItem('ea_last_ref');
+      location.href = `thankyou.html?ref=${encodeURIComponent(lastRef)}`;
+    }
+  }
+});
+</script>
+</body>
+</html>

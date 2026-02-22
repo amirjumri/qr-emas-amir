@@ -1,0 +1,697 @@
+<!doctype html>
+<html lang="ms">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Admin • Senarai Agen — Emas Amir</title>
+
+  <!-- Libs -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+
+  <style>
+    body{background:#fff}
+    .container-narrow{max-width:1100px}
+    .auth-pill{
+      border:1px solid #e5e7eb;
+      border-radius:999px;
+      padding:.2rem .6rem;
+      background:#fafafa;
+      color:#555;
+      font-size:13px;
+    }
+    .btn-chip{
+      border-radius:999px;
+      font-size:13px;
+      padding:.25rem .7rem;
+    }
+    .page-title{
+      font-weight:700;
+      font-size:22px;
+    }
+    .nav-pills .nav-link{
+      border-radius:999px;
+      padding:.25rem .9rem;
+      font-size:13px;
+    }
+    .nav-pills .nav-link.active{
+      background:#111827;
+    }
+    .status-badge{
+      font-size:11px;
+      border-radius:999px;
+      padding:.15rem .45rem;
+    }
+  </style>
+</head>
+<body>
+<div class="container container-narrow py-3">
+
+  <!-- TOP BAR -->
+  <div class="d-flex justify-content-between align-items-center mb-3">
+    <div class="auth-pill small">
+      <span class="me-1 badge text-bg-dark">Admin</span>
+      <span id="authStatus">Memuatkan…</span>
+    </div>
+    <div class="d-flex flex-wrap gap-2">
+      <a class="btn btn-outline-secondary btn-chip" href="index.html">Halaman Utama</a>
+      <a class="btn btn-outline-secondary btn-chip" href="tabung.html">Tabung</a>
+      <a class="btn btn-outline-secondary btn-chip" href="goldbar-coin.html">GoldBar/Coin</a>
+      <a class="btn btn-outline-secondary btn-chip" href="j916.html">Barang Kemas 916</a>
+      <a class="btn btn-outline-secondary btn-chip" href="account.html">Akaun Pelanggan</a>
+      <button id="btnKomisen" class="btn btn-outline-secondary btn-chip" type="button">
+        Komisen Agen
+      </button>
+      <button id="btnLogout" class="btn btn-outline-secondary btn-chip" type="button">Log keluar</button>
+    </div>
+  </div>
+
+  <!-- HEADER -->
+  <div class="d-flex justify-content-between align-items-end mb-1">
+    <div>
+      <div class="page-title">Senarai Agen Emas Amir</div>
+      <div class="small text-muted">
+        Urus permohonan, kod agen dan link unik.
+      </div>
+    </div>
+  </div>
+
+  <!-- TAB FILTER -->
+  <div class="mt-3 mb-3">
+    <ul class="nav nav-pills small">
+      <li class="nav-item">
+        <button class="nav-link active" id="btnFilterAll" type="button">Semua</button>
+      </li>
+      <li class="nav-item">
+        <button class="nav-link" id="btnFilterPending" type="button">Menunggu Kelulusan</button>
+      </li>
+      <li class="nav-item">
+        <button class="nav-link" id="btnFilterActive" type="button">Agen Aktif</button>
+      </li>
+      <li class="nav-item">
+        <button class="nav-link" id="btnFilterSusp" type="button">Digantung</button>
+      </li>
+    </ul>
+  </div>
+
+  <!-- NOTIS / ERROR -->
+  <div id="noticeBox"></div>
+
+  <!-- TABLE -->
+  <div class="table-responsive">
+    <table class="table table-sm align-middle">
+      <thead class="table-light">
+        <tr>
+          <th style="width:150px">Tarikh Daftar</th>
+          <th>Nama</th>
+          <th style="width:140px">Telefon</th>
+          <th style="width:110px">Kod Agen</th>
+          <th>Slug / Link</th>
+          <th style="width:110px">Status</th>
+          <th style="width:200px" class="text-end">Tindakan</th>
+        </tr>
+      </thead>
+      <tbody id="agentBody">
+        <tr>
+          <td colspan="7" class="text-muted">Memuatkan…</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="small text-muted mt-2">
+    * Bayaran sebenar komisen akan dibuat secara manual oleh admin.  
+    * Link agen guna parameter <code>?ref=SLUG</code> (contoh: <code>https://emasamir.app/?ref=ag-mariam</code>).
+  </div>
+
+</div>
+
+<!-- MODAL: DETAIL AGEN + PELANGGAN -->
+<div class="modal fade" id="agentDetailModal" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-lg modal-dialog-scrollable">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="agentDetailTitle">Maklumat Agen</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Tutup"></button>
+      </div>
+      <div class="modal-body">
+        <div id="agentSummary" class="small text-muted mb-3">
+          Memuatkan…
+        </div>
+        <div class="table-responsive">
+          <table class="table table-sm align-middle">
+            <thead class="table-light">
+              <tr>
+                <th style="width:150px">Tarikh Daftar</th>
+                <th>Pelanggan</th>
+                <th class="text-end">Jumlah Gram 916</th>
+                <th class="text-end">Jumlah Belian 916 (RM)</th>
+              </tr>
+            </thead>
+            <tbody id="agentCustBody">
+              <tr>
+                <td colspan="4" class="text-muted">Memuatkan…</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+      <div class="modal-footer justify-content-between">
+        <small class="text-muted">
+          Ringkasan jualan & gram ikut fungsi SQL <code>agent_dashboard_summary_v1</code>.
+        </small>
+        <button type="button" class="btn btn-light" data-bs-dismiss="modal">Tutup</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- LIBS -->
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="auth.js?v=13.1"></script>
+<script src="admin-guard.js?v=1"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+
+<script>
+/* ==================== Konfigurasi ==================== */
+const SB_URL = "https://dduizetstqqjrpsezbpi.supabase.co";
+const SB_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRkdWl6ZXRzdHFxanJwc2V6YnBpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTg3MzI0ODQsImV4cCI6MjA3NDMwODQ4NH0.CrlHXrmHtKgR9qc2192U6quRb5lpFEeOSgwG0Lb8KRM";
+
+window.sb = window.sb || window.supabase.createClient(SB_URL, SB_KEY);
+const sb = window.sb;
+
+const $  = id => document.getElementById(id);
+
+let currentFilter = "ALL";   // ALL | PENDING | ACTIVE | SUSPENDED
+
+const AGENT_FEE = 399; // yuran agen (untuk teks resit / WhatsApp)
+
+// OnSend
+const ONSEND_BASE  = "https://onsend.io/api/v1";
+const ONSEND_TOKEN = "4b879470cc16ca8f06c5ab9878a4578880cfd0fd7b7cfe0121499f3ab017dd04";
+
+function toMsisdn(p){
+  const d = String(p || "").replace(/\D+/g, "");
+  if (!d) return "";
+  if (d.startsWith("6")) return d;
+  return "6" + d;
+}
+
+async function sendWA(msisdn, text){
+  const phone_number = toMsisdn(msisdn);
+  if (!phone_number) return false;
+  try{
+    const r = await fetch(ONSEND_BASE + "/send", {
+      method: "POST",
+      headers: {
+        "Accept": "application/json",
+        "Content-Type": "application/json",
+        "Authorization": "Bearer " + ONSEND_TOKEN
+      },
+      body: JSON.stringify({
+        phone_number,
+        message: text,
+        type: "text"
+      })
+    });
+    const j = await r.json().catch(()=>({}));
+    console.log("[OnSend admin-agen]", r.status, j);
+    return r.ok && (j.success === true || r.status === 200);
+  }catch(e){
+    console.warn("[OnSend admin-agen] error:", e);
+    return false;
+  }
+}
+
+/* ==================== Auth ringkas (top bar) ==================== */
+(function initAuth(){
+  const statusEl = $("authStatus");
+  const btnLogout = $("btnLogout");
+  try{
+    const a = (window.auth_get && window.auth_get()) || null;
+    if (a){
+      statusEl.textContent = "Log masuk sebagai " + (a.name || a.phone || "admin");
+      btnLogout.onclick = ()=>{
+        window.auth_clear && window.auth_clear();
+        location.href = "login.html#login";
+      };
+    }else{
+      statusEl.textContent = "Tidak log masuk";
+      btnLogout.onclick = ()=> location.href = "login.html#login";
+    }
+  }catch(e){
+    console.warn("authStatus error:", e);
+  }
+})();
+
+/* ==================== Helper UI ==================== */
+function showNotice(html, type="danger"){
+  const box = $("noticeBox");
+  box.innerHTML = html
+    ? `<div class="alert alert-${type} py-2 px-3 mb-2 small">${html}</div>`
+    : "";
+}
+
+function renderStatusBadge(status){
+  if (status === "ACTIVE"){
+    return `<span class="status-badge bg-success text-white">Aktif</span>`;
+  }
+  if (status === "PENDING"){
+    return `<span class="status-badge bg-warning text-dark">Menunggu</span>`;
+  }
+  if (status === "SUSPENDED"){
+    return `<span class="status-badge bg-danger text-white">Digantung</span>`;
+  }
+  return `<span class="status-badge bg-secondary text-white">${status||"-"}</span>`;
+}
+
+/* ==================== WhatsApp helper ==================== */
+async function sendApprovedWA(agent){
+  if (!agent || !agent.phone) return;
+  const nama  = agent.name || "agen";
+  const kod   = agent.code || "-";
+  const now   = new Date().toLocaleString("ms-MY", { dateStyle:"medium", timeStyle:"short" });
+
+  const lines = [
+    `Assalamualaikum ${nama},`,
+    "",
+    "Permohonan anda sebagai Agen Emas Amir telah DILULUSKAN. ✅",
+    "",
+    `Tarikh lulus: ${now}`,
+    `Kod agen: ${kod}`,
+    "",
+    "Mulai sekarang anda boleh mula berniaga dan mempromosikan Emas Amir menggunakan link khas anda.",
+    "Sila buka menu “Panel Agen” dalam akaun emasamir.app untuk lihat link & QR agen.",
+    "",
+    "Terima kasih kerana bersama Emas Amir. 🙏",
+    "",
+    "– Emas Amir Sdn. Bhd."
+  ];
+
+  await sendWA(agent.phone, lines.join("\n"));
+}
+
+async function sendReceiptWA(agent){
+  if (!agent || !agent.phone) return false;
+  const nama  = agent.name || "agen";
+  const kod   = agent.code || "-";
+  const now   = new Date().toLocaleString("ms-MY", { dateStyle:"medium", timeStyle:"short" });
+
+  const lines = [
+    `Assalamualaikum ${nama},`,
+    "",
+    "Resit Yuran Pendaftaran Agen Emas Amir",
+    "----------------------------------------",
+    `Tarikh: ${now}`,
+    `Nama agen: ${nama}`,
+    `Kod agen: ${kod}`,
+    `Yuran pendaftaran agen: RM${AGENT_FEE.toFixed(2)}`,
+    "Status bayaran: DIBAYAR",
+    "",
+    "Nota penting:",
+    "• Yuran agen yang telah dibayar TIDAK akan dipulangkan (non-refundable).",
+    "• Akaun agen anda akan kekal aktif selagi mematuhi terma & syarat program agen.",
+    "",
+    "Terima kasih kerana menjadi sebahagian daripada keluarga Emas Amir. 🙏",
+    "",
+    "– Emas Amir Sdn. Bhd."
+  ];
+
+  return await sendWA(agent.phone, lines.join("\n"));
+}
+
+/* ==================== Tukar status agen ==================== */
+async function updateAgentStatus(agent, newStatus){
+  if (!agent || !agent.id || !newStatus) return;
+
+  try{
+    let rpcError = null;
+    try{
+      const { error } = await sb.rpc("agent_update_status_v1", {
+        p_agent_id: agent.id,
+        p_new_status: newStatus
+      });
+      rpcError = error || null;
+    }catch(e){
+      rpcError = e;
+    }
+
+    if (rpcError){
+      console.warn("[agent_update_status_v1] RPC gagal, fallback direct update:", rpcError);
+      const { error: upErr } = await sb
+        .from("agents")
+        .update({ status: newStatus })
+        .eq("id", agent.id);
+      if (upErr) throw upErr;
+    }
+
+    showNotice("Status agen dikemas kini.", "success");
+
+    if (newStatus === "ACTIVE"){
+      try{ await sendApprovedWA(agent); }catch(e){ console.warn("WA lulus agen gagal:", e); }
+    }
+
+    await loadAgents();
+  }catch(e){
+    console.error("updateAgentStatus error:", e);
+    showNotice("Ralat mengemas kini status agen. Sila cuba lagi.", "danger");
+  }
+}
+
+/* ==================== Load agen dari DB ==================== */
+async function loadAgents(){
+  const tbody = $("agentBody");
+  showNotice("");
+  tbody.innerHTML = `
+    <tr><td colspan="7" class="text-muted">Memuatkan…</td></tr>
+  `;
+
+  let q = sb
+    .from("agents")
+    .select("id, created_at, name, phone, code, slug, status")
+    .order("created_at", { ascending:false });
+
+  if (currentFilter === "PENDING")   q = q.eq("status","PENDING");
+  if (currentFilter === "ACTIVE")    q = q.eq("status","ACTIVE");
+  if (currentFilter === "SUSPENDED") q = q.eq("status","SUSPENDED");
+
+  const { data, error } = await q;
+
+  if (error){
+    console.error("loadAgents error:", error);
+    tbody.innerHTML = `
+      <tr>
+        <td colspan="7" class="text-danger">Ralat memuatkan agen.</td>
+      </tr>
+    `;
+    showNotice("Ralat memuatkan agen. Sila cuba refresh semula.", "danger");
+    return;
+  }
+
+  const rows = data || [];
+  if (!rows.length){
+    tbody.innerHTML = `
+      <tr>
+        <td colspan="7" class="text-muted">Tiada agen ditemui.</td>
+      </tr>
+    `;
+    return;
+  }
+
+  tbody.innerHTML = "";
+
+ rows.forEach(a=>{
+  const tr = document.createElement("tr");
+
+  const dt = a.created_at ? new Date(a.created_at) : null;
+  const dtStr = dt
+    ? dt.toLocaleString("ms-MY", { dateStyle:"medium", timeStyle:"short" })
+    : "-";
+
+  // link slug → guna ?ref=slug (untuk depan)
+  let slugHtml = "-";
+  if (a.slug){
+    const url = location.origin + "/?ref=" + encodeURIComponent(a.slug);
+    slugHtml = `<a href="${url}" target="_blank">${a.slug}</a>`;
+  }
+
+  const safeName = (a.name || "-").replace(/</g,"&lt;").replace(/>/g,"&gt;");
+
+  // 🔹 NAMA: link ke admin-agen-detail + simpan slug dalam data-*
+  let nameHtml;
+  if (a.slug) {
+    const detailUrl = `admin-agen-detail.html?slug=${encodeURIComponent(a.slug)}`;
+    nameHtml = `
+      <a href="${detailUrl}"
+         class="agent-detail text-decoration-none"
+         data-id="${a.id}"
+         data-slug="${a.slug}">
+        ${safeName}
+      </a>`;
+  } else {
+    nameHtml = safeName;
+  }
+
+  // Tentukan butang tindakan ikut status
+  let actionHtml = `<span class="small text-muted">—</span>`;
+
+  if (a.status === "PENDING") {
+    actionHtml = `
+      <button class="btn btn-sm btn-success btn-approve" data-id="${a.id}">
+        Lulus
+      </button>
+    `;
+  } else if (a.status === "ACTIVE") {
+    actionHtml = `
+      <button class="btn btn-sm btn-outline-primary btn-receipt me-1" data-id="${a.id}">
+        Resit
+      </button>
+      <button class="btn btn-sm btn-warning btn-suspend" data-id="${a.id}">
+        Gantung
+      </button>
+    `;
+  } else if (a.status === "SUSPENDED") {
+    actionHtml = `
+      <button class="btn btn-sm btn-outline-success btn-reactivate" data-id="${a.id}">
+        Aktifkan
+      </button>
+    `;
+  }
+
+  tr.innerHTML = `
+    <td>${dtStr}</td>
+    <td data-col="name">${nameHtml}</td>
+    <td data-col="phone">${a.phone || "-"}</td>
+    <td data-col="code"><code>${a.code || "-"}</code></td>
+    <td>${slugHtml}</td>
+    <td>${renderStatusBadge(a.status)}</td>
+    <td class="text-end">
+      ${actionHtml}
+    </td>
+  `;
+  tbody.appendChild(tr);
+});
+}
+
+/* ==================== Helper ambil data agen dari row ==================== */
+function getAgentFromRow(tr, id, slug){
+  if (!tr) return { id, slug };
+  const nameCell  = tr.querySelector('[data-col="name"]');
+  const phoneCell = tr.querySelector('[data-col="phone"]');
+  const codeCell  = tr.querySelector('[data-col="code"]');
+  return {
+    id,
+    slug,
+    name : (nameCell  ? nameCell.textContent  : "").trim(),
+    phone: (phoneCell ? phoneCell.textContent : "").trim(),
+    code : (codeCell  ? codeCell.textContent  : "").trim()
+  };
+}
+
+/* ==================== Buka modal detail agen (guna RPC agent_dashboard_summary_v1) ==================== */
+async function openAgentDetail(agent){
+  const modalEl   = $("agentDetailModal");
+  const titleEl   = $("agentDetailTitle");
+  const summaryEl = $("agentSummary");
+  const bodyEl    = $("agentCustBody");
+
+  // kalau modal tak ada dalam HTML, jangan crash
+  if (!modalEl || !titleEl || !summaryEl || !bodyEl){
+    console.warn("Modal detail agen belum dimasukkan dalam HTML.");
+    return;
+  }
+
+  titleEl.textContent = `Agen: ${agent.name || "-"}`;
+  summaryEl.textContent = "Memuatkan ringkasan…";
+  bodyEl.innerHTML = `<tr><td colspan="4" class="text-muted">Memuatkan…</td></tr>`;
+
+  const modal = new bootstrap.Modal(modalEl);
+  modal.show();
+
+  if (!agent.slug){
+    summaryEl.innerHTML = `
+      <div class="text-danger small">
+        Slug agen tiada. Sila semak rekod agen.
+      </div>
+    `;
+    bodyEl.innerHTML = `<tr><td colspan="4" class="text-muted">Data pelanggan belum tersedia.</td></tr>`;
+    return;
+  }
+
+  try{
+    // fungsi Tuan: agent_dashboard_summary_v1(p_slug text)
+    const { data, error } = await sb.rpc("agent_dashboard_summary_v1", {
+      p_slug: agent.slug
+    });
+
+    if (error) throw error;
+
+    const rows = Array.isArray(data) ? data : [];
+
+    let totalCust  = rows.length;
+    let totalGram  = 0;
+    let totalAmount= 0;
+
+    rows.forEach(r=>{
+      totalGram   += Number(r.total_grams_916  ?? 0);
+      totalAmount += Number(r.total_amount_916 ?? 0);
+    });
+
+    summaryEl.innerHTML = `
+      <div><strong>Kod agen:</strong> ${agent.code || "-"}</div>
+      <div><strong>Telefon:</strong> ${agent.phone || "-"}</div>
+      <div class="mt-2">
+        <strong>Ringkasan:</strong><br>
+        • Pelanggan berdaftar: <strong>${totalCust}</strong><br>
+        • Jumlah berat emas 916 terjual: <strong>${totalGram.toFixed(3)} g</strong><br>
+        • Jumlah nilai belian 916: <strong>RM ${totalAmount.toFixed(2)}</strong>
+      </div>
+    `;
+
+    if (!rows.length){
+      bodyEl.innerHTML = `<tr><td colspan="4" class="text-muted">Belum ada pelanggan berdaftar di bawah agen ini.</td></tr>`;
+    }else{
+      bodyEl.innerHTML = rows.map(r=>{
+        const d = r.registered_at
+          ? new Date(r.registered_at).toLocaleDateString("ms-MY")
+          : "-";
+        const g = Number(r.total_grams_916  ?? 0);
+        const rm= Number(r.total_amount_916 ?? 0);
+        return `
+          <tr>
+            <td>${d}</td>
+            <td>${r.customer_name || "-"}<br>
+                <span class="small text-muted">${r.customer_phone || "-"}</span>
+            </td>
+            <td class="text-end">${g.toFixed(3)}</td>
+            <td class="text-end">RM ${rm.toFixed(2)}</td>
+          </tr>
+        `;
+      }).join("");
+    }
+
+  }catch(e){
+    console.warn("agent_dashboard_summary_v1 gagal / belum siap:", e);
+    summaryEl.innerHTML = `
+      <div class="text-danger small mb-1">
+        SQL ringkasan agen belum disediakan (<code>agent_dashboard_summary_v1</code>).
+      </div>
+      <div>
+        Buat fungsi ringkasan di Supabase kemudian, atau rujuk terus jadual pelanggan & jualan.
+      </div>
+    `;
+    bodyEl.innerHTML = `<tr><td colspan="4" class="text-muted">Data pelanggan belum tersedia.</td></tr>`;
+  }
+}
+
+$("agentBody").addEventListener("click", async (ev)=>{
+  // ==========================
+  // 1) Klik nama agen → pergi ke admin-agen-detail.html?slug=...
+  // ==========================
+  const detailBtn = ev.target.closest(".agent-detail");
+  if (detailBtn){
+    ev.preventDefault(); // jangan guna default link dulu
+
+    const slug = detailBtn.dataset.slug || "";
+    if (!slug){
+      alert("Slug agen tiada pada rekod baris ini.");
+      return;
+    }
+
+    // Simpan dalam sessionStorage sebagai backup
+    try {
+      sessionStorage.setItem("agent_detail_slug", slug);
+    } catch(e) {
+      console.warn("sessionStorage gagal:", e);
+    }
+
+    // Terus buka page detail dengan slug
+    window.location.href = `admin-agen-detail.html?slug=${encodeURIComponent(slug)}`;
+    return;
+  }
+
+  // ==========================
+  // 2) Butang lain (Lulus / Gantung / Resit / Aktifkan semula)
+  // ==========================
+  const btn = ev.target.closest("button");
+  if (!btn) return;
+
+  const id = btn.dataset.id;
+  if (!id) return;
+
+  const tr = btn.closest("tr");
+  const agent = getAgentFromRow(tr, id);
+
+  if (btn.classList.contains("btn-approve")){
+    if (!confirm("Luluskan permohonan agen ini dan jadikan status AKTIF?")) return;
+    await updateAgentStatus(agent, "ACTIVE");
+    return;
+  }
+
+  if (btn.classList.contains("btn-suspend")){
+    if (!confirm("Gantung akaun agen ini?")) return;
+    await updateAgentStatus(agent, "SUSPENDED");
+    return;
+  }
+
+  if (btn.classList.contains("btn-reactivate")){
+    if (!confirm("Aktifkan semula akaun agen ini?")) return;
+    await updateAgentStatus(agent, "ACTIVE");
+    return;
+  }
+
+  if (btn.classList.contains("btn-receipt")){
+    if (!agent.phone){
+      alert("Nombor telefon agen tiada dalam rekod. Sila semak dahulu.");
+      return;
+    }
+    if (!confirm("Hantar resit yuran pendaftaran kepada agen ini melalui WhatsApp?")) return;
+
+    const ok = await sendReceiptWA(agent);
+    if (ok){
+      btn.textContent = "Resit dihantar";
+      btn.disabled = true;
+      btn.classList.remove("btn-outline-primary");
+      btn.classList.add("btn-secondary");
+      showNotice("Resit yuran agen dihantar melalui WhatsApp.", "success");
+    }else{
+      showNotice("Gagal menghantar resit melalui WhatsApp. Cuba lagi.", "danger");
+    }
+    return;
+  }
+});
+
+/* ==================== Tukar filter tab ==================== */
+function setFilter(type){
+  currentFilter = type;
+
+  const map = {
+    ALL:       "btnFilterAll",
+    PENDING:   "btnFilterPending",
+    ACTIVE:    "btnFilterActive",
+    SUSPENDED: "btnFilterSusp"
+  };
+  Object.entries(map).forEach(([key,id])=>{
+    const btn = $(id);
+    if (!btn) return;
+    btn.classList.toggle("active", key === type);
+  });
+
+  loadAgents();
+}
+
+$("btnFilterAll")?.addEventListener("click",   ()=> setFilter("ALL"));
+$("btnFilterPending")?.addEventListener("click",()=> setFilter("PENDING"));
+$("btnFilterActive")?.addEventListener("click", ()=> setFilter("ACTIVE"));
+$("btnFilterSusp")?.addEventListener("click",   ()=> setFilter("SUSPENDED"));
+
+$("btnKomisen")?.addEventListener("click", ()=>{
+  location.href = "admin-komisen.html";
+});
+
+/* ==================== Init ==================== */
+document.addEventListener("DOMContentLoaded", ()=>{
+  setFilter("ALL");
+});
+</script>
+</body>
+</html>

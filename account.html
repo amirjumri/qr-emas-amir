@@ -1,0 +1,689 @@
+<!doctype html>
+<html lang="ms">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Akaun – Emas Amir</title>
+
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+<style>
+  :root{ --chip:#eef1f4; --border:#e9ecef; --muted:#6c757d; }
+  body{background:#fafafa}
+  .page-wrap{max-width:960px;margin:18px auto 48px;padding:0 12px}
+  .section-card{background:#fff;border:1px solid var(--border);border-radius:14px;padding:18px}
+  .top-actions{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-bottom:12px}
+  .btn-chip{border-radius:999px;padding:.35rem .9rem}
+  .pill{display:inline-block;background:#f3f4f6;border:1px solid #e5e7eb;border-radius:999px;padding:4px 10px;font-size:12px}
+  .muted{color:#6c757d}
+  .ok{color:#0b7a0b;font-weight:700}
+  .err{color:#b91c1c;font-weight:700}
+  .mono{font-family:ui-monospace,SFMono-Regular,Menlo,monospace}
+  .table-sticky thead th{position:sticky;top:0;background:#fff;z-index:5}
+  .pager .page-link{border-radius:8px}
+</style>
+</head>
+<body>
+<div class="page-wrap">
+  <!-- Top actions -->
+  <div class="top-actions">
+    <a href="index.html" class="btn btn-outline-secondary btn-chip">Halaman Utama</a>
+    <span id="who" class="pill">Memuatkan…</span>
+    <span class="flex-grow-1"></span>
+    
+    <a id="logout" class="btn btn-outline-secondary btn-chip" href="javascript:">Log keluar</a>
+  </div>
+
+  <h3 class="mb-3">👤 <b>Akaun</b></h3>
+
+  <!-- ================== PROFIL (KEKAL) ================== -->
+  <div class="section-card mb-3">
+    <h5 class="mb-3">Profil</h5>
+    <div class="row g-3">
+      <div class="col-lg-6">
+        <label class="form-label">Nama</label>
+        <input id="name" class="form-control">
+      </div>
+      <div class="col-lg-6">
+        <label class="form-label">Nombor Telefon</label>
+        <input id="phone" class="form-control" readonly>
+      </div>
+      <div class="col-lg-6">
+        <label class="form-label">IC (12 digit)</label>
+        <input id="ic" class="form-control" inputmode="numeric" placeholder="cth: 900101011234">
+      </div>
+      <div class="col-lg-6">
+        <label class="form-label">Email</label>
+        <input id="email" class="form-control" placeholder="cth: nama@email.com">
+      </div>
+      <div class="col-12">
+        <label class="form-label">Alamat</label>
+        <textarea id="alamat" class="form-control" rows="3" placeholder="Nama, alamat penuh, poskod, bandar, negeri"></textarea>
+      </div>
+    </div>
+
+    <!-- 🔹 FIELD BARU: Poskod / Bandar / Negeri -->
+    <div class="row g-3 mt-1">
+      <div class="col-md-4">
+        <label class="form-label">Poskod</label>
+        <input id="poskod" class="form-control" inputmode="numeric" placeholder="cth: 09000">
+      </div>
+      <div class="col-md-4">
+        <label class="form-label">Bandar</label>
+        <input id="bandar" class="form-control" placeholder="cth: Kulim">
+      </div>
+      <div class="col-md-4">
+        <label class="form-label">Negeri</label>
+        <input id="negeri" class="form-control" placeholder="cth: Kedah">
+      </div>
+    </div>
+
+    <div class="row g-3 mt-1">
+      <div class="col-lg-6">
+        <label class="form-label">Nama Akaun Bank</label>
+        <input id="bank_acc_name" class="form-control" placeholder="cth: AMIRUL HAKIM BIN …">
+      </div>
+      <div class="col-lg-3">
+        <label class="form-label">No. Akaun Bank</label>
+        <input id="bank_acc_no" class="form-control" inputmode="numeric" placeholder="cth: 123456789012">
+      </div>
+      <div class="col-lg-3">
+        <label class="form-label">Nama Bank</label>
+        <input id="bank_name" class="form-control" placeholder="cth: Maybank / CIMB / Bank Islam">
+      </div>
+    </div>
+
+    <div class="d-flex align-items-center gap-2 mt-3">
+      <button id="saveProfile" class="btn btn-primary">Simpan Profil</button>
+      <span id="saveStatus" class="muted"></span>
+    </div>
+  </div>
+
+  <!-- ================== PASSWORD (KEKAL) ================== -->
+  <div class="section-card mb-3">
+    <h5 class="mb-3">Tukar Password</h5>
+    <div class="row g-3">
+      <div class="col-lg-6">
+        <label class="form-label">Password Baru</label>
+        <input id="newpass1" type="password" class="form-control" placeholder="Min 6 aksara">
+      </div>
+      <div class="col-lg-6">
+        <label class="form-label">Sahkan Password Baru</label>
+        <input id="newpass2" type="password" class="form-control" placeholder="Ulang password">
+      </div>
+    </div>
+    <div class="d-flex align-items-center gap-2 mt-3">
+      <button id="changePass" class="btn btn-outline-secondary">Tukar Password</button>
+      <span id="passStatus" class="muted"></span>
+    </div>
+  </div>
+
+  <!-- ================== SEJARAH PESANAN GOLDBAR/COIN ================== -->
+  <div class="section-card">
+    <div class="d-flex align-items-center justify-content-between flex-wrap mb-2">
+      <h5 class="m-0">Sejarah Pesanan GoldBar/Coin</h5>
+      <div class="btn-group" role="group" aria-label="Status">
+        <button class="btn btn-sm btn-outline-secondary" data-filter="ALL">Semua</button>
+        <button class="btn btn-sm btn-outline-secondary" data-filter="PAID">PAID</button>
+        <button class="btn btn-sm btn-outline-secondary" data-filter="PENDING">PENDING</button>
+        <button class="btn btn-sm btn-outline-secondary" data-filter="COMPLETED">SELESAI</button>
+      </div>
+    </div>
+
+    <div class="table-responsive">
+      <table class="table table-sm align-middle table-sticky">
+        <thead class="table-light">
+          <tr>
+            <th style="width:140px">Tarikh</th>
+            <th>Order</th>
+            <th>Butiran</th>
+            <th class="text-end" style="width:120px">Jumlah</th>
+            <th style="width:110px">Status</th>
+          </tr>
+        </thead>
+        <tbody id="histTbody">
+          <tr><td colspan="5" class="text-muted py-4">Memuatkan…</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="d-flex justify-content-between align-items-center">
+      <small class="text-muted" id="histInfo">0 rekod</small>
+      <ul class="pagination pager mb-0" id="histPager"></ul>
+    </div>
+  </div>
+
+  <!-- ================== SEJARAH PESANAN 916 ================== -->
+  <div class="section-card mt-3">
+    <div class="d-flex align-items-center justify-content-between flex-wrap mb-2">
+      <h5 class="m-0">Sejarah Pesanan 916</h5>
+      <div class="btn-group" role="group" aria-label="Status 916">
+        <button class="btn btn-sm btn-outline-secondary" data-filter916="ALL">Semua</button>
+        <button class="btn btn-sm btn-outline-secondary" data-filter916="PAID">PAID</button>
+        <button class="btn btn-sm btn-outline-secondary" data-filter916="PENDING">PENDING</button>
+        <button class="btn btn-sm btn-outline-secondary" data-filter916="COMPLETED">SELESAI</button>
+      </div>
+    </div>
+
+    <div class="table-responsive">
+      <table class="table table-sm align-middle table-sticky">
+        <thead class="table-light">
+          <tr>
+            <th style="width:140px">Tarikh</th>
+            <th>Rujukan</th>
+            <th>Butiran</th>
+            <th class="text-end" style="width:120px">Jumlah</th>
+            <th style="width:110px">Status</th>
+          </tr>
+        </thead>
+        <tbody id="histTbody916">
+          <tr><td colspan="5" class="text-muted py-4">Memuatkan…</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="d-flex justify-content-between align-items-center">
+      <small class="text-muted" id="histInfo916">0 rekod</small>
+      <ul class="pagination pager mb-0" id="histPager916"></ul>
+    </div>
+  </div>
+</div> <!-- penutup .page-wrap -->
+
+<!-- Libs -->
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="auth.js?v=13.1"></script>
+<script>
+(() => {
+  "use strict";
+  const $ = id => document.getElementById(id);
+  const onlyDigits = s => String(s||"").replace(/\D+/g,"");
+  const sb = window.sb; // dari auth.js
+
+  const ses = (window.auth_get && window.auth_get()) || {};
+  $("who").textContent = ses && (ses.name || ses.phone)
+    ? "Log masuk sebagai " + (ses.name || ses.phone)
+    : "Tidak log masuk.";
+
+  $("name").value   = ses.name   || "";
+  $("phone").value  = ses.phone  || "";
+  $("ic").value     = ses.ic     || "";
+  $("alamat").value = ses.alamat || "";
+  $("email").value         = ses.email         || "";
+  $("bank_acc_name").value = ses.bank_acc_name || "";
+  $("bank_acc_no").value   = ses.bank_acc_no   || "";
+  $("bank_name").value     = ses.bank_name     || "";
+
+  // 🔹 Prefill alamat pecah dari sesi (kalau ada)
+  $("poskod").value = ses.postcode || ses.poskod || "";
+  $("bandar").value = ses.city     || ses.bandar || "";
+  $("negeri").value = ses.state    || ses.negeri || "";
+
+  const fmtMY = (s) => {
+    if (!s) return '-';
+    const val = typeof s === 'number' ? s : String(s).replace(' ', 'T');
+    const d = new Date(val);
+    if (isNaN(d)) return '-';
+    return d.toLocaleString('ms-MY', { hour12:false });
+  };
+  const money  = n => 'RM ' + Number(n||0).toFixed(2);
+
+  /* ===== PROFIL (kekal) ===== */
+  async function loadProfile(){
+    if (!sb || !ses.phone) return;
+    try{
+      const { data } = await sb.from("customers")
+        .select("id,name,ic,alamat,email,bank_account_name,bank_account_no,bank_name,postcode,city,state")
+        .eq("phone", ses.phone).single();
+
+      if (data){
+        $("name").value   = data.name   ?? $("name").value;
+        $("ic").value     = data.ic     ?? $("ic").value;
+        $("alamat").value = data.alamat ?? $("alamat").value;
+        $("email").value         = data.email               ?? $("email").value;
+        $("bank_acc_name").value = data.bank_account_name   ?? $("bank_acc_name").value;
+        $("bank_acc_no").value   = data.bank_account_no     ?? $("bank_acc_no").value;
+        $("bank_name").value     = data.bank_name           ?? $("bank_name").value;
+
+        // 🔹 Isi input baru jika ada dalam DB
+        $("poskod").value = data.postcode ?? $("poskod").value;
+        $("bandar").value = data.city     ?? $("bandar").value;
+        $("negeri").value = data.state    ?? $("negeri").value;
+
+        // 🔹 Update sesi supaya boleh guna di tempat lain (AWB, dsb.)
+        window.auth_set && window.auth_set({
+          ...ses,
+          name:   data.name   ?? ses.name   ?? "",
+          ic:     data.ic     ?? ses.ic     ?? "",
+          alamat: data.alamat ?? ses.alamat ?? "",
+          email:              data.email             ?? $("email").value,
+          bank_acc_name:      data.bank_account_name ?? $("bank_acc_name").value,
+          bank_acc_no:        data.bank_account_no   ?? $("bank_acc_no").value,
+          bank_name:          data.bank_name         ?? $("bank_name").value,
+          postcode:           data.postcode          ?? $("poskod").value,
+          city:               data.city              ?? $("bandar").value,
+          state:              data.state             ?? $("negeri").value
+        });
+      }
+    }catch(e){ console.warn("[account] loadProfile:", e); }
+  }
+  window.loadProfile = loadProfile;
+  loadProfile();
+
+  $("saveProfile").onclick = async ()=>{
+    $("saveStatus").className="muted"; $("saveStatus").textContent="Menyimpan…";
+
+    const name   = $("name").value.trim();
+    const phone  = $("phone").value.trim();
+    const ic     = onlyDigits($("ic").value);
+    const alamat = $("alamat").value.trim();
+
+    const poskod = $("poskod").value.trim();
+    const bandar = $("bandar").value.trim();
+    const negeri = $("negeri").value.trim();
+
+    if (ic && ic.length !== 12){
+      $("saveStatus").className="err";
+      $("saveStatus").textContent="IC perlu 12 digit (atau kosongkan).";
+      return;
+    }
+
+    // Update session supaya UI nampak terus
+    window.auth_set && window.auth_set({
+      ...ses,
+      name, phone, ic, alamat,
+      email:           $("email").value.trim(),
+      bank_acc_name:   $("bank_acc_name").value.trim(),
+      bank_acc_no:     onlyDigits($("bank_acc_no").value),
+      bank_name:       $("bank_name").value.trim(),
+      postcode:        poskod,
+      city:            bandar,
+      state:           negeri
+    });
+
+    try{
+      // ✅ HANTAR 11 PARAMETER (tambah poskod/bandar/negeri)
+      const { error } = await sb.rpc("upsert_customer", {
+        in_name:               name,
+        in_phone:              phone,
+        in_ic:                 ic,
+        in_alamat:             alamat,
+        in_email:              $("email").value.trim() || null,
+        in_bank_account_name:  $("bank_acc_name").value.trim() || null,
+        in_bank_account_no:    onlyDigits($("bank_acc_no").value) || null,
+        in_bank_name:          $("bank_name").value.trim() || null,
+        in_postcode:           poskod || null,
+        in_city:               bandar || null,
+        in_state:              negeri || null
+      });
+      if (error) throw error;
+
+      await loadProfile();
+      $("saveStatus").className="ok";
+      $("saveStatus").textContent="Profil disimpan.";
+    }catch(e){
+      $("saveStatus").className="err";
+      $("saveStatus").textContent="Simpan gagal: " + (e.message || e);
+    }
+  };
+
+ $("changePass").onclick = async ()=>{
+  $("passStatus").className="muted";
+  $("passStatus").textContent="Menukar…";
+
+  const p1 = $("newpass1").value;
+  const p2 = $("newpass2").value;
+
+  if(!p1 || p1.length < 6){
+    $("passStatus").className="err";
+    $("passStatus").textContent="Min 6 aksara.";
+    return;
+  }
+  if(p1 !== p2){
+    $("passStatus").className="err";
+    $("passStatus").textContent="Ulangan tidak sepadan.";
+    return;
+  }
+
+  const phone = $("phone").value.trim();
+
+  // ✅ ambil password lama (yang disimpan masa login)
+  let oldPw = "";
+  try { oldPw = sessionStorage.getItem("ea_pw") || ""; } catch {}
+
+  try{
+    // 1) Tukar password dalam sistem pelanggan (SQL)
+    const { error } = await sb.rpc("reset_password", {
+      in_phone: phone,
+      in_password: p1
+    });
+    if (error) throw error;
+
+    // 2) ✅ Pastikan ada session Supabase Auth, kalau tak ada → login guna oldPw
+    const ses0 = await sb.auth.getSession();
+    const hasSession = !!ses0?.data?.session;
+
+    if (!hasSession){
+      if (!oldPw || oldPw.length < 6){
+        throw new Error("Tiada session Supabase Auth & tiada password lama. Sila log keluar & login semula dulu.");
+      }
+
+      // guna helper sedia ada (auth.js) untuk wujudkan session guna password lama
+      // (supaya sb.auth.updateUser boleh jalan)
+      if (window.ensureSupabaseSession){
+        await window.ensureSupabaseSession(phone, oldPw);
+      } else {
+        throw new Error("ensureSupabaseSession tiada. Pastikan auth.js dimuatkan.");
+      }
+    }
+
+    // 3) ✅ Update password Supabase Auth (ini yang selama ni tak dibuat)
+    const up = await sb.auth.updateUser({ password: p1 });
+    if (up?.error) throw up.error;
+
+    // 4) Simpan password baru untuk tab ini (supaya flow lain stabil)
+    try { sessionStorage.setItem("ea_pw", p1); } catch {}
+
+    // optional: refresh token
+    try { await sb.auth.refreshSession(); } catch {}
+
+    $("newpass1").value = "";
+    $("newpass2").value = "";
+
+    $("passStatus").className="ok";
+    $("passStatus").textContent="Password ditukar (DB + Supabase Auth) & sesi dikemas kini.";
+  }catch(e){
+    $("passStatus").className="err";
+    $("passStatus").textContent="Gagal tukar: " + (e.message||e);
+  }
+};
+
+  // Log keluar terus (tanpa perlu refresh)
+  $("logout").addEventListener("click", async (e) => {
+    e.preventDefault();
+    try {
+      try { sessionStorage.removeItem("ea_pw"); } catch {}
+      if (window.auth_clear) window.auth_clear();
+      if (sb?.auth?.signOut) await sb.auth.signOut();
+    } catch {}
+    location.replace("login.html#login");
+  });
+
+  /* ================= Sejarah Pesanan GoldBar/Coin ================= */
+  function bothPhones(raw){
+    const d = String(raw||'').replace(/\D/g,'');
+    if(!d) return ['', ''];
+    const p60 = d.startsWith('60') ? d : (d.startsWith('0') ? ('6'+d) : ('60'+d));
+    const p0  = d.startsWith('0')  ? d : (d.startsWith('60') ? ('0'+d.slice(2)) : ('0'+d));
+    return [p60, p0];
+  }
+  function mapOrderRow(r){
+    return {
+      id: r.id,
+      created_at: r.created_at,
+      reference: r.reference_1 || r.id,
+      bill_id: r.bill_id_text || '-',
+      kind: (r.kind||'').toUpperCase(),
+      card_type: r.card_type || 'READY',
+      weight_g: Number(r.weight_g||0),
+      qty: Number(r.qty||1),
+      design_name: r.design_name || '-',
+      total_rm: Number(r.total_rm ?? r.grand_total_rm ?? 0),
+      status: (r.status||'PENDING').toUpperCase()
+    };
+  }
+  const HIST_PAGE_SIZE = 5;
+  let   HIST_PAGE = 1;
+  let   HIST_STAT = 'ALL';
+
+  async function fetchHistory(page, status){
+    const raw = document.getElementById('phone').value.trim();
+    const [p60, p0] = bothPhones(raw);
+    if (!p60 && !p0) {
+      return { items: [], total: 0 };
+    }
+
+    const st = (status && status !== 'ALL') ? status : null;
+
+    let q = sb.from('goldbar_order')
+      .select('*', { count: 'exact' })
+      .or(`customer_phone.eq.${p60},customer_phone.eq.${p0}`)
+      .order('created_at', { ascending: false });
+
+    if (st){
+      q = q.eq('status', st);
+    }
+
+    const start = (page - 1) * HIST_PAGE_SIZE;
+    const end   = start + HIST_PAGE_SIZE - 1;
+
+    const { data: rows, count, error } = await q.range(start, end);
+    if (error){
+      console.warn('[account] fetchHistory goldbar_order:', error);
+      return { items: [], total: 0 };
+    }
+
+    return {
+      items: (rows || []).map(mapOrderRow),
+      total: count || 0
+    };
+  }
+
+  async function renderHistory(){
+    const tb   = $('histTbody');
+    const pager= $('histPager');
+    const info = $('histInfo');
+
+    tb.innerHTML = `<tr><td colspan="5" class="text-muted py-4">Memuatkan…</td></tr>`;
+    const { items, total } = await fetchHistory(HIST_PAGE, HIST_STAT);
+
+    if (!items.length){
+      tb.innerHTML = `<tr><td colspan="5" class="text-muted py-4">Tiada rekod.</td></tr>`;
+      info.textContent = '0 rekod';
+      pager.innerHTML = '';
+      return;
+    }
+
+    tb.innerHTML = items.map(r=>`
+      <tr>
+        <td style="width:160px">${fmtMY(r.created_at)}</td>
+        <td>
+          <div class="mono">${r.reference}</div>
+          <div class="text-muted small">Bill: ${r.bill_id||'-'}</div>
+        </td>
+        <td>
+          <div>${r.kind} • ${r.card_type}</div>
+          <div class="text-muted small">${r.weight_g.toFixed(3)}g × ${r.qty}</div>
+          <div class="text-muted small">${r.design_name}</div>
+        </td>
+        <td class="text-end fw-semibold" style="width:130px">${money(r.total_rm)}</td>
+        <td style="width:120px">
+          <span class="badge ${r.status==='PAID'?'bg-success':(r.status==='PENDING'?'bg-warning text-dark':(r.status==='COMPLETED'?'bg-primary':'bg-secondary'))}">
+            ${r.status}
+          </span>
+        </td>
+      </tr>
+    `).join('');
+
+    const pages = Math.max(1, Math.ceil(total / HIST_PAGE_SIZE));
+    pager.innerHTML = '';
+    const add = (label, page, active=false, disabled=false)=>{
+      const li = document.createElement('li');
+      li.className = `page-item ${active?'active':''} ${disabled?'disabled':''}`;
+      const a = document.createElement('a');
+      a.className = 'page-link'; a.href='#'; a.textContent = label;
+      a.onclick = (e)=>{ e.preventDefault(); if(disabled||active) return; HIST_PAGE=page; renderHistory(); };
+      li.appendChild(a); pager.appendChild(li);
+    };
+    add('«', Math.max(1, HIST_PAGE-1), false, HIST_PAGE===1);
+    const span=3, start=Math.max(1, HIST_PAGE-span), end=Math.min(pages, HIST_PAGE+span);
+    for(let p=start; p<=end; p++) add(String(p), p, p===HIST_PAGE, false);
+    add('»', Math.min(pages, HIST_PAGE+1), false, HIST_PAGE===pages);
+
+    info.textContent = `${total} rekod`;
+  }
+
+  document.addEventListener('click', (e)=>{
+    const btn = e.target?.closest?.('[data-filter]');
+    if(!btn) return;
+    e.preventDefault();
+    HIST_STAT = btn.getAttribute('data-filter') || 'ALL';
+    HIST_PAGE = 1;
+    document.querySelectorAll('[data-filter]').forEach(b=> b.classList.remove('btn-primary'));
+    btn.classList.add('btn-primary');
+    renderHistory();
+  });
+
+  (async ()=>{
+    await loadProfile();
+    await renderHistory();
+  })();
+
+  /* ================= Sejarah Pesanan 916 ================= */
+  const HIST916_PAGE_SIZE = 5;
+  let   HIST916_PAGE = 1;
+  let   HIST916_STAT = 'ALL';
+
+  function map916Row(r){
+    return {
+      id:        r.id,
+      created_at:r.created_at,
+      reference: r.reference_1 || r.reference || r.id,
+      bill_id:   r.bill_id_text || r.bill_id || '-',
+      name:      r.item_name || r.product_name || r.title || '-',
+      weight:    r.weight_g || r.grams || 0,
+      qty:       r.qty || r.quantity || 1,
+      total:     Number(r.total_rm || r.total || 0),
+      status:    (r.status || 'PENDING').toUpperCase(),
+      awb:       r.tracking_no || r.tracking || r.awb_no || null,
+      courier:   r.courier || 'GDEX'
+    };
+  }
+
+  async function fetchHistory916(page, status){
+    const raw = $("phone").value.trim();
+    const d = String(raw).replace(/\D/g,'');
+    const p60 = d.startsWith('60') ? d : (d.startsWith('0') ? '6'+d : '60'+d);
+    const p0  = d.startsWith('0')  ? d : (d.startsWith('60') ? '0'+d.slice(2) : '0'+d);
+    const st  = (status && status!=='ALL') ? status : null;
+
+    try {
+      const [itemsRes, countRes] = await Promise.all([
+        sb.rpc("j916_account_orders_v1", {
+          p_phone: p60 || p0,
+          p_status: st,
+          p_page: page,
+          p_size: HIST916_PAGE_SIZE
+        }),
+        sb.rpc("j916_account_orders_count_v1", {
+          p_phone: p60 || p0,
+          p_status: st
+        })
+      ]);
+
+      if (itemsRes.error) throw itemsRes.error;
+      if (countRes.error) throw countRes.error;
+
+      const items = Array.isArray(itemsRes.data)
+        ? itemsRes.data
+        : (itemsRes.data?.items || []);
+      const total = Number(countRes.data || 0);
+
+      return { items: items.map(map916Row), total };
+
+    } catch (e) {
+      console.warn("[fetchHistory916] fallback:", e);
+      let q = sb.from("j916_orders")
+        .select("*", { count: "exact" })
+        .or(`customer_phone.eq.${p60},customer_phone.eq.${p0}`)
+        .order("created_at",{ascending:false});
+      if (st) q = q.eq("status", st);
+      const start = (page-1)*HIST916_PAGE_SIZE, end = start + HIST916_PAGE_SIZE - 1;
+      const { data: rows, count } = await q.range(start, end);
+      return { items:(rows||[]).map(map916Row), total: count||0 };
+    }
+  }
+
+  async function renderHistory916(){
+    const tb   = $("histTbody916");
+    const pager= $("histPager916");
+    const info = $("histInfo916");
+
+    tb.innerHTML = `<tr><td colspan="5" class="text-muted py-4">Memuatkan…</td></tr>`;
+
+    const { items, total } = await fetchHistory916(HIST916_PAGE, HIST916_STAT);
+
+    if (!items.length){
+      tb.innerHTML = `<tr><td colspan="5" class="text-muted py-4">Tiada rekod.</td></tr>`;
+      info.textContent = '0 rekod';
+      pager.innerHTML  = '';
+      return;
+    }
+
+    tb.innerHTML = items.map(r => {
+      const badgeClass =
+        r.status === 'PAID'      ? 'bg-success' :
+        r.status === 'PENDING'   ? 'bg-warning text-dark' :
+        r.status === 'COMPLETED' ? 'bg-primary' : 'bg-secondary';
+
+      const trackingHtml = (r.awb && (r.status === 'PAID' || r.status === 'COMPLETED'))
+        ? `<div class="small text-muted mt-1">
+             ${r.courier || 'GDEX'} Tracking:
+             <span class="mono">${r.awb}</span>
+             <a href="https://gdexpress.com/tracking/" target="_blank" class="ms-1">
+               Jejak parcel
+             </a>
+           </div>`
+        : '';
+
+      return `
+      <tr>
+        <td>${fmtMY(r.created_at)}</td>
+        <td>
+          <div class="mono">${r.reference}</div>
+          <div class="small text-muted">Bill: ${r.bill_id}</div>
+        </td>
+        <td>${r.name} • ${r.weight}g × ${r.qty}</td>
+        <td class="text-end fw-semibold">${money(r.total)}</td>
+        <td>
+          <div>
+            <span class="badge ${badgeClass}">${r.status}</span>
+          </div>
+          ${trackingHtml}
+        </td>
+      </tr>`;
+    }).join('');
+
+    const pages = Math.max(1, Math.ceil(total / HIST916_PAGE_SIZE));
+    pager.innerHTML = '';
+    const add = (lbl, p, act, dis)=>{
+      const li = document.createElement('li');
+      li.className = `page-item ${act?'active':''} ${dis?'disabled':''}`;
+      const a = document.createElement('a');
+      a.className = 'page-link'; a.href='#'; a.textContent=lbl;
+      a.onclick = (e)=>{ e.preventDefault(); if(act||dis)return; HIST916_PAGE=p; renderHistory916(); };
+      li.appendChild(a); pager.appendChild(li);
+    };
+    add('«', Math.max(1, HIST916_PAGE-1), false, HIST916_PAGE===1);
+    for(let p=Math.max(1,HIST916_PAGE-3); p<=Math.min(pages,HIST916_PAGE+3); p++){
+      add(String(p), p, p===HIST916_PAGE, false);
+    }
+    add('»', Math.min(pages, HIST916_PAGE+1), false, HIST916_PAGE===pages);
+
+    info.textContent = `${total} rekod`;
+  }
+
+  document.addEventListener('click',(e)=>{
+    const b=e.target.closest('[data-filter916]');if(!b)return;
+    e.preventDefault();
+    HIST916_STAT=b.getAttribute('data-filter916')||'ALL';
+    HIST916_PAGE=1;
+    document.querySelectorAll('[data-filter916]').forEach(x=>x.classList.remove('btn-primary'));
+    b.classList.add('btn-primary');
+    renderHistory916();
+  });
+
+  (async()=>{ await renderHistory916(); })();
+})();
+</script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

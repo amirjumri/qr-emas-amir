@@ -1,0 +1,1122 @@
+<!doctype html>
+<html lang="ms">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Admin • Butiran Komisen Agen — Emas Amir</title>
+
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+  <style>
+    body{background:#fff}
+    .container-narrow{max-width:1100px}
+    .auth-pill{
+      border:1px solid #e5e7eb;
+      border-radius:999px;
+      padding:.2rem .6rem;
+      background:#fafafa;
+      color:#555;
+      font-size:13px;
+    }
+    .btn-chip{
+      border-radius:999px;
+      font-size:13px;
+      padding:.25rem .7rem;
+    }
+    .page-title{font-weight:700;font-size:22px}
+    .card-box{
+      border:1px solid #e5e7eb;
+      border-radius:12px;
+      padding:1rem 1.25rem;
+      background:#fafafa;
+    }
+    .label-muted{font-size:12px;color:#6b7280}
+    .value-lg{font-size:18px;font-weight:600}
+    .table-sm td, .table-sm th{font-size:13px}
+    .pill{
+      display:inline-block;
+      padding:.15rem .5rem;
+      border-radius:999px;
+      font-size:12px;
+      border:1px solid #e5e7eb;
+      background:#fff;
+      color:#374151;
+    }
+    .pill-paid{background:#dcfce7;border-color:#86efac;color:#166534}
+    .pill-unpaid{background:#fef9c3;border-color:#fde047;color:#854d0e}
+    .pill-unknown{background:#f3f4f6;border-color:#e5e7eb;color:#4b5563}
+    .mono{font-family:ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;}
+  </style>
+</head>
+<body>
+<div class="container container-narrow py-3">
+
+  <!-- TOP BAR -->
+  <div class="d-flex justify-content-between align-items-center mb-3">
+    <div class="auth-pill small">
+      <span class="me-1 badge text-bg-dark">Admin</span>
+      <span id="authStatus">Memuatkan…</span>
+    </div>
+    <div class="d-flex flex-wrap gap-2">
+      <a class="btn btn-outline-secondary btn-chip" href="index.html">Halaman Utama</a>
+      <a class="btn btn-outline-secondary btn-chip" href="tabung.html">Tabung</a>
+      <a class="btn btn-outline-secondary btn-chip" href="goldbar-coin.html">GoldBar/Coin</a>
+      <a class="btn btn-outline-secondary btn-chip" href="j916.html">Barang Kemas 916</a>
+      <a class="btn btn-outline-secondary btn-chip" href="admin-komisen.html">Ringkasan Komisen</a>
+      <button id="btnLogout" class="btn btn-outline-secondary btn-chip" type="button">Log keluar</button>
+    </div>
+  </div>
+
+  <!-- HEADER -->
+  <div class="d-flex justify-content-between align-items-end mb-2">
+    <div>
+      <div class="page-title">Butiran Komisen Agen</div>
+      <div class="small text-muted">
+        Fokus kepada seorang agen: komisen belum dibayar, sejarah bayaran & maklumat akaun bank.
+      </div>
+    </div>
+  </div>
+
+  <!-- NOTIS -->
+  <div id="noticeBox"></div>
+
+  <!-- KANDUNGAN UTAMA -->
+  <div class="row g-3 mb-3">
+
+    <!-- KAD AGEN + BANK -->
+    <div class="col-md-8">
+      <div class="card-box mb-3">
+        <div class="d-flex justify-content-between align-items-center mb-2">
+          <div class="fw-semibold">Agen</div>
+          <span class="badge bg-light text-muted border" id="agentStatus">Memuatkan…</span>
+        </div>
+        <div class="small">
+          <div class="mb-1">
+            <span class="label-muted">Nama:</span>
+            <span id="agentName">Memuatkan…</span>
+          </div>
+          <div class="mb-1">
+            <span class="label-muted">Telefon:</span>
+            <span id="agentPhone">-</span>
+          </div>
+          <div class="mb-1">
+            <span class="label-muted">Kod agen:</span>
+            <span id="agentCode">-</span>
+          </div>
+          <div class="mb-1">
+            <span class="label-muted">Slug:</span>
+            <span id="agentSlug">-</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="card-box">
+        <div class="fw-semibold mb-2">Akaun Bank Agen</div>
+        <div class="small">
+          <div class="mb-1">
+            <span class="label-muted">Bank:</span>
+            <span id="bankName">-</span>
+          </div>
+          <div class="mb-1">
+            <span class="label-muted">No. Akaun:</span>
+            <span id="bankAcc">-</span>
+          </div>
+          <div class="mb-1">
+            <span class="label-muted">Nama Akaun:</span>
+            <span id="bankOwner">-</span>
+          </div>
+          <div class="label-muted mt-2">
+            *Maklumat ini diambil dari pelanggan (jadual <code>customers</code>) yang mempunyai nombor telefon sama dengan agen.
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- KAD RINGKASAN & BAYAR -->
+    <div class="col-md-4">
+      <div class="card-box">
+        <div class="fw-semibold mb-2">Komisen belum dibayar</div>
+        <div class="value-lg mb-2" id="komisenPending">RM 0.00</div>
+
+        <!-- Ringkasan hanya berat + nilai (tanpa rate semasa) -->
+        <div class="small mb-2" id="summary916">
+          Jumlah berat 916: 0.000 g<br>
+          Jumlah nilai 916: RM 0.00
+        </div>
+
+        <div class="small mb-2" id="summary999">
+          Jumlah gram 999.9: 0.000 g<br>
+          Jumlah nilai 999.9: RM 0.00
+        </div>
+
+        <div class="small mb-2" id="summaryTabung">
+          Jumlah gram Tabung: 0.000 g<br>
+          Jumlah nilai Tabung: RM 0.00
+        </div>
+
+        <button id="btnPay" class="btn btn-success w-100" disabled>Bayar Komisen</button>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- BUTIRAN KOMISEN (DARI SALE MANA) -->
+  <h6 class="mt-3">Butiran Komisen Belum Dibayar (ikut sale)</h6>
+  <div class="small text-muted mb-1">
+    Senarai ini tunjuk komisen UNPAID/terkumpul mengikut transaksi (916 / 999.9 / Tabung).
+    Kolum <b>Rate (RM/g)</b> ialah kadar individu yang digunakan untuk transaksi tersebut (rate locked).
+  </div>
+  <div class="table-responsive mb-4">
+    <table class="table table-sm align-middle">
+      <thead class="table-light">
+        <tr>
+          <th style="width:120px">Tarikh</th>
+          <th style="width:95px">Sumber</th>
+          <th style="width:180px">Rujukan</th>
+          <th>Pelanggan</th>
+          <th style="width:110px" class="text-end">Gram/Unit</th>
+          <th style="width:120px" class="text-end">Jumlah (RM)</th>
+          <th style="width:110px" class="text-end">Rate (RM/g)</th>
+          <th style="width:110px">Status</th>
+        </tr>
+      </thead>
+      <tbody id="tbodyBreakdown">
+        <tr>
+          <td colspan="8" class="text-muted small">Memuatkan…</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- SEJARAH BAYARAN -->
+  <h6 class="mt-3">Sejarah Bayaran Komisen</h6>
+  <div class="small text-muted mb-1">
+    Setiap bayaran komisen yang direkodkan akan muncul di sini. Resit akan dibina kemudian.
+  </div>
+  <div class="table-responsive mb-4">
+    <table class="table table-sm align-middle">
+      <thead class="table-light">
+        <tr>
+          <th style="width:160px">Tarikh</th>
+          <th class="text-end" style="width:120px">Jumlah (RM)</th>
+          <th>Catatan</th>
+          <th style="width:110px" class="text-end">Resit</th>
+        </tr>
+      </thead>
+      <tbody id="tbodyHistory">
+        <tr>
+          <td colspan="4" class="text-muted small">Memuatkan…</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="auth.js?v=13.1"></script>
+<script src="admin-guard.js?v=1"></script>
+<script>
+/* ========= Konfig ========= */
+const SB_URL = "https://dduizetstqqjrpsezbpi.supabase.co";
+const SB_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRkdWl6ZXRzdHFxanJwc2V6YnBpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTg3MzI0ODQsImV4cCI6MjA3NDMwODQ4NH0.CrlHXrmHtKgR9qc2192U6quRb5lpFEeOSgwG0Lb8KRM";
+
+window.sb = window.sb || window.supabase.createClient(SB_URL, SB_KEY);
+const sb = window.sb;
+
+const ONSEND_BASE  = "https://onsend.io/api/v1";
+const ONSEND_TOKEN = "4b879470cc16ca8f06c5ab9878a4578880cfd0fd7b7cfe0121499f3ab017dd04";
+
+/* ========= (Fallback sahaja) ========= */
+const RATE_GB_RM_PER_G     = 0.30; // fallback kalau row tiada agent_comm_rate_used
+const RATE_TABUNG_RM_PER_G = 0.05; // fallback kalau row tiada agent_comm_rate_used
+
+const PAID_STATUSES = ["PAID","APPROVED","COMPLETED","SUCCESS","DONE"];
+
+const $ = id => document.getElementById(id);
+
+let AGENT_ID        = null;
+let AGENT_DATA      = null;
+let BANK_DATA       = null;
+
+let SUMMARY_916     = null;
+let PENDING_KOMISEN = 0;
+
+/* breakdown caches */
+let BD_ROWS = []; // {src, dt, ref, name, gram, rm, rate_used, comm, status}
+
+/* ========= Util ========= */
+function showNotice(html, type="danger"){
+  const box = $("noticeBox");
+  box.innerHTML = html
+    ? `<div class="alert alert-${type} py-2 px-3 mb-2 small">${html}</div>`
+    : "";
+}
+
+function money(n){ return "RM " + Number(n || 0).toFixed(2); }
+function fmtG(g){ return Number(g||0).toFixed(3); }
+
+function toDigitsPhone(p){
+  const d = String(p||"").replace(/\D+/g,"");
+  if (!d) return "";
+  if (d.startsWith("0")) return "6"+d;
+  if (d.startsWith("6")) return d;
+  return "6"+d;
+}
+
+function toMsisdn(p){
+  const d = String(p || "").replace(/\D+/g,"");
+  if (!d) return "";
+  if (d.startsWith("6")) return d;
+  return "6" + d;
+}
+
+function fmtDateShort(s){
+  if (!s) return "-";
+  try{
+    return new Date(s).toLocaleString("ms-MY",{dateStyle:"medium",timeStyle:"short"});
+  }catch(e){
+    return "-";
+  }
+}
+
+function pillStatus(st){
+  const s = String(st||"").toUpperCase();
+  if (s === "PAID") return `<span class="pill pill-paid">PAID</span>`;
+  if (s === "UNPAID") return `<span class="pill pill-unpaid">UNPAID</span>`;
+  return `<span class="pill pill-unknown">${(st||"-")}</span>`;
+}
+
+async function sendWA(msisdn, text){
+  const phone_number = toMsisdn(msisdn);
+  if (!phone_number) return false;
+  try{
+    const r = await fetch(ONSEND_BASE + "/send", {
+      method: "POST",
+      headers: {
+        "Accept": "application/json",
+        "Content-Type": "application/json",
+        "Authorization": "Bearer " + ONSEND_TOKEN
+      },
+      body: JSON.stringify({
+        phone_number,
+        message: text,
+        type: "text"
+      })
+    });
+    const j = await r.json().catch(()=>({}));
+    console.log("[OnSend admin-komisen-agent]", r.status, j);
+    return r.ok && (j.success === true || r.status === 200);
+  }catch(e){
+    console.warn("[OnSend admin-komisen-agent] error:", e);
+    return false;
+  }
+}
+
+function sum(list, fn){
+  let t = 0;
+  for (const x of (list||[])){
+    const v = Number(fn(x) || 0);
+    if (!Number.isNaN(v)) t += v;
+  }
+  return t;
+}
+
+function uniq(arr){
+  const s = new Set();
+  const out = [];
+  for (const x of (arr||[])){
+    const v = String(x||"").trim();
+    if (!v) continue;
+    if (s.has(v)) continue;
+    s.add(v);
+    out.push(v);
+  }
+  return out;
+}
+
+async function tryQuery(builder){
+  try{
+    return await builder();
+  }catch(e){
+    return { data: null, error: e };
+  }
+}
+
+function normalizeRateUsed(rateUsed, comm, gram){
+  const r = Number(rateUsed || 0);
+  if (r > 0) return r;
+  const c = Number(comm || 0);
+  const g = Number(gram || 0);
+  if (g > 0 && c > 0) return c / g;
+  return 0;
+}
+
+function fmtRate(r){
+  const x = Number(r || 0);
+  if (!(x > 0)) return "-";
+  return x.toFixed(2);
+}
+
+/* ========= Auth ringkas ========= */
+(function initAuth(){
+  const statusEl = $("authStatus");
+  const btnLogout = $("btnLogout");
+  try{
+    const a = (window.auth_get && window.auth_get()) || null;
+    if (a){
+      statusEl.textContent = "Log masuk sebagai " + (a.name || a.phone || "admin");
+      btnLogout.onclick = ()=>{
+        window.auth_clear && window.auth_clear();
+        location.href = "login.html#login";
+      };
+    }else{
+      statusEl.textContent = "Tidak log masuk";
+      btnLogout.onclick = ()=> location.href = "login.html#login";
+    }
+  }catch(e){
+    console.warn("authStatus error:", e);
+  }
+})();
+
+/* ========= Dapatkan agent_id dari URL / localStorage ========= */
+function getAgentIdFromUrl(){
+  const params = new URLSearchParams(location.search);
+  let id = params.get("agent_id") || "";
+
+  if (!id){
+    try{
+      const ls = JSON.parse(localStorage.getItem("emasamir_agent_comm_focus") || "null");
+      if (ls && ls.agent_id){
+        id = ls.agent_id;
+      }
+    }catch(e){
+      console.warn("parse localStorage agent_comm_focus error:", e);
+    }
+  }
+
+  return id || null;
+}
+
+/* ========= Load maklumat agen ========= */
+async function loadAgentCore(){
+  if (!AGENT_ID) return;
+
+  const { data, error } = await sb
+    .from("agents")
+    .select("id, name, phone, code, slug, status")
+    .eq("id", AGENT_ID)
+    .maybeSingle();
+
+  if (error){
+    console.error("loadAgentCore error:", error);
+    showNotice("Ralat memuatkan maklumat asas agen.", "danger");
+    return;
+  }
+
+  AGENT_DATA = data || null;
+
+  $("agentName").textContent  = AGENT_DATA?.name  || "-";
+  $("agentPhone").textContent = AGENT_DATA?.phone || "-";
+  $("agentCode").textContent  = AGENT_DATA?.code  || "-";
+  $("agentSlug").textContent  = AGENT_DATA?.slug  || "-";
+
+  const st = AGENT_DATA?.status || "-";
+  let label = "Status: " + st;
+  if (st === "ACTIVE")    label = "Status: Aktif";
+  else if (st === "PENDING")   label = "Status: Menunggu kelulusan";
+  else if (st === "SUSPENDED") label = "Status: Digantung";
+
+  $("agentStatus").textContent = label;
+}
+
+/* ========= Load bank info (fallback customers.phone) ========= */
+async function loadBankInfo(){
+  if (!AGENT_DATA || !AGENT_DATA.phone) return;
+
+  const raw = String(AGENT_DATA.phone||"");
+  const d60 = toDigitsPhone(raw);            // 6013...
+  const withPlus = d60 ? ("+" + d60) : "";   // +6013...
+
+  const candidates = uniq([raw, d60, withPlus]);
+
+  // cuba 1: select dengan kolum bank
+  const res1 = await tryQuery(async ()=>{
+    return await sb
+      .from("customers")
+      .select("phone, bank_account_no, bank_name, customer_name, updated_at")
+      .in("phone", candidates)
+      .order("updated_at", { ascending:false })
+      .limit(1)
+      .maybeSingle();
+  });
+
+  if (!res1.error){
+    BANK_DATA = res1.data || null;
+  }else{
+    console.warn("loadBankInfo error:", res1.error);
+    BANK_DATA = null;
+  }
+
+  $("bankAcc").textContent   = BANK_DATA?.bank_account_no || "-";
+  $("bankName").textContent  = BANK_DATA?.bank_name || "-";
+  $("bankOwner").textContent = BANK_DATA?.customer_name || (AGENT_DATA?.name || "-");
+}
+
+/* ========= Load ringkasan komisen agen (916 dari RPC sedia ada) ========= */
+async function loadAgentSummary916(){
+  const { data, error } = await sb.rpc("agent_commission_summary_v1");
+
+  if (error){
+    console.error("loadAgentSummary916 error:", error);
+    showNotice("Ralat memuatkan ringkasan komisen agen.", "danger");
+    return;
+  }
+
+  const rows = Array.isArray(data) ? data : [];
+  const row  = rows.find(r => r.agent_id === AGENT_ID) || null;
+  SUMMARY_916 = row;
+
+  const totalGram   = Number(row?.total_grams_916 || 0);
+  const totalRm     = Number(row?.total_rm_916 || 0);
+
+  // Ringkasan: berat + nilai sahaja
+  $("summary916").innerHTML =
+    `Jumlah berat 916: ${fmtG(totalGram)} g<br>` +
+    `Jumlah nilai 916: ${money(totalRm)}`;
+}
+
+/* ========= Customers bawah agent (untuk match tabung & goldbar jika perlu) ========= */
+async function getCustomersUnderAgent(slug){
+  // CUBA customers.agent_slug + customers.ref_agent_slug
+  const res = await tryQuery(async ()=>{
+    return await sb
+      .from("customers")
+      .select("id, phone, customer_name, agent_slug, ref_agent_slug, created_at")
+      .or(`agent_slug.eq.${slug},ref_agent_slug.eq.${slug}`)
+      .order("created_at", { ascending:false })
+      .limit(500);
+  });
+
+  if (!res.error && Array.isArray(res.data)){
+    const rows = res.data || [];
+    const ids = uniq(rows.map(r=>r.id));
+    const phones = uniq(rows.map(r=>toDigitsPhone(r.phone)));
+    return { ids, phones, rows };
+  }
+
+  // fallback: kalau ref_agent_slug tak wujud
+  const res2 = await tryQuery(async ()=>{
+    return await sb
+      .from("customers")
+      .select("id, phone, customer_name, agent_slug, created_at")
+      .eq("agent_slug", slug)
+      .order("created_at", { ascending:false })
+      .limit(500);
+  });
+
+  if (!res2.error && Array.isArray(res2.data)){
+    const rows = res2.data || [];
+    const ids = uniq(rows.map(r=>r.id));
+    const phones = uniq(rows.map(r=>toDigitsPhone(r.phone)));
+    return { ids, phones, rows };
+  }
+
+  console.warn("getCustomersUnderAgent error:", res.error || res2.error);
+  return { ids: [], phones: [], rows: [] };
+}
+
+/* ========= Load breakdown 916 (ikut order) ========= */
+async function loadBreakdown916(){
+  const slug = AGENT_DATA?.slug || "";
+
+  async function runSelect(withRate){
+    const colsBase = [
+      "created_at",
+      "order_code",
+      "customer_name",
+      "phone",
+      "weight_g",
+      "grand_total_rm",
+      "subtotal_rm",
+      "shipping_rm",
+      "pay_disc_rm",
+      "coupon_disc_rm",
+      "status",
+      "agent_id",
+      "agent_slug",
+      "agent_commission_rm",
+      "agent_comm_status"
+    ];
+
+    const cols = withRate
+      ? colsBase.concat(["agent_comm_rate_used"])
+      : colsBase;
+
+    return await sb
+      .from("j916_orders")
+      .select(cols.join(","))
+      .eq("status","PAID")
+      .or(`agent_id.eq.${AGENT_ID},agent_slug.eq.${slug}`)
+      .order("created_at", { ascending:false })
+      .limit(500);
+  }
+
+  // 1) cuba dengan agent_comm_rate_used
+  let r1 = await tryQuery(async ()=> await runSelect(true));
+  // 2) kalau fail (contoh column tak wujud), cuba tanpa agent_comm_rate_used
+  if (r1.error){
+    console.warn("loadBreakdown916 try with rate column failed:", r1.error);
+    let r2 = await tryQuery(async ()=> await runSelect(false));
+    if (r2.error){
+      console.warn("loadBreakdown916 fallback also failed:", r2.error);
+      return { rows: [], totalGram:0, totalRM:0, pendingComm:0 };
+    }
+    r1 = r2;
+  }
+
+  const orders = r1.data || [];
+
+  const paidRows = orders.map(o=>{
+    let rm = 0;
+    if (o.grand_total_rm != null) rm = Number(o.grand_total_rm || 0);
+    else{
+      const sub = Number(o.subtotal_rm || 0);
+      const ship = Number(o.shipping_rm || 0);
+      const payD = Number(o.pay_disc_rm || 0);
+      const coupD = Number(o.coupon_disc_rm || 0);
+      rm = sub + ship - payD - coupD;
+    }
+
+    const gram = Number(o.weight_g || 0);
+    const comm = Number(o.agent_commission_rm || 0);
+
+    // kalau column tak ada, o.agent_comm_rate_used akan undefined → normalizeRateUsed akan kira comm/gram
+    const rateUsed = normalizeRateUsed(o.agent_comm_rate_used, comm, gram);
+
+    const commSt = (o.agent_comm_status || "UNPAID");
+
+    return {
+      src: "916",
+      dt: o.created_at,
+      ref: o.order_code || "-",
+      name: o.customer_name || "-",
+      gram,
+      rm,
+      rate_used: rateUsed,
+      comm,
+      status: commSt
+    };
+  });
+
+  const totalGram = sum(paidRows, r=>r.gram);
+  const totalRM = sum(paidRows, r=>r.rm);
+
+  const unpaid = paidRows.filter(r=>String(r.status||"").toUpperCase() !== "PAID");
+  const pendingComm = sum(unpaid, r=>r.comm);
+
+  return { rows: paidRows, totalGram, totalRM, pendingComm };
+}
+/* ========= Load breakdown GoldBar/Coin (999.9) ========= */
+async function loadBreakdownGoldbar(customerIds, phones){
+  const slug = AGENT_DATA?.slug || "";
+
+  function pick(o, keys){
+    for (const k of keys){
+      if (o && o[k] != null && o[k] !== "") return o[k];
+    }
+    return null;
+  }
+
+  async function runSelect(mode){
+    // mode "A" = ada agent fields
+    // mode "B" = tanpa agent fields (kalau table lama)
+    const colsA = [
+      "created_at",
+      "paid_at",
+      "id",
+      "reference_1",
+      "status",
+      "kind",
+      "weight_g",
+      "qty",
+      "total_rm",
+      "grand_total_rm",
+      "amount_cents",
+      "customer_name",
+      "customer_phone",
+      "agent_id",
+      "agent_slug",
+      "agent_commission_rm",
+      "agent_comm_rate_used",
+      "agent_comm_status"
+    ];
+
+    const colsB = [
+      "created_at",
+      "paid_at",
+      "id",
+      "reference_1",
+      "status",
+      "kind",
+      "weight_g",
+      "qty",
+      "total_rm",
+      "grand_total_rm",
+      "amount_cents",
+      "customer_name",
+      "customer_phone"
+    ];
+
+    const cols = (mode === "A") ? colsA : colsB;
+
+    return await sb
+      .from("goldbar_order")
+      .select(cols.join(","))
+      .in("status", PAID_STATUSES)
+      .order("created_at", { ascending:false })
+      .limit(500);
+  }
+
+  // 1) cuba mode A (siap agent filter)
+  let res = await tryQuery(async ()=>{
+    return await sb
+      .from("goldbar_order")
+      .select([
+        "created_at",
+        "paid_at",
+        "id",
+        "reference_1",
+        "status",
+        "kind",
+        "weight_g",
+        "qty",
+        "total_rm",
+        "grand_total_rm",
+        "amount_cents",
+        "customer_name",
+        "customer_phone",
+        "agent_id",
+        "agent_slug",
+        "agent_commission_rm",
+        "agent_comm_rate_used",
+        "agent_comm_status"
+      ].join(","))
+      .in("status", PAID_STATUSES)
+      .or(`agent_id.eq.${AGENT_ID},agent_slug.eq.${slug}`)
+      .order("created_at", { ascending:false })
+      .limit(500);
+  });
+
+  let rows = [];
+  if (!res.error && Array.isArray(res.data)){
+    rows = res.data || [];
+  }else{
+    console.warn("loadBreakdownGoldbar mode A failed:", res.error);
+
+    // 2) fallback: load semua (mode A) tanpa agent filter, lepas tu filter ikut phone
+    let rAll = await tryQuery(async ()=> await runSelect("A"));
+    if (rAll.error){
+      console.warn("loadBreakdownGoldbar fallback A failed:", rAll.error);
+
+      // 3) fallback terakhir: mode B (tanpa agent columns)
+      rAll = await tryQuery(async ()=> await runSelect("B"));
+      if (rAll.error){
+        console.warn("loadBreakdownGoldbar fallback B failed:", rAll.error);
+        return { rows: [], totalGram:0, totalRM:0, pendingComm:0, rate: RATE_GB_RM_PER_G };
+      }
+    }
+
+    const all = rAll.data || [];
+    const phoneSet = new Set((phones||[]).map(p=>toDigitsPhone(p)));
+    rows = all.filter(r=>{
+      const p = toDigitsPhone(r.customer_phone);
+      return phoneSet.has(p);
+    });
+  }
+
+  const mapped = rows.map(r=>{
+    const dt   = r.paid_at || r.created_at;
+    const ref  = r.reference_1 || r.id || "-";
+    const name = r.customer_name || "-";
+
+    const gram = Number(pick(r, ["weight_g","qty"]) || 0);
+
+    const rm = (()=> {
+      const v1 = pick(r, ["grand_total_rm","total_rm"]);
+      if (v1 != null) return Number(v1 || 0);
+      const v2 = pick(r, ["amount_cents"]);
+      if (v2 != null) return Number(v2 || 0) / 100;
+      return 0;
+    })();
+
+    let comm = 0;
+    if (r.agent_commission_rm != null) comm = Number(r.agent_commission_rm || 0);
+    else comm = gram * RATE_GB_RM_PER_G;
+
+    const st = r.agent_comm_status || "UNPAID";
+
+const rateUsed =
+  (r.agent_comm_rate_used != null)
+    ? Number(r.agent_comm_rate_used || 0)
+    : (gram > 0 ? (comm / gram) : RATE_GB_RM_PER_G);
+
+return { src:"999.9", dt, ref, name, gram, rm, comm, rate_used: rateUsed, status: st };
+  });
+
+  const totalGram = sum(mapped, x=>x.gram);
+  const totalRM   = sum(mapped, x=>x.rm);
+
+  const unpaid = mapped.filter(x=>String(x.status||"").toUpperCase() !== "PAID");
+  const pendingComm = sum(unpaid, x=>x.comm);
+
+  return { rows: mapped, totalGram, totalRM, pendingComm, rate: RATE_GB_RM_PER_G };
+}
+/* ========= Load breakdown Tabung ========= */
+async function loadBreakdownTabung(customerIds, phones){
+  const TABLE = "tabung_txn";
+  let rows = [];
+
+  const res1 = await tryQuery(async ()=>{
+    return await sb
+      .from(TABLE)
+      .select("*")
+      .in("customer_id", customerIds || [])
+      .order("created_at", { ascending:false })
+      .limit(500);
+  });
+
+  if (!res1.error && Array.isArray(res1.data)){
+    rows = res1.data || [];
+  }else{
+    const res2 = await tryQuery(async ()=>{
+      return await sb
+        .from(TABLE)
+        .select("*")
+        .in("user_id", customerIds || [])
+        .order("created_at", { ascending:false })
+        .limit(500);
+    });
+
+    if (!res2.error && Array.isArray(res2.data)){
+      rows = res2.data || [];
+    }else{
+      const res3 = await tryQuery(async ()=>{
+        return await sb
+          .from(TABLE)
+          .select("*")
+          .in("phone", phones || [])
+          .order("created_at", { ascending:false })
+          .limit(500);
+      });
+
+      if (!res3.error && Array.isArray(res3.data)){
+        rows = res3.data || [];
+      }else{
+        const res4 = await tryQuery(async ()=>{
+          return await sb
+            .from(TABLE)
+            .select("*")
+            .order("created_at", { ascending:false })
+            .limit(500);
+        });
+
+        if (res4.error){
+          console.warn("loadBreakdownTabung error:", res1.error || res2.error || res3.error || res4.error);
+          return { rows: [], totalGram:0, totalRM:0, pendingComm:0 };
+        }
+
+        const phoneSet = new Set((phones||[]).map(p=>toDigitsPhone(p)));
+        rows = (res4.data || []).filter(r=>{
+          const p = toDigitsPhone(r.phone || r.customer_phone || r.user_phone);
+          return phoneSet.has(p);
+        });
+      }
+    }
+  }
+
+  const filtered = (rows||[]).filter(r=>{
+    const st = String(r.status || "").toUpperCase();
+    if (!st) return true;
+    return PAID_STATUSES.includes(st);
+  });
+
+  const gramCols = ["weight_g","grams","gram_g","amount_g","qty_g","units"];
+  const rmCols = ["amount_rm","total_rm","grand_total_rm","total","amount","rm"];
+  const centsCols = ["amount_cents","total_cents","grand_total_cents"];
+
+  function pick(o, keys){
+    for (const k of keys){
+      if (o && o[k] != null && o[k] !== "") return o[k];
+    }
+    return null;
+  }
+
+  const mapped = filtered.map(r=>{
+    const dt = r.paid_at || r.approved_at || r.created_at || r.updated_at;
+    const ref = r.reference || r.ref || r.id || "-";
+    const name = r.customer_name || r.user_name || r.name || "-";
+
+    const gram = Number(pick(r, gramCols) || 0);
+    const rm = (()=> {
+      const v1 = pick(r, rmCols);
+      if (v1 != null) return Number(v1);
+      const v2 = pick(r, centsCols);
+      if (v2 != null) return Number(v2)/100;
+      return 0;
+    })();
+
+    let comm = 0;
+    if (r.agent_commission_rm != null) comm = Number(r.agent_commission_rm || 0);
+    else comm = gram * RATE_TABUNG_RM_PER_G;
+
+    const rateUsed = normalizeRateUsed(r.agent_comm_rate_used, comm, gram);
+    const st = r.agent_comm_status || "UNPAID";
+
+    return { src:"Tabung", dt, ref, name, gram, rm, rate_used: rateUsed, comm, status: st };
+  });
+
+  const totalGram = sum(mapped, x=>x.gram);
+  const totalRM = sum(mapped, x=>x.rm);
+  const unpaid = mapped.filter(x=>String(x.status||"").toUpperCase() !== "PAID");
+  const pendingComm = sum(unpaid, x=>x.comm);
+
+  return { rows: mapped, totalGram, totalRM, pendingComm };
+}
+
+/* ========= Render breakdown table ========= */
+function renderBreakdown(rows){
+  const tbody = $("tbodyBreakdown");
+  const list = (rows||[]).slice().sort((a,b)=>{
+    const ta = new Date(a.dt || 0).getTime();
+    const tb = new Date(b.dt || 0).getTime();
+    return tb - ta;
+  });
+
+  if (!list.length){
+    tbody.innerHTML = `<tr><td colspan="8" class="text-muted small">Tiada butiran komisen untuk dipaparkan.</td></tr>`;
+    return;
+  }
+
+  tbody.innerHTML = list.map(r=>{
+    const dt = fmtDateShort(r.dt);
+    const src = r.src || "-";
+    const ref = r.ref || "-";
+    const name = r.name || "-";
+    const gram = Number(r.gram || 0);
+    const rm = Number(r.rm || 0);
+    const comm = Number(r.comm || 0);
+const st = r.status || "-";
+
+// guna rate_used kalau ada, kalau tak ada fallback kira comm/gram
+const rateUsed = Number(r.rate_used || 0) || (gram > 0 ? (comm/gram) : 0);
+
+return `
+  <tr>
+    <td>${dt}</td>
+    <td>${src}</td>
+    <td class="mono">${String(ref).slice(0,36)}</td>
+    <td>${name}</td>
+    <td class="text-end">${gram.toFixed(3)}</td>
+    <td class="text-end">${money(rm)}</td>
+    <td class="text-end">${rateUsed ? rateUsed.toFixed(2) : "-"}</td>
+    <td>${pillStatus(st)}</td>
+  </tr>
+`;
+  }).join("");
+}
+
+/* ========= Compute totals + update UI ========= */
+function updatePendingTotal(p916, p999, ptab){
+  const total = Number(p916||0) + Number(p999||0) + Number(ptab||0);
+  PENDING_KOMISEN = total;
+  $("komisenPending").textContent = money(total);
+
+  const btn = $("btnPay");
+  btn.disabled = !(total > 0.000001);
+}
+
+/* ========= Sejarah bayaran komisen ========= */
+async function loadHistory(){
+  const tbody = $("tbodyHistory");
+  tbody.innerHTML = `
+    <tr><td colspan="4" class="text-muted small">Memuatkan…</td></tr>
+  `;
+
+  const { data, error } = await sb
+    .from("agent_commission_payouts")
+    .select("id, created_at, amount_rm, note")
+    .eq("agent_id", AGENT_ID)
+    .order("created_at", { ascending:false });
+
+  if (error){
+    console.error("loadHistory error:", error);
+    tbody.innerHTML = `
+      <tr><td colspan="4" class="text-danger small">Ralat memuatkan sejarah bayaran.</td></tr>
+    `;
+    return;
+  }
+
+  const rows = data || [];
+  if (!rows.length){
+    tbody.innerHTML = `
+      <tr><td colspan="4" class="text-muted small">Belum ada bayaran komisen direkodkan.</td></tr>
+    `;
+    return;
+  }
+
+  tbody.innerHTML = rows.map(r=>{
+    const d = r.created_at
+      ? new Date(r.created_at).toLocaleString("ms-MY",{dateStyle:"medium",timeStyle:"short"})
+      : "-";
+    const amt = Number(r.amount_rm || 0);
+
+    return `
+      <tr>
+        <td>${d}</td>
+        <td class="text-end">${money(amt)}</td>
+        <td class="small">${(r.note || "").replace(/\n/g,"<br>")}</td>
+        <td class="text-end">
+          <button class="btn btn-sm btn-outline-secondary" disabled>
+            Resit
+          </button>
+        </td>
+      </tr>
+    `;
+  }).join("");
+}
+
+/* ========= Butang Bayar Komisen ========= */
+async function handlePay(){
+  if (!AGENT_ID || !AGENT_DATA) return;
+  if (!(PENDING_KOMISEN > 0)){
+    alert("Tiada komisen belum dibayar untuk agen ini.");
+    return;
+  }
+
+  const bankName  = BANK_DATA?.bank_name || "-";
+  const bankAcc   = BANK_DATA?.bank_account_no || "-";
+  const bankOwner = BANK_DATA?.customer_name || (AGENT_DATA.name || "-");
+
+  let infoBank = "Tiada maklumat akaun bank direkodkan. Sila semak sebelum transfer.";
+  if (BANK_DATA){
+    infoBank =
+      "Maklumat akaun (rujukan transfer):\n" +
+      `• Bank: ${bankName}\n` +
+      `• No. Akaun: ${bankAcc}\n` +
+      `• Nama Akaun: ${bankOwner}`;
+  }
+
+  const msg =
+    `Sahkan bayaran komisen berikut?\n\n` +
+    `Agen: ${AGENT_DATA.name || "-"}\n` +
+    `Jumlah: RM ${PENDING_KOMISEN.toFixed(2)}\n\n` +
+    infoBank + "\n\n" +
+    "Pastikan anda telah buat pemindahan bank sebelum tekan OK.";
+
+  if (!confirm(msg)) return;
+
+  try{
+    const note =
+      `Bayaran penuh komisen sehingga tarikh ini (admin-komisen-agent).\n` +
+      `Agen: ${AGENT_DATA.name || "-"}\n` +
+      `Jumlah: RM ${PENDING_KOMISEN.toFixed(2)}\n` +
+      (BANK_DATA
+        ? `Bank: ${bankName} | Akaun: ${bankAcc} | Nama: ${bankOwner}`
+        : `Bank: (tiada maklumat akaun disimpan)`);
+
+    const { error } = await sb
+      .from("agent_commission_payouts")
+      .insert({
+        agent_id: AGENT_ID,
+        amount_rm: PENDING_KOMISEN,
+        note: note,
+        created_by: "admin-panel"
+      });
+
+    if (error) throw error;
+
+    if (AGENT_DATA.phone){
+      const now = new Date().toLocaleString("ms-MY",{dateStyle:"medium",timeStyle:"short"});
+      const lines = [
+        `Assalamualaikum ${AGENT_DATA.name || "agen"},`,
+        "",
+        "Bayaran komisen agen Emas Amir telah DIKREDITKAN. ✅",
+        "",
+        `Tarikh: ${now}`,
+        `Jumlah: RM ${PENDING_KOMISEN.toFixed(2)}`,
+        BANK_DATA
+          ? `Ke akaun: ${bankName} ${bankAcc} (${bankOwner})`
+          : "Sila semak akaun bank anda.",
+        "",
+        "Jika jumlah ini tidak diterima dalam 1 hari bekerja, sila hubungi admin Emas Amir.",
+        "",
+        "Terima kasih kerana bersama Emas Amir. 🙏"
+      ];
+      try{ await sendWA(AGENT_DATA.phone, lines.join("\n")); }catch(e){}
+    }
+
+    showNotice("Bayaran komisen berjaya direkodkan.", "success");
+
+    await loadAgentSummary916();
+    await loadCommissionBreakdownAll();
+    await loadHistory();
+  }catch(e){
+    console.error("handlePay error:", e);
+    showNotice("Gagal merekod bayaran komisen. Sila cuba lagi.", "danger");
+  }
+}
+
+/* ========= Load semua breakdown + update summary ========= */
+async function loadCommissionBreakdownAll(){
+  const tbody = $("tbodyBreakdown");
+  tbody.innerHTML = `<tr><td colspan="9" class="text-muted small">Memuatkan…</td></tr>`;
+
+  const pack = await getCustomersUnderAgent(AGENT_DATA?.slug || "");
+  const custIds = pack.ids || [];
+  const custPhones = (pack.phones || []).map(p=>toDigitsPhone(p));
+
+  const b916 = await loadBreakdown916();
+  const b999 = await loadBreakdownGoldbar(custIds, custPhones);
+  const btab = await loadBreakdownTabung(custIds, custPhones);
+
+  // Ringkasan 999 & tabung: berat + nilai sahaja
+  $("summary999").innerHTML =
+    `Jumlah gram 999.9: ${fmtG(b999.totalGram)} g<br>` +
+    `Jumlah nilai 999.9: ${money(b999.totalRM)}`;
+
+  $("summaryTabung").innerHTML =
+    `Jumlah gram Tabung: ${fmtG(btab.totalGram)} g<br>` +
+    `Jumlah nilai Tabung: ${money(btab.totalRM)}`;
+
+  updatePendingTotal(b916.pendingComm, b999.pendingComm, btab.pendingComm);
+
+  const unpaidRows = []
+    .concat((b916.rows||[]).filter(r=>String(r.status||"").toUpperCase() !== "PAID"))
+    .concat((b999.rows||[]).filter(r=>String(r.status||"").toUpperCase() !== "PAID"))
+    .concat((btab.rows||[]).filter(r=>String(r.status||"").toUpperCase() !== "PAID"));
+
+  BD_ROWS = unpaidRows;
+  renderBreakdown(unpaidRows);
+}
+
+/* ========= Init ========= */
+document.addEventListener("DOMContentLoaded", async ()=>{
+  AGENT_ID = getAgentIdFromUrl();
+
+  if (!AGENT_ID){
+    showNotice("Parameter <code>agent_id</code> tiada. Sila buka halaman ini melalui senarai komisen.", "danger");
+    $("btnPay").disabled = true;
+    return;
+  }
+
+  await loadAgentCore();
+  await loadBankInfo();
+  await loadAgentSummary916();
+  await loadCommissionBreakdownAll();
+  await loadHistory();
+
+  $("btnPay")?.addEventListener("click", handlePay);
+});
+</script>
+</body>
+</html>

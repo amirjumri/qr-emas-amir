@@ -1,0 +1,855 @@
+<!doctype html>
+<html lang="ms">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Live • Emas Amir</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css">
+
+  <!-- LiveKit viewer SDK -->
+  <script src="https://cdn.jsdelivr.net/npm/livekit-client/dist/livekit-client.umd.min.js"></script>
+
+  <style>
+    body{background:#0b0b0f;color:#f9fafb;margin:0;}
+    .container-narrow{max-width:1100px}
+    .pill{display:inline-block;background:#111827;border-radius:999px;padding:2px 10px;font-size:12px;border:1px solid #374151;color:#e5e7eb}
+    .video-box{
+      background:#000;
+      border-radius:0;          /* bagi lebih full-page rasa */
+      overflow:hidden;
+      position:relative;
+      min-height:260px;
+      border-bottom:1px solid #111827;
+    }
+    video{width:100%;height:100%;object-fit:cover;background:#000;}
+    .live-indicator{display:flex;align-items:center;gap:6px;font-weight:600;color:#f9fafb}
+    .dot-live{width:10px;height:10px;border-radius:999px;background:#ef4444;display:inline-block;}
+    .badge-live{background:#e11d48;color:#fff;border-radius:999px;padding:2px 8px;font-size:12px;font-weight:700}
+    .live-card{border:1px solid #1f2933;border-radius:14px;overflow:hidden;background:#020617;color:#e5e7eb}
+    .live-img{width:100%;height:220px;object-fit:cover;background:#020617}
+    .mono{font-family:ui-monospace,Menlo,Consolas,monospace}
+    .price-wrap{display:flex;gap:.5rem;align-items:baseline}
+    .price-old{text-decoration:line-through;color:#9ca3af;font-weight:600}
+    .price-new{color:#f97316;font-weight:800}
+    .text-muted{color:#9ca3af !important;}
+    .live-section-title{color:#f9fafb;}
+
+    /* === Top bar atas video: status + viewer count === */
+    .video-top-bar{
+      position:absolute;
+      left:8px;
+      right:8px;
+      top:8px;
+      z-index:30;
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+      pointer-events:none;
+      font-size:12px;
+    }
+    .pill-small{
+      display:inline-flex;
+      align-items:center;
+      gap:6px;
+      padding:3px 10px;
+      border-radius:999px;
+      background:rgba(0,0,0,0.7);
+      color:#f9fafb;
+      backdrop-filter:blur(10px);
+      -webkit-backdrop-filter:blur(10px);
+    }
+    .pill-viewers{
+      display:inline-flex;
+      align-items:center;
+      gap:6px;
+      padding:3px 10px;
+      border-radius:999px;
+      background:rgba(15,23,42,0.8);
+      color:#f9fafb;
+      backdrop-filter:blur(10px);
+      -webkit-backdrop-filter:blur(10px);
+    }
+
+    /* ===== Overlay chat gaya TikTok ===== */
+    .overlay-chat{
+      position:absolute;
+      left:10px;
+      bottom:88px;           /* bagi ruang untuk product box + input */
+      width:60%;
+      max-width:260px;
+      display:flex;
+      flex-direction:column;
+      gap:4px;
+      pointer-events:none;
+      font-size:0.8rem;
+      z-index:20;
+    }
+    .chat-bubble{
+      display:inline-flex;
+      align-items:center;
+      gap:4px;
+      max-width:100%;
+      padding:4px 8px;
+      border-radius:999px;
+      background:rgba(0,0,0,0.55);
+      color:#f9fafb;
+      backdrop-filter:blur(10px);
+      -webkit-backdrop-filter:blur(10px);
+      animation:fadeIn 0.2s ease-out;
+      white-space:nowrap;
+      overflow:hidden;
+      text-overflow:ellipsis;
+    }
+    .chat-bubble strong{font-weight:700;}
+    .chat-bubble.fade-out{
+      animation:fadeOut 1.8s forwards;
+    }
+    @keyframes fadeIn{
+      from{opacity:0;transform:translateY(6px);}
+      to{opacity:1;transform:translateY(0);}
+    }
+    @keyframes fadeOut{
+      to{opacity:0;transform:translateY(-6px);}
+    }
+
+    /* === Product LIVE overlay dalam video === */
+    .overlay-product{
+      position:absolute;
+      left:8px;
+      right:8px;
+      bottom:52px;        /* dinaikkan sikit dari input komen */
+      z-index:24;
+      pointer-events:auto;
+      display:flex;
+      justify-content:center;
+    }
+    .overlay-product-inner{
+      display:flex;
+      align-items:center;
+      gap:8px;
+      padding:6px 10px;
+      border-radius:999px;
+      background:rgba(15,23,42,0.95);
+      color:#e5e7eb;
+      font-size:0.8rem;
+      box-shadow:0 8px 24px rgba(0,0,0,0.4);
+      max-width:100%;
+    }
+    .overlay-product-inner .code{
+      font-weight:700;
+      font-family:ui-monospace,Menlo,Consolas,monospace;
+    }
+    .overlay-product-inner .price{
+      font-weight:800;
+      color:#f97316;
+    }
+    .overlay-product-inner .weight{
+      font-size:0.7rem;
+      color:#9ca3af;
+    }
+    .overlay-product-inner a.btn{
+      padding:4px 12px;
+      font-size:0.75rem;
+      border-radius:999px;
+      white-space:nowrap;
+    }
+
+    /* Overlay input di atas video (bawah sekali) */
+    .overlay-input-wrap{
+      position:absolute;
+      left:8px;
+      right:8px;
+      bottom:8px;
+      z-index:25;
+      display:flex;
+      align-items:center;
+      gap:6px;
+      pointer-events:auto;
+    }
+    .overlay-input-wrap input{
+  flex:1;
+  border-radius:999px;
+  border:none;
+  padding:6px 12px;
+  /* ❗ penting untuk elak iPhone auto-zoom */
+  font-size:16px;          /* minimum 16px untuk Safari */
+  height:42px;             /* bagi input cukup tinggi */
+  background:rgba(15,23,42,0.85);
+  color:#f9fafb;
+  outline:none;
+}
+    .overlay-input-wrap input::placeholder{
+      color:#9ca3af;
+    }
+    .overlay-input-wrap button{
+      border-radius:999px;
+      border:none;
+      padding:7px 16px;
+      font-size:0.8rem;
+      font-weight:600;
+    }
+
+    /* Card komen panel – hanya untuk desktop */
+    .card-chat-panel{
+      background:#020617;
+      border-radius:14px;
+      border:1px solid #1f2933;
+      color:#e5e7eb;
+    }
+    .card-chat-panel .card-header{
+      border-bottom-color:#111827;
+      background:#020617;
+    }
+    #chatListPanel{
+      max-height:260px;
+      overflow-y:auto;
+      font-size:0.9rem;
+    }
+    hr.my-1{border-color:#111827;}
+
+    body{padding-bottom:40px;}
+    @media (max-width:576px){
+      .container-narrow{padding-left:0;padding-right:0;}
+      .overlay-chat{max-width:70%;}
+      .video-box{border-radius:0;}
+    }
+  </style>
+</head>
+<body>
+  <div class="container container-narrow py-0">
+    <!-- Header kecil atas (tak makan banyak ruang) -->
+    <div class="d-flex justify-content-between align-items-center px-3 pt-2 pb-1">
+      <div>
+        <div class="pill mb-1">Live • Emas Amir</div>
+        <small class="text-muted d-block">
+          Tonton live, komen & tekan <strong>Lock Sekarang</strong> bila minat.
+        </small>
+      </div>
+      <a href="index.html" class="btn btn-outline-light btn-sm">← Utama</a>
+    </div>
+
+    <!-- Video + status -->
+    <div class="video-box">
+      <video id="viewerVideo" autoplay playsinline muted></video>
+
+      <!-- Top status + viewer count -->
+      <div class="video-top-bar">
+        <div class="pill-small">
+          <span class="dot-live"></span>
+          <span id="liveStatusText">Menyambung live…</span>
+        </div>
+        <div class="pill-viewers">
+          👀 <span id="viewerCount">0 penonton</span>
+        </div>
+      </div>
+
+      <!-- Butang bunyi & reconnect (atas kanan, sedikit ke bawah) -->
+      <div style="position:absolute;right:8px;top:40px;z-index:32;display:flex;flex-direction:column;gap:6px;">
+        <button id="btnToggleSound" class="btn btn-sm btn-outline-light" disabled>🔇 Bunyi Mati</button>
+        <button id="btnReconnect" class="btn btn-sm btn-outline-primary">Sambung Semula</button>
+      </div>
+
+      <!-- Overlay komen gaya TikTok -->
+      <div class="overlay-chat" id="overlayChatList"></div>
+
+      <!-- Product LIVE dalam kotak video -->
+      <div class="overlay-product" id="overlayProduct"></div>
+
+      <!-- Input komen overlay -->
+      <form id="chatFormOverlay" class="overlay-input-wrap">
+        <input id="chatMsgOverlay"
+               type="text"
+               autocomplete="off"
+               placeholder="Tulis komen… (log masuk dulu)">
+        <button class="btn btn-danger btn-sm" type="submit">Hantar</button>
+      </form>
+    </div>
+
+    <!-- Tip audio -->
+    <div class="px-3 pt-2 pb-3">
+      <small class="text-muted">
+        Tip: Kalau bunyi tak keluar, tekan butang <strong>Bunyi</strong> di atas atau buka semula halaman ini.
+      </small>
+    </div>
+
+    <!-- Panel komen penuh (desktop sahaja) -->
+    <div class="container-narrow px-3">
+      <div class="card card-chat-panel mb-4 d-none d-md-block">
+        <div class="card-header d-flex justify-content-between align-items-center">
+          <span>💬 Komen Live</span>
+          <small id="chatStatus" class="text-muted">Menyambung chat…</small>
+        </div>
+        <div class="card-body">
+          <div id="chatListPanel"></div>
+          <small class="text-muted d-block mt-2">
+            Contoh: <strong>Nak lock RL0004361</strong> atau <strong>Dah bayar, resit hantar WhatsApp</strong>.
+          </small>
+        </div>
+      </div>
+    </div>
+
+    <!-- Barang Live Sekarang (senarai penuh) -->
+    <div class="container-narrow px-3">
+      <div class="d-flex justify-content-between align-items-center mb-2">
+        <h5 class="m-0 live-section-title">🛒 Barang Live Sekarang</h5>
+        <button id="btnRefreshLive" class="btn btn-sm btn-outline-primary">Refresh Senarai</button>
+      </div>
+      <div id="liveGrid" class="row g-3 mb-5"></div>
+      <div id="liveEmpty" class="text-muted small" style="display:none">
+        Belum ada barang ditanda LIVE. Sila tunggu host naikkan barang.
+      </div>
+    </div>
+  </div>
+
+  <!-- Supabase + Auth -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="auth.js?v=13.1"></script>
+
+  <!-- ===== LiveKit Viewer Logic ===== -->
+  <script>
+    const { Room, RoomEvent } = LivekitClient;
+
+    let room = null;
+    let attachedTracks = [];
+    let audioEnabled = false;
+
+    const videoEl      = document.getElementById('viewerVideo');
+    const txtLive      = document.getElementById('liveStatusText');
+    const viewerCountEl= document.getElementById('viewerCount');
+    const btnSound     = document.getElementById('btnToggleSound');
+    const btnReconn    = document.getElementById('btnReconnect');
+
+    function setLiveStatus(text, isLive){
+      txtLive.textContent = text;
+    }
+
+    function setSoundButtonState(enabled){
+      btnSound.disabled = !enabled;
+      btnSound.textContent = audioEnabled ? '🔊 Bunyi Hidup' : '🔇 Bunyi Mati';
+    }
+
+    function updateViewerCount(){
+      if (!room || !viewerCountEl){
+        if (viewerCountEl) viewerCountEl.textContent = '0 penonton';
+        return;
+      }
+      const others = room.participants ? room.participants.size : 0;
+      const total  = others + 1; // kira sekali device sendiri
+      viewerCountEl.textContent = total + ' penonton';
+    }
+
+    async function getViewerToken(){
+      const res = await fetch('/.netlify/functions/livekit-token', {
+        method: 'POST',
+        headers: {'Content-Type':'application/json'},
+        body: JSON.stringify({
+          role: 'viewer',
+          room: 'emasamir-live',
+          identity: 'viewer-' + Date.now()
+        })
+      });
+      if (!res.ok){
+        const t = await res.text();
+        throw new Error('Gagal dapat token: ' + t);
+      }
+      return res.json();
+    }
+
+    function detachTracks(){
+      attachedTracks.forEach(t => {
+        try { t.detach(); } catch(e){}
+      });
+      attachedTracks = [];
+      if (videoEl){
+        try { videoEl.srcObject = null; } catch(e){}
+      }
+    }
+
+    async function connectViewer(){
+      try{
+        setLiveStatus('Menyambung live…', false);
+        if (viewerCountEl) viewerCountEl.textContent = '0 penonton';
+        btnReconn.disabled = true;
+        detachTracks();
+
+        const info = await getViewerToken();
+        room = new Room({
+          adaptiveStream: true,
+          dynacast: true
+        });
+
+        room.on(RoomEvent.Connected, () => {
+          setLiveStatus('Sedang LIVE', true);
+          btnReconn.disabled = false;
+          setSoundButtonState(true);
+          updateViewerCount();
+        });
+
+        room.on(RoomEvent.Disconnected, () => {
+          setLiveStatus('Terputus. Cuba sambung semula.', false);
+          btnReconn.disabled = false;
+          if (viewerCountEl) viewerCountEl.textContent = '0 penonton';
+        });
+
+        room.on(RoomEvent.ParticipantConnected, () => updateViewerCount());
+        room.on(RoomEvent.ParticipantDisconnected, () => updateViewerCount());
+
+        room.on(RoomEvent.TrackSubscribed, (track, publication, participant) => {
+          try{
+            if (track.kind === 'video'){
+              track.attach(videoEl);
+              attachedTracks.push(track);
+            } else if (track.kind === 'audio'){
+              if (!audioEnabled){
+                videoEl.muted = true;
+              }
+              const audioEl = document.createElement('audio');
+              audioEl.autoplay = true;
+              track.attach(audioEl);
+              attachedTracks.push(track);
+            }
+          }catch(e){}
+        });
+
+        room.on(RoomEvent.TrackUnsubscribed, (track) => {
+          try { track.detach(); } catch(e){}
+        });
+
+        await room.connect(info.url, info.token);
+      }catch(e){
+        console.error(e);
+        setLiveStatus('Ralat sambung live. Cuba lagi.', false);
+        btnReconn.disabled = false;
+      }
+    }
+
+    btnReconn.addEventListener('click', ()=>{
+      if (room){
+        try{ room.disconnect(); }catch(e){}
+        room = null;
+      }
+      connectViewer();
+    });
+
+    btnSound.addEventListener('click', ()=>{
+      audioEnabled = !audioEnabled;
+      if (videoEl){
+        videoEl.muted = !audioEnabled;
+      }
+      setSoundButtonState(true);
+    });
+
+    window.addEventListener('load', ()=>{
+      connectViewer();
+      setSoundButtonState(false);
+    });
+  </script>
+
+ <!-- ===== Supabase: Barang Live + Chat ===== -->
+  <script>
+    const SB_URL = "https://dduizetstqqjrpsezbpi.supabase.co";
+    const SB_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRkdWl6ZXRzdHFxanJwc2V6YnBpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTg3MzI0ODQsImV4cCI6MjA3NDMwODQ4NH0.CrlHXrmHtKgR9qc2192U6quRb5lpFEeOSgwG0Lb8KRM";
+    const sb = window.supabase.createClient(SB_URL, SB_KEY);
+
+    // ===== Auth (guna akaun emasamir.app untuk komen) =====
+    const auth = (window.auth_get && window.auth_get()) || null;
+    const liveUser = auth ? {
+      id: auth.id,
+      name: auth.name || '',
+      phone: auth.phone || ''
+    } : null;
+
+    const liveGrid  = document.getElementById('liveGrid');
+const liveEmpty = document.getElementById('liveEmpty');
+const btnRefreshLive = document.getElementById('btnRefreshLive');
+const money = n => (Number(n||0)).toFixed(2);
+
+const overlayProduct = document.getElementById('overlayProduct'); // ❗ tambahan
+
+    function toCard(row){
+      const code  = String(row?.code || '').toUpperCase();
+      const name  = row?.name || row?.product_name || row?.design_name || code || 'Barang 916';
+      const berat = Number(row?.weight_g || 0);
+
+      const candidates = [
+        row?._img_from_rpc,
+        row?.img,
+        row?.img1,
+        row?.product_img1,
+        row?.design_img1,
+        row?.design_img1_url,
+        row?.image_url,
+        row?.img_url,
+        row?.image1,
+        row?.photo_url
+      ];
+      const firstImg = candidates.find(u => u && String(u).trim().length > 5);
+      const img = firstImg || ('https://placehold.co/640x480?text=' + encodeURIComponent(code || 'EMAS 916'));
+
+      const basePerG = Number(
+        row?.base_price_per_g ??
+        row?.price_per_g_current ?? 0
+      );
+      const baseUpah = Number(
+        row?.base_upah_rm ??
+        row?.upah_default_rm ?? 0
+      );
+      const g = berat;
+      const calc = (pg,g,u)=>((pg*g)+u)*1.08;
+
+      const normalRM = (
+        row?.normal_price_rm != null
+          ? Number(row.normal_price_rm)
+          : calc(basePerG,g,baseUpah)
+      );
+
+      const ovPerG_raw = (row?.ov_price_per_g ?? row?.override_price_per_g ?? row?.price_per_g_live);
+      const ovUpah_raw = (row?.ov_upah_rm     ?? row?.upah_override_rm     ?? row?.upah_live);
+
+      const perG_eff = (ovPerG_raw != null) ? Number(ovPerG_raw) : basePerG;
+      const upah_eff = (ovUpah_raw != null) ? Number(ovUpah_raw) : baseUpah;
+
+      const liveRM = (
+        row?.live_price_rm != null
+          ? Number(row.live_price_rm)
+          : calc(perG_eff,g,upah_eff)
+      );
+
+      const hasDrop = (liveRM > 0 && normalRM > 0 && (normalRM - liveRM) > 0.005);
+      const hargaHTML = hasDrop
+        ? `<div class="price-wrap h6 mt-1 mb-2">
+             <div class="price-old">RM ${normalRM.toFixed(2)}</div>
+             <div class="price-new">RM ${liveRM.toFixed(2)}</div>
+           </div>`
+        : `<div class="h6 mt-1 mb-2">RM ${liveRM.toFixed(2)}</div>`;
+
+      return `
+        <div class="col-12 col-sm-6 col-lg-4">
+          <div class="live-card h-100">
+            <img class="live-img" src="${img}" alt="${name}"
+              onerror="if(!this.dataset.f){this.dataset.f=1;this.src='https://placehold.co/640x480?text=${code}'}">
+            <div class="p-3">
+              <div class="d-flex align-items-center justify-content-between">
+                <span class="badge-live">LIVE</span>
+                <small class="text-muted mono">${code}</small>
+              </div>
+              <div class="mt-1">${name}</div>
+              <div class="text-muted small">Berat: ${berat.toFixed(2)} g</div>
+              ${hargaHTML}
+              <a href="j916.html#checkout?code=${encodeURIComponent(code)}&checkout=1" class="btn btn-danger w-100">
+                Lock Sekarang
+              </a>
+            </div>
+          </div>
+        </div>
+      `;
+    }
+
+function renderOverlayProduct(row){
+  if (!overlayProduct) return;
+
+  // Kalau tak ada barang LIVE, kosongkan overlay
+  if (!row){
+    overlayProduct.innerHTML = '';
+    return;
+  }
+
+  const code  = String(row?.code || '').toUpperCase();
+  const berat = Number(row?.weight_g || 0);
+
+  const basePerG = Number(
+    row?.base_price_per_g ??
+    row?.price_per_g_current ?? 0
+  );
+  const baseUpah = Number(
+    row?.base_upah_rm ??
+    row?.upah_default_rm ?? 0
+  );
+  const g = berat;
+  const calc = (pg,g,u)=>((pg*g)+u)*1.08;
+
+  const ovPerG_raw = (row?.ov_price_per_g ?? row?.override_price_per_g ?? row?.price_per_g_live);
+  const ovUpah_raw = (row?.ov_upah_rm     ?? row?.upah_override_rm     ?? row?.upah_live);
+
+  const perG_eff = (ovPerG_raw != null) ? Number(ovPerG_raw) : basePerG;
+  const upah_eff = (ovUpah_raw != null) ? Number(ovUpah_raw) : baseUpah;
+
+  const liveRM = (
+    row?.live_price_rm != null
+      ? Number(row.live_price_rm)
+      : calc(perG_eff,g,upah_eff)
+  );
+
+  overlayProduct.innerHTML = `
+    <div class="overlay-product-inner">
+      <span class="badge-live">LIVE</span>
+      <div>
+        <div class="code">${code}</div>
+        <div class="weight">${berat.toFixed(2)} g</div>
+      </div>
+      <div class="price">RM ${liveRM.toFixed(2)}</div>
+      <a href="j916.html#checkout?code=${encodeURIComponent(code)}&checkout=1"
+         class="btn btn-danger btn-sm">
+        Lock
+      </a>
+    </div>
+  `;
+}
+
+    async function loadLiveCards(){
+  try{
+    const { data: rows, error } = await sb
+      .from('j916_live_cards_pricing_v1')
+      .select('*')
+      .order('ts',{ascending:false})
+      .limit(24);
+    if(error) throw error;
+
+    if(!rows || !rows.length){
+      liveGrid.innerHTML = '';
+      liveEmpty.style.display = '';
+      renderOverlayProduct(null);      // ❗ kosongkan kotak overlay
+      return;
+    }
+
+    liveEmpty.style.display = 'none';
+    liveGrid.innerHTML = rows.map(toCard).join('');
+
+    // ❗ ambil barang pertama sebagai “Barang LIVE” dalam video
+    renderOverlayProduct(rows[0]);
+  }catch(e){
+    console.warn('Live cards error:', e);
+    liveGrid.innerHTML = '';
+    liveEmpty.style.display = '';
+    renderOverlayProduct(null);
+  }
+}
+
+    btnRefreshLive?.addEventListener('click', loadLiveCards);
+    loadLiveCards();
+    setInterval(loadLiveCards, 20000);
+
+    // ========= Live Chat (komen) =========
+    const CHAT_ROOM = 'emasamir-live';
+
+    const overlayChatList = document.getElementById('overlayChatList');
+    const overlayForm     = document.getElementById('chatFormOverlay');
+    const overlayInput    = document.getElementById('chatMsgOverlay');
+
+    const chatListPanel = document.getElementById('chatListPanel');
+    const chatStatus    = document.getElementById('chatStatus');
+
+    // Untuk elak mesej double & untuk polling
+    const shownIds = new Set();
+    let lastCreatedAt = null;
+
+    function setChatStatus(text){
+      if (chatStatus) chatStatus.textContent = text;
+    }
+
+    function formatTime(iso){
+      try{
+        return new Date(iso).toLocaleTimeString('ms-MY',{hour:'2-digit',minute:'2-digit',hour12:true});
+      }catch{ return ''; }
+    }
+
+    function escapeHtml(str){
+      return String(str || '').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+    }
+
+    // ====== Papar bubble di atas video (gaya TikTok) ======
+   function addOverlayBubble(row){
+  if (!overlayChatList || !row) return;
+  const name = row.name || 'Tetamu';
+  const msg  = row.message || '';
+
+  const div = document.createElement('div');
+  div.className = 'chat-bubble';
+  div.innerHTML = `<strong>${escapeHtml(name)}</strong> ${escapeHtml(msg)}`;
+  overlayChatList.appendChild(div);
+
+  // ❗ maksimum 10 bubble sekali gus
+  while (overlayChatList.children.length > 10){
+    overlayChatList.removeChild(overlayChatList.firstChild);
+  }
+
+  // ❗ lambatkan hilang:
+  //  - 20s baru mula fade
+  //  - 26s baru betul-betul buang
+  setTimeout(()=> div.classList.add('fade-out'), 20000);
+  setTimeout(()=> { if (div.parentNode) div.parentNode.removeChild(div); }, 26000);
+}
+
+    // ====== Panel list (desktop) ======
+    function renderPanelMessage(row){
+      if (!chatListPanel || !row) return;
+      const div = document.createElement('div');
+
+      const name   = row.name || 'Tetamu';
+      const phone4 = (row.phone4 || '').trim();
+      const time   = formatTime(row.created_at);
+      const msg    = row.message || '';
+
+      const head = phone4 ? `${name} (${phone4})` : name;
+
+      div.innerHTML = `
+        <div>
+          <strong>${escapeHtml(head)}</strong>
+          <span class="text-muted small">• ${escapeHtml(time)}</span>
+        </div>
+        <div>${escapeHtml(msg)}</div>
+        <hr class="my-1">
+      `;
+      chatListPanel.appendChild(div);
+      chatListPanel.scrollTop = chatListPanel.scrollHeight;
+    }
+
+    function registerSeen(row){
+      if (!row) return;
+      if (row.id) shownIds.add(row.id);
+      if (row.created_at){
+        if (!lastCreatedAt || row.created_at > lastCreatedAt){
+          lastCreatedAt = row.created_at;
+        }
+      }
+    }
+
+    // ====== Muat komen awal (3 jam terakhir) ======
+    async function loadChatInitial(){
+      try{
+        setChatStatus('Muat naik komen…');
+
+        const since = new Date(Date.now() - 3 * 60 * 60 * 1000).toISOString(); // 3 jam
+        const { data, error } = await sb
+          .from('live_chat_messages')
+          .select('*')
+          .eq('room', CHAT_ROOM)
+          .gte('created_at', since)
+          .order('created_at', { ascending: true })
+          .limit(200);
+
+        if (error) throw error;
+        if (chatListPanel) chatListPanel.innerHTML = '';
+        (data || []).forEach(row => {
+          registerSeen(row);
+          renderPanelMessage(row);
+        });
+        setChatStatus('Chat live aktif.');
+      }catch(e){
+        console.warn('chat load error', e);
+        setChatStatus('Gagal muat komen (cuba refresh).');
+      }
+    }
+
+    // ====== Polling komen baru (fallback bila realtime tak jalan) ======
+    async function pollNewChats(){
+      try{
+        if (!lastCreatedAt){
+          // belum ada apa² – jangan spam DB
+          return;
+        }
+        const { data, error } = await sb
+          .from('live_chat_messages')
+          .select('*')
+          .eq('room', CHAT_ROOM)
+          .gt('created_at', lastCreatedAt)
+          .order('created_at', { ascending: true })
+          .limit(50);
+
+        if (error) throw error;
+        (data || []).forEach(row => {
+          if (row.id && shownIds.has(row.id)) return;
+          registerSeen(row);
+          addOverlayBubble(row);
+          renderPanelMessage(row);
+        });
+      }catch(e){
+        console.warn('chat poll error', e);
+      }
+    }
+
+    // ====== Hantar komen (guna login emasamir.app) ======
+    async function sendChatMessage(msg){
+      if (!liveUser){
+        alert('Sila log masuk dulu untuk hantar komen.');
+        location.href = 'login.html#login';
+        return;
+      }
+
+      const dispName =
+        (liveUser.name && liveUser.name.trim()) ||
+        liveUser.phone ||
+        'Pelanggan';
+
+      let phone4 = null;
+      const digits = (liveUser.phone || '').replace(/\D/g,'');
+      if (digits.length >= 4){
+        phone4 = digits.slice(-4);
+      }
+
+      try{
+        const { data, error } = await sb
+          .from('live_chat_messages')
+          .insert({
+            room: CHAT_ROOM,
+            name: dispName,
+            phone4,
+            message: msg
+          })
+          .select()
+          .single();
+        if (error) throw error;
+
+        registerSeen(data);
+        // Papar terus bubble & panel tanpa tunggu realtime
+        addOverlayBubble(data);
+        renderPanelMessage(data);
+      }catch(e){
+        console.warn('chat insert error', e);
+        alert('Gagal hantar komen, cuba lagi.');
+      }
+    }
+
+    overlayForm?.addEventListener('submit', async (ev)=>{
+      ev.preventDefault();
+      const msg = (overlayInput.value || '').trim();
+      if (!msg) return;
+      await sendChatMessage(msg);
+      overlayInput.value = '';
+    });
+
+    // ====== Realtime untuk komen orang lain ======
+    try{
+      sb.channel('live-chat-room')
+        .on(
+          'postgres_changes',
+          {
+            event: 'INSERT',
+            schema: 'public',
+            table: 'live_chat_messages',
+            filter: 'room=eq.' + CHAT_ROOM
+          },
+          (payload) => {
+            const row = payload.new;
+            if (row.id && shownIds.has(row.id)) return;
+            registerSeen(row);
+            addOverlayBubble(row);
+            renderPanelMessage(row);
+          }
+        )
+        .subscribe((status) => {
+          if (status === 'SUBSCRIBED'){
+            setChatStatus('Chat live aktif.');
+          }
+        });
+    }catch(e){
+      console.warn('chat realtime error', e);
+    }
+
+    // Muat komen 3 jam terkini
+    loadChatInitial();
+    // Polling laju setiap 2 saat sebagai backup realtime
+    setInterval(pollNewChats, 2000);
+  </script>
+</body>
+</html>

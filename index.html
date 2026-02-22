@@ -1,0 +1,542 @@
+<!doctype html>
+<html lang="ms">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Emas Amir</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css">
+  <style>
+    body{background:#fff;}
+    .logo{max-width:380px;width:70%;margin:32px auto 10px;display:block}
+    .hero{max-width:880px;margin:10px auto 0}
+    .hero img{width:100%;border-radius:18px}
+    .brand{font-weight:800;font-size:48px}
+    .top-actions{max-width:1140px;margin:10px auto 0;padding:0 12px;display:flex;justify-content:flex-end;gap:8px;align-items:center;flex-wrap:wrap}
+    .pill{display:inline-block;background:#f8f9fa;border:1px solid #e9ecef;border-radius:999px;padding:2px 10px;font-size:12px}
+    .pill-admin{background:#e8f7ee;border-color:#c9ecd8;color:#157347;font-weight:600}
+    .btn-chip{border-radius:999px}
+    .card-plain{max-width:880px;margin:12px auto 0}
+    table.gold {width:100%;border-collapse:collapse}
+    table.gold th,table.gold td{padding:12px 10px;border-bottom:1px solid #eee;text-align:left;vertical-align:middle}
+    table.gold thead th{background:#fafafa;font-weight:700}
+    .btn-tabung.btn-lg{padding:.9rem 1.4rem;font-weight:700;border-radius:14px;border:none;background:linear-gradient(180deg,#ff4d4f,#d9363e);box-shadow:0 6px 16px rgba(217,54,62,.35)}
+    .btn-tabung.btn-lg:hover{filter:brightness(0.95)}
+    .btn-outline-secondary{border-radius:12px}
+    .btn-goldbar.btn-lg{padding:.9rem 1.4rem;font-weight:700;border-radius:14px;border:1px solid #e6c77a;color:#6b5400;background:linear-gradient(180deg,#ffe9a8,#ffd768);box-shadow:0 6px 16px rgba(189,152,49,.25)}
+    .btn-goldbar.btn-lg:hover{filter:brightness(0.98)}
+    .live-wrap{max-width:1140px;margin:24px auto 0;padding:0 12px}
+    .live-card{border:1px solid #eee;border-radius:14px;overflow:hidden;background:#fff}
+    .live-img{width:100%;height:220px;object-fit:cover;background:#f6f6f6}
+    .live-title{font-weight:700;margin:6px 0 4px}
+    .price{font-weight:800}
+    .badge-live{background:#e11d48;color:#fff;border-radius:999px;padding:2px 8px;font-size:12px;font-weight:700}
+    @media (max-width:576px){ .brand{font-size:36px} }
+    .price-wrap{display:flex;gap:.5rem;align-items:baseline}
+    .price-old{text-decoration:line-through;color:#6b7280;font-weight:600}
+    .price-new{color:#dc2626;font-weight:800}
+    .mono{font-family:ui-monospace,Menlo,Consolas,monospace}
+
+/* ===== PWA Install Banner ===== */
+.pwa-banner{
+  position: fixed;
+  left: 12px;
+  right: 12px;
+  bottom: 12px;
+  z-index: 9999;
+  background: #111827;
+  color: #fff;
+  border-radius: 14px;
+  padding: 12px 12px;
+  box-shadow: 0 10px 30px rgba(0,0,0,.25);
+  display: none;
+}
+.pwa-row{
+  display:flex;
+  gap:10px;
+  align-items:center;
+  justify-content:space-between;
+}
+.pwa-left{display:flex; gap:10px; align-items:flex-start;}
+.pwa-icon{
+  width:44px;height:44px;border-radius:12px;
+  background:#fff; display:flex; align-items:center; justify-content:center;
+  overflow:hidden; flex:0 0 auto;
+}
+.pwa-icon img{width:100%;height:100%;object-fit:cover;}
+.pwa-title{font-weight:800; line-height:1.15;}
+.pwa-sub{opacity:.9; font-size:13px; line-height:1.25; margin-top:2px;}
+.pwa-actions{display:flex; gap:8px; align-items:center; flex:0 0 auto;}
+.pwa-btn{
+  border:0; border-radius:999px;
+  padding:8px 12px; font-weight:800;
+}
+.pwa-btn-install{background:#fbbf24; color:#111827;}
+.pwa-btn-close{background:rgba(255,255,255,.12); color:#fff;}
+.pwa-ios-steps{
+  margin-top:8px;
+  font-size:13px;
+  opacity:.95;
+  display:none;
+}
+.pwa-ios-steps b{font-weight:800;}
+
+  </style>
+
+<!-- PWA -->
+  <link rel="manifest" href="/manifest.json">
+  <meta name="theme-color" content="#c9a24d">
+
+  <!-- iOS PWA -->
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
+  <meta name="apple-mobile-web-app-title" content="Emas Amir">
+  <link rel="apple-touch-icon" href="/icons/icon-180.png">
+</head>
+<body>
+  <div class="top-actions">
+    <span id="loginStatus" class="pill">Memuatkan…</span>
+    <span id="adminBadge" class="pill pill-admin" style="display:none;">Admin ✅</span>
+    <button id="btnAdmin" class="btn btn-sm btn-outline-danger btn-chip" type="button" style="display:none">Admin</button>
+    <a href="/account.html"
+       id="btnAccount"
+       class="btn btn-sm btn-outline-secondary btn-chip"
+       style="display:none">
+      Akaun
+    </a>
+    <a href="/login.html#login" class="btn btn-sm btn-outline-secondary btn-chip" id="btnLogin">Log masuk/Daftar</a>
+    <button id="btnLogout" class="btn btn-sm btn-outline-secondary btn-chip" type="button" style="display:none">Log keluar</button>
+    <a href="/policy.html" class="btn btn-sm btn-outline-secondary btn-chip">Polisi & Terma</a>
+  </div>
+
+  <div class="container text-center pb-5">
+    <!-- ✅ gambar ikut root supaya /a/slug pun boleh nampak -->
+    <img src="/logo-emas-amir.png" alt="Emas Amir" class="logo">
+
+    <div class="card card-plain text-start">
+      <div class="card-body">
+        <h4 class="card-title mb-2">💰 Harga Emas Harian</h4>
+        <div id="lastUpdated" class="text-muted small mb-3">Terkini: memuatkan…</div>
+        <div class="table-responsive">
+          <table class="gold">
+            <thead>
+              <tr><th>Tarikh & Masa</th><th>Emas 999.9 (1g)</th><th>Emas 916 (1g)</th></tr>
+            </thead>
+            <tbody id="goldPriceTable"><tr><td colspan="3">Memuatkan...</td></tr></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <div class="hero px-3">
+      <!-- ✅ hero image ikut root -->
+      <img src="/kedai1.jpg" class="d-block w-100" alt="">
+    </div>
+
+    <div class="mt-4">
+      <h1 class="brand">Emas Amir</h1>
+      <p class="lead mb-4">Premium Trusted Since 2016</p>
+      <div class="d-flex justify-content-center gap-2 flex-wrap">
+        <a class="btn btn-tabung btn-lg text-white" href="/tabung.html">Tabung</a>
+        <a class="btn btn-outline-secondary btn-lg" href="/j916.html">Barang Kemas 916</a>
+        <a class="btn btn-goldbar btn-lg" href="/goldbar-coin.html">GoldBar/Coin Fizikal</a>
+        <a class="btn btn-outline-secondary btn-lg" href="/jual-emas.html">Jual emas anda dengan kami</a>
+      </div>
+      <div class="mt-3"><a href="/policy.html" class="small text-muted">Lihat Polisi & Terma</a></div>
+    </div>
+  </div>
+
+  <div class="live-wrap" id="liveWrap" style="display:none">
+    <div class="d-flex align-items-center justify-content-between mb-2">
+      <div class="d-flex align-items-center gap-2">
+        <h4 class="m-0">🔴 Live Sekarang</h4>
+        <span class="badge-live">SEDANG LIVE</span>
+      </div>
+      <!-- Butang pergi ke halaman komen -->
+      <a href="/comment.html" class="btn btn-sm btn-outline-danger btn-chip">
+        💬 Komen & Lock di sini
+      </a>
+    </div>
+    <div id="liveGrid" class="row g-3"></div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <!-- ✅ script ikut root -->
+  <script src="/agent-ref.js?v=1"></script>
+  <script src="/auth.js?v=13.1"></script>
+  <script>
+  // ===== Flag admin (default) =====
+  window.__isAdmin = false;
+
+  // baru — tambah #checkout supaya modal terus fokus
+  function checkoutHref(code){
+    const c = String(code || '').trim().toUpperCase();
+    return '/j916.html#checkout?code=' + encodeURIComponent(c) + '&checkout=1';
+  }
+
+  /* Helper normalisasi phone (untuk semakan admin) */
+  function normalizePhone(p){
+    if(!p) return '';
+    p = (''+p).trim().replace(/\s|-/g,'');
+    if (p.startsWith('+60')) return p;
+    if (p.startsWith('60'))  return '+'+p;
+    if (p.startsWith('0'))   return '+60'+p.slice(1);
+    return p;
+  }
+
+  (async function(){
+    const $ = id => document.getElementById(id);
+    window.sb = window.sb || supabase.createClient(
+      "https://dduizetstqqjrpsezbpi.supabase.co",
+      "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRkdWl6ZXRzdHFxanJwc2V6YnBpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTg3MzI0ODQsImV4cCI6MjA3NDMwODQ4NH0.CrlHXrmHtKgR9qc2192U6quRb5lpFEeOSgwG0Lb8KRM"
+    );
+    const sb = window.sb;
+
+    const money = n => (Number(n||0)).toFixed(2);
+    const fmtDT = iso => { try { return new Date(iso).toLocaleString("ms-MY",{dateStyle:"medium",timeStyle:"short",hour12:true}); } catch { return iso; } };
+
+    /* ====== HARGA EMAS ====== */
+    async function loadHarga(){
+      try{
+        const { data } = await sb.from("gold_prices")
+          .select("ddate, price_9999, price_916")
+          .order("ddate",{ascending:false})
+          .limit(1).maybeSingle();
+        if(!data){
+          $("goldPriceTable").innerHTML = `<tr><td colspan="3">Tiada rekod</td></tr>`;
+          return;
+        }
+        $("goldPriceTable").innerHTML =
+          `<tr><td>${fmtDT(data.ddate)}</td><td>RM ${money(data.price_9999)}</td><td>RM ${money(data.price_916)}</td></tr>`;
+        $("lastUpdated").textContent =
+          `Terkini: ${fmtDT(data.ddate)} — 999.9 RM ${money(data.price_9999)}, 916 RM ${money(data.price_916)}`;
+      }catch(e){ console.warn(e); }
+    }
+    await loadHarga();
+
+    /* ====== LOGIN / ADMIN BADGE ====== */
+    try {
+      const auth = window.auth_get && window.auth_get();
+      const rawPhone = auth?.phone || '';
+      const p = normalizePhone(rawPhone);
+
+      console.log('[DEBUG] auth =', auth);
+      console.log('[DEBUG] rawPhone =', rawPhone);
+      console.log('[DEBUG] normalized =', p);
+
+      const who = auth?.name?.trim() ? auth.name : rawPhone;
+      document.getElementById("loginStatus").textContent =
+        auth ? `Log masuk sebagai ${who}` : "Tidak log masuk";
+
+      const btnAccount = document.getElementById("btnAccount");
+      const btnLogin   = document.getElementById("btnLogin");
+      const btnLogout  = document.getElementById("btnLogout");
+
+      if (auth) {
+        if (btnAccount) btnAccount.style.display = "";
+        if (btnLogin)   btnLogin.style.display   = "none";
+        if (btnLogout)  btnLogout.style.display  = "";
+
+        btnLogout.onclick = () => {
+          window.auth_clear && window.auth_clear();
+          location.reload();
+        };
+      } else {
+        if (btnAccount) btnAccount.style.display = "none";
+        if (btnLogin)   btnLogin.style.display   = "";
+        if (btnLogout)  btnLogout.style.display  = "none";
+      }
+
+      let isAdmin = false;
+      if (p) {
+        const variants = [
+          rawPhone,
+          p,
+          p.replace('+60', '0'),
+          p.replace('+', ''),
+          rawPhone.replace(/^0/, '60')
+        ];
+
+        for (const cand of variants) {
+          try {
+            const { data, error } = await sb.rpc("check_admin_by_phone", { p_phone: cand });
+            console.log('[DEBUG] try', cand, '=>', data, error);
+            if (data === true || data === 'true' || data === 't' || data === 1) {
+              isAdmin = true;
+              break;
+            }
+          } catch (e) {
+            console.warn('[DEBUG] RPC error', cand, e);
+          }
+        }
+      }
+      console.log('[DEBUG] Final isAdmin =', isAdmin);
+
+      if (isAdmin) {
+        window.__isAdmin = true;
+
+        document.getElementById("adminBadge").style.display = "";
+        document.getElementById("btnAdmin").style.display = "";
+        document.getElementById("btnAdmin").onclick = () => location.href = "/admin.html";
+      }
+    } catch (e) {
+      console.warn("[admin-check] error:", e);
+    }
+
+    /* ====== LIVE SEKARANG ====== */
+    async function getPrice916(){
+      try{
+        const { data, error } = await sb.rpc('price_916_current_v1');
+        if(error) throw error;
+        const p = Number((Array.isArray(data)?data[0]:data)?.price_per_g||0);
+        return p>0 ? p : 0;
+      }catch{ return 0; }
+    }
+
+    function computePrice916(perg, berat, upah){
+      const g = Number(berat||0), u = Number(upah||0), pg = Number(perg||0);
+      if(!g || !pg) return 0;
+      return ((pg * g) + u) * 1.08;
+    }
+
+    function toCard(row, p916){
+      const code  = String(row?.code || '').toUpperCase();
+      const name  = row?.name || row?.product_name || row?.design_name || code || 'Barang 916';
+      const berat = Number(row?.weight_g || 0);
+
+      const candidates = [
+        row?._img_from_rpc,
+        row?.img,
+        row?.img1,
+        row?.product_img1,
+        row?.design_img1,
+        row?.design_img1_url,
+        row?.image_url,
+        row?.img_url,
+        row?.image1,
+        row?.photo_url
+      ];
+      const firstImg = candidates.find(u => u && String(u).trim().length > 5);
+      const img = firstImg || ('https://placehold.co/640x480?text=' + encodeURIComponent(code || 'EMAS 916'));
+
+      const calc = (pg, g, u) => ((Number(pg||0)*Number(g||0)) + Number(u||0)) * 1.08;
+
+      const basePerG = Number(
+        row?.base_price_per_g ??
+        row?.price_per_g_current ??
+        p916 ?? 0
+      );
+      const baseUpah = Number(
+        row?.base_upah_rm ??
+        row?.upah_default_rm ?? 0
+      );
+
+      const normalRM = (
+        row?.normal_price_rm !== undefined && row?.normal_price_rm !== null
+          ? Number(row.normal_price_rm)
+          : calc(basePerG, berat, baseUpah)
+      );
+
+      const ovPerG_raw = (row?.ov_price_per_g ?? row?.override_price_per_g ?? row?.price_per_g_live);
+      const ovUpah_raw = (row?.ov_upah_rm     ?? row?.upah_override_rm     ?? row?.upah_live);
+
+      const perG_eff = (ovPerG_raw !== null && ovPerG_raw !== undefined) ? Number(ovPerG_raw) : basePerG;
+      const upah_eff = (ovUpah_raw !== null && ovUpah_raw !== undefined) ? Number(ovUpah_raw) : baseUpah;
+
+      const liveRM = (
+        row?.live_price_rm !== undefined && row?.live_price_rm !== null
+          ? Number(row.live_price_rm)
+          : calc(perG_eff, berat, upah_eff)
+      );
+
+      const hasDrop = (liveRM > 0 && normalRM > 0 && (normalRM - liveRM) > 0.005);
+      const hargaHTML = hasDrop
+        ? `<div class="price-wrap h5 mt-1 mb-3">
+             <div class="price-old">RM ${normalRM.toFixed(2)}</div>
+             <div class="price-new">RM ${liveRM.toFixed(2)}</div>
+           </div>`
+        : `<div class="h5 mt-1 mb-3">RM ${liveRM.toFixed(2)}</div>`;
+
+      return `
+        <div class="col-12 col-sm-6 col-lg-4">
+          <div class="live-card h-100">
+            <img class="live-img" src="${img}" alt="${name}"
+                 onerror="if(!this.dataset.f){this.dataset.f=1;this.src='https://placehold.co/640x480?text=${code}'}">
+            <div class="p-3">
+              <div class="d-flex align-items-center justify-content-between">
+                <div class="badge-live">LIVE</div>
+                <small class="text-muted mono">${code}</small>
+              </div>
+              <div class="live-title">${name}</div>
+              <div class="text-muted small">Berat: ${berat.toFixed(2)} g</div>
+              ${hargaHTML}
+              <a href="/j916.html#checkout?code=${encodeURIComponent(code)}&checkout=1" class="btn btn-danger w-100">
+                Lock Sekarang
+              </a>
+            </div>
+          </div>
+        </div>`;
+    }
+
+    async function loadLive(){
+      const wrap = document.getElementById("liveWrap");
+      const grid = document.getElementById("liveGrid");
+
+      try{
+        const { data: pcur } = await sb.rpc('price_916_current_v1');
+        const p916 = Number((Array.isArray(pcur)?pcur[0]:pcur)?.price_per_g || 0) || 0;
+
+        const { data: viewRows, error: viewErr } = await sb
+          .from('j916_live_cards_pricing_v1')
+          .select('*')
+          .order('ts', { ascending:false })
+          .limit(24);
+        if (viewErr) throw viewErr;
+        const rows = Array.isArray(viewRows) ? viewRows : [];
+
+        const { data: rpcRows } = await sb.rpc('j916_live_spotlight_feed_v1');
+        const imgMap = new Map(
+          (Array.isArray(rpcRows) ? rpcRows : []).map(r => {
+            const code = String(r?.code || '').toUpperCase();
+            const img  = r?.img1 || r?.img || r?.product_img1 || r?.design_img1 || r?.image_url || r?.img_url || r?.photo_url || r?.image1 || '';
+            return [code, img];
+          })
+        );
+
+        for (const r of rows){
+          const c = String(r?.code || '').toUpperCase();
+          const fromRpc = imgMap.get(c);
+          if (fromRpc && String(fromRpc).trim().length > 5){
+            r._img_from_rpc = fromRpc;
+          }
+        }
+
+        if(rows.length){
+          wrap.style.display = "";
+          grid.innerHTML = rows.map(r => toCard(r, p916)).join('');
+        }else{
+          wrap.style.display = "none";
+          grid.innerHTML = "";
+        }
+      }catch(e){
+        console.warn("Live feed error:", e);
+        if (wrap) wrap.style.display = "none";
+      }
+    }
+
+   await loadLive();
+
+    try{
+      const liveTimer = setInterval(loadLive, 20000);
+      window.addEventListener('beforeunload', ()=> clearInterval(liveTimer));
+    }catch{}
+  })();
+  </script>
+
+<!-- PWA Install Banner -->
+<div id="pwaBanner" class="pwa-banner">
+  <div class="pwa-row">
+    <div class="pwa-left">
+      <div class="pwa-icon">
+        <img src="/icons/icon-192.png" alt="Emas Amir">
+      </div>
+      <div>
+        <div class="pwa-title">Pasang App Emas Amir</div>
+        <div class="pwa-sub">Akses lebih laju & mudah dari Home Screen.</div>
+        <div id="pwaIosSteps" class="pwa-ios-steps">
+          iPhone: tekan <b>Share</b> → <b>Add to Home Screen</b>.
+        </div>
+      </div>
+    </div>
+
+    <div class="pwa-actions">
+      <button id="pwaInstallBtn" class="pwa-btn pwa-btn-install" type="button">Pasang</button>
+      <button id="pwaCloseBtn" class="pwa-btn pwa-btn-close" type="button">Tutup</button>
+    </div>
+  </div>
+</div>
+
+  <!-- PWA: Service Worker register -->
+  <script>
+    if ("serviceWorker" in navigator) {
+      window.addEventListener("load", function () {
+        navigator.serviceWorker.register("/sw.js").catch(function (err) {
+          console.warn("SW gagal daftar:", err);
+        });
+      });
+    }
+  </script>
+
+<script>
+(function(){
+  const banner = document.getElementById("pwaBanner");
+  const btnInstall = document.getElementById("pwaInstallBtn");
+  const btnClose = document.getElementById("pwaCloseBtn");
+  const iosSteps = document.getElementById("pwaIosSteps");
+
+  if (!banner || !btnInstall || !btnClose) return;
+
+  // Jangan kacau kalau user dah tutup
+  const DISMISS_KEY = "pwa_banner_dismissed_v1";
+
+  // Detect "already installed"
+  function isStandalone() {
+    return window.matchMedia("(display-mode: standalone)").matches
+      || window.navigator.standalone === true; // iOS
+  }
+
+  // Detect iOS Safari
+  const ua = navigator.userAgent || "";
+  const isIOS = /iPhone|iPad|iPod/i.test(ua);
+  const isSafari = isIOS && /Safari/i.test(ua) && !/CriOS|FxiOS|EdgiOS/i.test(ua);
+
+  // Kalau dah installed, jangan show
+  if (isStandalone()) return;
+
+  // Kalau dah pernah dismiss, jangan show
+  if (localStorage.getItem(DISMISS_KEY) === "1") return;
+
+  let deferredPrompt = null;
+
+  // Android/Chrome: tangkap event install prompt
+  window.addEventListener("beforeinstallprompt", (e) => {
+    e.preventDefault();
+    deferredPrompt = e;
+
+    // Show banner untuk Android
+    banner.style.display = "block";
+    iosSteps.style.display = "none";
+    btnInstall.style.display = "inline-block";
+  });
+
+  // iPhone (tiada beforeinstallprompt): show banner bila Safari iOS
+  if (isSafari) {
+    banner.style.display = "block";
+    iosSteps.style.display = "block";
+    // iOS tak boleh trigger prompt, jadi button "Pasang" jadi guide
+    btnInstall.style.display = "none";
+  }
+
+  btnClose.addEventListener("click", () => {
+    banner.style.display = "none";
+    localStorage.setItem(DISMISS_KEY, "1");
+  });
+
+  btnInstall.addEventListener("click", async () => {
+    if (!deferredPrompt) return;
+    try {
+      deferredPrompt.prompt();
+      await deferredPrompt.userChoice;
+    } catch (err) {}
+    deferredPrompt = null;
+    banner.style.display = "none";
+  });
+
+  // Bila user install, auto hide
+  window.addEventListener("appinstalled", () => {
+    banner.style.display = "none";
+    localStorage.setItem(DISMISS_KEY, "1");
+  });
+})();
+</script>
+</body>
+</html>

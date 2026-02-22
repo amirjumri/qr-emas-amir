@@ -1,0 +1,2084 @@
+<!doctype html>
+<html lang="ms">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Admin Tabung — Simpan Transaksi • Emas Amir</title>
+
+  <!-- Libs (ORDER matters) -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="auth.js?v=13.1"></script>
+  <script src="admin-guard.js?v=1"></script>
+
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+  <style>
+    body{background:#fff}
+    .container-narrow{max-width:1280px}
+    .auth-pill{border:1px solid #e5e7eb;border-radius:999px;padding:.2rem .6rem;background:#fafafa;color:#555}
+    .btn-chip{border:1px solid #e5e7eb;background:#f8fafc;padding:6px 10px;border-radius:999px;font-size:.9rem}
+    .btn-chip.btn-primary{background:#0d6efd;color:#fff;border-color:#0d6efd}
+    .table-sticky thead th{position:sticky;top:0;background:#fff;z-index:5}
+    .mono{font-family:ui-monospace,SFMono-Regular,Menlo,monospace}
+    .toast-wrap{position:fixed;right:16px;bottom:16px;z-index:1080}
+    .stats-pill{border:1px solid #e5e7eb;border-radius:12px;padding:8px 12px;background:#fff}
+    .stats-pill .h6{margin:0;font-weight:700}
+    .stats-pill small{color:#6b7280}
+    .pager .page-link{border-radius:8px}
+    .pill-soft{display:inline-block;border:1px solid #e5e7eb;border-radius:999px;padding:.15rem .55rem;background:#f8fafc;font-size:12px;color:#444}
+    .btn-group-sm .btn{white-space:nowrap}
+  </style>
+</head>
+
+<body>
+
+<!-- 🔊 Bunyi ka-ching (LETak awal supaya playCash wujud sebelum refreshOrders dipanggil) -->
+<audio id="soundCash" preload="auto">
+  <source src="https://dduizetstqqjrpsezbpi.supabase.co/storage/v1/object/public/cash-emas/cashier-quotka-chingquot-sound-effect-129698.mp3?v=1" type="audio/mpeg">
+</audio>
+
+<div id="audioHint" class="small text-muted"
+     style="position:fixed;right:16px;bottom:72px;background:#fff;
+            border:1px solid #e5e7eb;border-radius:10px;padding:6px 10px;
+            display:none;z-index:9999">
+  Bunyi dikunci — klik
+  <button id="btnUnlockAudio" class="btn btn-sm btn-outline-dark" type="button">Aktifkan</button>
+</div>
+
+<script>
+/* =========================
+   AUDIO UNLOCK + playCash
+   (mesti wujud sebelum main script jalan)
+   ========================= */
+
+window.__cashUnlocked = window.__cashUnlocked || false;
+window.__audioUnlockReady = window.__audioUnlockReady || false;
+
+window.addEventListener('load', ()=>{
+  const a=document.getElementById('soundCash');
+  if(!a) return;
+
+  // cuba "silent play" sekali untuk unlock (ada browser block -> kita show hint)
+  setTimeout(()=>{
+    a.volume = 0.0;
+    a.play().then(()=>{
+      a.pause(); a.currentTime=0; a.volume=1.0;
+      window.__cashUnlocked = true;
+      console.log("AUDIO UNLOCK ✅");
+      __showHint(false);
+    }).catch(e=>{
+      console.log("AUDIO STILL LOCKED ❌", e.message);
+      __showHint(true);
+    });
+  }, 700);
+});
+
+function __tryUnlockAudio(){
+  const a=document.getElementById('soundCash');
+  if(!a) return Promise.resolve(false);
+  a.volume=1.0; a.muted=false;
+
+  return a.play().then(()=>{
+    a.pause(); a.currentTime=0;
+    window.__cashUnlocked=true;
+    console.log('🔓 Audio unlocked');
+    return true;
+  }).catch(()=>false);
+}
+
+function __showHint(show){
+  const h=document.getElementById('audioHint');
+  if(h) h.style.display = show ? '' : 'none';
+}
+
+(function setupAudioUnlock(){
+  if(window.__audioUnlockReady) return;
+  window.__audioUnlockReady=true;
+
+  const handler = async ()=>{
+    if(window.__cashUnlocked) return cleanup();
+    const ok = await __tryUnlockAudio();
+    if(ok){
+      cleanup();
+      __showHint(false);
+    }
+  };
+
+  function cleanup(){
+    window.removeEventListener('click',handler,true);
+    window.removeEventListener('touchstart',handler,true);
+    window.removeEventListener('keydown',handler,true);
+  }
+
+  window.addEventListener('click',handler,true);
+  window.addEventListener('touchstart',handler,true);
+  window.addEventListener('keydown',handler,true);
+
+  document.getElementById('btnUnlockAudio')?.addEventListener('click', handler);
+
+  // kalau masih lock, hint akan muncul (biar admin klik sekali)
+  setTimeout(()=>{ if(!window.__cashUnlocked) __showHint(true); }, 900);
+})();
+
+function beep(ms=250, freq=880){
+  try{
+    const AC = window.AudioContext || window.webkitAudioContext;
+    const ctx = new AC();
+    const osc = ctx.createOscillator();
+    const gain = ctx.createGain();
+    osc.type = 'sine';
+    osc.frequency.value = freq;
+    gain.gain.value = 0.08;
+    osc.connect(gain); gain.connect(ctx.destination);
+    osc.start();
+    setTimeout(()=>{ osc.stop(); ctx.close(); }, ms);
+  }catch(e){}
+}
+
+// Main bunyi (global)
+window.playCash = function playCash(){
+  const a=document.getElementById('soundCash');
+  if(!a) return beep();
+
+  const doPlay = ()=>{ a.currentTime=0; a.play().catch(()=>beep()); };
+
+  if(!window.__cashUnlocked){
+    const once = async ()=>{
+      const ok = await __tryUnlockAudio();
+      if(ok) doPlay(); else beep();
+      cleanup();
+    };
+    function cleanup(){
+      window.removeEventListener('click',once,true);
+      window.removeEventListener('touchstart',once,true);
+      window.removeEventListener('keydown',once,true);
+    }
+    window.addEventListener('click',once,true);
+    window.addEventListener('touchstart',once,true);
+    window.addEventListener('keydown',once,true);
+    __showHint(true);
+    return;
+  }
+
+  __showHint(false);
+  doPlay();
+};
+</script>
+
+<div class="container container-narrow py-3">
+  <!-- TOP BAR -->
+  <div class="d-flex justify-content-between align-items-center mb-2">
+    <div class="small auth-pill" id="authStatus">Memuatkan…</div>
+    <div class="d-flex flex-wrap gap-2">
+      <a class="btn btn-outline-secondary btn-chip" href="index.html">Halaman Utama</a>
+      <a class="btn btn-outline-secondary btn-chip" href="admin.html">Admin</a>
+      <a class="btn btn-outline-secondary btn-chip" href="admin-j999.html">Admin 999</a>
+      <a class="btn btn-outline-secondary btn-chip" href="admin-j916.html">Admin 916</a>
+      <a class="btn btn-outline-secondary btn-chip" href="adminstok-j916.html">Admin Stok 916</a>
+      <a class="btn btn-outline-secondary btn-chip" href="account.html">Akaun</a>
+      <button id="btnLogin"  class="btn btn-outline-secondary btn-chip" type="button">Log masuk</button>
+      <button id="btnLogout" class="btn btn-outline-secondary btn-chip" type="button" style="display:none">Log keluar</button>
+    </div>
+  </div>
+  <hr class="mb-3">
+
+  <!-- HEADER + FILTER -->
+  <div class="d-flex align-items-center justify-content-between gap-2 flex-wrap">
+    <h1 class="h4 m-0">Admin Tabung — Senarai Untuk Simpan</h1>
+    <div class="d-flex gap-2 flex-wrap">
+      <div class="btn-group" role="group" aria-label="Status">
+        <button class="btn-chip btn-primary" data-filter="ALL" id="btnFilterALL">Semua</button>
+        <button class="btn-chip" data-filter="PAID" id="btnFilterPAID">PAID</button>
+        <button class="btn-chip" data-filter="PENDING" id="btnFilterPENDING">PENDING</button>
+        <button class="btn-chip" data-filter="COMPLETED" id="btnFilterCOMPLETED">SELESAI</button>
+      </div>
+      <div class="btn-group" role="group" aria-label="Jenis">
+        <button class="btn-chip btn-primary" data-kind="ALL" id="btnKindALL">Semua Jenis</button>
+        <button class="btn-chip" data-kind="BUY" id="btnKindBUY">BUY</button>
+        <button class="btn-chip" data-kind="WITHDRAW" id="btnKindWITHDRAW">WITHDRAW</button>
+        <button class="btn-chip" data-kind="SELL" id="btnKindSELL">SELL</button>
+      </div>
+      <button class="btn btn-outline-dark btn-sm" id="btnTestSound" type="button">Uji Bunyi 🔊</button>
+    </div>
+  </div>
+
+  <div class="input-group my-3" style="max-width:760px">
+    <span class="input-group-text">Cari</span>
+    <input id="searchBox" class="form-control" placeholder="Cari nama / phone / nota / bill id / ref">
+    <button id="refreshBtn" class="btn btn-outline-secondary" type="button">Refresh</button>
+  </div>
+
+  <!-- LIVE TOTALS (PAID only) -->
+  <div class="d-flex gap-2 flex-wrap mb-2" id="totalsWrap">
+    <div class="stats-pill">
+      <div class="h6">BUY: <span id="buyUnits">0</span> unit • <span id="buyGrams">0.0</span> g</div>
+      <small>Status PAID sahaja</small>
+    </div>
+    <div class="stats-pill">
+      <div class="h6">WITHDRAW: <span id="wdUnits">0</span> unit • <span id="wdGrams">0.0</span> g</div>
+      <small>Status APPROVED sahaja</small>
+    </div>
+    <div class="stats-pill">
+      <div class="h6">SELL: <span id="sellUnits">0</span> unit • <span id="sellGrams">0.0</span> g</div>
+      <small>Status APPROVED sahaja</small>
+    </div>
+    <div class="stats-pill">
+      <div class="h6">JUMLAH SEMASA: <span id="nowUnits">0</span> unit • <span id="nowGrams">0.0</span> g</div>
+      <small>Formula: BUY (PAID) − WITHDRAW (APPROVED) − SELL (APPROVED)</small>
+    </div>
+  </div>
+
+  <div class="stats-pill mb-3">
+    <div class="h6">
+      STOK TABUNG: <span id="stockUnits">0</span> unit • <span id="stockGrams">0.0</span> g
+    </div>
+    <small>Stok fizikal untuk tabung</small>
+    <div class="mt-1">
+      <button id="btnAdjStock" class="btn btn-outline-dark btn-sm" type="button">Ubah Stok…</button>
+    </div>
+  </div>
+
+  <!-- TABLE -->
+  <div class="table-responsive">
+    <table class="table table-sm align-middle table-sticky">
+      <thead>
+        <tr>
+          <th style="width:160px">Tarikh</th>
+          <th style="width:90px">Jenis</th>
+          <th style="width:220px">Pelanggan</th>
+          <th class="text-end" style="width:110px">Unit (0.1g)</th>
+          <th class="text-end" style="width:120px">Harga/Unit</th>
+          <th class="text-end" style="width:110px">Upah</th>
+          <th class="text-end" style="width:130px">Jumlah (RM)</th>
+          <th style="width:110px">Status</th>
+          <th>Catatan</th>
+          <th class="text-end" style="width:320px">Tindakan</th>
+        </tr>
+      </thead>
+      <tbody id="ordersTbody">
+        <tr><td colspan="10" class="text-muted py-4">Memuatkan…</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- PAGINATION -->
+  <div class="d-flex justify-content-between align-items-center">
+    <small class="text-muted" id="resultInfo">0 rekod</small>
+    <nav>
+      <ul class="pagination pager mb-0" id="pager"></ul>
+    </nav>
+  </div>
+</div>
+
+<!-- Toast -->
+<div class="toast-wrap">
+  <div class="toast align-items-center text-bg-dark border-0" id="mainToast" role="status" aria-live="polite" aria-atomic="true">
+    <div class="d-flex">
+      <div class="toast-body" id="toastMsg">OK.</div>
+      <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Tutup"></button>
+    </div>
+  </div>
+</div>
+
+<!-- Confirm modal -->
+<div class="modal fade" id="confirmModal" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Sahkan “Sudah Simpan”</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Tutup"></button>
+      </div>
+      <div class="modal-body"><p class="mb-0" id="confirmText">Anda pasti?</p></div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-light" data-bs-dismiss="modal">Batal</button>
+        <button type="button" class="btn btn-primary" id="confirmYesBtn">Teruskan</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Stock modal -->
+<div class="modal fade" id="stockModal" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Ubah Stok Tabung</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Tutup"></button>
+      </div>
+      <div class="modal-body">
+        <div class="mb-2">
+          <label class="form-label">Jumlah unit (0.1g)</label>
+          <input id="inpDeltaUnits" type="number" class="form-control" placeholder="cth: 50 untuk tambah, -5 untuk tolak">
+          <div class="form-text">1 unit = 0.1g. Guna nilai negatif untuk tolak.</div>
+        </div>
+        <div class="mb-2">
+          <label class="form-label">Catatan</label>
+          <textarea id="inpNotes" class="form-control" rows="2" placeholder="cth: Topup stok dari HQ / Pelarasan fizikal"></textarea>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-light" data-bs-dismiss="modal" type="button">Batal</button>
+        <button id="saveStockBtn" class="btn btn-primary" type="button">Simpan</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Manual Pay modal (TABUNG) -->
+<div class="modal fade" id="manualPayModal" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered modal-sm">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Bayar Manual</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Tutup"></button>
+      </div>
+
+      <div class="modal-body">
+        <div class="small text-muted mb-2" id="mp_info"></div>
+
+        <input id="mp_txn_id" type="hidden">
+        <input id="mp_need_rm" type="hidden">
+
+      <!-- ✅ Split toggle -->
+<div class="form-check mb-2">
+  <input class="form-check-input" type="checkbox" id="mp_split">
+  <label class="form-check-label" for="mp_split">
+    Split bayaran (lebih dari 1 kaedah)
+  </label>
+</div>
+
+<!-- ✅ Split editor (macam J916) -->
+<div id="mp_split_editor" class="mb-2" style="display:none">
+  <div class="d-flex justify-content-between align-items-center mb-2">
+    <div class="small fw-semibold">Pecahan bayaran</div>
+    <button class="btn btn-outline-dark btn-sm" type="button" id="mp_add_row">+ Tambah</button>
+  </div>
+
+  <div id="mp_rows" class="d-grid gap-2"></div>
+
+  <div class="d-flex gap-2 mt-2 flex-wrap">
+    <span class="badge text-bg-light" id="mp_total_badge">Total split: RM 0.00</span>
+    <span class="badge text-bg-light" id="mp_need_badge">Perlu: RM 0.00</span>
+    <span class="badge text-bg-light" id="mp_left_badge">Baki: RM 0.00</span>
+  </div>
+
+  <div class="form-text mt-1" id="mp_help_text">
+    Split mode: tambah baris ikut kaedah. Pastikan Total split = Perlu sebelum “Sahkan”.
+  </div>
+</div>
+
+<!-- ✅ Single editor (bila split OFF) -->
+<div id="mp_single_editor">
+  <div class="mb-2">
+    <label class="form-label">Kaedah</label>
+    <select id="mp_method" class="form-select">
+      <option value="MANUAL_MAYBANK">Maybank</option>
+      <option value="MANUAL_CASH">Cash</option>
+      <option value="MANUAL_CARD">Card</option>
+      <option value="MANUAL_ATOME">Atome</option>
+    </select>
+  </div>
+
+  <div class="mb-2">
+    <label class="form-label">Jumlah Bayaran (RM)</label>
+    <input id="mp_amount_rm" class="form-control" type="number" step="0.01" placeholder="contoh 69.40">
+    <div class="form-text">
+      Default ikut “Jumlah (RM)”. Kalau ada beza, boleh ubah.
+    </div>
+  </div>
+</div>
+
+        <div class="mb-2">
+          <label class="form-label">No rujukan (optional)</label>
+          <input id="mp_ref" class="form-control" placeholder="cth: MB-12345 / Tunai / CDM">
+          <div class="form-text">Ini hanya untuk rekod admin. Tak kacau Billplz callback.</div>
+        </div>
+      </div>
+
+      <div class="modal-footer">
+        <button class="btn btn-light" data-bs-dismiss="modal" type="button">Batal</button>
+        <button class="btn btn-primary" id="mp_confirm_btn" type="button">Sahkan</button>
+      </div>
+    </div>
+  </div>
+</div>
+<!-- Bootstrap JS -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+
+<script>
+/* =========================
+   Config & helpers
+   ========================= */
+const SB_URL = "https://dduizetstqqjrpsezbpi.supabase.co";
+const SB_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRkdWl6ZXRzdHFxanJwc2V6YnBpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTg3MzI0ODQsImV4cCI6MjA3NDMwODQ4NH0.CrlHXrmHtKgR9qc2192U6quRb5lpFEeOSgwG0Lb8KRM";
+
+window.sb = window.sb || window.supabase.createClient(SB_URL, SB_KEY);
+const sb = window.sb;
+const $ = id => document.getElementById(id);
+
+function showToast(msg){
+  const el = $('mainToast'); $('toastMsg').textContent = msg||'OK';
+  new bootstrap.Toast(el,{delay:1600}).show();
+}
+function money(n){ return 'RM ' + Number(n||0).toFixed(2); }
+function fmtMY(s){ try{ return new Date(s).toLocaleString('ms-MY',{hour12:false}); }catch{return s;} }
+function grams(units){ return (Number(units||0)*0.1).toFixed(1); }
+function escHtml(s){ return String(s||'').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+
+function norm60(s){
+  const d = String(s||'').replace(/\D/g,'');
+  if (!d) return '';
+  if (d.startsWith('60')) return d;
+  if (d.startsWith('0'))  return '6'+d;
+  return '60'+d;
+}
+function normalizePhoneVariants(msisdn){
+  if (!msisdn) return [];
+  let x = (''+msisdn).replace(/\D/g,'');
+  const set = new Set();
+  if (x) set.add(x);
+  if (x.startsWith('60') && x.length > 2) set.add('0' + x.slice(2));
+  if (x.startsWith('0') && x.length >= 10 && x.length <= 11){
+    set.add(x);
+    set.add('60' + x.slice(1));
+  }
+  return Array.from(set);
+}
+function rmToCents(rm){
+  const n = Number(rm);
+  if(!Number.isFinite(n)) return null;
+  return Math.round(n*100);
+}
+
+/* =========================
+   Split Editor UI (macam J916)
+   ========================= */
+window._mpSplitLines = window._mpSplitLines || []; 
+// setiap line: { method:'MANUAL_MAYBANK', amount_rm:'0.00' }
+
+function mpMoney2(n){
+  return 'RM ' + Number(n||0).toFixed(2);
+}
+
+function mpNeedCents(){
+  const txnId = ($('mp_txn_id').value || '').trim();
+  const row = (window._rowsCache||{})[txnId];
+  const need = rmToCents(row?.total || $('mp_need_rm').value || 0) || 0;
+  return need;
+}
+
+function mpRenderRows(){
+  const wrap = $('mp_rows');
+  if (!wrap) return;
+
+  wrap.innerHTML = window._mpSplitLines.map((ln, idx) => {
+    const method = ln.method || 'MANUAL_MAYBANK';
+    const amt = (ln.amount_rm ?? '').toString();
+
+    return `
+      <div class="d-flex gap-2 align-items-center">
+        <select class="form-select form-select-sm" data-idx="${idx}" data-k="method" style="width:140px">
+          <option value="MANUAL_MAYBANK" ${method==='MANUAL_MAYBANK'?'selected':''}>Maybank</option>
+          <option value="MANUAL_CASH" ${method==='MANUAL_CASH'?'selected':''}>Cash</option>
+          <option value="MANUAL_CARD" ${method==='MANUAL_CARD'?'selected':''}>Card</option>
+          <option value="MANUAL_ATOME" ${method==='MANUAL_ATOME'?'selected':''}>Atome</option>
+        </select>
+
+        <input class="form-control form-control-sm" type="number" step="0.01"
+               data-idx="${idx}" data-k="amount_rm"
+               placeholder="RM" value="${escHtml(amt)}">
+
+        <button class="btn btn-outline-danger btn-sm" type="button"
+                data-idx="${idx}" data-act="rm">×</button>
+      </div>
+    `;
+  }).join('');
+
+  // bind change events (delegation)
+  wrap.querySelectorAll('[data-k="method"]').forEach(el=>{
+    el.addEventListener('change', (e)=>{
+      const idx = Number(e.target.getAttribute('data-idx'));
+      window._mpSplitLines[idx].method = e.target.value;
+    });
+  });
+
+  wrap.querySelectorAll('[data-k="amount_rm"]').forEach(el=>{
+    el.addEventListener('input', (e)=>{
+      const idx = Number(e.target.getAttribute('data-idx'));
+      window._mpSplitLines[idx].amount_rm = e.target.value;
+      mpRecalcBadges();
+    });
+  });
+
+  wrap.querySelectorAll('[data-act="rm"]').forEach(btn=>{
+    btn.addEventListener('click', (e)=>{
+      const idx = Number(e.target.getAttribute('data-idx'));
+      window._mpSplitLines.splice(idx, 1);
+      if (window._mpSplitLines.length === 0){
+        window._mpSplitLines.push({ method:'MANUAL_MAYBANK', amount_rm:'0.00' });
+      }
+      mpRenderRows();
+      mpRecalcBadges();
+    });
+  });
+}
+
+function mpRecalcBadges(){
+  const need = mpNeedCents();
+  const sum = window._mpSplitLines.reduce((a, ln)=>{
+    const cents = rmToCents(ln.amount_rm || 0) || 0;
+    return a + cents;
+  }, 0);
+
+  const baki = Math.max(0, need - sum);
+
+  if ($('mp_total_badge')) $('mp_total_badge').textContent = `Total split: ${mpMoney2(sum/100)}`;
+  if ($('mp_need_badge'))  $('mp_need_badge').textContent  = `Perlu: ${mpMoney2(need/100)}`;
+  if ($('mp_left_badge'))  $('mp_left_badge').textContent  = `Baki: ${mpMoney2(baki/100)}`;
+}
+
+function mpSetSplitUI(isSplit){
+  const ed = $('mp_split_editor');
+  const single = $('mp_single_editor');
+  if (ed) ed.style.display = isSplit ? '' : 'none';
+  if (single) single.style.display = isSplit ? 'none' : '';
+}
+
+$('mp_add_row')?.addEventListener('click', ()=>{
+  window._mpSplitLines.push({ method:'MANUAL_CASH', amount_rm:'' });
+  mpRenderRows();
+  mpRecalcBadges();
+});
+
+$('mp_split')?.addEventListener('change', ()=>{
+  const on = !!$('mp_split').checked;
+  mpSetSplitUI(on);
+
+  if (on){
+    // seed: kalau kosong, auto isi 1 row ikut jumlah perlu
+    if (!window._mpSplitLines || window._mpSplitLines.length === 0){
+      const need = mpNeedCents();
+      window._mpSplitLines = [{ method:'MANUAL_MAYBANK', amount_rm:(need/100).toFixed(2) }];
+    }
+    mpRenderRows();
+    mpRecalcBadges();
+  }
+});
+
+async function getSplitLines(txnId){
+  try{
+    const { data, error } = await sb
+      .from('tabung_manual_pay_split')
+      .select('line_no, method, amount_cents, ref, created_at')
+      .eq('txn_id', txnId)
+      .order('line_no', { ascending:true });
+
+    if (error) throw error;
+    return data || [];
+  }catch(e){
+    console.warn('getSplitLines error', e);
+    return [];
+  }
+}
+
+function centsToRM(cents){
+  return (Number(cents||0)/100).toFixed(2);
+}
+
+async function renderSplitUI(txnId, needCents){
+  const panel = $('mp_split_panel');
+  const listEl = $('mp_split_list');
+  const stEl = $('mp_split_status');
+
+  if (!panel || !listEl || !stEl) return;
+
+  const lines = await getSplitLines(txnId);
+  const sum = lines.reduce((a,x)=> a + Number(x.amount_cents||0), 0);
+  const baki = Math.max(0, Number(needCents||0) - sum);
+
+  stEl.textContent = `Split: RM ${centsToRM(sum)} • Baki: RM ${centsToRM(baki)}`;
+
+  if (!lines.length){
+    listEl.innerHTML = 'Tiada split lagi.';
+    return { sum, baki, lines };
+  }
+
+  listEl.innerHTML = lines.map(x=>{
+    const m = String(x.method||'').replace('MANUAL_','');
+    const ref = x.ref ? ` • ${escHtml(x.ref)}` : '';
+    return `<div>(${x.line_no}) ${escHtml(m)} — RM ${centsToRM(x.amount_cents)}${ref}</div>`;
+  }).join('');
+
+  return { sum, baki, lines };
+}
+
+function setSplitModeUI(isSplit){
+  const panel = $('mp_split_panel');
+  const help = $('mp_help_text');
+  if (panel) panel.style.display = isSplit ? '' : 'none';
+  if (help){
+    help.textContent = isSplit
+      ? 'Split mode: masukkan bayaran ikut kaedah. Klik “Sahkan” untuk tambah baris split. Bila cukup, sistem auto tanda PAID.'
+      : 'Default ikut “Jumlah (RM)”. Kalau ada beza, boleh ubah.';
+  }
+}
+
+async function getSplitSumCents(txnId){
+  try{
+    const { data, error } = await sb
+      .from('tabung_manual_pay_split')
+      .select('amount_cents')
+      .eq('txn_id', txnId);
+
+    if (error) throw error;
+    const sum = (data||[]).reduce((a,x)=> a + Number(x.amount_cents||0), 0);
+    return sum;
+  }catch(e){
+    console.warn('getSplitSumCents error', e);
+    return 0;
+  }
+}
+
+async function addSplitPayment(txnId, method, amountCents, refNote){
+  // line_no auto ikut bilangan sedia ada + 1
+  let lineNo = 1;
+  try{
+    const { data } = await sb
+      .from('tabung_manual_pay_split')
+      .select('line_no')
+      .eq('txn_id', txnId)
+      .order('line_no', { ascending:false })
+      .limit(1);
+
+    if (data && data.length && Number.isFinite(Number(data[0].line_no))){
+      lineNo = Number(data[0].line_no) + 1;
+    }
+  }catch(_){}
+
+  const payload = {
+    txn_id: txnId,
+    line_no: lineNo,
+    method: String(method||'MANUAL_MAYBANK').toUpperCase().trim(),
+    amount_cents: Number(amountCents||0),
+    ref: (String(refNote||'').trim() || null),
+    admin_uid: getAdminId() || null
+  };
+
+  const { error } = await sb
+    .from('tabung_manual_pay_split')
+    .insert(payload);
+
+  if (error){
+    console.error('INSERT tabung_manual_pay_split FAIL:', error, payload);
+    throw error;
+  }
+}
+
+async function markPaidIfSplitEnough(txnId, needCents){
+  const sum = await getSplitSumCents(txnId);
+  const baki = needCents - sum;
+
+  if (baki > 0){
+    showToast(`Split disimpan. Baki: RM ${(baki/100).toFixed(2)}`);
+    return { paid:false, sum, baki };
+  }
+
+  // cukup atau lebih: tanda PAID
+  try{
+    const { data } = await sb
+      .from('tabung_txn')
+      .update({ status: 'PAID' })
+      .eq('id', txnId)
+      .select('id,status')
+      .maybeSingle()
+      .throwOnError();
+
+    // ✅ confirm betul-betul updated (supabase kadang return null kalau 0 row kena)
+    if (!data || data.status !== 'PAID'){
+      throw new Error('Update PAID tiada row / tidak berubah');
+    }
+
+    console.log('markPaidIfSplitEnough ✅', { txnId, data, sum, needCents });
+  }catch(e){
+    const msg =
+      (e && (e.message || e.details || e.hint || e.code))
+        ? [e.message, e.details, e.hint, e.code].filter(Boolean).join(' | ')
+        : String(e);
+
+    console.warn('markPaidIfSplitEnough update PAID fail', { txnId, needCents, sum, e });
+
+    showToast('Split cukup, tapi gagal update status PAID. ' + msg);
+    return { paid:false, sum, baki:0 };
+  }
+
+  await recordAction(txnId, 'manual_paid_split');
+  showToast('Split cukup — Transaksi ditanda PAID.');
+  return { paid:true, sum, baki:0 };
+}/* =========================
+   Topbar auth pill
+   ========================= */
+(function initTopbar(){
+  const status=$('authStatus'), btnLogin=$('btnLogin'), btnLogout=$('btnLogout');
+  try{
+    const a=(window.auth_get && window.auth_get())||null;
+    if(a){
+      status.textContent='Log masuk (admin) — '+(a.name||a.phone||'pengguna');
+      btnLogin.style.display='none'; btnLogout.style.display='';
+      btnLogout.onclick=()=>{ window.auth_clear && window.auth_clear(); location.href='login.html#login'; };
+    }else{
+      status.textContent='Tidak log masuk';
+      btnLogin.style.display=''; btnLogout.style.display='none';
+      btnLogin.onclick=()=> location.href='login.html#login';
+    }
+  }catch(_){}
+})();
+
+/* =========================
+   Auto refresh
+   ========================= */
+let _tick = null;
+let _isRefreshing = false;
+const REFRESH_MS = 5000;
+
+async function safeRefresh(){
+  if (_isRefreshing) return;
+  _isRefreshing = true;
+  try { await refreshOrders(); } finally { _isRefreshing = false; }
+}
+function startAutoRefresh(){
+  if (_tick) return;
+  _tick = setInterval(safeRefresh, REFRESH_MS);
+  document.addEventListener('visibilitychange', ()=>{
+    if (!document.hidden) safeRefresh();
+  });
+}
+function stopAutoRefresh(){
+  if (_tick){ clearInterval(_tick); _tick = null; }
+}
+window.addEventListener('beforeunload', stopAutoRefresh);
+
+/* =========================
+   Settings
+   ========================= */
+const PAGE_SIZE = 20;
+let CUR_PAGE = 1;
+let CUR_FILTER = 'ALL';
+let CUR_KIND = 'ALL';
+
+// tindakan persist (DB)
+const savedIds = new Set();
+const sentDetailIds = new Set();
+window._receiptSentIds = window._receiptSentIds || new Set();
+
+let _pendingId = null;
+
+// cache row utk actions
+window._rowsCache = window._rowsCache || {};
+
+// audit admin id
+function getAdminId(){
+  try{
+    const a = (window.auth_get && window.auth_get()) || null;
+    return a?.id || null;
+  }catch(_){ return null; }
+}
+
+/* =========================
+   Actions table (tabung_actions)
+   ========================= */
+async function recordAction(txnId, action){
+  try{
+    const payload = {
+      txn_id:  txnId,
+      action:  action,
+      admin_id: getAdminId() || null
+    };
+    const { data, error } = await sb
+      .from('tabung_actions')
+      .upsert(payload, { onConflict: 'txn_id,action' })
+      .select()
+      .maybeSingle();
+    if (error) { console.warn('[recordAction] upsert fail:', error, payload); }
+    else       { console.log('[recordAction] upsert ok:', data); }
+  }catch(e){
+    console.warn('[recordAction] exception:', e);
+  }
+}
+
+/* =========================
+   WhatsApp (OnSend)
+   ========================= */
+const ONSEND_BASE  = "https://onsend.io/api/v1";
+const ONSEND_TOKEN = "76a6f98cfc6e009e5d824e47acd98b9b59a6e5177e14b072fd210276309d91f6";
+async function sendWA(msisdn, text){
+  const phone_number = norm60(msisdn);
+  if (!phone_number) return false;
+  try{
+    const r = await fetch(ONSEND_BASE + "/send",{
+      method:"POST",
+      headers:{ "Accept":"application/json","Content-Type":"application/json","Authorization":"Bearer "+ONSEND_TOKEN },
+      body: JSON.stringify({ phone_number, message:text, type:"text" })
+    });
+    const j = await r.json().catch(()=>({}));
+    console.log('[OnSend]', r.status, j);
+    return r.ok && j.success===true;
+  }catch(e){ console.warn('OnSend error', e); return false; }
+}
+
+/* =========================
+   Data access (RPC + fallback)
+   ========================= */
+function mapRow(r){
+  const userId = r.user_id || null;
+  const userAuthId = r.user_auth_id || null;
+
+  return {
+    id: r.id,
+    created_at: r.created_at,
+
+    // ✅ simpan kedua-dua id (penting untuk cari pelanggan)
+    user_id: userId,
+    user_auth_id: userAuthId,
+
+    // ✅ created_by: cuba semua kemungkinan
+    created_by: r.created_by || userId || userAuthId || null,
+
+    kind: (r.kind||r.type||'').toUpperCase(),
+    units: Number(r.units||0),
+    price_per_unit: Number(r.price_per_unit||0),
+    fee: Number(r.fee||r.upah||0),
+    total: Number(r.total||0),
+    status: (r.status||'').toUpperCase(),
+    notes: r.notes || '',
+    bill_id: r.bill_id_text || r.bill_id || null,
+    reference: r.reference_1 || r.reference || null,
+
+    // cuba keluarkan nama/phone kalau RPC dah bagi
+    name:  r.name  || r.customer_name || r.user_name  || null,
+    phone: r.phone || r.customer_phone|| r.user_phone || null,
+
+    tracking_no: r.tracking_no || r.awb_no || r.awb || null
+  };
+}
+async function getTotalViaRPC(statusFilter, kindFilter, query){
+  const SIZE = 1000;
+  let page = 1, total = 0;
+  while (true){
+    const { data, error } = await sb.rpc('tabung_admin_list_v1', {
+      p_page:  page,
+      p_size:  SIZE,
+      p_status: (statusFilter === 'ALL' ? null : statusFilter),
+      p_kind:   (kindFilter   === 'ALL' ? null : kindFilter),
+      p_query:  (query || null)
+    });
+    if (error) { console.warn('count scan error', error); break; }
+
+    const items = Array.isArray(data?.items) ? data.items : (Array.isArray(data) ? data : []);
+    const n = items.length;
+    total += n;
+    if (n < SIZE) break;
+    page += 1;
+  }
+  return total;
+}
+
+async function rpcList(page, size, statusFilter, kindFilter, query){
+  const { data, error } = await sb.rpc('tabung_admin_list_v1', {
+    p_page:  page,
+    p_size:  size,
+    p_status: (statusFilter === 'ALL' ? null : statusFilter),
+    p_kind:   (kindFilter   === 'ALL' ? null : kindFilter),
+    p_query:  (query || null)
+  });
+
+  if (error) {
+    console.warn('rpcList error', error);
+    return { items: [], total: 0, hasNext: false, hasPrev: page > 1 };
+  }
+
+  const itemsRaw = Array.isArray(data?.items) ? data.items : (Array.isArray(data) ? data : []);
+  let total = Number.isFinite(data?.total) ? Number(data.total) : NaN;
+
+  if (!Number.isFinite(total) || total <= 0){
+    total = await getTotalViaRPC(statusFilter, kindFilter, query);
+  }
+
+  return {
+    items: itemsRaw.map(mapRow),
+    total,
+    hasNext: (page * size) < total,
+    hasPrev: page > 1
+  };
+}
+
+/* =========================
+   Enrich customer name/phone
+   ========================= */
+window._custCache = window._custCache || {}; // { customer_id: {name, phone, alamat, postcode, city, state} }
+
+function isUuid(v){
+  return /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(String(v||'').trim());
+}
+
+async function safeFetchTabungTxnCustomer(txnId){
+  try{
+    const { data, error } = await sb
+      .from('tabung_txn')
+      .select('*')                 // ✅ paling selamat
+      .eq('id', txnId)
+      .maybeSingle();
+
+    if (error) throw error;
+
+    const p =
+      data?.customer_phone ||
+      data?.user_phone ||
+      data?.phone ||
+      data?.msisdn ||
+      '';
+
+    const n =
+      data?.customer_name ||
+      data?.user_name ||
+      data?.name ||
+      data?.full_name ||
+      '-';
+
+    return { phone: p || '', name: n || '-' };
+  }catch(e){
+    console.warn('[safeFetchTabungTxnCustomer] failed:', e?.message || e);
+    return { phone:'', name:'-' };
+  }
+}
+
+async function enrichCustomers(rows){
+  const rawIds = [...new Set(
+    (rows||[])
+      .flatMap(x => [x.created_by, x.user_id, x.user_auth_id])
+      .filter(Boolean)
+      .map(x => String(x))
+  )];
+
+  if (!rawIds.length) return;
+
+  // ✅ pastikan hanya UUID masuk untuk lookup v_auth_identity / customers.id
+  const uuidIds = rawIds.filter(isUuid);
+
+  let mappedCustomerIds = [];
+  if (uuidIds.length){
+    try{
+      const { data: maps, error } = await sb
+        .from('v_auth_identity')
+        .select('auth_uid, customer_id')
+        .in('auth_uid', uuidIds);
+
+      if (error) throw error;
+
+      mappedCustomerIds = (maps||[])
+        .map(m => m.customer_id)
+        .filter(Boolean)
+        .map(String);
+    }catch(e){
+      console.warn('v_auth_identity lookup fail', e?.message || e);
+    }
+  }
+
+  const candidateCustomerIds = [...new Set([...uuidIds, ...mappedCustomerIds])]
+    .filter(id => !(id in window._custCache));
+
+  if (!candidateCustomerIds.length) return;
+
+  try{
+    const { data, error } = await sb
+      .from('customers')
+      .select('id, name, phone, alamat, postcode, city, state')
+      .in('id', candidateCustomerIds);
+
+    if (error) throw error;
+
+    (data||[]).forEach(c=>{
+      window._custCache[c.id] = {
+        name:  c.name || null,
+        phone: norm60(c.phone),
+        alamat: c.alamat || null,
+        postcode: c.postcode || null,
+        city: c.city || null,
+        state: c.state || null
+      };
+    });
+  }catch(e){
+    console.warn('enrich customers -> customers lookup fail', e?.message || e);
+  }
+}
+async function resolveCustomer(row){
+  // 1) kalau row dah ada
+  if (row.phone || row.name){
+    return { phone: row.phone || '', name: row.name || '-' };
+  }
+
+  // 2) cache ikut created_by / user_id / user_auth_id (UUID sahaja biasanya)
+  const keys = [row.created_by, row.user_id, row.user_auth_id].filter(Boolean);
+  for (const k of keys){
+    if (window._custCache[k]){
+      const c = window._custCache[k];
+      if (c.phone || c.name) return { phone: c.phone || '', name: c.name || '-' };
+    }
+  }
+
+  // 3) fallback: fetch tabung_txn secara "SAFE" (elak 400 bila column tak wujud)
+  if (row.id && isUuid(row.id)){
+    const x = await safeFetchTabungTxnCustomer(row.id);
+    if (x.phone || (x.name && x.name !== '-')) return x;
+  }
+
+  return { phone:'', name:'-' };
+}
+async function fetchAddressForRow(row){
+  // default fallback (kalau belum lengkap)
+  const result = {
+    name: '',
+    phone: '',
+    address1: '',
+    address2: '',
+    address3: '',
+    postcode: '09000',
+    city: 'Kulim',
+    state: 'Kedah'
+  };
+
+  const cust = await resolveCustomer(row);
+  result.name = cust.name || '';
+  result.phone = cust.phone || '';
+
+  // try cache customers (alamat)
+  const c = (row.created_by && window._custCache[row.created_by]) ? window._custCache[row.created_by] : null;
+  if (c){
+    if (c.alamat) result.address1 = c.alamat;
+    if (c.postcode) result.postcode = c.postcode;
+    if (c.city) result.city = c.city;
+    if (c.state) result.state = c.state;
+    if (c.name) result.name = c.name;
+    if (c.phone) result.phone = c.phone;
+  }
+
+  // kalau masih tiada alamat → cuba match customers ikut phone variant
+  if (!result.address1){
+    try{
+      const variants = normalizePhoneVariants(result.phone);
+      if (variants.length){
+        const { data: list } = await sb
+          .from('customers')
+          .select('name, phone, alamat, postcode, city, state')
+          .in('phone', variants);
+        if (list && list.length){
+          const x = list[0];
+          if (x.alamat) result.address1 = x.alamat;
+          if (x.postcode) result.postcode = x.postcode;
+          if (x.city) result.city = x.city;
+          if (x.state) result.state = x.state;
+          if (x.name) result.name = x.name;
+          if (x.phone) result.phone = norm60(x.phone);
+        }
+      }
+    }catch(e){
+      console.warn('fetchAddressForRow by phone fail', e);
+    }
+  }
+
+  // final guard
+  if (!result.address1) result.address1 = 'Alamat belum lengkap (sila update di Customers).';
+  if (!result.name) result.name = 'Pelanggan';
+  if (!result.phone) result.phone = '60123456789';
+
+  return result;
+}
+
+/* =========================
+   Totals & Stock
+   ========================= */
+async function fetchTotalsPaid(){
+  const BIG = 20000;
+  const { data, error } = await sb.rpc('tabung_admin_list_v1', {
+    p_page:  1,
+    p_size:  BIG,
+    p_status: null,
+    p_kind:   null,
+    p_query:  null
+  });
+  if (error) {
+    console.warn('fetchTotalsPaid via RPC error', error);
+    return { buy:0, wd:0, sell:0 };
+  }
+
+  const rows = Array.isArray(data?.items) ? data.items : (Array.isArray(data) ? data : []);
+  let buy = 0, wd = 0, sell = 0;
+  rows.forEach(r=>{
+    const k = String(r.kind||r.type||'').toUpperCase();
+    const s = String(r.status||'').toUpperCase();
+    const u = Number(r.units||0);
+
+    if (k === 'BUY' && s === 'PAID') buy += u;
+    else if (k === 'WITHDRAW' && s === 'APPROVED') wd += u;
+    else if (k === 'SELL' && s === 'APPROVED') sell += u;
+  });
+
+  return { buy, wd, sell };
+}
+
+async function renderTotals(){
+  const { buy, wd, sell } = await fetchTotalsPaid();
+  const now = buy - wd - sell;
+  $('buyUnits').textContent  = buy.toString();
+  $('buyGrams').textContent  = grams(buy);
+  $('wdUnits').textContent   = wd.toString();
+  $('wdGrams').textContent   = grams(wd);
+  $('sellUnits').textContent = sell.toString();
+  $('sellGrams').textContent = grams(sell);
+  $('nowUnits').textContent  = now.toString();
+  $('nowGrams').textContent  = grams(now);
+}
+
+async function fetchStock(){
+  try{
+    const { data, error } = await sb.rpc('tabung_stock_available');
+    if (error) throw error;
+    const units = Number((Array.isArray(data) ? data[0]?.units : data?.units) ?? data ?? 0);
+    return { units, grams: (units/10).toFixed(1) };
+  }catch(e){
+    console.warn('fetchStock error', e);
+    return { units: 0, grams: '0.0' };
+  }
+}
+async function renderStock(){
+  const s = await fetchStock();
+  const u = Number(s.units||0);
+  $('stockUnits').textContent = u.toString();
+  $('stockGrams').textContent = (u/10).toFixed(1);
+}
+
+// buka modal stok
+$('btnAdjStock')?.addEventListener('click', ()=>{
+  $('inpDeltaUnits').value = '';
+  $('inpNotes').value = '';
+  new bootstrap.Modal($('stockModal')).show();
+});
+$('saveStockBtn')?.addEventListener('click', async ()=>{
+  const delta = parseInt($('inpDeltaUnits').value, 10);
+  const notes = ($('inpNotes').value || '').trim();
+  if (!Number.isFinite(delta) || delta === 0){
+    showToast('Isi jumlah unit (boleh negatif/positif).');
+    return;
+  }
+  const adminUid = getAdminId();
+
+  try{
+    const { error } = await sb.rpc('tabung_admin_stock_adjust', {
+      p_delta_units: delta,
+      p_notes: notes || null,
+      p_admin_uid: adminUid
+    });
+    if (error) throw error;
+    bootstrap.Modal.getInstance($('stockModal'))?.hide();
+    showToast('Stok dikemaskini.');
+    await renderStock();
+    await renderTotals();
+  }catch(e){
+    console.warn('stock adjust error', e);
+    showToast('Gagal kemaskini stok.');
+  }
+});
+
+/* =========================
+   Pager
+   ========================= */
+function renderPager(total){
+  const ul = $('pager'); ul.innerHTML = '';
+  const pages = Math.max(1, Math.ceil(total / PAGE_SIZE));
+  const make = (label, page, disabled=false, active=false)=>{
+    const li = document.createElement('li');
+    li.className = `page-item ${disabled?'disabled':''} ${active?'active':''}`;
+    const a = document.createElement('a');
+    a.className = 'page-link';
+    a.href = '#';
+    a.textContent = label;
+    a.onclick = (e)=>{ e.preventDefault(); if(disabled||active) return;
+      CUR_PAGE = page; refreshOrders(); window.scrollTo({top:0,behavior:'smooth'}); };
+    li.appendChild(a); ul.appendChild(li);
+  };
+  make('←', Math.max(1, CUR_PAGE-1), CUR_PAGE===1, false);
+  const span = 4;
+  let start = Math.max(1, CUR_PAGE - span);
+  let end   = Math.min(pages, CUR_PAGE + span);
+  if(end-start < span*2){
+    if(start===1) end = Math.min(pages, start + span*2);
+    if(end===pages) start = Math.max(1, end - span*2);
+  }
+  for(let p=start; p<=end; p++) make(String(p), p, false, p===CUR_PAGE);
+  make('→', Math.min(pages, CUR_PAGE+1), CUR_PAGE===pages, false);
+}
+
+/* =========================
+   AWB (GDEX) — Tabung
+   ========================= */
+const AWB_STORAGE_KEY = 'tabung_gdex_awb_v1';
+function loadAwbCache(){
+  try{
+    const raw = localStorage.getItem(AWB_STORAGE_KEY);
+    if(!raw) return {};
+    const obj = JSON.parse(raw);
+    return (obj && typeof obj === 'object') ? obj : {};
+  }catch(_){ return {}; }
+}
+function saveAwbCache(map){
+  try{ localStorage.setItem(AWB_STORAGE_KEY, JSON.stringify(map || {})); }catch(_){}
+}
+let awbCache = loadAwbCache();
+function getAwbForTxn(txnId){
+  if(!txnId) return null;
+  return awbCache[txnId] || null;
+}
+function setAwbForTxn(txnId, awb){
+  if(!txnId || !awb) return;
+  awbCache[txnId] = awb;
+  saveAwbCache(awbCache);
+}
+function clearAwbForTxn(txnId){
+  if(!txnId) return;
+  if (awbCache && Object.prototype.hasOwnProperty.call(awbCache, txnId)) {
+    delete awbCache[txnId];
+    saveAwbCache(awbCache);
+  }
+}
+
+// Endpoint Netlify Function server → GDEX sandbox/prime
+const GDEX_FN_URL = "/.netlify/functions/gdex-create-consignment";
+
+window.generateAwbTabungFromBtn = async function(btn){
+  const id = btn.dataset.id;
+  if (!id) return;
+
+  const existing = getAwbForTxn(id);
+  if (existing){
+    alert('AWB sudah wujud: ' + existing);
+    return;
+  }
+
+  const row = (window._rowsCache||{})[id];
+  if (!row){
+    alert('Transaksi tidak dijumpai untuk AWB.');
+    return;
+  }
+
+  // ✅ AWB hanya untuk WITHDRAW bila APPROVED (atau COMPLETED)
+  if (!(row.kind === 'WITHDRAW' && (row.status === 'APPROVED' || row.status === 'COMPLETED'))){
+    alert('AWB hanya untuk WITHDRAW status APPROVED.');
+    return;
+  }
+
+  const addr = await fetchAddressForRow(row);
+
+  const receiverName   = addr.name || "Pelanggan";
+  const receiverMobile = addr.phone || "60123456789";
+  const receiverEmail  = "";
+
+  const receiverAddress1 = addr.address1 || "Alamat belum lengkap";
+  const receiverAddress2 = addr.address2 || "";
+  const receiverAddress3 = addr.address3 || "";
+  const receiverPostcode = addr.postcode || "09000";
+  const receiverCity     = addr.city || "Kulim";
+  const receiverState    = addr.state || "Kedah";
+
+  // nilai & berat
+  // WITHDRAW: row.total biasanya caj (upah/pos). Untuk insured value, letak minimum RM 1 (selamat dari reject).
+  const shipmentValue = Math.max(1, Number(row.total || 0));
+
+  const gramsTotal = Number(row.units||0) * 0.1;
+  const weightKg = Math.max(0.2, gramsTotal / 1000); // minimum 0.2kg supaya GDEX tak reject
+
+  btn.disabled = true;
+  const oldText = btn.textContent;
+  btn.textContent = 'Menjana AWB…';
+
+  try{
+    const res = await fetch(GDEX_FN_URL, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        orderCode: "TWD-" + id, // ✅ unique code utk WITHDRAW
+        receiverName,
+        receiverMobile,
+        receiverEmail,
+        receiverAddress1,
+        receiverAddress2,
+        receiverAddress3,
+        receiverPostcode,
+        receiverCity,
+        receiverState,
+        shipmentContent: "Tabung Emas (WITHDRAW)",
+        shipmentValue,
+        shipmentWeight: weightKg
+      })
+    });
+
+    const json = await res.json().catch(()=> ({}));
+    console.log("[GDEX create][TABUNG]", res.status, json);
+
+    if (!res.ok || !json.ok){
+      throw new Error(json.message || "GDEX API gagal");
+    }
+
+    const awb = json.awbNo || (json.raw && json.raw[0]?.cnNumber);
+    if (!awb) throw new Error("AWB tidak dijumpai dalam response.");
+
+    setAwbForTxn(id, awb);
+
+    // simpan ke DB (best-effort)
+    try{
+      await sb.from('tabung_txn')
+        .update({ tracking_no: awb })
+        .eq('id', id);
+    }catch(e){
+      console.warn('Update tracking_no tabung_txn gagal (ok kalau column tiada):', e?.message || e);
+    }
+
+    // whatsapp tracking kepada customer
+const trackUrl = `https://gdexpress.com/tracking/?consignmentno=${encodeURIComponent(awb)}`;
+const msg = [
+  `*GDEX Tracking (Tabung — WITHDRAW)*`,
+  `AWB: ${awb}`,
+  '',
+  `Link tracking: ${trackUrl}`,
+  '',
+  'InsyaAllah postage akan bergerak sebentar lagi. Sebarang update boleh semak nombor tracking yang saya share.',
+  'Proses penghantaran biasanya mengambil masa 1–2 hari bekerja. Mohon kerjasama tuan/puan ya.',
+  '',
+  'Sekiranya item yang dikeluarkan merupakan cincin stamping / rantai tangan bajet, mohon berhati-hati ketika pemakaian kerana item tersebut lembut dan mudah kemik/patah.',
+  '',
+  '*BARANG AKAN DILETAKKAN DI DALAM TISU & DI DALAM BEKAS CINCIN. TOLONG BERHATI-HATI SEMASA BUKA.*',
+  '',
+  '*Claim warranty wajib ada full video unboxing (tanpa cut) + gambar. Tempoh warranty: 2 hari dari tarikh barang diterima.*'
+].join('\n');
+
+const okWA = await sendWA(receiverMobile, msg);
+if (!okWA){
+  showToast('AWB dijana, tetapi WhatsApp gagal dihantar.');
+}else{
+  showToast('AWB dijana & mesej tracking dihantar.');
+}
+
+await refreshOrders();
+}catch(e){
+  alert('Ralat semasa jana AWB: ' + (e?.message || e));
+  btn.disabled = false;
+  btn.textContent = oldText;
+}
+};
+window.printAwbTabung = function(txnId){
+  const awb = getAwbForTxn(txnId);
+  if(!awb){ alert('AWB belum dijana.'); return; }
+
+  const w = window.open('', '_blank');
+  if(!w) return;
+  w.document.write(`
+    <html>
+      <head><title>AWB ${awb}</title></head>
+      <body style="font-family:sans-serif;padding:20px">
+        <h2>Air Waybill</h2>
+        <p>Txn: ${txnId}</p>
+        <p>AWB No: <strong>${awb}</strong></p>
+        <p><em>Label ringkas untuk testing. Nanti sambung ke PDF rasmi myGDEX Prime.</em></p>
+      </body>
+    </html>
+  `);
+  w.document.close();
+};
+
+window.trackAwbTabung = function(txnId){
+  const awb = getAwbForTxn(txnId);
+  if(!awb){ alert('AWB belum dijana.'); return; }
+  const url = `https://gdexpress.com/tracking/?consignmentno=${encodeURIComponent(awb)}`;
+  if (confirm('Buka laman tracking GDEX untuk AWB: ' + awb + ' ?')) {
+    window.open(url, '_blank');
+  }
+};
+
+window.redoAwbTabung = async function(txnId){
+  const currentAwb = getAwbForTxn(txnId) || '(tiada / tidak diketahui)';
+  const ok = confirm(
+    'AWB sedia ada: ' + currentAwb +
+    '\n\nPastikan consignment ini SUDAH DIBATALKAN di portal myGDEX.' +
+    '\n\nTeruskan jana AWB baru untuk transaksi ' + txnId + ' ?'
+  );
+  if (!ok) return;
+
+  try{
+    clearAwbForTxn(txnId);
+    try{
+      await sb.from('tabung_txn')
+        .update({ tracking_no: null })
+        .eq('id', txnId);
+    }catch(e){
+      console.warn('clear tracking_no tabung_txn gagal (ok kalau column tiada):', e?.message || e);
+    }
+  }catch(_){}
+
+  const fakeBtn = { dataset: { id: txnId }, disabled: false, textContent: 'Redo AWB…' };
+  await window.generateAwbTabungFromBtn(fakeBtn);
+};
+
+/* =========================
+   Manual Pay (Tabung) — tanpa kacau Billplz callback
+   ========================= */
+window.openManualPayModal = async function(txnId){
+  const row = (window._rowsCache||{})[txnId];
+  if(!row){ showToast('Transaksi tidak ditemui.'); return; }
+  if(!(row.kind==='BUY' && row.status==='PENDING')){ showToast('Bayar manual hanya untuk BUY PENDING.'); return; }
+
+  const cust = await resolveCustomer(row);
+
+  const needCents = rmToCents(row.total || 0) || 0;
+
+  $('mp_txn_id').value = txnId;
+  $('mp_need_rm').value = String(Number(row.total||0).toFixed(2));
+  $('mp_ref').value = '';
+  $('mp_method').value = 'MANUAL_MAYBANK';
+
+  /* =========================
+   Split Editor UI (macam J916)
+   ========================= */
+window._mpSplitLines = window._mpSplitLines || []; 
+// setiap line: { method:'MANUAL_MAYBANK', amount_rm:'0.00' }
+
+function mpMoney2(n){
+  return 'RM ' + Number(n||0).toFixed(2);
+}
+
+function mpNeedCents(){
+  const txnId = ($('mp_txn_id').value || '').trim();
+  const row = (window._rowsCache||{})[txnId];
+  const need = rmToCents(row?.total || $('mp_need_rm').value || 0) || 0;
+  return need;
+}
+
+function mpRenderRows(){
+  const wrap = $('mp_rows');
+  if (!wrap) return;
+
+  wrap.innerHTML = window._mpSplitLines.map((ln, idx) => {
+    const method = ln.method || 'MANUAL_MAYBANK';
+    const amt = (ln.amount_rm ?? '').toString();
+
+    return `
+      <div class="d-flex gap-2 align-items-center">
+        <select class="form-select form-select-sm" data-idx="${idx}" data-k="method" style="width:140px">
+          <option value="MANUAL_MAYBANK" ${method==='MANUAL_MAYBANK'?'selected':''}>Maybank</option>
+          <option value="MANUAL_CASH" ${method==='MANUAL_CASH'?'selected':''}>Cash</option>
+          <option value="MANUAL_CARD" ${method==='MANUAL_CARD'?'selected':''}>Card</option>
+          <option value="MANUAL_ATOME" ${method==='MANUAL_ATOME'?'selected':''}>Atome</option>
+        </select>
+
+        <input class="form-control form-control-sm" type="number" step="0.01"
+               data-idx="${idx}" data-k="amount_rm"
+               placeholder="RM" value="${escHtml(amt)}">
+
+        <button class="btn btn-outline-danger btn-sm" type="button"
+                data-idx="${idx}" data-act="rm">×</button>
+      </div>
+    `;
+  }).join('');
+
+  // bind change events (delegation)
+  wrap.querySelectorAll('[data-k="method"]').forEach(el=>{
+    el.addEventListener('change', (e)=>{
+      const idx = Number(e.target.getAttribute('data-idx'));
+      window._mpSplitLines[idx].method = e.target.value;
+    });
+  });
+
+  wrap.querySelectorAll('[data-k="amount_rm"]').forEach(el=>{
+    el.addEventListener('input', (e)=>{
+      const idx = Number(e.target.getAttribute('data-idx'));
+      window._mpSplitLines[idx].amount_rm = e.target.value;
+      mpRecalcBadges();
+    });
+  });
+
+  wrap.querySelectorAll('[data-act="rm"]').forEach(btn=>{
+    btn.addEventListener('click', (e)=>{
+      const idx = Number(e.target.getAttribute('data-idx'));
+      window._mpSplitLines.splice(idx, 1);
+      if (window._mpSplitLines.length === 0){
+        window._mpSplitLines.push({ method:'MANUAL_MAYBANK', amount_rm:'0.00' });
+      }
+      mpRenderRows();
+      mpRecalcBadges();
+    });
+  });
+}
+
+function mpRecalcBadges(){
+  const need = mpNeedCents();
+  const sum = window._mpSplitLines.reduce((a, ln)=>{
+    const cents = rmToCents(ln.amount_rm || 0) || 0;
+    return a + cents;
+  }, 0);
+
+  const baki = Math.max(0, need - sum);
+
+  if ($('mp_total_badge')) $('mp_total_badge').textContent = `Total split: ${mpMoney2(sum/100)}`;
+  if ($('mp_need_badge'))  $('mp_need_badge').textContent  = `Perlu: ${mpMoney2(need/100)}`;
+  if ($('mp_left_badge'))  $('mp_left_badge').textContent  = `Baki: ${mpMoney2(baki/100)}`;
+}
+
+function mpSetSplitUI(isSplit){
+  const ed = $('mp_split_editor');
+  const single = $('mp_single_editor');
+  if (ed) ed.style.display = isSplit ? '' : 'none';
+  if (single) single.style.display = isSplit ? 'none' : '';
+}
+
+$('mp_add_row')?.addEventListener('click', ()=>{
+  window._mpSplitLines.push({ method:'MANUAL_CASH', amount_rm:'' });
+  mpRenderRows();
+  mpRecalcBadges();
+});
+
+$('mp_split')?.addEventListener('change', ()=>{
+  const on = !!$('mp_split').checked;
+  mpSetSplitUI(on);
+
+  if (on){
+    // seed: kalau kosong, auto isi 1 row ikut jumlah perlu
+    if (!window._mpSplitLines || window._mpSplitLines.length === 0){
+      const need = mpNeedCents();
+      window._mpSplitLines = [{ method:'MANUAL_MAYBANK', amount_rm:(need/100).toFixed(2) }];
+    }
+    mpRenderRows();
+    mpRecalcBadges();
+  }
+});
+
+  $('mp_info').textContent =
+    `Txn: ${txnId} • Perlu: ${money(row.total)} • Pelanggan: ${(cust.name||'-')} ${cust.phone?('('+norm60(cust.phone)+')'):''}`;
+
+  new bootstrap.Modal($('manualPayModal')).show();
+};
+
+$('mp_split')?.addEventListener('change', async ()=>{
+  const txnId = ($('mp_txn_id').value || '').trim();
+  const needCents = rmToCents($('mp_need_rm').value || 0) || 0;
+
+  const isSplit = !!$('mp_split').checked;
+  setSplitModeUI(isSplit);
+
+  if (!txnId) return;
+
+  if (isSplit){
+    const sum = await getSplitSumCents(txnId);
+    const baki = Math.max(0, needCents - sum);
+    await renderSplitUI(txnId, needCents);
+    $('mp_amount_rm').value = (baki/100).toFixed(2);
+  }else{
+    // balik single: auto isi penuh ikut total
+    $('mp_amount_rm').value = Number(needCents/100).toFixed(2);
+  }
+});
+async function doMarkPaidManualTabung(txnId, method, amountRm, refNote){
+  const row = (window._rowsCache||{})[txnId];
+  if(!row){ showToast('Transaksi tidak ditemui.'); return; }
+
+  // langkah 1: update status sahaja (paling selamat)
+  try{
+    const { error } = await sb.from('tabung_txn')
+      .update({ status: 'PAID' })
+      .eq('id', txnId)
+      .eq('status', 'PENDING');
+    if (error) throw error;
+  }catch(e){
+    console.warn('Update status PAID gagal:', e);
+    showToast('Gagal tanda PAID.');
+    return;
+  }
+
+  // langkah 2: best-effort simpan kaedah/jumlah/rujukan (kalau column wujud)
+  const finalMethod = String(method||'MANUAL_MAYBANK').toUpperCase().trim();
+  const amtCents = rmToCents(amountRm);
+  const note = String(refNote||'').trim();
+
+  // 2a) cuba pay_method
+  try{
+    await sb.from('tabung_txn')
+      .update({ pay_method: finalMethod })
+      .eq('id', txnId);
+  }catch(e){
+    console.warn('Update pay_method gagal (ok kalau column tiada):', e?.message || e);
+  }
+
+  // 2b) cuba amount_cents / amount_rm (ikut mana yang ada) — best effort
+  if (Number.isFinite(amtCents) && amtCents > 0){
+    try{
+      await sb.from('tabung_txn')
+        .update({ amount_cents: amtCents })
+        .eq('id', txnId);
+    }catch(e){
+      // fallback amount_rm
+      try{
+        await sb.from('tabung_txn')
+          .update({ amount_rm: Number(amountRm) })
+          .eq('id', txnId);
+      }catch(e2){
+        console.warn('Update amount gagal (ok kalau column tiada):', (e2?.message||e2));
+      }
+    }
+  }
+
+  // 2c) cuba simpan ref ke bill_id_text (atau notes append) — best effort
+  if (note){
+    try{
+      await sb.from('tabung_txn')
+        .update({ bill_id_text: note })
+        .eq('id', txnId);
+    }catch(e){
+      // fallback append notes
+      try{
+        const old = String(row.notes||'').trim();
+        const newNotes = (old ? (old + '\n') : '') + ('ManualRef: ' + note);
+        await sb.from('tabung_txn')
+          .update({ notes: newNotes })
+          .eq('id', txnId);
+      }catch(e2){
+        console.warn('Update ref/notes gagal (ok kalau column tiada):', (e2?.message||e2));
+      }
+    }
+  }
+
+  await recordAction(txnId, 'manual_paid');
+  showToast('Transaksi ditanda PAID (manual).');
+  await Promise.all([renderTotals(), refreshOrders()]);
+}
+
+$('mp_confirm_btn')?.addEventListener('click', async ()=>{
+  const txnId = ($('mp_txn_id').value || '').trim();
+  const method = ($('mp_method').value || 'MANUAL_MAYBANK').trim();
+  const amountRm = ($('mp_amount_rm').value || '').trim();
+  const refNote = ($('mp_ref').value || '').trim();
+  const isSplit = !!$('mp_split')?.checked;
+
+  if(!txnId){ showToast('Txn kosong.'); return; }
+  if(!amountRm || !Number.isFinite(Number(amountRm)) || Number(amountRm) <= 0){
+    showToast('Jumlah RM tidak sah.');
+    return;
+  }
+
+  const amountCents = rmToCents(amountRm);
+  if(!Number.isFinite(amountCents) || amountCents <= 0){
+    showToast('Jumlah RM tidak sah.');
+    return;
+  }
+
+  const row = (window._rowsCache||{})[txnId];
+  const needCents = rmToCents(row?.total || $('mp_need_rm').value || 0) || 0;
+  if(!needCents){ showToast('Jumlah perlu tidak sah.'); return; }
+
+  // ✅ RULE: single mode mesti bayar cukup penuh
+  if (!isSplit && amountCents < needCents){
+    showToast('Single mode mesti bayar penuh. Jika nak bayar separuh, ON “Split bayaran”.');
+    return;
+  }
+
+  try{
+    // 1) simpan baris split
+    await addSplitPayment(txnId, method, amountCents, refNote);
+    await recordAction(txnId, 'manual_split_added');
+
+    // 2) kira baki & auto PAID kalau cukup
+    const res = await markPaidIfSplitEnough(txnId, needCents);
+
+    if (isSplit){
+      await renderSplitUI(txnId, needCents);
+
+      const baki = Math.max(0, Number(res?.baki || 0));
+      $('mp_amount_rm').value = (baki/100).toFixed(2);
+      $('mp_ref').value = '';
+
+      if (res?.paid){
+        try{ bootstrap.Modal.getInstance($('manualPayModal'))?.hide(); }catch(_){}
+      }
+    }else{
+      // single mode memang full: confirm akan jadi PAID, then tutup
+      try{ bootstrap.Modal.getInstance($('manualPayModal'))?.hide(); }catch(_){}
+    }
+
+    await Promise.all([renderTotals(), refreshOrders()]);
+  }catch(e){
+    console.warn('manual split confirm error', e);
+    showToast('Gagal simpan split bayaran.');
+  }
+});
+/* =========================
+   Resit & Detail (BUY PAID)
+   ========================= */
+async function sendDetailBuy(id){
+  const row = (window._rowsCache||{})[id];
+  if (!row) return;
+
+  if (sentDetailIds.has(id)) { showToast('Sudah dihantar.'); return; }
+  if (!(row.kind==='BUY' && row.status==='PAID')) { showToast('Perlu status PAID.'); return; }
+
+  const cust = await resolveCustomer(row);
+  const phone = norm60(cust.phone);
+  if (!phone) { showToast('Tiada nombor pelanggan.'); return; }
+
+  const units = Number(row.units||0);
+  const gramsTxt = (units/10).toFixed(1)+' g';
+
+  const msg = [
+    '*Maklumat Belian Tabung*',
+    `Tarikh: ${fmtMY(row.created_at)}`,
+    `Unit dibeli: ${units} (0.1g) = ${gramsTxt}`,
+    `Harga/unit: ${money(row.price_per_unit)}`,
+    `Jumlah: ${money(row.total)}`,
+    row.bill_id ? `Bill: ${row.bill_id}` : null,
+    row.reference ? `Ref: ${row.reference}` : null,
+    '',
+    'Terima kasih menabung dengan kami.',
+    'Admin akan sahkan & asingkan tabungan anda.'
+  ].filter(Boolean).join('\n');
+
+  const ok = await sendWA(phone, msg);
+  if (ok){
+    sentDetailIds.add(id);
+    await recordAction(id, 'sent_detail');
+    showToast('Selesai hantar detail.');
+    await refreshOrders();
+  }else{
+    showToast('Gagal hantar WhatsApp.');
+  }
+}
+
+async function sendReceiptTabung(id, receiptUrl){
+  try{
+    const row = (window._rowsCache||{})[id];
+    if(!row){ showToast('Transaksi tidak ditemui.'); return; }
+    if(!(row.kind==='BUY' && row.status==='PAID')){ showToast('Perlu status PAID.'); return; }
+
+    const cust = await resolveCustomer(row);
+    const phone = norm60(cust.phone);
+    if(!phone){ showToast('Tiada nombor pelanggan.'); return; }
+
+    // simpan fallback supaya resit-tabung boleh buka tanpa query
+    try{
+      const isBill = /[?&]bill_id=/.test(receiptUrl);
+      localStorage.setItem('tabung_last_bill_id', isBill ? (row.bill_id||'') : '');
+      localStorage.setItem('tabung_last_txn_id',  row.id || '');
+    } catch(_){}
+
+    const msg = [
+      '*Resit Tabung Emas*',
+      `Tarikh: ${fmtMY(row.created_at)}`,
+      `Unit: ${row.units} (0.1g) = ${(row.units/10).toFixed(1)} g`,
+      `Jumlah: ${money(row.total)}`,
+      row.bill_id ? `Bill: ${row.bill_id}` : null,
+      row.reference ? `Ref: ${row.reference}` : null,
+      '',
+      'Resit anda:',
+      receiptUrl
+    ].filter(Boolean).join('\n');
+
+    const ok = await sendWA(phone, msg);
+    if(!ok){ showToast('Gagal hantar WhatsApp.'); return; }
+
+    await recordAction(id, 'receipt_sent');
+    window._receiptSentIds = window._receiptSentIds || new Set();
+    window._receiptSentIds.add(id);
+
+    showToast('Resit dihantar.');
+    await refreshOrders();
+  }catch(e){
+    console.warn('sendReceiptTabung error:', e);
+    showToast('Ralat semasa hantar resit.');
+  }
+}
+
+/* =========================
+   Complete (SELESAI)
+   ========================= */
+function askComplete(id){
+  _pendingId = id;
+  $('confirmText').textContent = 'Sahkan tanda transaksi ini sebagai SELESAI / sudah simpan?';
+  new bootstrap.Modal($('confirmModal')).show();
+}
+$('confirmYesBtn')?.addEventListener('click', async ()=>{
+  if(!_pendingId) return;
+  savedIds.add(_pendingId);
+  await recordAction(_pendingId, 'completed');
+  showToast('Ditanda sebagai SELESAI.');
+  await refreshOrders();
+  _pendingId=null;
+  bootstrap.Modal.getInstance($('confirmModal'))?.hide();
+});
+
+/* =========================
+   Render Orders
+   ========================= */
+let _firstPaint = true;
+let _prevPaidIds = new Set();
+
+function statusBadge(st){
+  if (st === 'PAID') return 'bg-success';
+  if (st === 'PENDING') return 'bg-warning text-dark';
+  if (st === 'COMPLETED') return 'bg-primary';
+  return 'bg-secondary';
+}
+
+async function refreshOrders(){
+  const q = ($('searchBox')?.value||'').trim();
+  const { items, total } = await rpcList(CUR_PAGE, PAGE_SIZE, CUR_FILTER, CUR_KIND, q);
+
+  // enrich customers
+  await enrichCustomers(items);
+
+  // load actions for displayed rows
+  try{
+    const ids = items.map(x=>x.id);
+    if(ids.length){
+      const { data: acts } = await sb
+        .from('tabung_actions')
+        .select('txn_id, action')
+        .in('txn_id', ids);
+
+      sentDetailIds.clear();
+      savedIds.clear();
+      window._receiptSentIds = new Set();
+
+      (acts||[]).forEach(a=>{
+        const act = String(a.action||'').trim().toLowerCase();
+        if (act === 'sent_detail') sentDetailIds.add(a.txn_id);
+        if (act === 'completed') savedIds.add(a.txn_id);
+        if (act === 'receipt_sent' || act === 'resit_sent' || act === 'receipt') window._receiptSentIds.add(a.txn_id);
+      });
+    }
+  }catch(e){ console.warn('load actions fail', e); }
+
+  // seed AWB cache from db (kalau ada)
+  try{
+    (items || []).forEach(r => {
+      if (r.tracking_no && !awbCache[r.id]) {
+        awbCache[r.id] = r.tracking_no;
+      }
+    });
+    saveAwbCache(awbCache);
+  }catch(_){}
+
+  // detect PAID baharu → bunyi
+  try{
+    const currentPaid = new Set(items.filter(r => r.status==='PAID').map(r => r.id));
+    if (_firstPaint){
+      _prevPaidIds = currentPaid;
+      _firstPaint = false;
+    }else{
+      let hasNewPaid = false;
+      for (const id of currentPaid){ if(!_prevPaidIds.has(id)){ hasNewPaid = true; break; } }
+      if (hasNewPaid && typeof window.playCash === 'function'){ window.playCash(); }
+      _prevPaidIds = currentPaid;
+    }
+  }catch(e){ console.warn('paid-detect error', e); }
+
+  const tb = $('ordersTbody');
+  if(!items.length){
+    tb.innerHTML = `<tr><td colspan="10" class="text-muted py-4">0 rekod</td></tr>`;
+    $('resultInfo').textContent = '0 rekod';
+    renderPager(0);
+    window._rowsCache = {};
+    return;
+  }
+
+  // cache rows
+  window._rowsCache = Object.fromEntries(items.map(x=>[x.id, x]));
+
+  // render
+  const rowsHtml = await Promise.all(items.map(async (r) => {
+    const alreadyDone = savedIds.has(r.id);
+    const alreadySent = sentDetailIds.has(r.id);
+    const alreadyReceipt = (window._receiptSentIds && window._receiptSentIds.has(r.id)) || false;
+
+    const cust = await resolveCustomer(r);
+    const cName = cust.name && cust.name !== '-' ? cust.name : (r.name || '-');
+    const cPhone = norm60(cust.phone || r.phone || '');
+
+    // resit url (tak kacau callback billplz)
+    const receiptUrl = (r.bill_id && String(r.bill_id).trim())
+      ? `${location.origin}/resit-tabung.html?bill_id=${encodeURIComponent(r.bill_id)}`
+      : `${location.origin}/resit-tabung.html?txn_id=${encodeURIComponent(r.id)}`;
+
+    const canSendDetail = (r.kind==='BUY' && r.status==='PAID');
+    const canReceipt = (r.kind==='BUY' && r.status==='PAID');
+    const canManualPay = (r.kind==='BUY' && r.status==='PENDING');
+    const canAWB = (r.kind==='WITHDRAW' && (r.status==='APPROVED' || r.status==='COMPLETED'));
+
+    // AWB UI — hanya untuk WITHDRAW (APPROVED/COMPLETED)
+const awbNo = getAwbForTxn(r.id);
+
+const awbHtml = canAWB
+  ? (awbNo
+      ? `<div class="mt-1 small text-muted">
+          AWB: <span class="mono">${escHtml(awbNo)}</span>
+          <button class="btn btn-link btn-sm p-0 ms-2" type="button" onclick="printAwbTabung('${r.id}')">Print</button>
+          <button class="btn btn-link btn-sm p-0 ms-2" type="button" onclick="trackAwbTabung('${r.id}')">Track</button>
+          <button class="btn btn-link btn-sm p-0 ms-2 text-danger" type="button" onclick="redoAwbTabung('${r.id}')">Redo</button>
+        </div>`
+      : `<div class="mt-1">
+          <button class="btn btn-outline-dark btn-sm" type="button" data-id="${r.id}" onclick="generateAwbTabungFromBtn(this)">
+            Generate AWB (WITHDRAW)
+          </button>
+        </div>`
+    )
+  : ``;
+
+    const btnSendDetail = alreadySent
+      ? `<button class="btn btn-outline-secondary btn-sm" type="button" disabled>✔ Selesai hantar</button>`
+      : `<button class="btn btn-outline-dark btn-sm" type="button" ${canSendDetail?'':'disabled'} onclick="sendDetailBuy('${r.id}')">Hantar detail belian</button>`;
+
+    const btnSendReceipt = alreadyReceipt
+      ? `<button class="btn btn-outline-secondary btn-sm" type="button" disabled>✔ Resit dihantar</button>`
+      : `<button class="btn btn-outline-dark btn-sm" type="button" ${canReceipt?'':'disabled'} onclick="sendReceiptTabung('${r.id}','${receiptUrl}')">Hantar resit</button>`;
+
+    const btnReceipt = canReceipt
+      ? `<a class="btn btn-outline-primary btn-sm" target="_blank" href="${receiptUrl}"
+            onclick="try{
+              localStorage.setItem('tabung_last_bill_id','${escHtml(r.bill_id||'')}');
+              localStorage.setItem('tabung_last_txn_id','${escHtml(r.id||'')}');
+            }catch(_){ }">Resit</a>`
+      : `<button class="btn btn-outline-secondary btn-sm" type="button" disabled>Resit</button>`;
+
+    const btnManual = `<button class="btn btn-outline-success btn-sm" type="button" ${canManualPay?'':'disabled'} onclick="openManualPayModal('${r.id}')">Bayar manual</button>`;
+
+    const btnComplete = alreadyDone
+      ? `<button class="btn btn-outline-success btn-sm" type="button" disabled>✓ Disimpan</button>`
+      : `<button class="btn btn-success btn-sm" type="button" ${(r.status==='PAID') ? '' : 'disabled'} onclick="askComplete('${r.id}')">Tanda Selesai</button>`;
+
+    // catatan ringkas
+    const noteLines = [];
+    if (r.notes) noteLines.push(`<div>${escHtml(r.notes)}</div>`);
+    if (r.bill_id) noteLines.push(`<div class="text-muted mono small mt-1">Bill: ${escHtml(r.bill_id)}</div>`);
+    if (r.reference) noteLines.push(`<div class="text-muted mono small">Ref: ${escHtml(r.reference)}</div>`);
+
+    return `
+      <tr id="row-${r.id}">
+        <td>${fmtMY(r.created_at)}</td>
+        <td><span class="pill-soft">${escHtml(r.kind)}</span></td>
+
+        <td>
+          <div class="fw-semibold">${escHtml(cName || '-')}</div>
+          <div class="small text-muted mono">${cPhone ? escHtml(cPhone) : '-'}</div>
+        </td>
+
+        <td class="text-end">${Number(r.units||0)}</td>
+        <td class="text-end">${money(r.price_per_unit)}</td>
+        <td class="text-end">${money(r.fee)}</td>
+        <td class="text-end fw-semibold">${money(r.total)}</td>
+
+        <td>
+          <span class="badge ${statusBadge(r.status)}">${escHtml(r.status)}</span>
+        </td>
+
+        <td class="small">${noteLines.length ? noteLines.join('') : '-'}</td>
+
+        <td class="text-end">
+          <div class="d-flex justify-content-end flex-wrap gap-1">
+            ${btnSendDetail}
+            ${btnSendReceipt}
+            ${btnReceipt}
+            ${btnManual}
+            ${btnComplete}
+          </div>
+          ${awbHtml}
+        </td>
+      </tr>
+    `;
+  }));
+
+  tb.innerHTML = rowsHtml.join('');
+  $('resultInfo').textContent = `${total} rekod`;
+  renderPager(total);
+}
+
+/* =========================
+   Filter UI
+   ========================= */
+function setStatusFilter(f){
+  CUR_FILTER = f || 'ALL';
+  CUR_PAGE = 1;
+  ['btnFilterALL','btnFilterPAID','btnFilterPENDING','btnFilterCOMPLETED'].forEach(id=>$(id)?.classList.remove('btn-primary'));
+  if (f==='ALL') $('btnFilterALL')?.classList.add('btn-primary');
+  if (f==='PAID') $('btnFilterPAID')?.classList.add('btn-primary');
+  if (f==='PENDING') $('btnFilterPENDING')?.classList.add('btn-primary');
+  if (f==='COMPLETED') $('btnFilterCOMPLETED')?.classList.add('btn-primary');
+  refreshOrders();
+}
+function setKindFilter(k){
+  CUR_KIND = k || 'ALL';
+  CUR_PAGE = 1;
+  ['btnKindALL','btnKindBUY','btnKindWITHDRAW','btnKindSELL'].forEach(id=>$(id)?.classList.remove('btn-primary'));
+  if (k==='ALL') $('btnKindALL')?.classList.add('btn-primary');
+  if (k==='BUY') $('btnKindBUY')?.classList.add('btn-primary');
+  if (k==='WITHDRAW') $('btnKindWITHDRAW')?.classList.add('btn-primary');
+  if (k==='SELL') $('btnKindSELL')?.classList.add('btn-primary');
+  refreshOrders();
+}
+
+$('btnFilterALL')?.addEventListener('click', ()=> setStatusFilter('ALL'));
+$('btnFilterPAID')?.addEventListener('click', ()=> setStatusFilter('PAID'));
+$('btnFilterPENDING')?.addEventListener('click', ()=> setStatusFilter('PENDING'));
+$('btnFilterCOMPLETED')?.addEventListener('click', ()=> setStatusFilter('COMPLETED'));
+
+$('btnKindALL')?.addEventListener('click', ()=> setKindFilter('ALL'));
+$('btnKindBUY')?.addEventListener('click', ()=> setKindFilter('BUY'));
+$('btnKindWITHDRAW')?.addEventListener('click', ()=> setKindFilter('WITHDRAW'));
+$('btnKindSELL')?.addEventListener('click', ()=> setKindFilter('SELL'));
+
+/* =========================
+   Events
+   ========================= */
+$('refreshBtn')?.addEventListener('click', async ()=>{
+  CUR_PAGE = 1;
+  await Promise.all([renderTotals(), renderStock(), refreshOrders()]);
+  startAutoRefresh();
+});
+$('searchBox')?.addEventListener('keydown', async (e)=>{
+  if(e.key==='Enter'){
+    CUR_PAGE = 1;
+    await refreshOrders();
+    startAutoRefresh();
+  }
+});
+$('btnTestSound')?.addEventListener('click', ()=> { if (typeof window.playCash === 'function') window.playCash(); });
+
+/* =========================
+   BOOT (admin guard + load)
+   ========================= */
+(async ()=>{
+  const pill = $('authStatus');
+  const set = t => pill && (pill.textContent=t);
+
+  let ok = false;
+  if (window.adminGuard && typeof adminGuard.require==='function'){
+    ok = await adminGuard.require({
+      onChecking: ()=> set('Mengesahkan akses…'),
+      onDenied:   ()=> set('Akses ditolak'),
+      onAllowed:  (phone)=> set('Log masuk (admin) — '+phone)
+    });
+  }else{
+    const a = (window.auth_get && window.auth_get()) || null;
+    if(!a){ location.href='login.html#login'; return; }
+    ok = true;
+    set('Log masuk (admin)');
+  }
+  if(!ok) return;
+
+  await Promise.all([renderTotals(), renderStock(), refreshOrders()]);
+  startAutoRefresh();
+})();
+</script>
+
+</body>
+</html>

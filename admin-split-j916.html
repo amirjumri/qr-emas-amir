@@ -1,0 +1,834 @@
+<!doctype html>
+<html lang="ms">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Admin • Split/Potong Sale J916 — Emas Amir</title>
+
+  <!-- Libs -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="auth.js?v=13.1"></script>
+  <script src="admin-guard.js?v=1"></script>
+
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+  <style>
+    body{background:#fff}
+    .container-narrow{max-width:1200px}
+    .auth-pill{border:1px solid #e5e7eb;border-radius:999px;padding:.2rem .6rem;background:#fafafa;color:#555}
+    .btn-chip{border:1px solid #e5e7eb;background:#f8fafc;padding:6px 10px;border-radius:999px;font-size:.9rem}
+    .btn-chip.btn-primary{background:#0d6efd;color:#fff;border-color:#0d6efd}
+    .table-sticky thead th{position:sticky;top:0;background:#fff;z-index:5}
+    .mono{font-family:ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,"Liberation Mono","Courier New",monospace}
+    .card-soft{border:1px solid #e5e7eb;border-radius:14px}
+    .small-muted{font-size:12px;color:#6b7280}
+    .toast-wrap{position:fixed;right:16px;bottom:16px;z-index:1080}
+    .pick-row{cursor:pointer}
+    .pick-row:hover{background:#f8fafc}
+    .selected-row{outline:2px solid #0d6efd; outline-offset:-2px; background:#eef6ff}
+    .badge-soft{border:1px solid #e5e7eb;background:#fafafa;border-radius:999px;padding:2px 8px;font-size:12px}
+  </style>
+</head>
+<body>
+<div class="container container-narrow py-3">
+
+  <!-- TOP BAR -->
+  <div class="d-flex justify-content-between align-items-center mb-2">
+    <div class="small auth-pill" id="authStatus">Memuatkan…</div>
+    <div class="d-flex flex-wrap gap-2">
+      <a class="btn btn-outline-secondary btn-chip" href="index.html">Halaman Utama</a>
+      <a class="btn btn-outline-secondary btn-chip" href="admin.html">Admin</a>
+      <a class="btn btn-outline-secondary btn-chip" href="admin-j916.html">Admin J916</a>
+      <a class="btn btn-outline-secondary btn-chip" href="admin-tradein.html">Admin Trade In</a>
+      <a class="btn btn-outline-secondary btn-chip" href="account.html">Akaun</a>
+      <button id="btnLogin"  class="btn btn-outline-secondary btn-chip" type="button">Log masuk</button>
+      <button id="btnLogout" class="btn btn-outline-secondary btn-chip" type="button" style="display:none">Log keluar</button>
+    </div>
+  </div>
+  <hr class="mb-3">
+
+  <div class="d-flex align-items-center justify-content-between gap-2 flex-wrap">
+    <h1 class="h4 m-0">Admin • Split/Potong Sale (J916)</h1>
+    <div class="d-flex gap-2 align-items-center">
+      <span class="badge-soft">
+  Ambil: J916 <b>PAID/COMPLETED</b> + <b>WALK-IN PENDING</b> (tiada Bill ID)
+</span>
+    </div>
+  </div>
+
+  <!-- SEARCH -->
+  <div class="card-soft p-3 mt-3">
+    <div class="row g-2 align-items-end">
+      <div class="col-12 col-md-6">
+        <label class="form-label mb-1">No telefon pelanggan</label>
+        <input id="phoneBox" class="form-control" placeholder="Contoh: 0123456789 / 60123456789" />
+        <div class="small-muted mt-1">Tip: tekan Enter untuk cari.</div>
+      </div>
+      <div class="col-12 col-md-6">
+        <div class="d-flex gap-2">
+          <button id="btnSearch" class="btn btn-primary" type="button">Cari</button>
+          <button id="btnClear" class="btn btn-outline-secondary" type="button">Reset</button>
+        </div>
+        <div class="small-muted mt-2" id="searchInfo">-</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- RESULTS -->
+  <div class="row g-3 mt-1">
+    <div class="col-12 col-lg-7">
+      <div class="card-soft p-3">
+        <div class="d-flex justify-content-between align-items-center">
+          <div class="fw-semibold">1) Pilih Sale J916 (PAID/COMPLETED atau WALK-IN PENDING)</div>
+          <small class="text-muted" id="saleCount">0</small>
+        </div>
+
+        <div class="table-responsive mt-2">
+          <table class="table table-sm align-middle table-sticky">
+            <thead>
+              <tr>
+                <th style="width:150px">Tarikh</th>
+                <th>Order</th>
+                <th>Pelanggan</th>
+                <th class="text-end" style="width:140px">Dibayar</th>
+              </tr>
+            </thead>
+            <tbody id="saleTbody">
+              <tr><td colspan="4" class="text-center text-muted py-4">Belum cari.</td></tr>
+            </tbody>
+          </table>
+        </div>
+
+        <div class="mt-2 small-muted">
+          Dipilih: <span class="mono" id="salePicked">-</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-12 col-lg-5">
+      <div class="card-soft p-3">
+        <div class="fw-semibold mb-2">2) Maklumat Split/Potong</div>
+
+        <div class="row g-2">
+          <div class="col-6">
+            <label class="form-label mb-1">Berat asal (g)</label>
+            <input id="origWeight" class="form-control" placeholder="Contoh: 1.0000" inputmode="decimal">
+          </div>
+          <div class="col-6">
+            <label class="form-label mb-1">Panjang asal (cm)</label>
+            <input id="origLen" class="form-control" placeholder="Contoh: 17" inputmode="decimal">
+          </div>
+
+          <div class="col-6">
+            <label class="form-label mb-1">Berat baru (g)</label>
+            <input id="newWeight" class="form-control" placeholder="Contoh: 0.8000" inputmode="decimal">
+          </div>
+<div class="col-6">
+  <label class="form-label mb-1">Adjustment berat (g)</label>
+  <input id="weightAdjust" class="form-control" placeholder="Contoh: 0.0000" inputmode="decimal" value="0">
+  <div class="small-muted mt-1">Boleh + / - (untuk audit timbang/rounding).</div>
+</div>
+
+<div class="col-12">
+  <div class="d-flex justify-content-between">
+    <div class="small-muted">Berat akhir (baru + adjust)</div>
+    <div class="fw-semibold mono" id="finalNewWeight">0.0000 g</div>
+  </div>
+  <div class="d-flex justify-content-between mt-1">
+    <div class="small-muted">Lebihan (asal - berat akhir)</div>
+    <div class="fw-bold mono" id="excessWeight">0.0000 g</div>
+  </div>
+</div>
+          <div class="col-6">
+            <label class="form-label mb-1">Panjang baru (cm)</label>
+            <input id="newLen" class="form-control" placeholder="Contoh: 15" inputmode="decimal">
+          </div>
+
+          <div class="col-12">
+            <label class="form-label mb-1">Harga selepas potong (RM)</label>
+            <input id="newAmount" class="form-control" placeholder="Contoh: 570.00" inputmode="decimal">
+            <div class="small-muted mt-1">
+              Tip: kalau isi berat asal+baru, boleh tekan butang “Auto kira ikut ratio”.
+            </div>
+          </div>
+
+          <div class="col-12">
+            <button id="btnAutoRatio" class="btn btn-outline-dark btn-sm" type="button" disabled>
+              Auto kira ikut ratio berat (baru/asas)
+            </button>
+          </div>
+        </div>
+
+        <hr class="my-2">
+
+        <div class="row g-2">
+          <div class="col-12">
+            <div class="small-muted">Jumlah asal dibayar</div>
+            <div class="fw-semibold" id="paidAmount">RM 0.00</div>
+          </div>
+          <div class="col-12">
+            <div class="small-muted">Refund (asal - baru)</div>
+            <div class="fw-bold" id="refundAmount">RM 0.00</div>
+            <div class="small-muted" id="refundHint">-</div>
+          </div>
+        </div>
+
+        <hr class="my-2">
+
+        <div class="row g-2">
+          <div class="col-12">
+            <label class="form-label mb-1">Kaedah bayar balik (bila refund)</label>
+            <select id="cashoutMethod" class="form-select">
+              <option value="">-</option>
+              <option value="TUNAI">TUNAI</option>
+              <option value="TRANSFER">TRANSFER</option>
+            </select>
+          </div>
+          <div class="col-12">
+            <label class="form-label mb-1">Rujukan (optional)</label>
+            <input id="refBox" class="form-control" placeholder="Contoh: ref bank / no slip" />
+          </div>
+          <div class="col-12">
+            <label class="form-label mb-1">Nota (optional)</label>
+            <input id="noteBox" class="form-control" placeholder="Contoh: potong rantai, lebihan refund" />
+          </div>
+        </div>
+
+        <hr class="my-2">
+
+        <div class="d-flex gap-2 flex-wrap">
+          <button id="btnPreview" class="btn btn-outline-dark btn-sm" type="button" disabled>Preview Resit Split</button>
+          <button id="btnSave" class="btn btn-success btn-sm" type="button" disabled>SIMPAN (Create Split + WhatsApp Admin)</button>
+        </div>
+
+        <div class="small-muted mt-2">
+          *Page ini hanya <b>insert</b> rekod split. Sale asal tak diubah.
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- TOAST -->
+<div class="toast-wrap">
+  <div class="toast align-items-center text-bg-dark border-0" id="mainToast" role="status" aria-live="polite" aria-atomic="true">
+    <div class="d-flex">
+      <div class="toast-body" id="toastMsg">Berjaya.</div>
+      <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Tutup"></button>
+    </div>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+/* ========================== Supabase ========================== */
+const SB_URL = "https://dduizetstqqjrpsezbpi.supabase.co";
+const SB_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRkdWl6ZXRzdHFxanJwc2V6YnBpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTg3MzI0ODQsImV4cCI6MjA3NDMwODQ4NH0.CrlHXrmHtKgR9qc2192U6quRb5lpFEeOSgwG0Lb8KRM";
+window.sb = window.sb || window.supabase.createClient(SB_URL, SB_KEY);
+const sb = window.sb;
+
+/* ========================== WhatsApp (OnSend) ========================== */
+const ADMIN_WA = "60168055916"; // no admin (digits sahaja)
+const ONSEND_BASE  = "https://onsend.io/api/v1";
+const ONSEND_TOKEN = "4b879470cc16ca8f06c5ab9878a4578880cfd0fd7b7cfe0121499f3ab017dd04"; // Amir dah set yang betul
+
+function normalizeWA(msisdn){
+  if(!msisdn) return null;
+  let x=(''+msisdn).replace(/\D/g,'');
+  if(!x) return null;
+  if(x.startsWith('60')) return x;
+  if(x.startsWith('0'))  return '60' + x.slice(1);
+  return '60' + x;
+}
+
+async function sendWA(msisdn, text){
+  const phone_number = normalizeWA(msisdn);
+  if(!phone_number) return { ok:false, reason:'bad_phone' };
+  try{
+    const r = await fetch(ONSEND_BASE + "/send", {
+      method: "POST",
+      headers: {
+        Accept: "application/json",
+        "Content-Type": "application/json",
+        Authorization: "Bearer " + ONSEND_TOKEN
+      },
+      body: JSON.stringify({ phone_number, message: text, type: "text" })
+    });
+    const j = await r.json().catch(()=>({}));
+    console.log("[OnSend]", r.status, j);
+    return { ok: (r.ok && j.success === true), raw:j };
+  }catch(e){
+    return { ok:false, reason:String(e?.message||e) };
+  }
+}
+
+/* ========================== Helpers ========================== */
+const $ = (id)=>document.getElementById(id);
+const showToast=(m)=>{ const el=$('mainToast'); $('toastMsg').textContent=m||'OK'; new bootstrap.Toast(el,{delay:1800}).show(); };
+const fmtMY=(s)=> new Date(s).toLocaleString('ms-MY',{hour12:false});
+const money=(n)=> 'RM ' + (Number(n||0)).toFixed(2);
+const digitsOnly = (v)=> String(v||'').replace(/\D/g,'');
+
+function phoneKey(anyPhone){
+  const d = digitsOnly(anyPhone);
+  if(!d) return '';
+  if(d.startsWith('60') && d.length >= 10) return '0' + d.slice(2);
+  if(d.startsWith('65') && d.length >= 10) return '65' + d.slice(2);
+  return d;
+}
+function phoneVariantsForDebug(input){
+  const d = digitsOnly(input);
+  if(!d) return [];
+  const set = new Set(); set.add(d);
+  if(d.startsWith('0')) { set.add('60' + d.slice(1)); set.add('+60' + d.slice(1)); }
+  if(d.startsWith('60')) { set.add('0' + d.slice(2)); set.add('+' + d); }
+  if(d.startsWith('65')) set.add('+' + d);
+  return Array.from(set);
+}
+function normalizePhoneVariants(msisdn){
+  return phoneVariantsForDebug(msisdn).map(v => String(v));
+}
+
+function calcPaidRM(r){
+  if(!r) return 0;
+  const cents = Number(r.amount_cents);
+  if(Number.isFinite(cents) && cents > 0) return cents/100;
+
+  const gt = Number(r.grand_total_rm);
+  if(Number.isFinite(gt) && gt > 0) return gt;
+
+  const sub   = Number(r.subtotal_rm) || 0;
+  const ship  = Number(r.shipping_rm) || 0;
+  const payD  = Number(r.pay_disc_rm) || 0;
+  const coupD = Number(r.coupon_disc_rm) || 0;
+  const computed = sub + ship - payD - coupD;
+
+  return Number.isFinite(computed) && computed > 0 ? computed : 0;
+}
+
+function numVal(id){
+  const v = ($(id).value||'').trim();
+  if(!v) return null;
+  const n = Number(String(v).replace(/,/g,''));
+  return Number.isFinite(n) ? n : null;
+}
+function numVal0(id){
+  const v = ($(id).value||'').trim();
+  if(!v) return 0;
+  const n = Number(String(v).replace(/,/g,''));
+  return Number.isFinite(n) ? n : 0;
+}
+
+function setEnableActions(){
+  const okSale = !!pickedSale;
+  $('btnAutoRatio').disabled = !okSale;
+  $('btnPreview').disabled   = !okSale;
+  $('btnSave').disabled      = !okSale;
+  recalcRefund();
+  recalcWeightDiff();
+  validateForm();
+}
+
+function recalcRefund(){
+  const paid = pickedSale ? calcPaidRM(pickedSale) : 0;
+  $('paidAmount').textContent = money(paid);
+
+  const newAmt = numVal('newAmount') || 0;
+  const refund = Number((paid - newAmt).toFixed(2));
+  $('refundAmount').textContent = money(refund);
+
+  if(!pickedSale){
+    $('refundHint').textContent = '-';
+    return;
+  }
+  if(refund > 0){
+    $('refundHint').textContent = `Kedai perlu pulangkan balik ${money(refund)} kepada pelanggan.`;
+  }else if(refund < 0){
+    $('refundHint').textContent = `Pelanggan perlu tambah ${money(Math.abs(refund))} (cash in).`;
+  }else{
+    $('refundHint').textContent = `Tiada beza (0).`;
+  }
+}
+
+function recalcWeightDiff(){
+  const ow = numVal0('origWeight');
+  const nw = numVal0('newWeight');
+  const adj = numVal0('weightAdjust');
+
+  const finalW = (nw + adj);
+  const excess = (ow - finalW);
+
+  $('finalNewWeight').textContent = finalW.toFixed(4) + ' g';
+  $('excessWeight').textContent = excess.toFixed(4) + ' g';
+}
+
+function validateForm(){
+  if(!pickedSale){
+    $('btnSave').disabled = true;
+    $('btnPreview').disabled = true;
+    return;
+  }
+
+  const paid = calcPaidRM(pickedSale);
+  const newAmt = numVal('newAmount');
+
+  // wajib isi newAmount untuk resit/simpan
+  if(!(newAmt != null && newAmt >= 0)){
+    $('btnSave').disabled = true;
+    $('btnPreview').disabled = true;
+    return;
+  }
+
+  const refund = Number((paid - newAmt).toFixed(2));
+  const method = ($('cashoutMethod').value||'').trim();
+
+  // bila refund positif → wajib pilih kaedah
+  if(refund > 0 && !method){
+    $('btnSave').disabled = true;
+  }else{
+    $('btnSave').disabled = false;
+  }
+
+  $('btnPreview').disabled = false;
+}
+
+/* ========================== Topbar Auth UI ========================== */
+(function(){
+  const pill=$('authStatus'),login=$('btnLogin'),logout=$('btnLogout');
+  try{
+    const a=(window.auth_get&&window.auth_get())||null;
+    if(a){
+      pill.textContent='Log masuk (admin) — '+(a.phone||a.msisdn||'');
+      login.style.display='none'; logout.style.display='';
+      logout.onclick=()=>{window.auth_clear&&window.auth_clear();location.reload();};
+    }else{
+      pill.textContent='Tidak log masuk';
+      login.style.display=''; logout.style.display='none';
+      login.onclick=()=>location.href='login.html#login';
+    }
+  }catch(_){}
+})();
+
+/* ========================== Admin guard (fallback) ========================== */
+async function fallbackRequireAdmin(){
+  const a=(window.auth_get&&window.auth_get())||null;
+  if(!a){ location.href="login.html#login"; return false; }
+  const phone = (''+(a.phone||a.msisdn||a.username||'')).replace(/\D/g,'');
+  if(!phone){ alert("Akses terhad."); location.href="index.html"; return false; }
+  const {data,error}=await sb
+    .from("admin_users").select("phone,is_active")
+    .eq("phone",phone.startsWith('60')?phone:('60'+phone))
+    .eq("is_active",true)
+    .maybeSingle();
+  if(error||!data){ alert("Akses terhad (bukan admin)."); location.href="index.html"; return false; }
+  return true;
+}
+
+function getAdminPhoneForLog(){
+  try{
+    const a=(window.auth_get&&window.auth_get())||null;
+    const p = (''+(a?.phone||a?.msisdn||a?.username||'')).replace(/\D/g,'');
+    if(!p) return null;
+    return p.startsWith('60') ? ('+'+p) : ('+60'+p);
+  }catch(_){ return null; }
+}
+
+/* ========================== State ========================== */
+let saleRows = [];
+let pickedSale = null;
+
+/* ========================== Fetch Sale PAID/COMPLETED by phone ========================== */
+async function fetchPaidSaleByPhone(phoneInput){
+  const key = phoneKey(phoneInput);
+  if(!key) return [];
+
+  const { data, error } = await sb
+    .from('j916_orders')
+    .select('order_code,checkout_group,created_at,customer_name,phone,amount_cents,status,pay_method,bill_id_text,bill_id,subtotal_rm,shipping_rm,pay_disc_rm,coupon_disc_rm,grand_total_rm,paid_at')
+    .in('status', ['PENDING','PAID','COMPLETED'])
+    .order('created_at', { ascending:false })
+    .limit(1200);
+
+  if(error) throw error;
+
+  const rows = Array.isArray(data) ? data : [];
+
+  const samePhone = rows.filter(r => phoneKey(r.phone) === key);
+
+  // ✅ Tapis: ambil PAID/COMPLETED, dan PENDING yang WALK-IN sahaja (tiada Bill ID)
+  const filtered = samePhone.filter(r=>{
+    const st = String(r.status||'').toUpperCase();
+    if(st === 'PAID' || st === 'COMPLETED') return true;
+
+    if(st === 'PENDING'){
+      const bill = String(r.bill_id_text || r.bill_id || '').trim();
+      return !bill; // PENDING + tiada bill = WALK-IN/manual
+    }
+    return false;
+  });
+
+  return filtered;
+}
+
+function renderSale(){
+  const tb = $('saleTbody');
+  $('saleCount').textContent = saleRows.length;
+
+  if(!saleRows.length){
+    tb.innerHTML = `<tr><td colspan="4" class="text-center text-muted py-4">Tiada J916 PAID/COMPLETED untuk nombor ini.</td></tr>`;
+    return;
+  }
+
+  tb.innerHTML = saleRows.map((r, idx)=>{
+    const sel = (pickedSale && pickedSale.order_code === r.order_code) ? 'selected-row' : '';
+    return `
+      <tr class="pick-row ${sel}" data-idx="${idx}" onclick="pickSale(${idx})">
+        <td>${fmtMY(r.created_at)}</td>
+        <td class="mono">
+          <div class="fw-semibold">${r.order_code || '-'}</div>
+          <div class="small-muted">Status: ${(r.status||'').toUpperCase()}</div>
+<div class="small-muted">Bill: ${((r.bill_id_text || r.bill_id) ? 'ADA' : '-')}</div>
+        </td>
+        <td>
+          <div class="fw-semibold">${r.customer_name || '-'}</div>
+          <div class="small-muted mono">${r.phone || '-'}</div>
+        </td>
+        <td class="text-end fw-semibold">${money(calcPaidRM(r))}</td>
+      </tr>
+    `;
+  }).join('');
+}
+
+window.pickSale = function(idx){
+  pickedSale = saleRows[idx] || null;
+  $('salePicked').textContent = pickedSale ? (pickedSale.order_code || '-') : '-';
+  renderSale();
+  setEnableActions();
+};
+
+async function doSearch(){
+  const input = ($('phoneBox').value || '').trim();
+  if(!input){ alert('Sila isi nombor telefon.'); return; }
+
+  $('searchInfo').textContent = 'Mencari…';
+  pickedSale = null;
+  $('salePicked').textContent='-';
+  saleRows = [];
+  renderSale();
+  setEnableActions();
+
+  try{
+    const sales = await fetchPaidSaleByPhone(input);
+    saleRows = sales;
+    renderSale();
+    const v = phoneVariantsForDebug(input);
+    $('searchInfo').textContent = `Phone key: ${phoneKey(input)} | Variants: ${v.join(', ')}`;
+    showToast('Carian siap.');
+  }catch(e){
+    console.error(e);
+    $('searchInfo').textContent = 'Ralat carian.';
+    alert('Ralat: ' + (e?.message || e));
+  }
+}
+
+/* ========================== Auto ratio ========================== */
+function autoRatio(){
+  if(!pickedSale) return;
+  const paid = calcPaidRM(pickedSale);
+  const ow = numVal('origWeight');
+  const nw = (numVal('newWeight') || 0) + (numVal0('weightAdjust') || 0);
+  if(!(ow && nw && ow>0 && nw>0)){
+    alert("Sila isi Berat asal & Berat baru dahulu.");
+    return;
+  }
+  const ratio = nw / ow;
+  const newAmt = Number((paid * ratio).toFixed(2));
+  $('newAmount').value = newAmt.toFixed(2);
+  recalcRefund();
+  validateForm();
+}
+
+/* ========================== Preview Resit Split ========================== */
+function openSplitReceiptPreview(){
+  if(!pickedSale){
+    alert('Sila pilih 1 sale dahulu.');
+    return;
+  }
+
+  const ow  = numVal('origWeight') || 0;
+  const nw  = numVal('newWeight')  || 0;
+  const adj = numVal0('weightAdjust') || 0;
+
+  const finalW  = Number((nw + adj).toFixed(4));
+  const excessW = Number((ow - finalW).toFixed(4));
+
+  const payload = {
+    sale_order_code: pickedSale.order_code,
+    checkout_group: pickedSale.checkout_group || null,
+    customer_phone: pickedSale.phone || '',
+    customer_name: pickedSale.customer_name || '',
+    original_paid_rm: calcPaidRM(pickedSale),
+
+    original_weight_g: numVal('origWeight'),
+    original_length_cm: numVal('origLen'),
+    new_weight_g: numVal('newWeight'),
+    new_length_cm: numVal('newLen'),
+    new_amount_rm: numVal('newAmount'),
+
+    // ✅ audit weight (untuk preview/resit)
+    weight_adjust_g: Number(adj.toFixed(4)),
+    final_new_weight_g: finalW,
+    excess_weight_g: excessW,
+
+    cashout_method: ($('cashoutMethod').value||'').trim() || '',
+    ref:  ($('refBox').value||'').trim() || '',
+    note: ($('noteBox').value||'').trim() || '',
+    at: new Date().toISOString()
+  };
+
+  payload.refund_rm = Number((payload.original_paid_rm - Number(payload.new_amount_rm||0)).toFixed(2));
+
+  try{ localStorage.setItem('split_preview', JSON.stringify(payload)); }catch(_){}
+
+  const qs = new URLSearchParams({
+    sale: payload.sale_order_code,
+    note: payload.note,
+    ref: payload.ref,
+    method: payload.cashout_method
+  }).toString();
+
+  const url = `${location.origin}/resit-split-j916.html?${qs}`;
+  window.open(url, '_blank');
+}
+/* ========================== Create split_code ========================== */
+async function buildSplitCode(orderCode){
+  const base = String(orderCode||'').trim();
+  if(!base) return null;
+
+  // kira berapa split sedia ada untuk order ini
+  const { data, error } = await sb
+    .from('j916_split_txn')
+    .select('id')
+    .eq('sale_order_code', base)
+    .limit(200);
+
+  if(error) throw error;
+  const cnt = Array.isArray(data) ? data.length : 0;
+  const next = String(cnt + 1).padStart(2,'0');
+  return `${base}pot${next}`; // contoh: LK0004180pot01
+}
+
+function buildAdminMsgSplit({ split_code, sale_order_code, paid_rm, new_amount_rm, refund_rm, method, ref, note, sid }){
+  const resitUrl = sid ? `${location.origin}/resit-split-j916.html?sid=${encodeURIComponent(sid)}` : "";
+  const lines = [
+    "✂️ *SPLIT/POTONG SALE J916*",
+    "",
+    `Split: ${split_code || "-"}`,
+    `Sale: ${sale_order_code || "-"}`,
+    "",
+    `Asal dibayar: RM ${Number(paid_rm||0).toFixed(2)}`,
+    `Harga baru: RM ${Number(new_amount_rm||0).toFixed(2)}`,
+    `Refund: RM ${Number(refund_rm||0).toFixed(2)}`,
+    "",
+    `Kaedah: ${method || "-"}`,
+    `Rujukan: ${ref || "-"}`,
+    (note ? `Nota: ${note}` : null),
+    (resitUrl ? `Resit: ${resitUrl}` : null),
+  ].filter(Boolean);
+
+  return lines.join("\n");
+}
+
+/* ========================== Save split ========================== */
+async function saveSplit(){
+  if(!pickedSale){
+    alert('Sila pilih 1 sale dahulu.');
+    return;
+  }
+
+  const paid = calcPaidRM(pickedSale);
+  const newAmt = numVal('newAmount');
+  if(!(newAmt != null && newAmt >= 0)){
+    alert('Sila isi Harga selepas potong (RM).');
+    return;
+  }
+
+  const refund = Number((paid - newAmt).toFixed(2));
+  const method = ($('cashoutMethod').value||'').trim();
+  if(refund > 0 && !method){
+    alert('Refund positif. Sila pilih Kaedah bayar balik (TUNAI/TRANSFER).');
+    return;
+  }
+
+  const note = ($('noteBox').value||'').trim();
+  const ref  = ($('refBox').value||'').trim();
+
+  const ok = confirm(
+    `Sahkan SPLIT/POTONG?\n\n` +
+    `Sale: ${pickedSale.order_code}\n` +
+    `Asal dibayar: RM ${paid.toFixed(2)}\n` +
+    `Harga baru: RM ${newAmt.toFixed(2)}\n` +
+    `Refund: RM ${refund.toFixed(2)}\n\n` +
+    `Tekan OK untuk simpan rekod split.`
+  );
+  if(!ok) return;
+
+  $('btnSave').disabled = true;
+  $('btnSave').textContent = 'Memproses…';
+
+  try{
+    const splitCode = await buildSplitCode(pickedSale.order_code);
+
+   const payload = {
+  sale_order_code: pickedSale.order_code,
+  checkout_group: pickedSale.checkout_group || null,
+  customer_phone: pickedSale.phone || null,
+  customer_name: pickedSale.customer_name || null,
+  split_code: splitCode,
+
+  original_paid_rm: Number(paid.toFixed(2)),
+  original_weight_g: numVal('origWeight'),
+  original_length_cm: numVal('origLen'),
+  new_weight_g: numVal('newWeight'),
+  new_length_cm: numVal('newLen'),
+  new_amount_rm: Number(newAmt.toFixed(2)),
+  refund_rm: Number(refund.toFixed(2)),
+
+  // ✅ ikut nama kolum / RPC baru
+  adjust_weight_g: Number((numVal0('weightAdjust') || 0).toFixed(4)),
+
+  cashout_method: refund > 0 ? (method || null) : (method || null),
+  ref: ref || null,
+  note: note || null,
+  created_by_phone: getAdminPhoneForLog()
+};
+
+    const { data, error } = await sb.rpc('j916_split_create_v1', { p_payload: payload });
+if (error) throw error;
+
+// RPC return id (uuid) split
+const sid = data;
+
+// split_code kita dah set awal
+const sc = splitCode;
+
+    // simpan last id
+    try{ localStorage.setItem('split_last_id', String(sid||'')); }catch(_){}
+
+    // WhatsApp admin (sentiasa)
+    try{
+      const msg = buildAdminMsgSplit({
+        split_code: sc,
+        sale_order_code: pickedSale.order_code,
+        paid_rm: paid,
+        new_amount_rm: newAmt,
+        refund_rm: refund,
+        method,
+        ref,
+        note,
+        sid
+      });
+
+      console.log("[SPLIT] Send admin ->", ADMIN_WA);
+      const sent = await sendWA(ADMIN_WA, msg);
+      console.log("[SPLIT] OnSend admin resp:", sent);
+
+      if(!sent.ok){
+        showToast("Split OK, tapi WhatsApp admin gagal.");
+      }
+    }catch(e){
+      console.warn("Notify admin error:", e?.message || e);
+    }
+
+    const urlResit = sid ? `${location.origin}/resit-split-j916.html?sid=${encodeURIComponent(sid)}` : '';
+    alert(
+      'Selesai ✅ Split disimpan.\n\n' +
+      (urlResit ? ('Resit split (boleh buka semula):\n' + urlResit) : '')
+    );
+
+    // buka resit terus
+    if(urlResit) window.open(urlResit, "_blank");
+
+    showToast('Split disimpan ✅');
+
+  }catch(e){
+    console.error(e);
+    alert('Ralat simpan split: ' + (e?.message || e));
+  }finally{
+    $('btnSave').textContent = 'SIMPAN (Create Split + WhatsApp Admin)';
+    $('btnSave').disabled = false;
+  }
+}
+
+/* ========================== Wire ========================== */
+$('btnSearch').addEventListener('click', doSearch);
+$('phoneBox').addEventListener('keydown', (e)=>{ if(e.key==='Enter') doSearch(); });
+
+$('btnClear').addEventListener('click', ()=>{
+  $('phoneBox').value='';
+  $('searchInfo').textContent='-';
+  saleRows=[]; pickedSale=null;
+  $('salePicked').textContent='-';
+  $('saleTbody').innerHTML = `<tr><td colspan="4" class="text-center text-muted py-4">Belum cari.</td></tr>`;
+  $('saleCount').textContent='0';
+  setEnableActions();
+});
+
+['origWeight','origLen','newWeight','weightAdjust','newLen','newAmount','cashoutMethod','refBox','noteBox'].forEach(id=>{
+  $(id).addEventListener('input', ()=>{ recalcRefund(); recalcWeightDiff(); validateForm(); });
+  $(id).addEventListener('change', ()=>{ recalcRefund(); recalcWeightDiff(); validateForm(); });
+});
+
+$('btnAutoRatio').addEventListener('click', autoRatio);
+$('btnPreview').addEventListener('click', openSplitReceiptPreview);
+$('btnSave').addEventListener('click', saveSplit);
+
+/* ========================== Boot ========================== */
+(async ()=>{
+  const pill=$('authStatus'); const set=(t)=> pill&&(pill.textContent=t);
+  let ok=false;
+
+  if(window.adminGuard && typeof adminGuard.require==='function'){
+    ok = await adminGuard.require({
+      onChecking:()=>set("Mengesahkan akses…"),
+      onDenied:()=>set("Akses ditolak"),
+      onAllowed:(p)=>set("Log masuk (admin) — "+p)
+    });
+  }else{
+    ok = await fallbackRequireAdmin();
+    if(ok) set("Log masuk (admin)");
+  }
+  if(!ok) return;
+
+  setEnableActions();
+
+  // ✅ Auto-load jika datang dari Admin-J916 (URL: ?order=XXXX&phone=YYYY)
+  try{
+    const qs = new URLSearchParams(location.search);
+    const order = (qs.get('order') || '').trim();
+    const phone = (qs.get('phone') || '').trim();
+
+    if(phone) $('phoneBox').value = phone;
+
+    if(phone){
+      await doSearch();
+
+      if(order && saleRows && saleRows.length){
+        const idx = saleRows.findIndex(x => String(x.order_code||'').trim() === order);
+        if(idx >= 0){
+          window.pickSale(idx);
+          showToast('Auto pilih sale: ' + order);
+        }else{
+          showToast('Order '+order+' tidak dijumpai dalam senarai (mungkin bukan WALK-IN/PAID).');
+        }
+      }
+    }else{
+      showToast('Ready. Masukkan phone untuk mula.');
+    }
+  }catch(e){
+    console.warn('Auto-load URL gagal:', e?.message || e);
+    showToast('Ready. Masukkan phone untuk mula.');
+  }
+})();
+</script>
+</body>
+</html>
