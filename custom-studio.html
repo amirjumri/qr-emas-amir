@@ -1,0 +1,2468 @@
+<!doctype html>
+<html lang="ms">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<link rel="stylesheet" href="/global.css">
+  <title>Custom Studio • Emas Amir</title>
+
+  <!-- Bootstrap -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+
+  <!-- Google Fonts (Tambah font lawa2 macam Canva) -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?
+  family=Poppins:wght@300;400;600;800&
+  family=Montserrat:wght@300;400;600;800&
+  family=Playfair+Display:wght@400;600;800&
+  family=Cormorant+Garamond:wght@400;600;700&
+  family=Cinzel:wght@400;600;800&
+  family=Bebas+Neue&
+  family=Amiri:wght@400;700&
+
+  family=Dancing+Script:wght@400;600;700&
+  family=Great+Vibes&
+  family=Tangerine:wght@400;700&
+  family=Pacifico&
+
+  family=Allura&
+  family=Alex+Brush&
+  family=Parisienne&
+  family=Sacramento&
+  family=Italianno&
+  family=Mr+Dafoe&
+  family=Marck+Script&
+  family=Kaushan+Script&
+  family=Satisfy&
+  family=Cookie&
+  family=Oleo+Script:wght@400;700&
+  family=Yesteryear&
+  family=Yellowtail&
+  family=Courgette&
+  family=Bad+Script&
+  family=Calligraffitti&
+  family=Charm:wght@400;700&
+  family=Rochester&
+  family=Prata&
+  display=swap" rel="stylesheet">
+
+  <!-- ✅ CUSTOM FONT PLACEHOLDER (dafont / own font)
+       1) convert TTF/OTF -> .woff2
+       2) letak file sebelah HTML ini
+       3) uncomment & tukar nama file
+  -->
+  <style>
+    /*
+    @font-face{
+      font-family: "MyDafont";
+      src: url("./MyDafont.woff2") format("woff2");
+      font-weight: 400;
+      font-style: normal;
+      font-display: swap;
+    }
+    */
+  </style>
+
+  <!-- Konva -->
+  <script src="https://cdn.jsdelivr.net/npm/konva@9.3.16/konva.min.js"></script>
+
+  <style>
+    body{background:#f6f7f9}
+    .wrap{max-width:1500px;margin:14px auto;padding:12px}
+    .card{border-radius:16px}
+    .toolbar .btn{border-radius:12px}
+    .stage-wrap{
+      background:#fff;border:1px solid #e5e7eb;border-radius:16px;
+      min-height:74vh; display:flex; align-items:center; justify-content:center;
+      padding:12px;
+      overflow:hidden;
+    }
+    #stageHost{
+      width:100%;
+      display:flex; align-items:center; justify-content:center;
+    }
+    .muted{color:#6b7280}
+    .mini{font-size:12px}
+    .badge-soft{
+      background:#eef2ff;color:#3730a3;border:1px solid #e0e7ff;
+      font-weight:600;
+    }
+
+    .layers-box{
+      max-height:300px;
+      overflow:auto;
+      border:1px solid #e5e7eb;
+      border-radius:12px;
+      padding:8px;
+      background:#fff;
+    }
+    .layer-item{
+      display:flex; align-items:center; justify-content:space-between;
+      gap:8px;
+      padding:8px 10px;
+      border-radius:10px;
+      cursor:pointer;
+      border:1px solid transparent;
+      user-select:none;
+    }
+    .layer-item:hover{ background:#f8fafc; }
+    .layer-item.active{
+      background:#eef2ff;
+      border:1px solid #c7d2fe;
+    }
+    .layer-left{min-width:0; flex: 1;}
+    .layer-name{
+      font-weight:700;
+      font-size:12px;
+      color:#111827;
+      overflow:hidden;
+      text-overflow:ellipsis;
+      white-space:nowrap;
+      max-width:230px;
+    }
+    .layer-sub{
+      font-size:11px;
+      color:#6b7280;
+      margin-top:2px;
+      white-space:nowrap;
+      overflow:hidden;
+      text-overflow:ellipsis;
+    }
+    .layer-tools{
+      display:flex; align-items:center; gap:6px;
+      flex-shrink:0;
+    }
+    .icon-btn{
+      width:28px;height:28px;border-radius:10px;
+      border:1px solid #e5e7eb;background:#fff;
+      display:inline-flex;align-items:center;justify-content:center;
+      cursor:pointer;
+      font-size:14px;
+      line-height:1;
+    }
+    .icon-btn:hover{ background:#f3f4f6; }
+    .icon-btn.active{
+      background:#111827;
+      color:#fff;
+      border-color:#111827;
+    }
+    .layer-pill{
+      font-size:10px;
+      padding:2px 8px;
+      border-radius:999px;
+      background:#f3f4f6;
+      border:1px solid #e5e7eb;
+      color:#111827;
+      white-space:nowrap;
+      margin-left:6px;
+    }
+
+    .hint-keys{
+      font-size:11px;
+      color:#6b7280;
+      margin-top:8px;
+      line-height:1.3;
+    }
+    .form-range{ cursor:pointer; }
+
+    /* rename inline */
+    .rename-input{
+      width:100%;
+      font-size:12px;
+      font-weight:700;
+      padding:4px 6px;
+      border-radius:8px;
+      border:1px solid #cbd5e1;
+      outline:none;
+    }
+
+    /* drag reorder indicator */
+    .dragging{
+      opacity:0.6;
+      border:1px dashed #94a3b8 !important;
+    }
+    .drop-hint{
+      outline:2px solid #60a5fa;
+      background:#eff6ff !important;
+    }
+
+    .pill-mini{
+      display:inline-block;
+      font-size:11px;
+      padding:4px 8px;
+      border-radius:999px;
+      background:#f8fafc;
+      border:1px solid #e5e7eb;
+      color:#111827;
+      margin-right:6px;
+    }
+    .small-btns .btn{ padding:.25rem .5rem; font-size:12px; border-radius:10px; }
+  </style>
+</head>
+<body>
+<div class="wrap">
+
+  <div class="d-flex flex-wrap gap-2 align-items-center mb-2">
+    <div class="me-auto">
+      <div class="fw-bold">Custom Studio • Emas Amir</div>
+      <div class="muted mini">
+        Pilih orientasi → upload banyak gambar → layer, text, shape → export PNG (560×860 / 860×560)
+      </div>
+    </div>
+    <span class="badge badge-soft px-3 py-2">Konva Editor</span>
+  </div>
+
+  <div class="row g-3">
+    <!-- LEFT -->
+    <div class="col-lg-4">
+      <div class="card p-3">
+
+        <div class="fw-bold mb-2">1) Canvas</div>
+        <div class="row g-2">
+          <div class="col-6">
+            <label class="form-label mini">Orientasi</label>
+            <select id="selOrient" class="form-select">
+              <option value="MENEGAK">Menegak (560×860)</option>
+              <option value="SEGAK">Segak (860×560)</option>
+            </select>
+          </div>
+          <div class="col-6">
+            <label class="form-label mini">Mode Gambar</label>
+            <select id="selFitMode" class="form-select">
+              <option value="COVER">Cover (macam Canva)</option>
+              <option value="FIT">Fit (tak potong)</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="mt-2 d-flex gap-2">
+          <button id="btnLoad" class="btn btn-dark w-100">Load Canvas</button>
+          <button id="btnReset" class="btn btn-outline-secondary">Reset</button>
+        </div>
+
+        <div class="mt-2 p-2 rounded-3" style="background:#fff7ed;border:1px solid #fed7aa">
+          <div class="mini">
+            <b>Nota:</b> Kalau gambar nampak “lebih/kosong”, guna <b>Mode: Cover</b>.
+            Cover akan fill penuh (normal macam Canva), tapi ada crop sedikit.
+          </div>
+        </div>
+
+        <hr class="my-3">
+
+        <div class="fw-bold mb-2">2) Add Layer</div>
+
+        <div class="d-flex gap-2 flex-wrap toolbar">
+          <label class="btn btn-outline-primary mb-0">
+            Upload Gambar
+            <input id="fileImg" type="file" accept="image/*" hidden>
+          </label>
+          <button id="btnAddText" class="btn btn-outline-success">Tambah Text</button>
+          <button id="btnAddRect" class="btn btn-outline-dark">Petak</button>
+          <button id="btnAddCircle" class="btn btn-outline-dark">Bulat</button>
+          <button id="btnCrop" class="btn btn-outline-warning">Crop</button>
+          <button id="btnExport" class="btn btn-primary">Export PNG</button>
+        </div>
+
+        <div class="hint-keys">
+          <b>Hotkey:</b><br>
+          • Delete = padam layer<br>
+          • Ctrl+D = duplicate layer<br>
+          • <b>Shift+Click</b> = multi select (pilih banyak layer)<br>
+          • Ctrl+G = group, Ctrl+Shift+G = ungroup<br>
+          • Ctrl+Z = undo, Ctrl+Y / Ctrl+Shift+Z = redo<br>
+          • Double-click gambar = crop mode (Enter siap, Esc batal)<br>
+          • Drag layer dalam senarai = susun atas/bawah
+        </div>
+
+        <hr class="my-3">
+
+        <div class="fw-bold mb-2">3) Settings Layer (yang dipilih)</div>
+
+        <div class="row g-2">
+          <div class="col-12">
+            <label class="form-label mini">Nama Layer</label>
+            <input id="inpLayerName" class="form-control form-control-sm" placeholder="Contoh: Logo Emas Amir">
+          </div>
+
+          <div class="col-12">
+            <label class="form-label mini d-flex justify-content-between">
+              <span>Transparency (Opacity)</span>
+              <span class="muted" id="lblOpacity">100%</span>
+            </label>
+            <input id="opacityRange" type="range" min="0" max="100" value="100" class="form-range">
+          </div>
+        </div>
+
+        <div class="mt-2 d-flex gap-2 flex-wrap">
+          <button id="btnBringFront" class="btn btn-sm btn-outline-dark">Ke Depan</button>
+          <button id="btnSendBack" class="btn btn-sm btn-outline-dark">Ke Belakang</button>
+          <button id="btnDuplicate" class="btn btn-sm btn-outline-secondary">Duplicate</button>
+          <button id="btnDelete" class="btn btn-sm btn-outline-danger">Padam</button>
+        </div>
+
+        <hr class="my-3">
+
+        <div class="fw-bold mb-2">Align (multi-layer)</div>
+        <div class="small-btns d-flex flex-wrap gap-2">
+          <span class="pill-mini">Align</span>
+          <button id="btnAlignLeft" class="btn btn-outline-dark">Left</button>
+          <button id="btnAlignHCenter" class="btn btn-outline-dark">Center</button>
+          <button id="btnAlignRight" class="btn btn-outline-dark">Right</button>
+          <button id="btnAlignTop" class="btn btn-outline-dark">Top</button>
+          <button id="btnAlignVMiddle" class="btn btn-outline-dark">Middle</button>
+          <button id="btnAlignBottom" class="btn btn-outline-dark">Bottom</button>
+        </div>
+        <div class="small-btns d-flex flex-wrap gap-2 mt-2">
+          <span class="pill-mini">Distribute</span>
+          <button id="btnDistH" class="btn btn-outline-secondary">Horizontal</button>
+          <button id="btnDistV" class="btn btn-outline-secondary">Vertical</button>
+        </div>
+
+        <hr class="my-3">
+
+        <div class="fw-bold mb-2">Text Settings (untuk Text sahaja)</div>
+        <div class="row g-2">
+          <div class="col-6">
+            <label class="form-label mini">Font</label>
+            <select id="selFont" class="form-select form-select-sm">
+              <option value="Poppins">Poppins (Cantik)</option>
+              <option value="Montserrat">Montserrat</option>
+              <option value="Playfair Display">Playfair Display (Premium)</option>
+              <option value="Cormorant Garamond">Cormorant Garamond (Elegant)</option>
+              <option value="Prata">Prata (Premium)</option>
+              <option value="Cinzel">Cinzel (Classic)</option>
+              <option value="Bebas Neue">Bebas Neue (Poster)</option>
+
+              <option value="Dancing Script">Dancing Script (Manis)</option>
+              <option value="Great Vibes">Great Vibes (Script)</option>
+              <option value="Tangerine">Tangerine (Lembut)</option>
+              <option value="Pacifico">Pacifico (Fun)</option>
+
+              <option value="Allura">Allura (Calligraphy)</option>
+              <option value="Alex Brush">Alex Brush (Calligraphy)</option>
+              <option value="Parisienne">Parisienne (Calligraphy)</option>
+              <option value="Sacramento">Sacramento (Calligraphy)</option>
+              <option value="Italianno">Italianno (Calligraphy)</option>
+              <option value="Mr Dafoe">Mr Dafoe (Brush)</option>
+              <option value="Marck Script">Marck Script</option>
+              <option value="Kaushan Script">Kaushan Script</option>
+              <option value="Satisfy">Satisfy</option>
+              <option value="Cookie">Cookie</option>
+              <option value="Oleo Script">Oleo Script</option>
+              <option value="Yesteryear">Yesteryear</option>
+              <option value="Yellowtail">Yellowtail</option>
+              <option value="Courgette">Courgette</option>
+              <option value="Bad Script">Bad Script</option>
+              <option value="Calligraffitti">Calligraffitti</option>
+              <option value="Charm">Charm</option>
+              <option value="Rochester">Rochester</option>
+
+              <option value="Amiri">Amiri (Arabic style)</option>
+
+              <!-- contoh custom font dafont -->
+              <!-- <option value="MyDafont">MyDafont (Custom)</option> -->
+
+              <option value="Arial">Arial</option>
+              <option value="Georgia">Georgia</option>
+              <option value="Times New Roman">Times New Roman</option>
+              <option value="Verdana">Verdana</option>
+              <option value="Trebuchet MS">Trebuchet MS</option>
+            </select>
+          </div>
+          <div class="col-3">
+            <label class="form-label mini">Saiz</label>
+            <input id="inpFontSize" class="form-control form-control-sm" type="number" value="52" min="8" max="240">
+          </div>
+          <div class="col-3">
+            <label class="form-label mini">Warna</label>
+            <input id="inpTextColor" class="form-control form-control-sm" type="color" value="#111827">
+          </div>
+          <div class="col-12">
+            <label class="form-label mini">Teks</label>
+            <input id="inpText" class="form-control form-control-sm" placeholder="Contoh: Rindu Madinah">
+          </div>
+        </div>
+
+        <!-- ✅ NO 1: Text Effects -->
+        <div class="mt-2">
+          <div class="fw-bold mb-1 mini">Text Effects (Stroke / Glow / 3D)</div>
+          <div class="row g-2">
+            <div class="col-6">
+              <label class="form-label mini">Effect</label>
+              <select id="selTextEffect" class="form-select form-select-sm">
+                <option value="NONE">None</option>
+                <option value="STROKE">Stroke (Outline)</option>
+                <option value="GLOW">Glow (Shadow)</option>
+                <option value="STROKE_GLOW">Stroke + Glow</option>
+                <option value="THREED">3D (Fake Depth)</option>
+              </select>
+            </div>
+            <div class="col-3">
+              <label class="form-label mini">Stroke px</label>
+              <input id="inpStrokePxText" class="form-control form-control-sm" type="number" value="6" min="0" max="40">
+            </div>
+            <div class="col-3">
+              <label class="form-label mini">Glow blur</label>
+              <input id="inpGlowBlur" class="form-control form-control-sm" type="number" value="12" min="0" max="80">
+            </div>
+
+            <div class="col-6">
+              <label class="form-label mini">Stroke Color</label>
+              <input id="inpStrokeColorText" class="form-control form-control-sm" type="color" value="#ffffff">
+            </div>
+            <div class="col-6">
+              <label class="form-label mini">Glow Color</label>
+              <input id="inpGlowColor" class="form-control form-control-sm" type="color" value="#000000">
+            </div>
+
+            <div class="col-4">
+              <label class="form-label mini">3D Depth</label>
+              <input id="inp3DDepth" class="form-control form-control-sm" type="number" value="10" min="0" max="40">
+            </div>
+            <div class="col-4">
+              <label class="form-label mini">3D Offset</label>
+              <input id="inp3DOffset" class="form-control form-control-sm" type="number" value="2" min="0" max="10">
+            </div>
+            <div class="col-4">
+              <label class="form-label mini">3D Color</label>
+              <input id="inp3DColor" class="form-control form-control-sm" type="color" value="#111827">
+            </div>
+          </div>
+        </div>
+
+        <div class="d-flex gap-2 mt-2">
+          <button id="btnApplyText" class="btn btn-sm btn-outline-success">Apply Text</button>
+        </div>
+
+        <hr class="my-3">
+
+        <div class="fw-bold mb-2">Shape Settings (untuk Petak/Bulat)</div>
+        <div class="row g-2">
+          <div class="col-4">
+            <label class="form-label mini">Fill</label>
+            <input id="inpFillColor" class="form-control form-control-sm" type="color" value="#ff0000">
+          </div>
+          <div class="col-4">
+            <label class="form-label mini">Stroke</label>
+            <input id="inpStrokeColor" class="form-control form-control-sm" type="color" value="#000000">
+          </div>
+          <div class="col-4">
+            <label class="form-label mini">Stroke px</label>
+            <input id="inpStrokeW" class="form-control form-control-sm" type="number" value="0" min="0" max="30">
+          </div>
+        </div>
+
+        <div class="d-flex gap-2 mt-2">
+          <button id="btnApplyShape" class="btn btn-sm btn-outline-dark">Apply Shape</button>
+        </div>
+
+        <hr class="my-3">
+
+        <div class="fw-bold mb-2 d-flex align-items-center justify-content-between">
+          <span>Layers</span>
+          <span class="mini muted" id="lblLayerCount">0 layer</span>
+        </div>
+        <div class="layers-box" id="layersList"></div>
+
+        <div class="mt-2">
+          <div class="mini muted" id="tplInfo">Belum load.</div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- RIGHT -->
+    <div class="col-lg-8">
+      <div class="card p-3">
+        <div class="d-flex align-items-center justify-content-between mb-2">
+          <div>
+            <div class="fw-bold">Canvas</div>
+            <div class="mini muted">
+              Drag / resize / rotate. Objek boleh keluar, tapi hasil export akan dipotong ikut “safe area”.
+              <b>Snap Guides</b> aktif (auto rapat tepi/tengah).
+            </div>
+          </div>
+          <div class="mini muted" id="selInfo">—</div>
+        </div>
+
+        <div class="stage-wrap">
+          <div id="stageHost"></div>
+        </div>
+
+        <div class="mini muted mt-2">
+          Tip: Untuk penuh tanpa ruang kosong, guna <b>Mode: Cover</b>. Tekan layer dalam senarai untuk pegang dia.
+          👁️ hide/show, 🔒 lock untuk elak tersentuh.
+          <br>
+          <b>Dot hijau</b> = “Print-safe border” (margin). Letak teks/logo dalam kotak hijau supaya print confirm selamat.
+          <br>
+          <b>Crop</b>: double-click gambar atau tekan Crop. Drag gambar dalam frame. <b>Enter</b> siap, <b>Esc</b> batal.
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<script>
+/* =========================
+   0) CONFIG
+========================= */
+
+const TEMPLATE_MAP = {
+  MENEGAK: { label: "Menegak", canvas_w_px: 560, canvas_h_px: 860 },
+  SEGAK:   { label: "Segak",   canvas_w_px: 860, canvas_h_px: 560 }
+};
+
+// dot hijau “masuk dalam” jadi border print-safe
+const SAFE_MARGIN_PX = 28;
+
+function getClipRectForTemplate(tpl){
+  return { x: 0, y: 0, w: tpl.canvas_w_px, h: tpl.canvas_h_px };
+}
+
+function getSafeRectForTemplate(tpl){
+  const m = Math.max(0, Number(SAFE_MARGIN_PX || 0));
+  return {
+    x: m,
+    y: m,
+    w: Math.max(0, tpl.canvas_w_px - m*2),
+    h: Math.max(0, tpl.canvas_h_px - m*2)
+  };
+}
+
+const SNAP_TOL = 8;
+
+/* =========================
+   1) STATE
+========================= */
+let stage = null;
+let layerWork = null;
+let layerUI = null;
+let transformer = null;
+
+let currentTpl = null;
+let currentTplKey = null;
+
+let selectedNodes = [];   // ✅ multi select
+
+let safeRect = null;
+let safeRectNode = null;
+let clipRect = null;
+let clipGroup = null;
+
+let counterImg = 0;
+let counterText = 0;
+let counterRect = 0;
+let counterCircle = 0;
+let idCounter = 0;
+
+// guides
+let guideLines = [];
+
+// ✅ crop mode
+let cropMode = false;
+let cropTargetGroup = null;
+let cropOverlay = null;
+
+// ✅ history
+let history = [];
+let redoStack = [];
+let historyLock = false;
+
+/* =========================
+   2) HELPERS
+========================= */
+const $ = (id) => document.getElementById(id);
+
+function uid(){
+  idCounter++;
+  return "ea_" + Date.now().toString(36) + "_" + idCounter;
+}
+
+function setNodeMeta(node, type, name){
+  node._ea_id = uid();
+  node._ea_type = type || "LAYER";
+  node._ea_name = name || "Layer";
+  node._ea_locked = false;
+  node._ea_hidden = false;
+}
+
+function getNodeDisplayName(node){
+  const t = node?._ea_type || node?.className || "Layer";
+  const n = node?._ea_name || t;
+  return { type: t, name: n };
+}
+
+function destroyStage(){
+  if (stage){
+    stage.destroy();
+    stage = null;
+    layerWork = null;
+    layerUI = null;
+    transformer = null;
+  }
+  $('stageHost').innerHTML = "";
+  selectedNodes = [];
+  safeRect = null;
+  safeRectNode = null;
+  clipRect = null;
+  clipGroup = null;
+  guideLines = [];
+  cropMode = false;
+  cropTargetGroup = null;
+  cropOverlay = null;
+  history = [];
+  redoStack = [];
+
+  $('layersList').innerHTML = "";
+  $('lblLayerCount').textContent = "0 layer";
+}
+
+function fitStageToContainer(){
+  if (!stage) return;
+
+  const wrap = document.querySelector('.stage-wrap');
+  if (!wrap) return;
+
+  const padding = 24;
+  const maxW = wrap.clientWidth - padding;
+  const maxH = wrap.clientHeight - padding;
+
+  const W = stage.width();
+  const H = stage.height();
+
+  const scale = Math.min(maxW / W, maxH / H, 1);
+  stage.scale({ x: scale, y: scale });
+  stage.draw();
+}
+
+function loadImage(url){
+  return new Promise((resolve, reject) => {
+    const img = new Image();
+    img.crossOrigin = "anonymous";
+    img.onload = () => resolve(img);
+    img.onerror = (e) => reject(e);
+    img.src = url;
+  });
+}
+
+function fileToDataURL(file){
+  return new Promise((resolve, reject) => {
+    const r = new FileReader();
+    r.onload = () => resolve(String(r.result || ""));
+    r.onerror = (e) => reject(e);
+    r.readAsDataURL(file);
+  });
+}
+
+function normalizeToHex(colorStr){
+  if (!colorStr) return null;
+  const s = String(colorStr).trim();
+  if (/^#([0-9a-f]{6})$/i.test(s)) return s;
+  if (/^#([0-9a-f]{3})$/i.test(s)){
+    const r = s[1], g = s[2], b = s[3];
+    return "#" + r + r + g + g + b + b;
+  }
+  const m = s.match(/rgb\(\s*(\d+)\s*,\s*(\d+)\s*,\s*(\d+)\s*\)/i);
+  if (m){
+    const r = Math.max(0, Math.min(255, Number(m[1])));
+    const g = Math.max(0, Math.min(255, Number(m[2])));
+    const b = Math.max(0, Math.min(255, Number(m[3])));
+    return "#" + [r,g,b].map(v => v.toString(16).padStart(2,"0")).join("");
+  }
+  return null;
+}
+
+function isLocked(node){
+  return !!node?._ea_locked;
+}
+
+function setLocked(node, locked){
+  if (!node) return;
+  node._ea_locked = !!locked;
+  node.draggable(!node._ea_locked);
+
+  if (node.className === "Group") {
+    node.getChildren().forEach(ch => ch.draggable(!node._ea_locked));
+  }
+  syncTransformer();
+}
+
+function setHidden(node, hidden){
+  if (!node) return;
+  node._ea_hidden = !!hidden;
+  node.visible(!node._ea_hidden);
+}
+
+function listWorkNodes(){
+  if (!clipGroup) return [];
+  const kids = clipGroup.getChildren();
+  if (!kids) return [];
+  if (Array.isArray(kids)) return kids;
+  if (typeof kids.toArray === "function") return kids.toArray();
+  try{ return Array.from(kids); }catch(_){ return []; }
+}
+
+function updateLayerCount(){
+  const nodes = listWorkNodes();
+  $('lblLayerCount').textContent = `${nodes.length} layer`;
+}
+
+function clearGuides(){
+  guideLines.forEach(l => l.destroy());
+  guideLines = [];
+  if (layerUI) layerUI.batchDraw();
+}
+
+function syncOpacityUI(){
+  if (!selectedNodes.length) {
+    $('opacityRange').value = 100;
+    $('lblOpacity').textContent = "100%";
+    return;
+  }
+  const node = selectedNodes[selectedNodes.length - 1];
+  const op = Math.max(0, Math.min(1, Number(node.opacity() ?? 1)));
+  const pct = Math.round(op * 100);
+  $('opacityRange').value = pct;
+  $('lblOpacity').textContent = pct + "%";
+}
+
+function syncLayerNameUI(){
+  if (selectedNodes.length !== 1){
+    $('inpLayerName').value = selectedNodes.length ? "(multi)" : "";
+    return;
+  }
+  $('inpLayerName').value = selectedNodes[0]._ea_name || "";
+}
+
+function syncTextUIFromNode(node){
+  if (!node) return;
+
+  if (node.className === "Group" && node._ea_type === "TEXT3D"){
+    const main = node.findOne(n => n._ea_role === "TEXT_MAIN");
+    if (main && main.className === "Text"){
+      $('inpText').value = main.text() || "";
+      $('selFont').value = main.fontFamily() || "Poppins";
+      $('inpFontSize').value = main.fontSize() || 52;
+      $('inpTextColor').value = normalizeToHex(main.fill() || "#111827") || "#111827";
+    }
+    return;
+  }
+
+  if (node.className === "Text"){
+    $('inpText').value = node.text() || "";
+    $('selFont').value = node.fontFamily() || "Poppins";
+    $('inpFontSize').value = node.fontSize() || 52;
+    $('inpTextColor').value = normalizeToHex(node.fill() || "#111827") || "#111827";
+  }
+}
+
+function syncShapeUIFromNode(node){
+  if (!node) return;
+  if (node.className === "Rect" || node.className === "Circle"){
+    $('inpFillColor').value = normalizeToHex(node.fill() || "#ff0000") || "#ff0000";
+    $('inpStrokeColor').value = normalizeToHex(node.stroke() || "#000000") || "#000000";
+    $('inpStrokeW').value = Number(node.strokeWidth() || 0);
+  }
+}
+
+function syncTransformer(){
+  if (!transformer) return;
+
+  if (cropMode){
+    transformer.nodes([]);
+    layerUI.batchDraw();
+    return;
+  }
+
+  const nodes = selectedNodes.filter(n => !isLocked(n));
+  transformer.nodes(nodes);
+  layerUI.batchDraw();
+}
+
+function setSelection(nodes){
+  selectedNodes = (nodes || []).filter(Boolean);
+
+  // remove duplicates
+  const seen = new Set();
+  selectedNodes = selectedNodes.filter(n => {
+    if (!n._ea_id) return true;
+    if (seen.has(n._ea_id)) return false;
+    seen.add(n._ea_id);
+    return true;
+  });
+
+  syncTransformer();
+  syncOpacityUI();
+  syncLayerNameUI();
+
+  if (selectedNodes.length){
+    const last = selectedNodes[selectedNodes.length - 1];
+    syncTextUIFromNode(last);
+    syncShapeUIFromNode(last);
+  }
+
+  renderLayers();
+}
+
+function toggleSelect(node){
+  if (!node) return;
+  const idx = selectedNodes.findIndex(n => n._ea_id === node._ea_id);
+  if (idx >= 0){
+    const n = selectedNodes.slice();
+    n.splice(idx, 1);
+    setSelection(n);
+  } else {
+    setSelection(selectedNodes.concat([node]));
+  }
+}
+
+function getTopSelectable(node){
+  let cur = node;
+  while (cur && cur.getParent && cur.getParent()){
+    const p = cur.getParent();
+    if (p === clipGroup) return cur;
+
+    if (p.className === "Group" && (p._ea_type === "FRAME_IMAGE" || p._ea_type === "TEXT3D" || p._ea_type === "GROUP")){
+      if (p.getParent && p.getParent() === clipGroup) return p;
+    }
+    cur = p;
+  }
+  return node;
+}
+
+/* =========================
+   3) HISTORY (Undo/Redo)
+========================= */
+function snapshotState(){
+  if (!clipGroup) return null;
+
+  const nodes = listWorkNodes();
+
+  function serializeNode(node){
+    const base = {
+      className: node.className,
+      attrs: node.getAttrs ? node.getAttrs() : {},
+      meta: {
+        _ea_id: node._ea_id || null,
+        _ea_type: node._ea_type || null,
+        _ea_name: node._ea_name || null,
+        _ea_locked: !!node._ea_locked,
+        _ea_hidden: !!node._ea_hidden,
+        _ea_role: node._ea_role || null,
+        _ea_src: node._ea_src || null
+      },
+      children: []
+    };
+
+    if (node.className === "Group"){
+      const kids = node.getChildren();
+      const arr = Array.isArray(kids) ? kids : (typeof kids.toArray === "function" ? kids.toArray() : Array.from(kids || []));
+      base.children = arr.map(ch => serializeNode(ch));
+    }
+    return base;
+  }
+
+  return {
+    tplKey: currentTplKey || null,
+    fitMode: $('selFitMode').value || "COVER",
+    safeMargin: SAFE_MARGIN_PX,
+    nodes: nodes.map(n => serializeNode(n))
+  };
+}
+
+async function restoreState(state){
+  if (!state || !clipGroup) return;
+
+  historyLock = true;
+
+  // clear
+  clipGroup.removeChildren();
+  layerWork.draw();
+
+  async function buildNode(obj){
+    const cls = obj.className;
+    const a = obj.attrs || {};
+    const m = obj.meta || {};
+
+    let node = null;
+
+    if (cls === "Image"){
+      node = new Konva.Image(a);
+      node._ea_src = m._ea_src || null;
+      if (node._ea_src){
+        try{
+          const img = await loadImage(node._ea_src);
+          node.image(img);
+        }catch(_){}
+      }
+    }
+    else if (cls === "Text"){
+      node = new Konva.Text(a);
+    }
+    else if (cls === "Rect"){
+      node = new Konva.Rect(a);
+    }
+    else if (cls === "Circle"){
+      node = new Konva.Circle(a);
+    }
+    else if (cls === "Group"){
+      node = new Konva.Group(a);
+      const kids = obj.children || [];
+      for (const ch of kids){
+        const childNode = await buildNode(ch);
+        if (childNode) node.add(childNode);
+      }
+    } else {
+      node = new Konva.Group(a);
+    }
+
+    node._ea_id = m._ea_id || uid();
+    node._ea_type = m._ea_type || cls || "LAYER";
+    node._ea_name = m._ea_name || node._ea_type || "Layer";
+    node._ea_locked = !!m._ea_locked;
+    node._ea_hidden = !!m._ea_hidden;
+    node._ea_role = m._ea_role || null;
+
+    node.visible(!node._ea_hidden);
+    node.draggable(!node._ea_locked);
+
+    bindNodeEvents(node);
+
+    return node;
+  }
+
+  for (const obj of (state.nodes || [])){
+    const node = await buildNode(obj);
+    if (node) clipGroup.add(node);
+  }
+
+  layerWork.draw();
+  renderLayers();
+  setSelection([]);
+  historyLock = false;
+}
+
+function pushHistory(){
+  if (historyLock) return;
+  const snap = snapshotState();
+  if (!snap) return;
+
+  history.push(JSON.stringify(snap));
+  if (history.length > 60) history.shift();
+  redoStack = [];
+}
+
+async function undo(){
+  if (historyLock) return;
+  if (history.length <= 1) return;
+
+  const cur = history.pop();
+  redoStack.push(cur);
+
+  const prevStr = history[history.length - 1];
+  try{
+    const prev = JSON.parse(prevStr);
+    await restoreState(prev);
+  }catch(e){
+    console.error(e);
+  }
+}
+
+async function redo(){
+  if (historyLock) return;
+  if (!redoStack.length) return;
+
+  const nextStr = redoStack.pop();
+  history.push(nextStr);
+
+  try{
+    const nxt = JSON.parse(nextStr);
+    await restoreState(nxt);
+  }catch(e){
+    console.error(e);
+  }
+}
+
+/* =========================
+   4) SNAP GUIDES
+========================= */
+function getLineGuideStops(skipNode){
+  const vertical = [
+    safeRect.x,
+    safeRect.x + safeRect.w / 2,
+    safeRect.x + safeRect.w
+  ];
+  const horizontal = [
+    safeRect.y,
+    safeRect.y + safeRect.h / 2,
+    safeRect.y + safeRect.h
+  ];
+
+  const nodes = listWorkNodes();
+  nodes.forEach(node => {
+    if (node === skipNode) return;
+    if (!node.visible()) return;
+
+    const box = node.getClientRect({ relativeTo: clipGroup });
+
+    vertical.push(box.x, box.x + box.width / 2, box.x + box.width);
+    horizontal.push(box.y, box.y + box.height / 2, box.y + box.height);
+  });
+
+  return { vertical, horizontal };
+}
+
+function getObjectSnappingEdges(node){
+  const box = node.getClientRect({ relativeTo: clipGroup });
+
+  return {
+    vertical: [
+      { guide: box.x, offset: box.x - node.x(), snap: "start" },
+      { guide: box.x + box.width / 2, offset: box.x + box.width / 2 - node.x(), snap: "center" },
+      { guide: box.x + box.width, offset: box.x + box.width - node.x(), snap: "end" }
+    ],
+    horizontal: [
+      { guide: box.y, offset: box.y - node.y(), snap: "start" },
+      { guide: box.y + box.height / 2, offset: box.y + box.height / 2 - node.y(), snap: "center" },
+      { guide: box.y + box.height, offset: box.y + box.height - node.y(), snap: "end" }
+    ]
+  };
+}
+
+function getGuides(lineGuideStops, itemBounds){
+  const resultV = [];
+  const resultH = [];
+
+  lineGuideStops.vertical.forEach(lineGuide => {
+    itemBounds.vertical.forEach(itemBound => {
+      const diff = Math.abs(lineGuide - itemBound.guide);
+      if (diff < SNAP_TOL) resultV.push({ lineGuide, diff, offset: itemBound.offset });
+    });
+  });
+
+  lineGuideStops.horizontal.forEach(lineGuide => {
+    itemBounds.horizontal.forEach(itemBound => {
+      const diff = Math.abs(lineGuide - itemBound.guide);
+      if (diff < SNAP_TOL) resultH.push({ lineGuide, diff, offset: itemBound.offset });
+    });
+  });
+
+  const guides = [];
+  const minV = resultV.sort((a,b) => a.diff - b.diff)[0];
+  const minH = resultH.sort((a,b) => a.diff - b.diff)[0];
+
+  if (minV) guides.push({ orientation: "V", lineGuide: minV.lineGuide, offset: minV.offset });
+  if (minH) guides.push({ orientation: "H", lineGuide: minH.lineGuide, offset: minH.offset });
+
+  return guides;
+}
+
+function drawGuides(guides){
+  clearGuides();
+
+  const W = stage.width();
+  const H = stage.height();
+
+  guides.forEach(g => {
+    let line;
+    if (g.orientation === "V") {
+      line = new Konva.Line({
+        points: [g.lineGuide, 0, g.lineGuide, H],
+        stroke: "#60a5fa",
+        strokeWidth: 1,
+        dash: [4, 6],
+        listening: false
+      });
+    } else {
+      line = new Konva.Line({
+        points: [0, g.lineGuide, W, g.lineGuide],
+        stroke: "#60a5fa",
+        strokeWidth: 1,
+        dash: [4, 6],
+        listening: false
+      });
+    }
+    guideLines.push(line);
+    layerUI.add(line);
+  });
+
+  layerUI.batchDraw();
+}
+
+function snapNodeToGuides(node){
+  if (!node || cropMode) return;
+
+  const lineGuideStops = getLineGuideStops(node);
+  const itemBounds = getObjectSnappingEdges(node);
+  const guides = getGuides(lineGuideStops, itemBounds);
+
+  if (!guides.length) {
+    clearGuides();
+    return;
+  }
+
+  drawGuides(guides);
+
+  const absPos = node.absolutePosition();
+  guides.forEach(g => {
+    if (g.orientation === "V") {
+      absPos.x = clipGroup.absolutePosition().x + g.lineGuide - g.offset;
+    } else {
+      absPos.y = clipGroup.absolutePosition().y + g.lineGuide - g.offset;
+    }
+  });
+  node.absolutePosition(absPos);
+}
+
+/* =========================
+   5) KONVA SETUP
+========================= */
+function setupStageForTemplate(tpl){
+  destroyStage();
+
+  stage = new Konva.Stage({
+    container: 'stageHost',
+    width: tpl.canvas_w_px,
+    height: tpl.canvas_h_px
+  });
+
+  layerWork = new Konva.Layer();
+  layerUI = new Konva.Layer();
+
+  stage.add(layerWork);
+  stage.add(layerUI);
+
+  transformer = new Konva.Transformer({
+    rotateEnabled: true,
+    keepRatio: false,
+    enabledAnchors: ['top-left','top-right','bottom-left','bottom-right'],
+    boundBoxFunc: function(oldBox, newBox){
+      if (newBox.width < 12 || newBox.height < 12) return oldBox;
+      return newBox;
+    }
+  });
+  layerUI.add(transformer);
+
+  clipRect = getClipRectForTemplate(tpl);
+
+  clipGroup = new Konva.Group({
+    x: clipRect.x,
+    y: clipRect.y,
+    clipX: 0,
+    clipY: 0,
+    clipWidth: clipRect.w,
+    clipHeight: clipRect.h
+  });
+  layerWork.add(clipGroup);
+
+  safeRect = getSafeRectForTemplate(tpl);
+
+  safeRectNode = new Konva.Rect({
+    x: safeRect.x,
+    y: safeRect.y,
+    width: safeRect.w,
+    height: safeRect.h,
+    stroke: '#22c55e',
+    dash: [10, 8],
+    listening: false
+  });
+  layerUI.add(safeRectNode);
+
+  stage.on('mousedown touchstart', (e) => {
+    if (e.target === stage || e.target === safeRectNode){
+      setSelection([]);
+      return;
+    }
+  });
+
+  stage.on('mouseup touchend', () => {
+    clearGuides();
+  });
+
+  fitStageToContainer();
+  window.addEventListener('resize', fitStageToContainer);
+
+  layerUI.draw();
+  layerWork.draw();
+
+  renderLayers();
+
+  // ✅ init history
+  history = [];
+  redoStack = [];
+  pushHistory();
+}
+
+/* =========================
+   6) NODE EVENTS
+========================= */
+function bindNodeEvents(node){
+  if (!node) return;
+
+  if (node.className === "Group"){
+    const kids = node.getChildren();
+    const arr = Array.isArray(kids) ? kids : (typeof kids.toArray === "function" ? kids.toArray() : Array.from(kids || []));
+    arr.forEach(ch => bindNodeEvents(ch));
+  }
+
+  node.on('mousedown touchstart', (evt) => {
+    if (cropMode) return;
+
+    const top = getTopSelectable(node);
+    const isShift = !!evt.evt?.shiftKey;
+
+    if (isShift){
+      toggleSelect(top);
+    } else {
+      setSelection([top]);
+    }
+  });
+
+  node.on('dragmove', () => {
+    if (cropMode) return;
+    if (!isLocked(node)) snapNodeToGuides(node);
+    layerWork.batchDraw();
+  });
+  node.on('dragend', () => {
+    if (cropMode) return;
+    clearGuides();
+    layerWork.batchDraw();
+    pushHistory();
+  });
+
+  node.on('transform', () => {
+    if (cropMode) return;
+    if (!isLocked(node)) snapNodeToGuides(node);
+    layerWork.batchDraw();
+  });
+  node.on('transformend', () => {
+    if (cropMode) return;
+    clearGuides();
+    layerWork.batchDraw();
+    pushHistory();
+  });
+
+  // ✅ double-click image => crop
+  node.on('dblclick dbltap', () => {
+    if (cropMode) return;
+    const top = getTopSelectable(node);
+    if (top && (top._ea_type === "GAMBAR" || top._ea_type === "FRAME_IMAGE")){
+      startCropFromNode(top);
+    }
+  });
+}
+
+/* =========================
+   7) LAYERS PANEL
+========================= */
+let dragLayerId = null;
+
+function renderLayers(){
+  const host = $('layersList');
+  host.innerHTML = "";
+
+  if (!clipGroup){
+    host.innerHTML = `<div class="mini muted">Belum load.</div>`;
+    $('lblLayerCount').textContent = "0 layer";
+    return;
+  }
+
+  const nodes = listWorkNodes();
+  updateLayerCount();
+
+  if (!nodes.length){
+    host.innerHTML = `<div class="mini muted">Tiada layer lagi. Upload gambar / tambah text / shape.</div>`;
+    return;
+  }
+
+  const nodesTopFirst = nodes.slice().reverse();
+
+  nodesTopFirst.forEach((node, idx) => {
+    const meta = getNodeDisplayName(node);
+    const isActive = selectedNodes.some(n => n._ea_id === node._ea_id);
+
+    const item = document.createElement('div');
+    item.className = "layer-item" + (isActive ? " active" : "");
+    item.dataset.id = node._ea_id;
+
+    item.draggable = true;
+    item.ondragstart = (e) => {
+      dragLayerId = node._ea_id;
+      item.classList.add("dragging");
+      e.dataTransfer.effectAllowed = "move";
+      try{ e.dataTransfer.setData("text/plain", dragLayerId); }catch(_){}
+    };
+    item.ondragend = () => {
+      item.classList.remove("dragging");
+      dragLayerId = null;
+      Array.from(host.querySelectorAll('.layer-item')).forEach(x => x.classList.remove("drop-hint"));
+    };
+    item.ondragover = (e) => {
+      e.preventDefault();
+      e.dataTransfer.dropEffect = "move";
+      item.classList.add("drop-hint");
+    };
+    item.ondragleave = () => item.classList.remove("drop-hint");
+    item.ondrop = (e) => {
+      e.preventDefault();
+      item.classList.remove("drop-hint");
+
+      const fromId = dragLayerId || (()=>{
+        try{ return e.dataTransfer.getData("text/plain"); }catch(_){ return null; }
+      })();
+
+      const toId = node._ea_id;
+      if (!fromId || fromId === toId) return;
+
+      reorderLayerTopFirst(fromId, toId);
+      dragLayerId = null;
+      pushHistory();
+    };
+
+    const left = document.createElement('div');
+    left.className = "layer-left";
+
+    const nm = document.createElement('div');
+    nm.className = "layer-name";
+    nm.textContent = meta.name || meta.type;
+
+    nm.ondblclick = (ev) => {
+      ev.stopPropagation();
+      startInlineRename(nm, node);
+    };
+
+    const sub = document.createElement('div');
+    sub.className = "layer-sub";
+    const op = Math.round((node.opacity() ?? 1) * 100);
+    const flags = [
+      node._ea_hidden ? "HIDDEN" : "",
+      node._ea_locked ? "LOCK" : ""
+    ].filter(Boolean).join(" • ");
+    sub.textContent = `${meta.type} • Opacity ${op}%` + (flags ? ` • ${flags}` : "");
+
+    left.appendChild(nm);
+    left.appendChild(sub);
+
+    const tools = document.createElement('div');
+    tools.className = "layer-tools";
+
+    const btnEye = document.createElement('button');
+    btnEye.type = "button";
+    btnEye.className = "icon-btn" + (node._ea_hidden ? " active" : "");
+    btnEye.title = node._ea_hidden ? "Show layer" : "Hide layer";
+    btnEye.innerHTML = node._ea_hidden ? "🚫" : "👁️";
+    btnEye.onclick = (ev) => {
+      ev.stopPropagation();
+      setHidden(node, !node._ea_hidden);
+      layerWork.draw();
+      renderLayers();
+      pushHistory();
+    };
+
+    const btnLock = document.createElement('button');
+    btnLock.type = "button";
+    btnLock.className = "icon-btn" + (node._ea_locked ? " active" : "");
+    btnLock.title = node._ea_locked ? "Unlock layer" : "Lock layer";
+    btnLock.innerHTML = node._ea_locked ? "🔒" : "🔓";
+    btnLock.onclick = (ev) => {
+      ev.stopPropagation();
+      setLocked(node, !node._ea_locked);
+      renderLayers();
+      pushHistory();
+    };
+
+    const pill = document.createElement('span');
+    pill.className = "layer-pill";
+    pill.textContent = "#" + (nodesTopFirst.length - idx);
+
+    tools.appendChild(btnEye);
+    tools.appendChild(btnLock);
+    tools.appendChild(pill);
+
+    item.appendChild(left);
+    item.appendChild(tools);
+
+    item.onclick = (ev) => {
+      const isShift = ev.shiftKey;
+      if (isShift){
+        toggleSelect(node);
+      } else {
+        setSelection([node]);
+      }
+    };
+
+    host.appendChild(item);
+  });
+}
+
+function startInlineRename(nameEl, node){
+  const cur = node._ea_name || "";
+  const inp = document.createElement('input');
+  inp.className = "rename-input";
+  inp.value = cur;
+  nameEl.replaceWith(inp);
+  inp.focus();
+  inp.select();
+
+  const commit = () => {
+    const v = String(inp.value || "").trim();
+    if (v) node._ea_name = v;
+    renderLayers();
+    syncLayerNameUI();
+    pushHistory();
+  };
+
+  inp.addEventListener('keydown', (e) => {
+    if (e.key === "Enter") commit();
+    if (e.key === "Escape") renderLayers();
+  });
+  inp.addEventListener('blur', () => commit());
+}
+
+function reorderLayerTopFirst(fromId, toId){
+  const nodes = listWorkNodes();
+  const nodesTopFirst = nodes.slice().reverse();
+
+  const fromIdx = nodesTopFirst.findIndex(n => n._ea_id === fromId);
+  const toIdx = nodesTopFirst.findIndex(n => n._ea_id === toId);
+  if (fromIdx < 0 || toIdx < 0) return;
+
+  const moving = nodesTopFirst[fromIdx];
+  nodesTopFirst.splice(fromIdx, 1);
+  nodesTopFirst.splice(toIdx, 0, moving);
+
+  const N = nodesTopFirst.length;
+  for (let i = 0; i < N; i++){
+    const n = nodesTopFirst[i];
+    const z = (N - 1 - i);
+    try{ n.zIndex(z); }catch(_){}
+  }
+
+  layerWork.draw();
+  renderLayers();
+}
+
+/* =========================
+   8) ADD IMAGE / TEXT / SHAPE
+========================= */
+async function addUserImage(file){
+  if (!stage || !currentTpl) return alert("Sila Load Canvas dulu.");
+
+  const src = await fileToDataURL(file);
+  const img = await loadImage(src);
+
+  const mode = $('selFitMode').value || "COVER";
+  const boxW = clipRect.w;
+  const boxH = clipRect.h;
+
+  const scale = (mode === "FIT")
+    ? Math.min(boxW / img.width, boxH / img.height)
+    : Math.max(boxW / img.width, boxH / img.height);
+
+  const w = img.width * scale;
+  const h = img.height * scale;
+
+  const node = new Konva.Image({
+    x: (boxW - w)/2,
+    y: (boxH - h)/2,
+    image: img,
+    width: w,
+    height: h,
+    draggable: true
+  });
+
+  node._ea_src = src;
+
+  counterImg++;
+  setNodeMeta(node, "GAMBAR", "Gambar " + counterImg);
+
+  bindNodeEvents(node);
+
+  clipGroup.add(node);
+  layerWork.draw();
+
+  setSelection([node]);
+  pushHistory();
+}
+
+function addText(){
+  if (!stage || !currentTpl) return alert("Sila Load Canvas dulu.");
+
+  counterText++;
+  const node = new Konva.Text({
+    x: safeRect.x + 24,
+    y: safeRect.y + 24,
+    text: "Teks anda",
+    fontSize: 52,
+    fontFamily: "Poppins",
+    fill: "#111827",
+    draggable: true
+  });
+
+  setNodeMeta(node, "TEXT", "Text " + counterText);
+
+  bindNodeEvents(node);
+
+  clipGroup.add(node);
+  layerWork.draw();
+
+  setSelection([node]);
+  pushHistory();
+}
+
+function addRect(){
+  if (!stage || !currentTpl) return alert("Sila Load Canvas dulu.");
+
+  counterRect++;
+  const node = new Konva.Rect({
+    x: safeRect.x + 40,
+    y: safeRect.y + 40,
+    width: 220,
+    height: 140,
+    fill: $('inpFillColor').value || "#ff0000",
+    stroke: $('inpStrokeColor').value || "#000000",
+    strokeWidth: Number($('inpStrokeW').value || 0),
+    draggable: true
+  });
+
+  setNodeMeta(node, "PETAK", "Petak " + counterRect);
+
+  bindNodeEvents(node);
+
+  clipGroup.add(node);
+  layerWork.draw();
+
+  setSelection([node]);
+  pushHistory();
+}
+
+function addCircle(){
+  if (!stage || !currentTpl) return alert("Sila Load Canvas dulu.");
+
+  counterCircle++;
+  const node = new Konva.Circle({
+    x: safeRect.x + 220,
+    y: safeRect.y + 220,
+    radius: 90,
+    fill: $('inpFillColor').value || "#ff0000",
+    stroke: $('inpStrokeColor').value || "#000000",
+    strokeWidth: Number($('inpStrokeW').value || 0),
+    draggable: true
+  });
+
+  setNodeMeta(node, "BULAT", "Bulat " + counterCircle);
+
+  bindNodeEvents(node);
+
+  clipGroup.add(node);
+  layerWork.draw();
+
+  setSelection([node]);
+  pushHistory();
+}
+
+/* =========================
+   9) NO 1: TEXT EFFECTS
+========================= */
+function applyTextSettings(){
+  if (!selectedNodes.length) return;
+  if (selectedNodes.length !== 1) return;
+
+  const node = selectedNodes[0];
+
+  const t = $('inpText').value || "";
+  const f = $('selFont').value || "Poppins";
+  const s = Number($('inpFontSize').value || 52);
+  const c = $('inpTextColor').value || "#111827";
+
+  const effect = $('selTextEffect').value || "NONE";
+  const strokePx = Math.max(0, Number($('inpStrokePxText').value || 0));
+  const strokeColor = $('inpStrokeColorText').value || "#ffffff";
+  const glowBlur = Math.max(0, Number($('inpGlowBlur').value || 0));
+  const glowColor = $('inpGlowColor').value || "#000000";
+
+  const dDepth = Math.max(0, Number($('inp3DDepth').value || 0));
+  const dOffset = Math.max(0, Number($('inp3DOffset').value || 0));
+  const dColor = $('inp3DColor').value || "#111827";
+
+  function applyStrokeGlowToText(txt){
+    txt.strokeEnabled(false);
+    txt.strokeWidth(0);
+    txt.shadowEnabled(false);
+    txt.shadowBlur(0);
+    txt.shadowOffset({x:0,y:0});
+    txt.shadowOpacity(0);
+
+    if (effect === "STROKE" || effect === "STROKE_GLOW"){
+      txt.stroke(strokeColor);
+      txt.strokeWidth(strokePx);
+      txt.strokeEnabled(strokePx > 0);
+    }
+    if (effect === "GLOW" || effect === "STROKE_GLOW"){
+      txt.shadowColor(glowColor);
+      txt.shadowBlur(glowBlur);
+      txt.shadowOffset({x:0,y:0});
+      txt.shadowOpacity(glowBlur > 0 ? 0.9 : 0);
+      txt.shadowEnabled(glowBlur > 0);
+    }
+  }
+
+  // if TEXT3D group
+  if (node.className === "Group" && node._ea_type === "TEXT3D"){
+    const main = node.findOne(n => n._ea_role === "TEXT_MAIN");
+    if (main && main.className === "Text"){
+      main.text(t);
+      main.fontFamily(f);
+      main.fontSize(s);
+      main.fill(c);
+      applyStrokeGlowToText(main);
+    }
+
+    const clones = node.getChildren().filter(ch => ch._ea_role === "TEXT_DEPTH");
+    clones.forEach((cl, i) => {
+      if (cl.className !== "Text") return;
+      cl.text(t);
+      cl.fontFamily(f);
+      cl.fontSize(s);
+      cl.fill(dColor);
+      cl.x((i+1) * dOffset);
+      cl.y((i+1) * dOffset);
+      cl.shadowEnabled(false);
+      cl.strokeEnabled(false);
+    });
+
+    // if effect changed away from 3D -> convert to normal Text
+    if (effect !== "THREED"){
+      const rot = node.rotation();
+      const op = node.opacity();
+
+      const main2 = main ? main.clone({ x: 0, y: 0 }) : null;
+
+      const newText = new Konva.Text({
+        x: node.x(),
+        y: node.y(),
+        text: main2 ? main2.text() : t,
+        fontFamily: main2 ? main2.fontFamily() : f,
+        fontSize: main2 ? main2.fontSize() : s,
+        fill: main2 ? main2.fill() : c,
+        draggable: true
+      });
+
+      setNodeMeta(newText, "TEXT", node._ea_name || "Text");
+      newText.opacity(op);
+      newText.rotation(rot);
+      applyStrokeGlowToText(newText);
+
+      node.destroy();
+      clipGroup.add(newText);
+      bindNodeEvents(newText);
+
+      layerWork.draw();
+      setSelection([newText]);
+      pushHistory();
+      return;
+    }
+
+    layerWork.draw();
+    renderLayers();
+    pushHistory();
+    return;
+  }
+
+  // normal Text -> convert to 3D
+  if (node.className === "Text" && effect === "THREED"){
+    const base = node;
+
+    const grp = new Konva.Group({
+      x: base.x(),
+      y: base.y(),
+      draggable: true
+    });
+
+    setNodeMeta(grp, "TEXT3D", base._ea_name || "Text 3D");
+    grp._ea_type = "TEXT3D";
+    grp.opacity(base.opacity());
+    grp.rotation(base.rotation());
+
+    const depth = dDepth;
+    for (let i = depth; i >= 1; i--){
+      const shadowText = new Konva.Text({
+        x: i * dOffset,
+        y: i * dOffset,
+        text: t || base.text(),
+        fontFamily: f || base.fontFamily(),
+        fontSize: s || base.fontSize(),
+        fill: dColor,
+        listening: false
+      });
+      shadowText._ea_role = "TEXT_DEPTH";
+      grp.add(shadowText);
+    }
+
+    const main = new Konva.Text({
+      x: 0,
+      y: 0,
+      text: t || base.text(),
+      fontFamily: f || base.fontFamily(),
+      fontSize: s || base.fontSize(),
+      fill: c || base.fill(),
+      listening: false
+    });
+    main._ea_role = "TEXT_MAIN";
+    applyStrokeGlowToText(main);
+    grp.add(main);
+
+    grp._ea_locked = base._ea_locked;
+    grp._ea_hidden = base._ea_hidden;
+    grp.visible(!grp._ea_hidden);
+    grp.draggable(!grp._ea_locked);
+
+    bindNodeEvents(grp);
+
+    base.destroy();
+    clipGroup.add(grp);
+
+    layerWork.draw();
+    setSelection([grp]);
+    pushHistory();
+    return;
+  }
+
+  // normal Text apply
+  if (node.className === "Text"){
+    node.text(t);
+    node.fontFamily(f);
+    node.fontSize(s);
+    node.fill(c);
+
+    node.strokeEnabled(false);
+    node.strokeWidth(0);
+    node.shadowEnabled(false);
+    node.shadowBlur(0);
+    node.shadowOffset({x:0,y:0});
+    node.shadowOpacity(0);
+
+    if (effect === "STROKE" || effect === "STROKE_GLOW"){
+      node.stroke(strokeColor);
+      node.strokeWidth(strokePx);
+      node.strokeEnabled(strokePx > 0);
+    }
+    if (effect === "GLOW" || effect === "STROKE_GLOW"){
+      node.shadowColor(glowColor);
+      node.shadowBlur(glowBlur);
+      node.shadowOffset({x:0,y:0});
+      node.shadowOpacity(glowBlur > 0 ? 0.9 : 0);
+      node.shadowEnabled(glowBlur > 0);
+    }
+
+    layerWork.draw();
+    renderLayers();
+    pushHistory();
+    return;
+  }
+
+  alert("Pilih layer TEXT dulu.");
+}
+
+/* =========================
+   10) SHAPE SETTINGS
+========================= */
+function applyShapeSettings(){
+  if (!selectedNodes.length) return;
+  if (selectedNodes.length !== 1) return;
+
+  const node = selectedNodes[0];
+  if (!(node.className === "Rect" || node.className === "Circle")) return;
+
+  const fill = $('inpFillColor').value || "#ff0000";
+  const stroke = $('inpStrokeColor').value || "#000000";
+  const sw = Number($('inpStrokeW').value || 0);
+
+  node.fill(fill);
+  node.stroke(stroke);
+  node.strokeWidth(sw);
+
+  layerWork.draw();
+  renderLayers();
+  pushHistory();
+}
+
+/* =========================
+   11) LAYER OPS
+========================= */
+function deleteSelected(){
+  if (!selectedNodes.length) return;
+  selectedNodes.forEach(n => n.destroy());
+  setSelection([]);
+  layerWork.draw();
+  renderLayers();
+  pushHistory();
+}
+
+function bringToFront(){
+  if (!selectedNodes.length) return;
+  selectedNodes.forEach(n => n.moveToTop());
+  layerWork.draw();
+  renderLayers();
+  pushHistory();
+}
+
+function sendToBack(){
+  if (!selectedNodes.length) return;
+  selectedNodes.forEach(n => n.moveToBottom());
+  layerWork.draw();
+  renderLayers();
+  pushHistory();
+}
+
+function duplicateSelected(){
+  if (!selectedNodes.length) return;
+
+  const clones = [];
+
+  selectedNodes.forEach(n => {
+    let clone = null;
+
+    if (n.className === "Image"){
+      clone = n.clone({ x: n.x() + 18, y: n.y() + 18 });
+      clone.image(n.image());
+      clone._ea_src = n._ea_src || null;
+      counterImg++;
+      setNodeMeta(clone, "GAMBAR", (n._ea_name || "Gambar") + " (copy)");
+    }
+    else if (n.className === "Text"){
+      clone = n.clone({ x: n.x() + 18, y: n.y() + 18 });
+      counterText++;
+      setNodeMeta(clone, "TEXT", (n._ea_name || "Text") + " (copy)");
+    }
+    else if (n.className === "Rect"){
+      clone = n.clone({ x: n.x() + 18, y: n.y() + 18 });
+      counterRect++;
+      setNodeMeta(clone, "PETAK", (n._ea_name || "Petak") + " (copy)");
+    }
+    else if (n.className === "Circle"){
+      clone = n.clone({ x: n.x() + 18, y: n.y() + 18 });
+      counterCircle++;
+      setNodeMeta(clone, "BULAT", (n._ea_name || "Bulat") + " (copy)");
+    }
+    else if (n.className === "Group"){
+      clone = n.clone({ x: n.x() + 18, y: n.y() + 18 });
+
+      // restore image src inside group if any
+      try{
+        const imgs = clone.find("Image");
+        const origImgs = n.find("Image");
+        imgs.forEach((imgNode, idx) => {
+          const orig = origImgs[idx];
+          if (orig && orig._ea_src){
+            imgNode._ea_src = orig._ea_src;
+            loadImage(orig._ea_src).then(img => imgNode.image(img)).catch(_=>{});
+          }
+        });
+      }catch(_){}
+
+      setNodeMeta(clone, n._ea_type || "GROUP", (n._ea_name || "Group") + " (copy)");
+      clone._ea_type = n._ea_type || "GROUP";
+    }
+    else{
+      clone = n.clone({ x: n.x() + 18, y: n.y() + 18 });
+      setNodeMeta(clone, n._ea_type || "LAYER", (n._ea_name || "Layer") + " (copy)");
+    }
+
+    if (!clone) return;
+
+    bindNodeEvents(clone);
+    clipGroup.add(clone);
+    clones.push(clone);
+  });
+
+  layerWork.draw();
+  setSelection(clones);
+  pushHistory();
+}
+
+function applyOpacityFromUI(){
+  if (!selectedNodes.length) return;
+  const pct = Number($('opacityRange').value || 100);
+  const op = Math.max(0, Math.min(1, pct / 100));
+
+  selectedNodes.forEach(n => n.opacity(op));
+  $('lblOpacity').textContent = Math.round(op * 100) + "%";
+  layerWork.draw();
+  renderLayers();
+}
+
+function applyLayerNameFromUI(){
+  if (selectedNodes.length !== 1) return;
+  const name = String($('inpLayerName').value || "").trim();
+  if (name) selectedNodes[0]._ea_name = name;
+  renderLayers();
+  pushHistory();
+}
+
+/* =========================
+   12) ALIGN + DISTRIBUTE (multi)
+========================= */
+function getSelectedBoxes(){
+  const nodes = selectedNodes.slice();
+  const boxes = nodes.map(n => ({ node: n, box: n.getClientRect({ relativeTo: clipGroup }) }));
+  return boxes;
+}
+
+function alignLeft(){
+  if (selectedNodes.length < 2) return;
+  const boxes = getSelectedBoxes();
+  const minX = Math.min(...boxes.map(b => b.box.x));
+  boxes.forEach(b => {
+    const dx = minX - b.box.x;
+    b.node.x(b.node.x() + dx);
+  });
+  layerWork.draw();
+  pushHistory();
+}
+
+function alignRight(){
+  if (selectedNodes.length < 2) return;
+  const boxes = getSelectedBoxes();
+  const maxR = Math.max(...boxes.map(b => b.box.x + b.box.width));
+  boxes.forEach(b => {
+    const dx = maxR - (b.box.x + b.box.width);
+    b.node.x(b.node.x() + dx);
+  });
+  layerWork.draw();
+  pushHistory();
+}
+
+function alignHCenter(){
+  if (selectedNodes.length < 2) return;
+  const boxes = getSelectedBoxes();
+  const minX = Math.min(...boxes.map(b => b.box.x));
+  const maxR = Math.max(...boxes.map(b => b.box.x + b.box.width));
+  const center = (minX + maxR) / 2;
+
+  boxes.forEach(b => {
+    const c = b.box.x + b.box.width/2;
+    const dx = center - c;
+    b.node.x(b.node.x() + dx);
+  });
+  layerWork.draw();
+  pushHistory();
+}
+
+function alignTop(){
+  if (selectedNodes.length < 2) return;
+  const boxes = getSelectedBoxes();
+  const minY = Math.min(...boxes.map(b => b.box.y));
+  boxes.forEach(b => {
+    const dy = minY - b.box.y;
+    b.node.y(b.node.y() + dy);
+  });
+  layerWork.draw();
+  pushHistory();
+}
+
+function alignBottom(){
+  if (selectedNodes.length < 2) return;
+  const boxes = getSelectedBoxes();
+  const maxB = Math.max(...boxes.map(b => b.box.y + b.box.height));
+  boxes.forEach(b => {
+    const dy = maxB - (b.box.y + b.box.height);
+    b.node.y(b.node.y() + dy);
+  });
+  layerWork.draw();
+  pushHistory();
+}
+
+function alignVMiddle(){
+  if (selectedNodes.length < 2) return;
+  const boxes = getSelectedBoxes();
+  const minY = Math.min(...boxes.map(b => b.box.y));
+  const maxB = Math.max(...boxes.map(b => b.box.y + b.box.height));
+  const mid = (minY + maxB) / 2;
+
+  boxes.forEach(b => {
+    const c = b.box.y + b.box.height/2;
+    const dy = mid - c;
+    b.node.y(b.node.y() + dy);
+  });
+  layerWork.draw();
+  pushHistory();
+}
+
+function distributeH(){
+  if (selectedNodes.length < 3) return;
+  const boxes = getSelectedBoxes().sort((a,b) => a.box.x - b.box.x);
+
+  const left = boxes[0].box.x;
+  const right = boxes[boxes.length-1].box.x + boxes[boxes.length-1].box.width;
+  const totalW = boxes.reduce((s,b) => s + b.box.width, 0);
+  const gaps = boxes.length - 1;
+  const space = (right - left - totalW) / gaps;
+
+  let curX = boxes[0].box.x + boxes[0].box.width;
+
+  boxes.forEach((b, i) => {
+    if (i === 0 || i === boxes.length-1) return;
+    const targetX = curX + space;
+    const dx = targetX - b.box.x;
+    b.node.x(b.node.x() + dx);
+    const newBox = b.node.getClientRect({ relativeTo: clipGroup });
+    curX = newBox.x + newBox.width;
+  });
+
+  layerWork.draw();
+  pushHistory();
+}
+
+function distributeV(){
+  if (selectedNodes.length < 3) return;
+  const boxes = getSelectedBoxes().sort((a,b) => a.box.y - b.box.y);
+
+  const top = boxes[0].box.y;
+  const bottom = boxes[boxes.length-1].box.y + boxes[boxes.length-1].box.height;
+  const totalH = boxes.reduce((s,b) => s + b.box.height, 0);
+  const gaps = boxes.length - 1;
+  const space = (bottom - top - totalH) / gaps;
+
+  let curY = boxes[0].box.y + boxes[0].box.height;
+
+  boxes.forEach((b, i) => {
+    if (i === 0 || i === boxes.length-1) return;
+    const targetY = curY + space;
+    const dy = targetY - b.box.y;
+    b.node.y(b.node.y() + dy);
+    const newBox = b.node.getClientRect({ relativeTo: clipGroup });
+    curY = newBox.y + newBox.height;
+  });
+
+  layerWork.draw();
+  pushHistory();
+}
+
+/* =========================
+   13) NO 7: GROUP / UNGROUP
+========================= */
+function groupSelected(){
+  if (selectedNodes.length < 2) return;
+
+  const nodes = selectedNodes.slice();
+
+  const boxes = nodes.map(n => n.getClientRect({ relativeTo: clipGroup }));
+  const minX = Math.min(...boxes.map(b => b.x));
+  const minY = Math.min(...boxes.map(b => b.y));
+
+  const grp = new Konva.Group({
+    x: minX,
+    y: minY,
+    draggable: true
+  });
+
+  setNodeMeta(grp, "GROUP", "Group");
+  grp._ea_type = "GROUP";
+
+  nodes.forEach(n => {
+    const abs = n.absolutePosition();
+    n.moveTo(grp);
+    const pAbs = grp.absolutePosition();
+    n.position({ x: abs.x - pAbs.x, y: abs.y - pAbs.y });
+  });
+
+  bindNodeEvents(grp);
+  clipGroup.add(grp);
+
+  layerWork.draw();
+  setSelection([grp]);
+  renderLayers();
+  pushHistory();
+}
+
+function ungroupSelected(){
+  if (selectedNodes.length !== 1) return;
+  const grp = selectedNodes[0];
+  if (!grp || grp.className !== "Group") return;
+  if (!(grp._ea_type === "GROUP")) return;
+
+  const parent = grp.getParent();
+  if (!parent) return;
+
+  const kids = grp.getChildren();
+  const arr = Array.isArray(kids) ? kids : (typeof kids.toArray === "function" ? kids.toArray() : Array.from(kids || []));
+
+  const moved = [];
+  arr.forEach(ch => {
+    const abs = ch.absolutePosition();
+    ch.moveTo(parent);
+    ch.absolutePosition(abs);
+    moved.push(ch);
+    bindNodeEvents(ch);
+  });
+
+  grp.destroy();
+  layerWork.draw();
+  setSelection(moved);
+  renderLayers();
+  pushHistory();
+}
+
+/* =========================
+   14) NO 6: CROP MODE (Canva-like)
+========================= */
+function isFrameGroup(node){
+  return node && node.className === "Group" && node._ea_type === "FRAME_IMAGE";
+}
+
+function startCropFromNode(node){
+  if (!node) return;
+
+  // wrap plain Image into frame
+  if (node.className === "Image"){
+    const imgNode = node;
+    const w = imgNode.width();
+    const h = imgNode.height();
+
+    const frame = new Konva.Group({
+      x: imgNode.x(),
+      y: imgNode.y(),
+      draggable: true,
+      clipX: 0,
+      clipY: 0,
+      clipWidth: w,
+      clipHeight: h
+    });
+
+    setNodeMeta(frame, "FRAME_IMAGE", imgNode._ea_name || "Gambar");
+    frame._ea_type = "FRAME_IMAGE";
+    frame.opacity(imgNode.opacity());
+    frame.rotation(imgNode.rotation());
+
+    imgNode.moveTo(frame);
+    imgNode.position({ x: 0, y: 0 });
+    imgNode.draggable(true);
+
+    frame._ea_src = imgNode._ea_src || null;
+
+    imgNode.rotation(0);
+
+    bindNodeEvents(frame);
+    bindNodeEvents(imgNode);
+
+    clipGroup.add(frame);
+
+    layerWork.draw();
+    setSelection([frame]);
+    pushHistory();
+
+    node = frame;
+  }
+
+  if (isFrameGroup(node)){
+    enterCropMode(node);
+  }
+}
+
+function enterCropMode(frameGroup){
+  if (!frameGroup) return;
+
+  cropMode = true;
+  cropTargetGroup = frameGroup;
+
+  transformer.nodes([]);
+  layerUI.draw();
+
+  if (cropOverlay) cropOverlay.destroy();
+  cropOverlay = new Konva.Rect({
+    x: frameGroup.x(),
+    y: frameGroup.y(),
+    width: frameGroup.clipWidth(),
+    height: frameGroup.clipHeight(),
+    stroke: "#f59e0b",
+    strokeWidth: 2,
+    dash: [8,6],
+    listening: false
+  });
+  layerUI.add(cropOverlay);
+  layerUI.draw();
+
+  const img = frameGroup.findOne("Image");
+  if (!img) return;
+
+  img.draggable(true);
+
+  img.off('dragmove._crop');
+  img.off('dragend._crop');
+
+  img.on('dragmove._crop', () => {
+    clampCropImage(frameGroup, img);
+    layerWork.batchDraw();
+  });
+  img.on('dragend._crop', () => {
+    clampCropImage(frameGroup, img);
+    layerWork.batchDraw();
+  });
+
+  frameGroup.draggable(false);
+  setSelection([frameGroup]);
+}
+
+function exitCropMode(commit){
+  if (!cropMode) return;
+
+  const frame = cropTargetGroup;
+  cropMode = false;
+  cropTargetGroup = null;
+
+  if (cropOverlay){
+    cropOverlay.destroy();
+    cropOverlay = null;
+    layerUI.draw();
+  }
+
+  if (frame && isFrameGroup(frame)){
+    const img = frame.findOne("Image");
+    if (img){
+      img.draggable(false);
+      img.off('dragmove._crop');
+      img.off('dragend._crop');
+    }
+    frame.draggable(true);
+  }
+
+  syncTransformer();
+  layerWork.draw();
+  if (commit) pushHistory();
+}
+
+function clampCropImage(frame, img){
+  const fw = frame.clipWidth();
+  const fh = frame.clipHeight();
+  const iw = img.width();
+  const ih = img.height();
+
+  let x = img.x();
+  let y = img.y();
+
+  if (iw <= fw){
+    x = (fw - iw)/2;
+  } else {
+    const minX = fw - iw;
+    const maxX = 0;
+    if (x < minX) x = minX;
+    if (x > maxX) x = maxX;
+  }
+
+  if (ih <= fh){
+    y = (fh - ih)/2;
+  } else {
+    const minY = fh - ih;
+    const maxY = 0;
+    if (y < minY) y = minY;
+    if (y > maxY) y = maxY;
+  }
+
+  img.position({ x, y });
+}
+
+/* =========================
+   15) EXPORT
+========================= */
+function exportPNG(){
+  if (!stage || !currentTpl) return alert("Sila Load Canvas dulu.");
+
+  if (cropMode) exitCropMode(true);
+
+  const prevSafeVis = safeRectNode.visible();
+  const prevTrNodes = transformer.nodes();
+
+  safeRectNode.visible(false);
+  transformer.nodes([]);
+  clearGuides();
+  layerUI.draw();
+
+  const dataURL = stage.toDataURL({ pixelRatio: 2 });
+
+  safeRectNode.visible(prevSafeVis);
+  transformer.nodes(prevTrNodes);
+  layerUI.draw();
+
+  const a = document.createElement('a');
+  a.href = dataURL;
+  a.download = `emasamir_custom_${currentTplKey || "canvas"}.png`;
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+}
+
+/* =========================
+   16) LOAD / RESET
+========================= */
+async function loadSelectedTemplate(){
+  const orient = $('selOrient').value;
+  const tpl = TEMPLATE_MAP[orient];
+  if (!tpl) return alert("Template tak jumpa.");
+
+  currentTpl = tpl;
+  currentTplKey = orient;
+
+  $('selInfo').textContent = `${tpl.label} • ${tpl.canvas_w_px}×${tpl.canvas_h_px}`;
+
+  setupStageForTemplate(tpl);
+
+  $('tplInfo').innerHTML =
+    `Canvas: <b>${tpl.canvas_w_px}×${tpl.canvas_h_px}</b><br>` +
+    `Print-safe (dot hijau): <b>${safeRect.w}×${safeRect.h}</b> (margin ${SAFE_MARGIN_PX}px)<br>` +
+    `Mode Gambar: <b>${$('selFitMode').value}</b>`;
+
+  setSelection([]);
+}
+
+function resetAll(){
+  if (!currentTpl) {
+    destroyStage();
+    $('tplInfo').textContent = "Belum load.";
+    $('selInfo').textContent = "—";
+    return;
+  }
+
+  if (cropMode) exitCropMode(false);
+
+  clipGroup.removeChildren();
+  layerWork.draw();
+  setSelection([]);
+  renderLayers();
+
+  history = [];
+  redoStack = [];
+  pushHistory();
+}
+
+/* =========================
+   17) EVENTS
+========================= */
+$('btnLoad').addEventListener('click', async () => {
+  try{
+    await loadSelectedTemplate();
+  }catch(e){
+    console.error(e);
+    alert("Gagal load canvas.");
+  }
+});
+
+$('btnReset').addEventListener('click', () => resetAll());
+
+$('fileImg').addEventListener('change', async (e) => {
+  const f = e.target.files && e.target.files[0];
+  if (!f) return;
+  try{
+    await addUserImage(f);
+  }catch(err){
+    console.error(err);
+    alert("Gagal proses gambar.");
+  }finally{
+    e.target.value = "";
+  }
+});
+
+$('btnAddText').addEventListener('click', () => addText());
+$('btnAddRect').addEventListener('click', () => addRect());
+$('btnAddCircle').addEventListener('click', () => addCircle());
+
+$('btnCrop').addEventListener('click', () => {
+  if (!selectedNodes.length) return;
+  if (selectedNodes.length !== 1) return;
+  const n = selectedNodes[0];
+  if (n._ea_type === "GAMBAR" || n._ea_type === "FRAME_IMAGE"){
+    startCropFromNode(n);
+  } else {
+    alert("Pilih layer Gambar dulu.");
+  }
+});
+
+$('btnApplyText').addEventListener('click', () => applyTextSettings());
+$('btnApplyShape').addEventListener('click', () => applyShapeSettings());
+
+$('btnDelete').addEventListener('click', () => deleteSelected());
+$('btnBringFront').addEventListener('click', () => bringToFront());
+$('btnSendBack').addEventListener('click', () => sendToBack());
+$('btnDuplicate').addEventListener('click', () => duplicateSelected());
+
+$('btnExport').addEventListener('click', () => exportPNG());
+
+$('opacityRange').addEventListener('input', () => applyOpacityFromUI());
+$('opacityRange').addEventListener('change', () => pushHistory());
+
+$('inpLayerName').addEventListener('input', () => applyLayerNameFromUI());
+
+// Align
+$('btnAlignLeft').addEventListener('click', () => alignLeft());
+$('btnAlignHCenter').addEventListener('click', () => alignHCenter());
+$('btnAlignRight').addEventListener('click', () => alignRight());
+$('btnAlignTop').addEventListener('click', () => alignTop());
+$('btnAlignVMiddle').addEventListener('click', () => alignVMiddle());
+$('btnAlignBottom').addEventListener('click', () => alignBottom());
+$('btnDistH').addEventListener('click', () => distributeH());
+$('btnDistV').addEventListener('click', () => distributeV());
+
+// Hotkeys (No 7, No 8, crop)
+document.addEventListener('keydown', async (e) => {
+  // crop mode
+  if (cropMode){
+    if (e.key === "Enter"){
+      exitCropMode(true);
+      return;
+    }
+    if (e.key === "Escape"){
+      exitCropMode(false);
+      return;
+    }
+  }
+
+  // Delete
+  if (e.key === "Delete" || e.key === "Backspace"){
+    const tag = (document.activeElement && document.activeElement.tagName) ? document.activeElement.tagName.toLowerCase() : "";
+    if (tag === "input" || tag === "textarea") return;
+    deleteSelected();
+  }
+
+  // Ctrl+D duplicate
+  if ((e.ctrlKey || e.metaKey) && (e.key.toLowerCase() === "d")){
+    e.preventDefault();
+    duplicateSelected();
+  }
+
+  // Ctrl+G group
+  if ((e.ctrlKey || e.metaKey) && (e.key.toLowerCase() === "g") && !e.shiftKey){
+    e.preventDefault();
+    groupSelected();
+  }
+
+  // Ctrl+Shift+G ungroup
+  if ((e.ctrlKey || e.metaKey) && (e.key.toLowerCase() === "g") && e.shiftKey){
+    e.preventDefault();
+    ungroupSelected();
+  }
+
+  // Undo Ctrl+Z
+  if ((e.ctrlKey || e.metaKey) && (e.key.toLowerCase() === "z") && !e.shiftKey){
+    e.preventDefault();
+    await undo();
+  }
+
+  // Redo Ctrl+Y or Ctrl+Shift+Z
+  if ((e.ctrlKey || e.metaKey) && (e.key.toLowerCase() === "y")){
+    e.preventDefault();
+    await redo();
+  }
+  if ((e.ctrlKey || e.metaKey) && (e.key.toLowerCase() === "z") && e.shiftKey){
+    e.preventDefault();
+    await redo();
+  }
+});
+
+renderLayers();
+syncOpacityUI();
+</script>
+
+</body>
+</html>

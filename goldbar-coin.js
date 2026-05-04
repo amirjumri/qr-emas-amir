@@ -16,9 +16,9 @@ const SP_SIGN_FN      = "sp-sign";                          // guna invoke (ELAK
 const REDIRECT_URL    = location.origin + "/goldbar-coin.html?paid=1";
 
 // ===== OnSend (WhatsApp) =====
-const ADMIN_WA = "601113230198"; // nombor admin
+const ADMIN_WA = "60168055916"; // nombor admin
 const ONSEND_BASE  = "https://onsend.io/api/v1";
-const ONSEND_TOKEN = "76a6f98cfc6e009e5d824e47acd98b9b59a6e5177e14b072fd210276309d91f6";
+const ONSEND_TOKEN = "4b879470cc16ca8f06c5ab9878a4578880cfd0fd7b7cfe0121499f3ab017dd04";
 
 // ✅ URL QR DuitNow (sama macam J916, boleh tukar bila perlu)
 const QR_DUITNOW_URL = "https://emasamir.app/qr-maybank.html";
@@ -78,7 +78,11 @@ function makeOrderId(prefix = 'GB') {
 // ==========================
 const $ = id => document.getElementById(id);
 const money = n => "RM " + Number(n || 0).toFixed(2);
-const fmtG = g => { let s = Number(g).toString(); if (s.includes(".")) s = s.replace(/0+$/,"").replace(/\.$/,""); return s + "g"; };
+const fmtG = g => {
+  let s = Number(g).toString();
+  if (s.includes(".")) s = s.replace(/0+$/,"").replace(/\.$/,"");
+  return s + "g";
+};
 const dinarLabel = g =>
   ({ "1.0625":"1/4 dinar (1.0625g)", "2.125":"1/2 dinar (2.125g)", "4.25":"1 dinar (4.25g)" })[Number(g).toString()]
   || fmtG(g);
@@ -86,12 +90,10 @@ const dinarLabel = g =>
 // ===== Agent helper (slug agen dari agent-ref.js / localStorage) =====
 function getAgentRefCode(){
   try{
-    // ✅ cara standard sistem Amir (agent-ref.js expose window.EmasAmirAgent.getRef)
     const v = window.EmasAmirAgent?.getRef?.();
     if (v) return String(v).trim() || null;
   }catch(_){}
 
-  // fallback lama (kalau ada)
   try{
     if (typeof window.getAgentRef === "function"){
       const v2 = window.getAgentRef();
@@ -102,7 +104,6 @@ function getAgentRefCode(){
   if (window.agent_ref) return String(window.agent_ref).trim() || null;
   if (window.AGENT_REF) return String(window.AGENT_REF).trim() || null;
 
-  // ✅ key sebenar yang agent-ref.js simpan
   const v =
     localStorage.getItem("emasamir_agent_ref") ||
     localStorage.getItem("agent_ref") ||
@@ -127,36 +128,32 @@ function saveCheckoutSnapshot({items, totals, refs, method}){
   const snap = {
     when: Date.now(),
     method,
-    items,                 // array ringkas (weight_label, design_name, qty, unit)
-    totals,                // {grand, subtotal, ship, payDisc, coupDisc, before}
-    refs,                  // array reference order
+    items,
+    totals,
+    refs,
     user: { name: auth.name || "", phone: auth.phone || "" },
     agent_ref: getAgentRefCode() || null
   };
   sessionStorage.setItem("gb_checkout_snapshot", JSON.stringify(snap));
-  sessionStorage.removeItem("gb_wa_sent"); // elak double send
+  sessionStorage.removeItem("gb_wa_sent");
 }
 
 function getPaidAmount(order) {
-  // 1) Cuba guna amount_cents (datang dari Billplz callback)
   const cents = Number(order.amount_cents);
   if (Number.isFinite(cents) && cents > 0) {
-    return cents / 100; // contoh 32743 → 327.43
+    return cents / 100;
   }
 
-  // 2) Kalau ada grand_total_rm, guna itu
   if (order.grand_total_rm != null) {
     const v = Number(order.grand_total_rm);
     if (Number.isFinite(v) && v > 0) return v;
   }
 
-  // 3) Kalau ada total_rm, guna total_rm
   if (order.total_rm != null) {
     const v = Number(order.total_rm);
     if (Number.isFinite(v) && v > 0) return v;
   }
 
-  // 4) Last fallback: unit_price_rm
   const v = Number(order.unit_price_rm || 0);
   return Number.isFinite(v) ? v : 0;
 }
@@ -198,8 +195,8 @@ const state = {
   selectedDesignName: '',
   selectedDesignCustomFee: 0,
   cart: [],
-  checkoutMode: 'single',               // 'single' | 'all'
-  payMethod: 'FPX',                     // FPX | CARD_EWALLET | BNPL
+  checkoutMode: 'single',
+  payMethod: 'FPX',
   coupon: null
 };
 const calcUnitPrice = (hargaG, g, upah, cardType, extra=0) => {
@@ -212,16 +209,14 @@ const calcUnitPrice = (hargaG, g, upah, cardType, extra=0) => {
 // Modal Makluman Pembayaran (baru)
 // ==========================
 let BSPayInfo = null;
-let payInfoOnGo = null; // callback yang akan dipanggil bila user tekan "Teruskan"
+let payInfoOnGo = null;
 
 function openPayInfo(method, onGo) {
-  // simpan callback
   payInfoOnGo = typeof onGo === 'function' ? onGo : null;
 
   const m = String(method || '').toUpperCase();
   const isFPX = (m === 'FPX');
 
-  // update label kaedah
   const elMethod = $('payInfoMethod');
   if (elMethod) {
     elMethod.textContent = isFPX ? 'FPX' : 'Tunai / E-Wallet (Manual)';
@@ -233,22 +228,20 @@ function openPayInfo(method, onGo) {
   if (btnFPX)  btnFPX.style.display  = isFPX ? '' : 'none';
   if (btnCARD) btnCARD.style.display = isFPX ? 'none' : '';
 
-  // init & buka modal
   BSPayInfo = BSPayInfo || new bootstrap.Modal($('modalPayInfo'));
   BSPayInfo.show();
 }
 
-// butang dalam modal → panggil callback & teruskan
 $('btnPayInfoFPX')?.addEventListener('click', async () => {
   if (typeof payInfoOnGo === 'function') {
     BSPayInfo?.hide();
-    await payInfoOnGo();    // teruskan ke Billplz
+    await payInfoOnGo();
   }
 });
 $('btnPayInfoCARD')?.addEventListener('click', async () => {
   if (typeof payInfoOnGo === 'function') {
     BSPayInfo?.hide();
-    await payInfoOnGo();    // teruskan ke manual (Tunai / E-Wallet)
+    await payInfoOnGo();
   }
 });
 
@@ -256,72 +249,117 @@ $('btnPayInfoCARD')?.addEventListener('click', async () => {
 // Jadual harga (guna RPC)
 // ==========================
 async function renderTables(){
-  const tbCoin  = $('tbCoin'), tbDinar = $('tbDinar');
-  tbCoin.innerHTML  = `<tr><td colspan="2">Memuatkan…</td></tr>`;
-  tbDinar.innerHTML = `<tr><td colspan="2">Memuatkan…</td></tr>`;
+  const tbCoin  = $('tbCoin');
+  const tbBar   = $('tbBar');
+  const tbDinar = $('tbDinar');
+
+  if (tbCoin)  tbCoin.innerHTML  = `<tr><td colspan="2">Memuatkan…</td></tr>`;
+  if (tbBar)   tbBar.innerHTML   = `<tr><td colspan="2">Memuatkan…</td></tr>`;
+  if (tbDinar) tbDinar.innerHTML = `<tr><td colspan="2">Memuatkan…</td></tr>`;
 
   const { data, error } = await sb.rpc(RPC_PRICE_LIST);
   if (error){
     const msg = `Ralat: ${error.message}`;
-    tbCoin.innerHTML = tbDinar.innerHTML = `<tr><td colspan="2">${msg}</td></tr>`;
+    if (tbCoin)  tbCoin.innerHTML  = `<tr><td colspan="2">${msg}</td></tr>`;
+    if (tbBar)   tbBar.innerHTML   = `<tr><td colspan="2">${msg}</td></tr>`;
+    if (tbDinar) tbDinar.innerHTML = `<tr><td colspan="2">${msg}</td></tr>`;
     console.warn("RPC_PRICE_LIST error:", error);
     return;
   }
+
   const rows   = Array.isArray(data) ? data : [];
-  const coins  = rows.filter(r => r.kind === 'coin');
-  const dinars = rows.filter(r => r.kind === 'dinar');
+  const coins  = rows.filter(r => String(r.kind || '').toLowerCase() === 'coin');
+  const bars   = rows.filter(r => String(r.kind || '').toLowerCase() === 'bar');
+  const dinars = rows.filter(r => String(r.kind || '').toLowerCase() === 'dinar');
 
-  tbCoin.innerHTML = coins.length
-    ? coins.map(r=>{
-        const label = fmtG(r.weight_g);
-        return `
-          <tr class="rowitem clickable"
-              data-kind="coin"
-              data-weight="${Number(r.weight_g)}"
-              data-label="${label}"
-              data-upah="${Number(r.upah_rm)}"
-              data-priceg="${Number(r.price_per_g)}"
-              role="button" tabindex="0">
-            <td><b>${label}</b></td>
-            <td class="right"><b>${money(r.harga_jual)}</b></td>
-          </tr>`;
-      }).join("")
-    : `<tr><td colspan="2">Tiada data.</td></tr>`;
+  if (tbCoin){
+    tbCoin.innerHTML = coins.length
+      ? coins.map(r=>{
+          const label = fmtG(r.weight_g);
+          return `
+            <tr class="rowitem clickable"
+                data-kind="coin"
+                data-weight="${Number(r.weight_g)}"
+                data-label="${label}"
+                data-upah="${Number(r.upah_rm)}"
+                data-priceg="${Number(r.price_per_g)}"
+                role="button" tabindex="0">
+              <td><b>${label}</b></td>
+              <td class="right"><b>${money(r.harga_jual)}</b></td>
+            </tr>`;
+        }).join("")
+      : `<tr><td colspan="2">Tiada data.</td></tr>`;
+  }
 
-  tbDinar.innerHTML = dinars.length
-    ? dinars.map(r=>{
-        const label = dinarLabel(r.weight_g);
-        return `
-          <tr class="rowitem clickable"
-              data-kind="dinar"
-              data-weight="${Number(r.weight_g)}"
-              data-label="${label}"
-              data-upah="${Number(r.upah_rm)}"
-              data-priceg="${Number(r.price_per_g)}"
-              role="button" tabindex="0">
-            <td><b>${label}</b></td>
-            <td class="right"><b>${money(r.harga_jual)}</b></td>
-          </tr>`;
-      }).join("")
-    : `<tr><td colspan="2">Tiada data.</td></tr>`;
+  if (tbBar){
+    tbBar.innerHTML = bars.length
+      ? bars.map(r=>{
+          const label = fmtG(r.weight_g);
+          return `
+            <tr class="rowitem clickable"
+                data-kind="bar"
+                data-weight="${Number(r.weight_g)}"
+                data-label="${label}"
+                data-upah="${Number(r.upah_rm)}"
+                data-priceg="${Number(r.price_per_g)}"
+                role="button" tabindex="0">
+              <td><b>${label}</b></td>
+              <td class="right"><b>${money(r.harga_jual)}</b></td>
+            </tr>`;
+        }).join("")
+      : `<tr><td colspan="2">Tiada data.</td></tr>`;
+  }
+
+  if (tbDinar){
+    tbDinar.innerHTML = dinars.length
+      ? dinars.map(r=>{
+          const label = dinarLabel(r.weight_g);
+          return `
+            <tr class="rowitem clickable"
+                data-kind="dinar"
+                data-weight="${Number(r.weight_g)}"
+                data-label="${label}"
+                data-upah="${Number(r.upah_rm)}"
+                data-priceg="${Number(r.price_per_g)}"
+                role="button" tabindex="0">
+              <td><b>${label}</b></td>
+              <td class="right"><b>${money(r.harga_jual)}</b></td>
+            </tr>`;
+        }).join("")
+      : `<tr><td colspan="2">Tiada data.</td></tr>`;
+  }
 }
 
 // Delegation klik baris
 function bindRowClicks(){
-  ['tbCoin','tbDinar'].forEach(id=>{
+  ['tbCoin','tbBar','tbDinar'].forEach(id=>{
     const tbody = $(id);
     if (!tbody) return;
 
     tbody.addEventListener('click', (e)=>{
-      const tr = e.target.closest('tr.rowitem'); if(!tr) return;
-      openDesignModal(tr.dataset.kind, parseFloat(tr.dataset.weight), tr.dataset.label, parseFloat(tr.dataset.upah), parseFloat(tr.dataset.priceg));
+      const tr = e.target.closest('tr.rowitem');
+      if(!tr) return;
+      openDesignModal(
+        tr.dataset.kind,
+        parseFloat(tr.dataset.weight),
+        tr.dataset.label,
+        parseFloat(tr.dataset.upah),
+        parseFloat(tr.dataset.priceg)
+      );
     });
 
     tbody.addEventListener('keydown', (e)=>{
       if (e.key!=='Enter' && e.key!==' ') return;
-      const tr = e.target.closest('tr.rowitem'); if(!tr) return;
+      const tr = e.target.closest('tr.rowitem');
+      if(!tr) return;
       e.preventDefault();
-      openDesignModal(tr.dataset.kind, parseFloat(tr.dataset.weight), tr.dataset.label, parseFloat(tr.dataset.upah), parseFloat(tr.dataset.priceg));
+      openDesignModal(
+        tr.dataset.kind,
+        parseFloat(tr.dataset.weight),
+        tr.dataset.label,
+        parseFloat(tr.dataset.upah),
+        parseFloat(tr.dataset.priceg)
+      );
     });
   });
 }
@@ -333,9 +371,15 @@ async function listDesigns(kind, weight_g){
   const { data, error } = await sb
     .from('goldbar_designs')
     .select('id,name,image_url,weight_g,kind,is_active,sort_order,extra_custom_fee_cents')
-    .eq('kind',kind).eq('weight_g',weight_g).eq('is_active',true)
+    .eq('kind',kind)
+    .eq('weight_g',weight_g)
+    .eq('is_active',true)
     .order('sort_order',{ascending:true});
-  if (error){ console.warn('goldbar_designs error:', error); return []; }
+
+  if (error){
+    console.warn('goldbar_designs error:', error);
+    return [];
+  }
   return data || [];
 }
 
@@ -346,7 +390,8 @@ function renderDesignGrid(){
 
   if (!state.designList.length){
     grid.innerHTML = `<div class="text-muted">Tiada design aktif untuk berat ini.</div>`;
-    if (big){ big.src=""; big.alt=""; } if (bigName) bigName.textContent="";
+    if (big){ big.src=""; big.alt=""; }
+    if (bigName) bigName.textContent="";
     return;
   }
 
@@ -398,7 +443,7 @@ function bindEnableCheckoutButtons(){
 
   [btnNow, btnAll].forEach(btn=>{
     if (!btn) return;
-    btn.setAttribute('type','button');    // elak submit form
+    btn.setAttribute('type','button');
     btn.disabled = false;
     btn.style.pointerEvents = 'auto';
     btn.style.opacity = 1;
@@ -406,7 +451,10 @@ function bindEnableCheckoutButtons(){
 
   if (btnNow && !btnNow.dataset.bound){
     btnNow.addEventListener('click', ()=>{
-      if (!state.selectedDesignId){ alert('Sila pilih satu design dahulu.'); return; }
+      if (!state.selectedDesignId){
+        alert('Sila pilih satu design dahulu.');
+        return;
+      }
       state.checkoutMode = 'single';
       showConfirm(getItemsForCheckout());
     });
@@ -415,7 +463,10 @@ function bindEnableCheckoutButtons(){
   if (btnAll && !btnAll.dataset.bound){
     btnAll.addEventListener('click', ()=>{
       state.checkoutMode = 'all';
-      if (!state.cart.length){ alert('Senarai kosong. Tambah item dahulu.'); return; }
+      if (!state.cart.length){
+        alert('Senarai kosong. Tambah item dahulu.');
+        return;
+      }
       showConfirm(getItemsForCheckout());
     });
     btnAll.dataset.bound = '1';
@@ -424,27 +475,31 @@ function bindEnableCheckoutButtons(){
 
 // Buka modal pilih design
 async function openDesignModal(kind, weight_g, weight_label, upah, hargaG){
-  const modalEl = $('modalDesign'); if (!modalEl) return;
+  const modalEl = $('modalDesign');
+  if (!modalEl) return;
 
-  // FIX: normalise kind ke lowercase (elak kind_check)
   state.kind = String(kind || 'coin').trim().toLowerCase();
-  state.weight_g=Number(weight_g); state.weight_label=weight_label;
-  state.upah=Number(upah||0); state.hargaG=Number(hargaG||0);
-  state.cardType='READY'; state.qty=1;
-  state.selectedDesignId=null; state.selectedDesignName=''; state.selectedDesignCustomFee=0;
+  state.weight_g = Number(weight_g);
+  state.weight_label = weight_label;
+  state.upah = Number(upah||0);
+  state.hargaG = Number(hargaG||0);
+  state.cardType = 'READY';
+  state.qty = 1;
+  state.selectedDesignId = null;
+  state.selectedDesignName = '';
+  state.selectedDesignCustomFee = 0;
 
-  // isi UI asas
   $('mdTitle').textContent = `Pilih Design • ${weight_label}`;
   $('mdNote').textContent  = `Design berikut adalah untuk ${weight_label}. Pilih Ready atau Custom, dan masukkan kuantiti.`;
-  $('qtyInput').value = '1'; $('optReady').checked = true; $('optCustom').checked = false;
+  $('qtyInput').value = '1';
+  $('optReady').checked = true;
+  $('optCustom').checked = false;
 
-  // data design
-  state.designList = await listDesigns(kind, weight_g);
+  state.designList = await listDesigns(state.kind, weight_g);
   renderDesignGrid();
   refreshPriceBox();
   renderCart();
 
-  // pastikan butang hidup
   bindEnableCheckoutButtons();
 
   BSModal = BSModal || new bootstrap.Modal(modalEl);
@@ -455,14 +510,18 @@ async function openDesignModal(kind, weight_g, weight_label, upah, hargaG){
 // Mini Cart
 // ==========================
 function renderCart(){
-  const body = $('cartBody'), sub = $('cartSubtotal');
+  const body = $('cartBody');
+  const sub = $('cartSubtotal');
+
   if (!state.cart.length){
     body.innerHTML = `<tr><td colspan="6" class="text-muted">Tiada item.</td></tr>`;
     sub.textContent = money(0);
     return;
   }
+
   body.innerHTML = "";
   let subtotal = 0;
+
   state.cart.forEach((it, idx)=>{
     const amount = it.unit * it.qty;
     subtotal += amount;
@@ -483,11 +542,16 @@ function renderCart(){
     });
     body.appendChild(tr);
   });
+
   sub.textContent = money(subtotal);
 }
 
 $('btnAddToList').addEventListener('click', ()=>{
-  if (!state.selectedDesignId){ alert('Sila pilih satu design dahulu.'); return; }
+  if (!state.selectedDesignId){
+    alert('Sila pilih satu design dahulu.');
+    return;
+  }
+
   const unit = calcUnitPrice(state.hargaG, state.weight_g, state.upah, state.cardType, state.selectedDesignCustomFee);
   state.cart.push({
     kind: state.kind,
@@ -499,7 +563,7 @@ $('btnAddToList').addEventListener('click', ()=>{
     design_id: state.selectedDesignId,
     design_name: state.selectedDesignName,
     custom_fee: state.selectedDesignCustomFee || 0,
-    price_per_g: state.hargaG,  // FIX ejaan
+    price_per_g: state.hargaG,
     upah_rm: state.upah
   });
   renderCart();
@@ -539,19 +603,15 @@ function computeConfirmTotals(items){
   return { subtotal, ship, before, payDisc, coupDisc, grand };
 }
 
-// ✅ BARU: bina baris pecahan jumlah (ikut style J916)
 function buildTotalsLinesGB(totals){
   const lines = [];
 
-  // Subtotal barang
   lines.push(`Subtotal barang: ${money(totals.subtotal)}`);
 
-  // Penghantaran
   if (totals.ship > 0){
     lines.push(`Penghantaran: ${money(totals.ship)}`);
   }
 
-  // Diskaun ikut kaedah bayaran
   if (totals.payDisc > 0){
     let label = "Diskaun kaedah bayaran";
     if (state.payMethod === "FPX"){
@@ -564,14 +624,12 @@ function buildTotalsLinesGB(totals){
     lines.push(`${label}: - ${money(totals.payDisc)}`);
   }
 
-  // Diskaun kupon (jika ada)
   if (totals.coupDisc > 0){
     const code  = state.coupon?.code || "";
     const label = code ? `Diskaun kupon (${code})` : "Diskaun kupon";
     lines.push(`${label}: - ${money(totals.coupDisc)}`);
   }
 
-  // Jumlah akhir
   lines.push(`Grand Total perlu dibayar: ${money(totals.grand)}`);
 
   return lines;
@@ -591,7 +649,6 @@ function computeConfirmSummary(items){
 }
 window.computeConfirmSummary = computeConfirmSummary;
 
-// helper kecil
 function readPayMethod(){
   const r = document.querySelector('input[name="payMethod"]:checked');
   return r ? r.value : 'FPX';
@@ -611,28 +668,28 @@ async function loadPaymentDiscountsFromDB(){
       .from("payment_discounts")
       .select("method, percent");
 
-    if (error) { console.warn("[payDisc] load error:", error); return; }
+    if (error) {
+      console.warn("[payDisc] load error:", error);
+      return;
+    }
 
-    // Jadikan map: fpx/card_wallet/bnpl → FPX/CARD_EWALLET/BNPL
     const map = new Map((data||[]).map(r => [String(r.method||"").toLowerCase(), Number(r.percent||0)]));
 
     const fpx  = map.get("fpx");
     const card = map.get("card_wallet");
     const bnpl = map.get("bnpl");
 
-    // Override hanya jika nilai sah (nombor)
     if (Number.isFinite(fpx))  PAYMENT_DISCOUNTS.FPX.value          = fpx;
     if (Number.isFinite(card)) PAYMENT_DISCOUNTS.CARD_EWALLET.value = card;
     if (Number.isFinite(bnpl)) PAYMENT_DISCOUNTS.BNPL.value         = bnpl;
 
-    // Kemaskini label radio (jika ada)
     const lblFPX  = document.querySelector('label[for="payFPX"]');
     const lblCARD = document.querySelector('label[for="payCARD"]');
     const lblBNPL = document.querySelector('label[for="payBNPL"]');
     if (lblFPX)  lblFPX.textContent  = `FPX (Diskaun ${PAYMENT_DISCOUNTS.FPX.value}%)`;
     if (lblCARD) lblCARD.textContent = `Tunai / E-Wallet (Manual) (Diskaun ${PAYMENT_DISCOUNTS.CARD_EWALLET.value}%)`;
     if (lblBNPL) lblBNPL.textContent = `PayLater / BNPL (Tiada diskaun)`;
-    
+
     console.log("[payDisc] aktif:", PAYMENT_DISCOUNTS);
   }catch(e){
     console.warn("[payDisc] exception:", e);
@@ -642,7 +699,7 @@ async function loadPaymentDiscountsFromDB(){
 // ================== Tutup pilihan FPX — hanya Manual (CARD_EWALLET) sahaja ==================
 function isFPXHiddenOrDisabled(){
   const el = document.getElementById('payFPX');
-  if (!el) return true; // kalau elemen pun tak wujud, anggap FPX disable
+  if (!el) return true;
 
   if (el.disabled) return true;
 
@@ -657,25 +714,21 @@ function disableFPXForGoldbar(){
   const btnFPX  = document.getElementById('btnProceedBillplz');
   const payCARD = document.getElementById('payCARD');
 
-  // 1) Sorok radio FPX
   if (payFPX){
     payFPX.checked  = false;
     payFPX.disabled = true;
 
     const wrapper = payFPX.closest('.form-check') || payFPX.parentElement;
     if (wrapper){
-      wrapper.style.display = "none";   // satu blok form-check hilang (radio + label)
+      wrapper.style.display = "none";
     }
   }
 
-  // 2) Paksa default kepada Manual (CARD_EWALLET)
   if (payCARD){
     payCARD.checked = true;
   }
-  // walaupun radio tak jumpa, state tetap set ke manual
   state.payMethod = "CARD_EWALLET";
 
-  // 3) Sorok butang "Bayar FPX (Billplz)"
   if (btnFPX){
     btnFPX.style.display = "none";
   }
@@ -684,7 +737,8 @@ function disableFPXForGoldbar(){
 }
 
 function showConfirm(items){
-  const auth = requireLogin(); if (!auth) return;
+  const auth = requireLogin();
+  if (!auth) return;
 
   const wrap = $('confirmItems');
   wrap.innerHTML = items.map((i)=>(
@@ -693,26 +747,23 @@ function showConfirm(items){
   const who = (auth.name || auth.phone || 'pengguna');
   wrap.insertAdjacentHTML('afterbegin', `<div class="text-muted mb-2">Log masuk sebagai <b>${who}</b></div>`);
 
-  // default
   state.coupon = null;
 
   if (isFPXHiddenOrDisabled()){
-    // 👉 mode baru: tiada FPX → default Manual (CARD_EWALLET)
     state.payMethod = 'CARD_EWALLET';
     $('payCARD')?.setAttribute('checked','');
     $('payFPX')?.removeAttribute('checked');
     $('payBNPL')?.removeAttribute('checked');
   } else {
-    // 👉 mode lama: FPX masih aktif → default FPX
     state.payMethod = 'FPX';
     $('payFPX')?.setAttribute('checked','');
     $('payCARD')?.removeAttribute('checked');
     $('payBNPL')?.removeAttribute('checked');
   }
-  $('couponCode') && ( $('couponCode').value = '' );
-  $('couponStatus') && ( $('couponStatus').textContent = '' );
 
-  // radios
+  if ($('couponCode')) $('couponCode').value = '';
+  if ($('couponStatus')) $('couponStatus').textContent = '';
+
   bindRadiosOnce('input[name="payMethod"]', ()=>{
     state.payMethod = readPayMethod();
     renderConfirmSummary(items);
@@ -731,9 +782,13 @@ function showConfirm(items){
   BSConfirm = BSConfirm || new bootstrap.Modal($('modalConfirm'));
   BSConfirm.show();
 
-  // hidupkan juga butang confirm
   ['btnProceedBillplz','btnProceedOther'].forEach(id=>{
-    const b = $(id); if (b){ b.disabled=false; b.style.pointerEvents='auto'; b.style.opacity=1; }
+    const b = $(id);
+    if (b){
+      b.disabled = false;
+      b.style.pointerEvents = 'auto';
+      b.style.opacity = 1;
+    }
   });
 
   renderConfirmSummary(items);
@@ -744,7 +799,7 @@ function to60(msisdn){
   const d = String(msisdn||'').replace(/\D/g,'');
   if(!d) return '';
   if (d.startsWith('60')) return d;
-  if (d.startsWith('0'))  return '6'+d;   // 0xxxxxxxxx -> 60xxxxxxxxx
+  if (d.startsWith('0'))  return '6'+d;
   return '60'+d;
 }
 
@@ -753,7 +808,7 @@ function to60(msisdn){
 // ==========================
 async function prepareOrderOnServer(item){
   const { data, error } = await sb.rpc('goldbar_order_prepare_v1', {
-    p_kind:          String(item.kind || 'coin').toLowerCase(),  // FIX: lower
+    p_kind:          String(item.kind || 'coin').toLowerCase(),
     p_weight_g:      Number(item.weight_g || 0),
     p_design_id:     item.design_id || null,
     p_design_name:   item.design_name || null,
@@ -766,13 +821,11 @@ async function prepareOrderOnServer(item){
 
   if (error) throw error;
 
-  // CASE A: RPC pulangkan terus string UUID
   if (typeof data === 'string') {
     console.log('[prepare_v1] Dapat direct string dari RPC:', data);
     return data;
   }
 
-  // CASE B: RPC pulangkan row/array
   const row = Array.isArray(data) ? data?.[0] : data;
   const ref =
     row?.reference_1 ||
@@ -789,11 +842,9 @@ async function prepareOrderOnServer(item){
   return ref;
 }
 
-// (optional) Simpan bill id pada order — cuba id dan reference_1
 async function attachBillId(ref, billId){
   if (!ref || !billId) return;
 
-  // ikut id
   const u1 = await sb
     .from('goldbar_order')
     .update({ bill_id_text: String(billId) })
@@ -801,7 +852,6 @@ async function attachBillId(ref, billId){
 
   if (u1.error) console.warn('[attachBillId:id] error:', u1.error);
 
-  // ikut reference_1
   const u2 = await sb
     .from('goldbar_order')
     .update({ bill_id_text: String(billId) })
@@ -814,7 +864,6 @@ async function attachBillId(ref, billId){
 async function attachCustomerToOrders(orderRefs, phoneFromSession = null, nameFromSession = null){
   if (!orderRefs?.length) return;
 
-  // Guna getAuth() + fallback localStorage
   const a = getAuth() || {};
   const rawPhone =
     (phoneFromSession ?? '') ||
@@ -831,7 +880,6 @@ async function attachCustomerToOrders(orderRefs, phoneFromSession = null, nameFr
     localStorage.getItem('auth_name') ||
     null;
 
-  // Kalau betul-betul tak ada phone & tak ada nama, baru skip
   if (!phone60 && !custName){
     console.warn('[attachCustomerToOrders] Tiada phone & nama dlm sesi. refs =', orderRefs);
     return;
@@ -842,7 +890,6 @@ async function attachCustomerToOrders(orderRefs, phoneFromSession = null, nameFr
     customer_name:  custName || null
   };
 
-  // 1) Cuba update ikut PRIMARY KEY id
   const up1 = await sb
     .from('goldbar_order')
     .update(payload)
@@ -850,7 +897,6 @@ async function attachCustomerToOrders(orderRefs, phoneFromSession = null, nameFr
 
   if (up1.error) console.warn('[attachCustomerToOrders:id] error:', up1.error);
 
-  // 2) Cuba lagi ikut reference_1 (kalau refs sebenarnya kod rujukan)
   const up2 = await sb
     .from('goldbar_order')
     .update(payload)
@@ -878,7 +924,6 @@ async function attachAgentToOrders(orderRefs){
 
   const payload = { agent_slug: agentSlug };
 
-  // 1) Cuba update ikut PRIMARY KEY id
   const up1 = await sb
     .from('goldbar_order')
     .update(payload)
@@ -886,7 +931,6 @@ async function attachAgentToOrders(orderRefs){
 
   if (up1.error) console.warn('[attachAgentToOrders:id] error:', up1.error);
 
-  // 2) Cuba lagi ikut reference_1 (kalau refs sebenarnya kod rujukan)
   const up2 = await sb
     .from('goldbar_order')
     .update(payload)
@@ -896,7 +940,7 @@ async function attachAgentToOrders(orderRefs){
 
   console.log('[attachAgentToOrders] siap. agent=', agentSlug, 'refs=', orderRefs);
 }
-// ====== (OPTIONAL) attach bill id pada setiap order — fallback no-op jika tak wujud ======
+
 async function attachBillIdIfExists(orderId, billId){
   try{
     const { error } = await sb
@@ -909,14 +953,12 @@ async function attachBillIdIfExists(orderId, billId){
 
 // ====== BUAT SEMUA ORDER DARI CART, SIMPAN SENARAI REF (ID + reference_1) ======
 async function createRefsForItems(items){
-  // 1) Buat order satu-satu, simpan ID mentah
   const ids = [];
   for (const it of items){
     const rawId = await prepareOrderOnServer(it);
     ids.push(String(rawId));
   }
 
-  // 2) Cuba dapatkan reference_1 untuk semua ID tadi
   let refs = [...ids];
   try {
     const { data, error } = await sb
@@ -933,16 +975,13 @@ async function createRefsForItems(items){
     console.warn('[createRefsForItems] exception select reference_1:', e);
   }
 
-  // ✅ gabung ids + refs
   const keys = Array.from(new Set([...(ids||[]), ...(refs||[])])).filter(Boolean);
 
-  // 3) Data login
   const a = getAuth() || {};
   const rawPhone = a.phone || localStorage.getItem('auth_phone') || "";
   const phone = rawPhone ? to60(rawPhone) : null;
   const name  = a.name || localStorage.getItem('auth_name') || null;
 
-  // 4) Attach customer guna RPC FIX (definer)
   try{
     if (phone || name){
       const { data, error } = await sb.rpc('goldbar_orders_attach_customer_fix_v1', {
@@ -956,7 +995,6 @@ async function createRefsForItems(items){
     console.warn('[GB attach customer FIX] exception:', e);
   }
 
-  // 5) Attach agent guna RPC FIX (definer)
   try{
     const agentSlug = getAgentRefCode();
     if (agentSlug){
@@ -973,7 +1011,6 @@ async function createRefsForItems(items){
     console.warn('[GB attach agent FIX] exception:', e);
   }
 
-  // ===== CHECKOUT GROUP (sama macam J916) =====
   if (refs.length > 1) {
     try {
       const { data, error } = await sb.rpc('goldbar_orders_attach_group_v1', {
@@ -989,11 +1026,11 @@ async function createRefsForItems(items){
   console.log('[createRefsForItems] siap.', { ids, refs, keys, phone, name });
   return refs;
 }
+
 // ==========================
 // Senarai item untuk checkout (single / all)
 // ==========================
 function getItemsForCheckout(){
-  // Mode "single" = item yang sedang dipilih dalam modal design
   if (state.checkoutMode === 'single'){
     return [{
       kind:         state.kind,
@@ -1011,19 +1048,17 @@ function getItemsForCheckout(){
       design_id:    state.selectedDesignId,
       design_name:  state.selectedDesignName,
       custom_fee:   state.selectedDesignCustomFee || 0,
-      price_per_g:  state.hargaG,  // penting utk RPC
+      price_per_g:  state.hargaG,
       upah_rm:      state.upah
     }];
   }
 
-  // Mode "all" = guna semua item dalam cart
-  return state.cart.slice(); // salinan array
+  return state.cart.slice();
 }
 
 // ====== (KEKAL) SIMPAN META CHECKOUT (shipping, method, diskaun, kupon, grand) ======
 async function attachCheckoutMeta(refs, totals){
   try{
-    // Cuba call RPC standard
     const { error } = await sb.rpc('goldbar_orders_attach_meta_v1', {
       p_references_csv: refs.join(','),
       p_ship_rm:  Number(totals.ship || 0),
@@ -1033,7 +1068,6 @@ async function attachCheckoutMeta(refs, totals){
       p_coupon_disc_rm: Number(totals.coupDisc || 0),
       p_grand_rm: Number(totals.grand || 0)
     });
-    // Kalau RPC tak wujud (404) atau lain-lain → jangan block
     if (error) console.warn('attachCheckoutMeta RPC warn:', error);
   }catch(e){
     console.warn('attachCheckoutMeta exception (ignored):', e);
@@ -1045,10 +1079,16 @@ async function attachCheckoutMeta(refs, totals){
 // ==========================
 async function payWithBillplz() {
   if (!requireLogin()) return;
-  if (state.payMethod !== 'FPX'){ alert('Sila pilih kaedah FPX untuk butang ini.'); return; }
+  if (state.payMethod !== 'FPX'){
+    alert('Sila pilih kaedah FPX untuk butang ini.');
+    return;
+  }
 
   const btn = $('btnProceedBillplz');
-  if (btn) { btn.disabled = true; btn.textContent = "Menyedia bil…"; }
+  if (btn) {
+    btn.disabled = true;
+    btn.textContent = "Menyedia bil…";
+  }
 
   try{
     const items    = getItemsForCheckout();
@@ -1081,15 +1121,21 @@ async function payWithBillplz() {
       throw new Error(j?.error || j?.message || "Billplz ralat.");
     }
 
-    for (const r of refs){ await attachBillId(r, j.bill_id || ""); }
+    for (const r of refs){
+      await attachBillId(r, j.bill_id || "");
+    }
 
-    BSConfirm?.hide(); BSModal?.hide?.();
-    location.href = j.bill_url; // redirect
+    BSConfirm?.hide();
+    BSModal?.hide?.();
+    location.href = j.bill_url;
   }catch(err){
     console.error('Billplz error:', err);
     alert("Ralat Billplz: " + (err?.message || err));
   }finally{
-    if (btn){ btn.disabled = false; btn.textContent = "Bayar FPX"; }
+    if (btn){
+      btn.disabled = false;
+      btn.textContent = "Bayar FPX";
+    }
   }
 }
 
@@ -1098,7 +1144,10 @@ async function payWithBillplz() {
 // ==========================
 $('btnProceedBillplz')?.addEventListener('click', ()=>{
   if (!requireLogin()) return;
-  if (state.payMethod !== 'FPX'){ alert('Sila pilih kaedah FPX untuk butang ini.'); return; }
+  if (state.payMethod !== 'FPX'){
+    alert('Sila pilih kaedah FPX untuk butang ini.');
+    return;
+  }
   openPayInfo('FPX', payWithBillplz);
 });
 
@@ -1106,7 +1155,7 @@ $('btnProceedBillplz')?.addEventListener('click', ()=>{
 // Tunai / E-Wallet (Manual) — guna WhatsApp + OnSend
 // ==========================
 async function proceedManualPay(){
-  const user = requireLogin(); 
+  const user = requireLogin();
   if (!user) return;
 
   if (state.payMethod === "FPX"){
@@ -1115,17 +1164,18 @@ async function proceedManualPay(){
   }
 
   const goBtn = document.getElementById('btnProceedOther');
-  if (goBtn){ goBtn.disabled = true; goBtn.textContent = "Menyedia pesanan…"; }
+  if (goBtn){
+    goBtn.disabled = true;
+    goBtn.textContent = "Menyedia pesanan…";
+  }
 
   try{
     const items  = getItemsForCheckout();
     const totals = computeConfirmTotals(items);
     const refs   = await createRefsForItems(items);
 
-    // simpan meta (shipping, diskaun, kupon)
     await attachCheckoutMeta(refs, totals);
 
-    // simpan snapshot tempatan
     saveCheckoutSnapshot({ items, totals, refs, method: 'MANUAL' });
 
     const phone60 = to60(user.phone || '');
@@ -1140,15 +1190,12 @@ async function proceedManualPay(){
       SG:  "Singapore"
     })[shipVal] || shipVal;
 
-    // Senarai item satu per baris
-    const itemLines = items.map(i => 
+    const itemLines = items.map(i =>
       `• ${i.weight_label} — ${i.design_name} (${i.cardType}) × ${i.qty} @ ${money(i.unit)}`
     );
 
-    // Pecahan jumlah mengikut kaedah & kupon (guna helper baru)
     const totalLines = buildTotalsLinesGB(totals);
 
-    // 📩 Mesej kepada ADMIN (OnSend → nombor rasmi kedai)
     const msgAdmin = [
       "*LOCK MANUAL GOLD BAR/COIN*",
       "",
@@ -1169,7 +1216,6 @@ async function proceedManualPay(){
       "Status: Menunggu bayaran manual & resit daripada pelanggan."
     ].join("\n");
 
-    // 📩 Mesej kepada PELANGGAN – format sama macam J916
     const msgCust = [
       `Terima kasih ${name}! Ini ringkasan pesanan GoldBar/Coin anda di Emas Amir.`,
       "",
@@ -1196,13 +1242,9 @@ async function proceedManualPay(){
       "Selepas berjaya, sila hantarkan resit bayaran kepada admin Emas Amir di WhatsApp. ✅"
     ].filter(Boolean).join("\n");
 
-    // 1) Hantar mesej melalui OnSend (nombor rasmi kedai)
     await sendWA(ADMIN_WA, msgAdmin);
     if (phone60) await sendWA(phone60, msgCust);
 
-    // 2) TAK buka WhatsApp Web / App – ikut flow J916
-
-    // 3) TUTUP modal confirm lama & tunjuk modal info GoldBar
     const mEl = $('modalAfterManualGB');
     if (mEl){
       try {
@@ -1230,7 +1272,10 @@ async function proceedManualPay(){
     console.error("Manual pay error:", e);
     alert("Ralat semasa sediakan pesanan manual. Sila cuba lagi.");
   }finally{
-    if (goBtn){ goBtn.disabled = false; goBtn.textContent = "Tunai / E-Wallet (Manual)"; }
+    if (goBtn){
+      goBtn.disabled = false;
+      goBtn.textContent = "Tunai / E-Wallet (Manual)";
+    }
   }
 }
 
@@ -1249,7 +1294,12 @@ document.addEventListener('shown.bs.modal', (e)=>{
   if (e.target?.id === 'modalDesign') bindEnableCheckoutButtons();
   if (e.target?.id === 'modalConfirm'){
     ['btnProceedBillplz','btnProceedOther'].forEach(id=>{
-      const b = $(id); if (b){ b.disabled=false; b.style.pointerEvents='auto'; b.style.opacity=1; }
+      const b = $(id);
+      if (b){
+        b.disabled=false;
+        b.style.pointerEvents='auto';
+        b.style.opacity=1;
+      }
     });
   }
 });
@@ -1304,7 +1354,10 @@ async function verifyPaid(billId){
       .limit(1)
       .maybeSingle();
 
-    if (error) { console.warn('verifyPaid error:', error); return false; }
+    if (error) {
+      console.warn('verifyPaid error:', error);
+      return false;
+    }
     return data?.paid_bool === true;
   }catch(e){
     console.warn('verifyPaid exception:', e);
@@ -1322,17 +1375,14 @@ $('qtyPlus')?.addEventListener('click', ()=> setQty(state.qty+1));
 $('qtyInput')?.addEventListener('input', e=> setQty(e.target.value));
 
 (async function initGoldbarCoin(){
-  // Bind UI utama
   bindRowClicks();
   await renderTables();
   await loadPaymentDiscountsFromDB();
 
   console.log("[GB] agentRef=", getAgentRefCode(), "ls=", localStorage.getItem("emasamir_agent_ref"));
 
-  // Tutup FPX di UI (kekal kod FPX)
   disableFPXForGoldbar();
 
-  // Status Login
   try{
     const auth = getAuth();
     const status = $("loginStatus");
@@ -1352,25 +1402,23 @@ $('qtyInput')?.addEventListener('input', e=> setQty(e.target.value));
       $("btnLogout").style.display = "none";
       $("btnLogin").onclick = ()=> location.href="login.html#login";
     }
-  }catch(e){ console.warn("Auth status error:", e); }
+  }catch(e){
+    console.warn("Auth status error:", e);
+  }
 })();
 
 // --- Detect balik dari gateway (Billplz/SenangPay) ---
 (function detectPaid(){
   const qs = new URLSearchParams(location.search);
 
-  // Billplz params
   const billId        = (qs.get('billplz[id]') || '').toLowerCase();
   const billplzPaid   = qs.get('billplz[paid]') === 'true';
   const billplzPaidAt = !!qs.get('billplz[paid_at]');
 
-  // SenangPay param
   const spOK = (qs.get('status_id') === '1');
 
-  // Ujian manual (optional)
   const simplePaid = ['1','true','yes'].includes((qs.get('paid')||'').toLowerCase());
 
-  // ❌ Jangan auto anggap paid berdasarkan flag local
   const isPaidNow = (billplzPaid && billplzPaidAt) || spOK || simplePaid;
   if (!isPaidNow) return;
 
@@ -1378,7 +1426,7 @@ $('qtyInput')?.addEventListener('input', e=> setQty(e.target.value));
     try {
       if (billId) {
         const ok = await verifyPaid(billId);
-        if (!ok) return; // belum confirm paid
+        if (!ok) return;
       }
       await afterPaidFlow();
     } finally {
@@ -1391,4 +1439,132 @@ $('qtyInput')?.addEventListener('input', e=> setQty(e.target.value));
       history.replaceState(null, '', url.toString());
     }
   }, 1200);
+})();
+
+
+
+/* =========================
+   iPhone-style swipe back (Gold Bar) with drag animation
+   - swipe dari tepi kiri
+   - page ikut jari
+   - modal tutup dulu
+   - kalau tak cukup jauh, snap balik
+   ========================= */
+(function(){
+  const page = document.querySelector('.page-shell');
+  if (!page) return;
+
+  let startX = 0;
+  let startY = 0;
+  let currentX = 0;
+  let tracking = false;
+  let dragging = false;
+
+  const EDGE_ZONE = 24;
+  const MAX_DY = 70;
+  const TRIGGER_RATIO = 0.33;
+
+  function getOpenModalEl(){
+    const modals = Array.from(document.querySelectorAll('.modal.show'));
+    return modals.length ? modals[modals.length - 1] : null;
+  }
+
+  function closeTopModal(){
+    const el = getOpenModalEl();
+    if (!el) return false;
+
+    try{
+      const modalInst = bootstrap.Modal.getInstance(el) || bootstrap.Modal.getOrCreateInstance(el);
+      modalInst.hide();
+      return true;
+    }catch(_){
+      el.classList.remove('show');
+      el.style.display = 'none';
+      document.body.classList.remove('modal-open');
+      document.querySelectorAll('.modal-backdrop').forEach(x => x.remove());
+      return true;
+    }
+  }
+
+  function goBackPage(){
+    if (window.history.length > 1){
+      history.back();
+    }else{
+      location.href = 'index.html';
+    }
+  }
+
+  function resetPage(){
+    page.classList.remove('dragging');
+    page.style.transform = 'translateX(0)';
+    setTimeout(()=>{
+      document.body.classList.remove('swipe-peek');
+    }, 220);
+  }
+
+  document.addEventListener('touchstart', function(e){
+    if (!e.touches || !e.touches.length) return;
+
+    const t = e.touches[0];
+    startX = t.clientX;
+    startY = t.clientY;
+    currentX = 0;
+    dragging = false;
+
+    tracking = startX <= EDGE_ZONE;
+  }, { passive:true });
+
+  document.addEventListener('touchmove', function(e){
+    if (!tracking || !e.touches || !e.touches.length) return;
+
+    const t = e.touches[0];
+    const dx = t.clientX - startX;
+    const dy = Math.abs(t.clientY - startY);
+
+    if (dy > MAX_DY) return;
+    if (dx <= 0) return;
+
+    currentX = dx;
+    dragging = true;
+
+    document.body.classList.add('swipe-peek');
+    page.classList.add('dragging');
+    page.style.transform = `translateX(${dx}px)`;
+  }, { passive:true });
+
+  document.addEventListener('touchend', function(){
+    if (!tracking) return;
+
+    tracking = false;
+    page.classList.remove('dragging');
+
+    if (!dragging){
+      document.body.classList.remove('swipe-peek');
+      return;
+    }
+
+    const threshold = window.innerWidth * TRIGGER_RATIO;
+
+    if (currentX >= threshold){
+      page.style.transform = `translateX(${window.innerWidth}px)`;
+
+      setTimeout(()=>{
+        if (closeTopModal()) {
+          page.style.transition = 'none';
+          page.style.transform = 'translateX(0)';
+          void page.offsetHeight;
+          page.style.transition = '';
+          document.body.classList.remove('swipe-peek');
+          return;
+        }
+
+        goBackPage();
+      }, 180);
+    } else {
+      resetPage();
+    }
+
+    dragging = false;
+    currentX = 0;
+  }, { passive:true });
 })();

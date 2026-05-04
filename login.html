@@ -2,27 +2,93 @@
 <html lang="ms">
 <head>
 <meta charset="utf-8" />
-<meta name="viewport" content="width=device-width,initial-scale=1" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<link rel="stylesheet" href="/global.css">
 <title>Log masuk – Emas Amir</title>
 <style>
-  :root{--red:#c81e1e}
-  body{font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;margin:0;background:#fafafa}
+  :root{
+    --red:#c81e1e;
+    --border:#ddd;
+    --text:#111;
+    --muted:#777;
+    --bg:#fafafa;
+    --card:#fff;
+    --soft:#f8f9fa;
+  }
+
+  *{box-sizing:border-box}
+  body{
+    font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;
+    margin:0;
+    background:var(--bg);
+    color:var(--text);
+  }
+
   .wrap{max-width:560px;margin:18px auto;padding:16px}
-  .card{background:#fff;border:1px solid #eee;border-radius:12px;padding:18px}
+  .card{background:var(--card);border:1px solid #eee;border-radius:12px;padding:18px}
   h1{margin:0 0 10px}
   label{display:block;margin:10px 0 6px;font-weight:600}
-  input{width:100%;padding:12px;border:1px solid #ddd;border-radius:10px;font-size:16px}
+  input{
+    width:100%;
+    padding:12px;
+    border:1px solid var(--border);
+    border-radius:10px;
+    font-size:16px;
+    background:#fff;
+  }
+
   .tabs{display:flex;gap:8px;margin-bottom:12px}
-  .tab{flex:1;text-align:center;padding:10px;border:1px solid #ddd;border-radius:10px;cursor:pointer;text-decoration:none;color:#111}
+  .tab{
+    flex:1;
+    text-align:center;
+    padding:10px;
+    border:1px solid var(--border);
+    border-radius:10px;
+    cursor:pointer;
+    text-decoration:none;
+    color:var(--text);
+    background:#fff;
+  }
   .tab.active{background:#111;color:#fff;border-color:#111}
-  .btn{padding:12px 16px;border-radius:10px;border:0;background:var(--red);color:#fff;font-weight:700;cursor:pointer}
-  .btn-outline{padding:10px 14px;border-radius:10px;border:1px solid #ddd;background:#fff;font-weight:700;cursor:pointer}
-  .muted{color:#777;font-size:13px}
+
+  .btn{
+    padding:12px 16px;
+    border-radius:10px;
+    border:0;
+    background:var(--red);
+    color:#fff;
+    font-weight:700;
+    cursor:pointer;
+  }
+  .btn-outline{
+    padding:10px 14px;
+    border-radius:10px;
+    border:1px solid var(--border);
+    background:#fff;
+    font-weight:700;
+    cursor:pointer;
+    color:#111;
+  }
+  .btn-dark{
+    padding:12px 16px;
+    border-radius:10px;
+    border:0;
+    background:#111;
+    color:#fff;
+    font-weight:700;
+    cursor:pointer;
+  }
+
+  .btn:disabled,.btn-outline:disabled,.btn-dark:disabled{
+    opacity:.65;
+    cursor:not-allowed;
+  }
+
+  .muted{color:var(--muted);font-size:13px}
   .row{display:flex;gap:12px;flex-wrap:wrap}
   .row>div{flex:1;min-width:200px}
   .section{border-top:1px dashed #eee;margin-top:14px;padding-top:12px}
 
-  /* CSS fallback tabs (tanpa JS) */
   #loginView,#signupView,#resetView{display:none}
   body:not(:has(:target)) #loginView{display:block}
   body:not(:has(:target)) #tabLogin{background:#111;color:#fff;border-color:#111}
@@ -33,7 +99,7 @@
   #reset:target ~ .wrap .card #resetView{display:block}
   #reset:target ~ .wrap .card #tabReset{background:#111;color:#fff;border-color:#111}
 
-.help-link{font-size:14px;text-align:right;margin-bottom:6px}
+  .help-link{font-size:14px;text-align:right;margin-bottom:6px}
   .help-link button{
     background:none;
     border:0;
@@ -43,7 +109,6 @@
     font-size:14px;
   }
 
-  /* Modal video */
   .modal-overlay{
     position:fixed;
     inset:0;
@@ -92,13 +157,250 @@
     object-fit:contain;
     background:#000;
   }
+
+  .pw-wrap{position:relative}
+  .pw-wrap input{padding-right:48px}
+  .pw-toggle{
+    position:absolute;
+    right:10px;
+    top:50%;
+    transform:translateY(-50%);
+    border:0;
+    background:none;
+    cursor:pointer;
+    font-size:18px;
+    line-height:1;
+    padding:4px;
+  }
+
+  .face-box{
+    border:1px solid #e8e8e8;
+    background:var(--soft);
+    border-radius:12px;
+    padding:12px;
+    margin-bottom:12px;
+  }
+  .face-box .title{
+    font-weight:800;
+    margin-bottom:4px;
+  }
+  .face-actions{
+    display:flex;
+    gap:8px;
+    flex-wrap:wrap;
+    margin-top:10px;
+  }
+
+  .ok{color:#198754}
+  .warn{color:#b45309}
+  .err{color:#b91c1c}
+
+  @media (max-width:560px){
+    .wrap{padding:12px}
+    .card{padding:16px}
+  }
+
+.page-shell{
+  min-height:100vh;
+  background:#f6f7f9;
+  transform:translateX(0);
+  transition:transform .22s ease-out;
+  will-change:transform;
+}
+
+.page-shell.dragging{
+  transition:none;
+}
+
+body.swipe-peek{
+  background:#e5e7eb;
+}
+
+/* ===== LOGIN INTRO COACHMARK ===== */
+  .login-coachmark{
+    position:fixed;
+    inset:0;
+    z-index:100000;
+    display:none;
+  }
+
+  .login-coachmark.show{
+    display:block;
+  }
+
+  .login-coachmark-overlay{
+    position:absolute;
+    inset:0;
+    background:rgba(0,0,0,.36);
+  }
+
+  .login-coachmark-card{
+    position:absolute;
+    left:50%;
+    top:110px;
+    transform:translateX(-50%);
+    width:min(92vw, 660px);
+    background:#fff;
+    border-radius:24px;
+    padding:20px;
+    box-shadow:0 20px 60px rgba(0,0,0,.18);
+    border:1px solid #ececec;
+  }
+
+  .login-coachmark-arrow{
+    position:absolute;
+    top:-11px;
+    left:50%;
+    transform:translateX(-50%) rotate(45deg);
+    width:22px;
+    height:22px;
+    background:#fff;
+    border-left:1px solid #ececec;
+    border-top:1px solid #ececec;
+  }
+
+  .login-coachmark-title{
+    font-size:20px;
+    font-weight:800;
+    color:#111;
+    margin-bottom:10px;
+  }
+
+  .login-coachmark-text{
+    font-size:16px;
+    line-height:1.55;
+    color:#111;
+    margin-bottom:10px;
+  }
+
+  .login-coachmark-list{
+    display:flex;
+    flex-direction:column;
+    gap:10px;
+    margin:14px 0 10px;
+  }
+
+  .login-coachmark-item{
+    font-size:15px;
+    line-height:1.5;
+    color:#111;
+  }
+
+  .login-coachmark-item b{
+    font-weight:800;
+  }
+
+  .login-coachmark-sub{
+    margin-top:8px;
+    font-size:14px;
+    color:#6b7280;
+    line-height:1.5;
+  }
+
+  .login-coachmark-hint{
+    margin-top:12px;
+    font-size:15px;
+    font-weight:800;
+    color:#111;
+    line-height:1.5;
+  }
+
+  .login-coachmark-actions{
+    display:flex;
+    gap:10px;
+    flex-wrap:wrap;
+    margin-top:16px;
+  }
+
+  .btn-blue{
+    padding:12px 16px;
+    border-radius:12px;
+    border:0;
+    background:#1f6fff;
+    color:#fff;
+    font-weight:800;
+    cursor:pointer;
+  }
+
+  .field-help{
+    margin-top:6px;
+    color:#6b7280;
+    font-size:13px;
+    line-height:1.45;
+  }
+
+  .field-help.ok{
+    color:#198754;
+  }
+
+  .field-help.warn{
+    color:#b45309;
+  }
+
+  .otp-guide-box{
+    border:1px solid #e8e8e8;
+    background:#f8f9fa;
+    border-radius:12px;
+    padding:12px;
+    margin-bottom:12px;
+  }
+
+  .otp-guide-box .title{
+    font-weight:800;
+    margin-bottom:6px;
+    color:#111;
+  }
+
+  .otp-guide-box .desc{
+    font-size:14px;
+    line-height:1.5;
+    color:#374151;
+  }
+
+  .otp-guide-steps{
+    margin-top:8px;
+    display:flex;
+    flex-direction:column;
+    gap:6px;
+    font-size:14px;
+    color:#111;
+  }
+
+  @media (max-width:560px){
+    .login-coachmark-card{
+      width:min(94vw, 660px);
+      top:92px;
+      padding:18px;
+      border-radius:22px;
+    }
+
+    .login-coachmark-title{
+      font-size:18px;
+    }
+
+    .login-coachmark-text,
+    .login-coachmark-item,
+    .login-coachmark-hint{
+      font-size:14px;
+    }
+
+    .login-coachmark-sub{
+      font-size:13px;
+    }
+
+.login-coachmark-arrow{
+  display:none;
+}
+  }
+
+
+
 </style>
 </head>
 <body>
 
-<!-- Anchors untuk CSS :target -->
 <div id="login"></div><div id="signup"></div><div id="reset"></div>
-
+<div class="page-shell">
 <div class="wrap">
   <div class="card">
     <h1>Log masuk / Daftar – Emas Amir</h1>
@@ -115,106 +417,178 @@
     </div>
 
     <!-- LOGIN -->
+<div class="section">
     <div id="loginView">
-      <label>Nombor Telefon Penuh</label>
-      <input id="li_phone" inputmode="numeric" placeholder="01XXXXXXXX" />
+      <div class="face-box">
+        <div class="title">🔐 Login Pantas</div>
+        <div id="face_hint" class="muted">
+          Kalau device ini sudah diaktifkan dalam akaun, cik boleh guna Face ID / Touch ID terus.
+        </div>
+        <div class="face-actions">
+          <button id="btnFaceLogin" class="btn-dark" type="button">Login dengan Face ID</button>
+          <button id="btnUseManual" class="btn-outline" type="button">Guna password biasa</button>
+        </div>
+      </div>
+
+     <label>Nombor Telefon Penuh</label>
+<input id="li_phone" inputmode="numeric" placeholder="01XXXXXXXX" autocomplete="username webauthn" />
+<div class="field-help">Pastikan nombor ini nombor yang pernah didaftarkan dan ada WhatsApp aktif.</div>
+
       <div class="row">
         <div>
-          <label>4 Digit Terakhir</label>
-          <input id="li_last4" placeholder="XXXX" maxlength="4" inputmode="numeric" />
-          <div class="muted">Disemak supaya selari dengan Live.</div>
+        <label>4 Digit Terakhir</label>
+<input id="li_last4" placeholder="XXXX" maxlength="4" inputmode="numeric" readonly />
+<div class="field-help">Akan diisi automatik daripada nombor telefon di atas.</div>
         </div>
         <div>
           <label>Password</label>
-          <input id="li_pass" type="password" placeholder="••••••••" />
+          <div class="pw-wrap">
+            <input id="li_pass" type="password" placeholder="••••••••" autocomplete="current-password" />
+            <button id="li_togglePass" class="pw-toggle" type="button" aria-label="Lihat password">👁️</button>
+          </div>
+<div class="field-help">Masukkan password akaun cik. Minimum 6 aksara.</div>
         </div>
       </div>
-      <div style="margin-top:12px">
+
+      <div style="margin-top:12px;display:flex;gap:8px;flex-wrap:wrap">
         <button id="btnLogin" class="btn" type="button">Log masuk</button>
       </div>
       <div id="li_status" class="muted"></div>
     </div>
 
     <!-- SIGNUP -->
-    <div id="signupView">
-      <label>Nombor Telefon Penuh</label>
-      <input id="su_phone" inputmode="numeric" placeholder="01XXXXXXXX" />
-      <div class="row">
-        <div>
-          <label>4 Digit Terakhir</label>
-          <input id="su_last4" placeholder="XXXX" maxlength="4" inputmode="numeric" />
-        </div>
-        <div>
-          <label>Nama</label>
-          <input id="su_name" placeholder="Nama penuh" />
-        </div>
-      </div>
-      <div class="row">
-        <div>
-          <label>IC (12 digit)</label>
-          <input id="su_ic" placeholder="900101011234" inputmode="numeric" maxlength="12" />
-        </div>
-        <div>
-          <label>Alamat (pilihan)</label>
-          <input id="su_alamat" placeholder="Alamat penghantaran" />
-        </div>
-      </div>
+ <div>
+<div id="signupView">
+  <div class="otp-guide-box">
+    <div class="title">📩 Cara daftar</div>
+    <div class="desc">Ikut langkah ini satu per satu ya:</div>
+    <div class="otp-guide-steps">
+      <div>1. Isi nombor telefon, nama, IC dan alamat</div>
+      <div>2. Tekan <b>Minta OTP (AI-DAN)</b></div>
+      <div>3. Masukkan OTP 6 digit</div>
+      <div>4. Tetapkan password minimum 6 aksara</div>
+    </div>
+  </div>
 
-      <div class="section">
-        <p class="muted">Minta OTP melalui WhatsApp admin, kemudian tetapkan password.</p>
-        <div class="row" style="align-items:end">
-          <div><button id="su_btnOtp" class="btn" type="button">Minta OTP (WhatsApp)</button></div>
-          <div>
-            <label>OTP (6 digit)</label>
-            <input id="su_otp" maxlength="6" inputmode="numeric" placeholder="••••••" />
-          </div>
-        </div>
-        <div class="row">
-          <div>
-            <label>Password</label>
-            <input id="su_pass" type="password" placeholder="Min 6 aksara" />
-          </div>
-          <div>
-            <label>Sahkan Password</label>
-            <input id="su_pass2" type="password" placeholder="Ulang password" />
-          </div>
-        </div>
-        <div style="margin-top:12px">
-          <button id="su_btnCreate" class="btn-outline" type="button">Daftar & log masuk</button>
-        </div>
-        <div id="su_status" class="muted"></div>
+  <label>Nombor Telefon Penuh</label>
+  <input id="su_phone" inputmode="numeric" placeholder="01XXXXXXXX" />
+  <div class="field-help">Pastikan nombor ada WhatsApp untuk terima OTP dan update order.</div>
+
+  <div class="row">
+    <div>
+      <label>4 Digit Terakhir</label>
+      <input id="su_last4" placeholder="XXXX" maxlength="4" inputmode="numeric" readonly />
+      <div class="field-help">Akan diisi automatik daripada nombor telefon di atas.</div>
+    </div>
+    <div>
+      <label>Nama</label>
+      <input id="su_name" placeholder="Nama penuh" />
+      <div class="field-help">Isi nama penuh untuk rekod pelanggan.</div>
+    </div>
+  </div>
+
+  <div class="row">
+    <div>
+      <label>IC (12 digit)</label>
+      <input id="su_ic" placeholder="900101011234" inputmode="numeric" maxlength="12" />
+      <div class="field-help">Digunakan untuk e-Invoice rasmi.</div>
+    </div>
+    <div>
+      <label>Alamat (pilihan)</label>
+      <input id="su_alamat" placeholder="Alamat penghantaran" />
+      <div class="field-help">Boleh isi awal untuk mudahkan urusan penghantaran.</div>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="row" style="align-items:end">
+      <div><button id="su_btnOtp" class="btn" type="button">Minta OTP (AI-DAN)</button></div>
+      <div>
+        <label>OTP (6 digit)</label>
+        <input id="su_otp" maxlength="6" inputmode="numeric" placeholder="••••••" />
       </div>
     </div>
 
+    <div class="row">
+      <div>
+        <label>Password</label>
+        <div class="pw-wrap">
+          <input id="su_pass" type="password" placeholder="Min 6 aksara" autocomplete="new-password" />
+          <button id="su_togglePass" class="pw-toggle" type="button" aria-label="Lihat password">👁️</button>
+        </div>
+        <div class="field-help">Minimum 6 aksara untuk keselamatan akaun.</div>
+      </div>
+      <div>
+        <label>Sahkan Password</label>
+        <div class="pw-wrap">
+          <input id="su_pass2" type="password" placeholder="Ulang password" autocomplete="new-password" />
+          <button id="su_togglePass2" class="pw-toggle" type="button" aria-label="Lihat password">👁️</button>
+        </div>
+        <div class="field-help">Pastikan sama dengan password di atas.</div>
+      </div>
+    </div>
+
+    <div style="margin-top:12px">
+      <button id="su_btnCreate" class="btn-outline" type="button">Daftar & log masuk</button>
+    </div>
+    <div id="su_status" class="muted"></div>
+  </div>
+</div>
+
+
     <!-- RESET PASSWORD -->
-    <div id="resetView">
+   
+ <div id="resetView">
+  <div class="otp-guide-box">
+    <div class="title">🔄 Cara reset password</div>
+    <div class="desc">Ikut langkah ini satu per satu ya:</div>
+    <div class="otp-guide-steps">
+      <div>1. Isi nombor telefon</div>
+      <div>2. Tekan <b>Minta OTP (WhatsApp)</b></div>
+      <div>3. Masukkan OTP 6 digit</div>
+      <div>4. Tetapkan password baru</div>
+    </div>
+  </div>
+
+
       <label>Nombor Telefon Penuh</label>
-      <input id="rp_phone" inputmode="numeric" placeholder="01XXXXXXXX" />
+<input id="rp_phone" inputmode="numeric" placeholder="01XXXXXXXX" />
+<div class="field-help">Gunakan nombor akaun yang pernah didaftarkan.</div>
       <div class="row">
         <div>
-          <label>4 Digit Terakhir</label>
-          <input id="rp_last4" placeholder="XXXX" maxlength="4" inputmode="numeric" />
-          <div class="muted">Mesti sepadan dengan nombor telefon di atas.</div>
+         <label>4 Digit Terakhir</label>
+<input id="rp_last4" placeholder="XXXX" maxlength="4" inputmode="numeric" readonly />
+<div class="field-help">Akan diisi automatik daripada nombor telefon di atas.</div>
         </div>
       </div>
 
-      <div class="section">
-        <div class="row" style="align-items:end">
-          <div><button id="rp_btnOtp" class="btn" type="button">Minta OTP (WhatsApp)</button></div>
-          <div>
-            <label>OTP (6 digit)</label>
-            <input id="rp_otp" maxlength="6" inputmode="numeric" placeholder="••••••" />
-          </div>
-        </div>
+
+    
+
+  <div class="row" style="align-items:end">
+    <div><button id="rp_btnOtp" class="btn" type="button">Minta OTP (WhatsApp)</button></div>
+    <div>
+      <label>OTP (6 digit)</label>
+      <input id="rp_otp" maxlength="6" inputmode="numeric" placeholder="••••••" />
+    </div>
+  </div>
 
         <div class="row">
           <div>
             <label>Password Baru</label>
-            <input id="rp_pass1" type="password" placeholder="Min 6 aksara" />
+            <div class="pw-wrap">
+              <input id="rp_pass1" type="password" placeholder="Min 6 aksara" autocomplete="new-password" />
+              <button id="rp_togglePass1" class="pw-toggle" type="button" aria-label="Lihat password">👁️</button>
+            </div>
+<div class="field-help">Minimum 6 aksara.</div>
           </div>
           <div>
             <label>Sahkan Password Baru</label>
-            <input id="rp_pass2" type="password" placeholder="Ulang password baru" />
+            <div class="pw-wrap">
+              <input id="rp_pass2" type="password" placeholder="Ulang password baru" autocomplete="new-password" />
+              <button id="rp_togglePass2" class="pw-toggle" type="button" aria-label="Lihat password">👁️</button>
+            </div>
+<div class="field-help">Pastikan sama dengan password baru di atas.</div>
           </div>
         </div>
 
@@ -231,7 +605,45 @@
   </div>
 </div>
 
-<!-- VIDEO: Cara daftar akaun -->
+
+<div id="loginCoachmark" class="login-coachmark" aria-hidden="true">
+  <div class="login-coachmark-overlay"></div>
+
+  <div id="loginCoachmarkCard" class="login-coachmark-card">
+    <div id="loginCoachmarkArrow" class="login-coachmark-arrow"></div>
+
+    <div class="login-coachmark-title">🔐 Log masuk / Daftar Akaun</div>
+
+<div class="login-coachmark-sub">
+      Kalau sudah pernah ada akaun, guna tab <b>Log masuk</b>.<br>
+      Kalau belum pernah ada akaun, tekan tab <b>Daftar baru</b> dahulu ya.
+    </div>
+
+    <div class="login-coachmark-text">
+      Supaya cik tak tersalah isi Daftar baru, ikut panduan ringkas ini ya 😊
+    </div>
+
+    <div class="login-coachmark-list">
+      <div class="login-coachmark-item">📱 <b>Nombor telefon penuh</b> — pastikan ada WhatsApp aktif</div>
+      <div class="login-coachmark-item">🔢 <b>4 digit terakhir</b> — akan diisi automatik dari nombor telefon</div>
+      <div class="login-coachmark-item">📝 <b>Nama penuh</b> — untuk rekod pelanggan</div>
+      <div class="login-coachmark-item">🪪 <b>IC (12 digit)</b> — untuk e-Invoice rasmi</div>
+      <div class="login-coachmark-item">🏠 <b>Alamat</b> — untuk mudahkan urusan penghantaran</div>
+      <div class="login-coachmark-item">🔐 <b>Password</b> — minimum 6 aksara</div>
+    </div>
+
+    
+
+    <div class="login-coachmark-hint">
+      👉 Pilih menu di atas dan isi satu per satu ya
+    </div>
+
+   <div class="login-coachmark-actions">
+  <button id="btnLoginCoachmarkOk" type="button" class="btn-blue">Faham, teruskan</button>
+</div>
+  </div>
+</div>
+
 <div id="videoModal" class="modal-overlay" aria-hidden="true">
   <div class="modal-box">
     <div class="modal-header">
@@ -246,75 +658,77 @@
     </div>
   </div>
 </div>
+</div>
 
-<!-- ORDER: Supabase → auth.js → page script -->
+
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="agent-ref.js?v=1"></script>
 <script src="auth.js?v=13.1"></script>
 <script>
-
-  // ===== ONSEND CONFIG =====
-  const ONSEND_BASE  = "https://onsend.io/api/v1";
-  const ONSEND_TOKEN = "4b879470cc16ca8f06c5ab9878a4578880cfd0fd7b7cfe0121499f3ab017dd04"; // dari Papar Peranti
-
-  // Format msisdn: 6011xxxxx
-  const toMsisdn = p => {
-    const d = String(p||"").replace(/\D+/g,"");
-    return d.startsWith("6") ? d : "6"+d;
-  };
-
-  // Hantar WhatsApp via OnSend (text sahaja)
-  async function sendWA(msisdn, text){
-  try{
-    const r = await fetch(ONSEND_BASE + "/send", {
-      method: "POST",
-      headers: {
-        "Accept": "application/json",
-        "Content-Type": "application/json",
-        "Authorization": "Bearer " + ONSEND_TOKEN
-      },
-      body: JSON.stringify({
-        phone_number: msisdn,   // ✅ WAJIB nama ini
-        message: text,          // ✅ mesej
-        type: "text"            // ✅ elak 422
-      })
-    });
-    const j = await r.json().catch(()=>({}));
-    console.log("OnSend resp:", r.status, j);
-    return r.ok && (j.success===true || r.status===200);
-  }catch(e){
-    console.warn("OnSend error:", e);
-    return false;
-  }
-}
-
-  // (Pilihan) Semak status device jika perlu debug
-  async function onsendStatus(){
-    try{
-      const r = await fetch(ONSEND_BASE + "/status", {
-        headers: { "Accept":"application/json", "Authorization":"Bearer "+ONSEND_TOKEN }
-      });
-      return await r.json();
-    }catch{return null}
-  }
-
 (function(){
-  const ADMIN_PHONE = "60168055916";
   const $ = (id) => document.getElementById(id);
   const onlyDigits = window.onlyDigits || (s => String(s||"").replace(/\D+/g,""));
-  const sb = window.sb; // dibuat oleh auth.js
+  const sb = window.sb;
 
-// ===== VIDEO BANTUAN DAFTAR =====
-  const videoModal = document.getElementById("videoModal");
-  const videoEl    = document.getElementById("videoDaftar");
-  const btnShowVid = document.getElementById("btnShowVideo");
-  const btnCloseVid= document.getElementById("btnCloseVideo");
+  const OTP_START_URL = "/.netlify/functions/auth-otp-start";
+  const OTP_SIGNUP_FINISH_URL = "/.netlify/functions/auth-signup-finish";
+  const OTP_RESET_FINISH_URL = "/.netlify/functions/auth-reset-finish";
+
+  const PASSKEY_AUTH_START_URL  = "/.netlify/functions/passkey-auth-start";
+  const PASSKEY_AUTH_FINISH_URL = "/.netlify/functions/passkey-auth-finish";
+
+function isNativeCapacitorApp(){
+    try{
+      return !!(
+        window.Capacitor &&
+        typeof window.Capacitor.isNativePlatform === "function" &&
+        window.Capacitor.isNativePlatform()
+      );
+    }catch{
+      return false;
+    }
+  }
+
+  function getNativePlatform(){
+    try{
+      return String(window.Capacitor?.getPlatform?.() || "").toLowerCase();
+    }catch{
+      return "";
+    }
+  }
+
+  function getNativeBiometricPlugin(){
+    try{
+      const cap = window.Capacitor || null;
+      if (!cap) return null;
+
+      if (typeof cap.isPluginAvailable === "function" && cap.isPluginAvailable("NativeBiometric")) {
+        return cap.Plugins?.NativeBiometric || null;
+      }
+
+      return cap.Plugins?.NativeBiometric || null;
+    }catch{
+      return null;
+    }
+  }
+
+  const videoModal = $("videoModal");
+  const videoEl    = $("videoDaftar");
+  const btnShowVid = $("btnShowVideo");
+  const btnCloseVid= $("btnCloseVideo");
+
+const loginCoachmark = $("loginCoachmark");
+  const loginCoachmarkCard = $("loginCoachmarkCard");
+  const loginCoachmarkArrow = $("loginCoachmarkArrow");
+  const btnLoginCoachmarkClose = $("btnLoginCoachmarkClose");
+  const btnLoginCoachmarkOk = $("btnLoginCoachmarkOk");
 
   function openVideo(){
     if(!videoModal) return;
     videoModal.classList.add("show");
     videoModal.setAttribute("aria-hidden","false");
   }
+
   function closeVideo(){
     if(!videoModal) return;
     videoModal.classList.remove("show");
@@ -322,24 +736,65 @@
     if(videoEl) videoEl.pause();
   }
 
-  if(btnShowVid)  btnShowVid.addEventListener("click", openVideo);
+  if(btnShowVid) btnShowVid.addEventListener("click", openVideo);
   if(btnCloseVid) btnCloseVid.addEventListener("click", closeVideo);
   if(videoModal){
-    // klik luar kotak akan tutup modal
     videoModal.addEventListener("click", function(e){
       if(e.target === videoModal) closeVideo();
     });
   }
 
-
-  // Helper: simpan password ke sessionStorage (sementara tab ini sahaja)
   function savePW(pw){
-    try{ if(typeof pw === "string" && pw.length>=6) sessionStorage.setItem("ea_pw", pw); }catch{}
+    try{
+      if(typeof pw === "string" && pw.length >= 6){
+        sessionStorage.setItem("ea_pw", pw);
+      }
+    }catch{}
   }
 
-  // Jika auth.js belum expose ensureSupabaseSession, sediakan fallback ringan
+  function saveLastLoginPhone(phone){
+    try{
+      const p = onlyDigits(phone);
+      if(p) localStorage.setItem("ea_last_login_phone", p);
+    }catch{}
+  }
+
+  function getLastLoginPhone(){
+    try{
+      return onlyDigits(localStorage.getItem("ea_last_login_phone") || "");
+    }catch{
+      return "";
+    }
+  }
+
+  function supportsPasskey(){
+    return !!(window.PublicKeyCredential && navigator.credentials && typeof navigator.credentials.get === "function");
+  }
+
+  function setFaceHint(text, cls){
+    const el = $("face_hint");
+    if(!el) return;
+    el.className = "muted" + (cls ? " " + cls : "");
+    el.textContent = text;
+  }
+
+  function setLoginStatus(msg, cls){
+    const el = $("li_status");
+    if(!el) return;
+    el.className = "muted" + (cls ? " " + cls : "");
+    el.textContent = msg || "";
+  }
+
+  function fillPhoneIfRemembered(){
+    const saved = getLastLoginPhone();
+    if (!saved) return;
+    if (!$("li_phone").value) $("li_phone").value = saved.startsWith("60") ? ("0" + saved.slice(2)) : saved;
+    const ph = onlyDigits($("li_phone").value);
+    if (ph.length >= 4 && !$("li_last4").value) $("li_last4").value = ph.slice(-4);
+  }
+
   async function ensureSupabaseSessionFallback(phone, password){
-    if(!sb?.auth || !password || password.length<6) return;
+    if(!sb?.auth || !password || password.length < 6) return;
     try{
       const aliasEmail = onlyDigits(phone) + "@emasamir.app";
       let { error } = await sb.auth.signInWithPassword({ email: aliasEmail, password });
@@ -351,227 +806,954 @@
       } else if (error) {
         throw error;
       }
-      await sb.auth.getSession(); // sekadar trigger simpan sesi
-    }catch(e){ console.warn("[login] ensureSupabaseSession fallback:", e?.message||e); }
+      await sb.auth.getSession();
+    }catch(e){
+      console.warn("[login] ensureSupabaseSession fallback:", e?.message||e);
+    }
   }
 
   const ensureSupabaseSession = window.ensureSupabaseSession || ensureSupabaseSessionFallback;
 
-  // next/back
   const qs = new URLSearchParams(location.search);
   const nextUrl = qs.get("next");
-  const back = $("backLink"); if (back && nextUrl) back.href = nextUrl;
-  function goBack(){ location.href = "account.html"; }
+  const initialThreadId = qs.get("thread") || "";
+  const back = $("backLink");
+  if (back && nextUrl) back.href = nextUrl;
 
-  // tabs upgrade
+  function goBack(){
+    location.href = "account.html";
+  }
+
   function setTabFromHash(){
     const h = location.hash || "#login";
-    const map = { "#login":["tabLogin","loginView"], "#signup":["tabSignup","signupView"], "#reset":["tabReset","resetView"] };
-    ["tabLogin","tabSignup","tabReset"].forEach(id=>$(id).classList.remove("active"));
-    ["loginView","signupView","resetView"].forEach(id=>$(id).style.display="none");
-    const [tab,view] = map[h] || map["#login"];
-    $(tab).classList.add("active"); $(view).style.display="block";
-  }
-  addEventListener("hashchange", setTabFromHash); setTabFromHash();
-
-  // auto isi 4 digit
-  function wireLast4(pId,l4Id,stId){
-    const p=$(pId), l4=$(l4Id), st=$(stId);
-    const sync=()=>{
-      const ph=onlyDigits(p.value);
-      if(ph.length>=4) l4.value=ph.slice(-4);
-      if(st) st.textContent = (onlyDigits(l4.value)===ph.slice(-4)) ? "" : "4 digit terakhir tak padan.";
+    const map = {
+      "#login":["tabLogin","loginView"],
+      "#signup":["tabSignup","signupView"],
+      "#reset":["tabReset","resetView"]
     };
-    p.addEventListener("input",sync); l4.addEventListener("input",sync);
+    ["tabLogin","tabSignup","tabReset"].forEach(id=>{
+      const el = $(id);
+      if (el) el.classList.remove("active");
+    });
+    ["loginView","signupView","resetView"].forEach(id=>{
+      const el = $(id);
+      if (el) el.style.display = "none";
+    });
+    const [tab,view] = map[h] || map["#login"];
+    $(tab).classList.add("active");
+    $(view).style.display = "block";
   }
+
+  addEventListener("hashchange", setTabFromHash);
+  setTabFromHash();
+
+if (btnLoginCoachmarkClose) {
+    btnLoginCoachmarkClose.onclick = () => {
+      markSeenLoginIntro();
+      closeLoginIntro();
+    };
+  }
+
+  if (btnLoginCoachmarkOk) {
+    btnLoginCoachmarkOk.onclick = () => {
+      markSeenLoginIntro();
+      closeLoginIntro();
+    };
+  }
+
+const KEY_LOGIN_INTRO_SEEN = "ea_login_intro_seen_v1";
+
+  function hasSeenLoginIntro(){
+    try{
+      return localStorage.getItem(KEY_LOGIN_INTRO_SEEN) === "1";
+    }catch{
+      return false;
+    }
+  }
+
+  function markSeenLoginIntro(){
+    try{
+      localStorage.setItem(KEY_LOGIN_INTRO_SEEN, "1");
+    }catch{}
+  }
+
+  function closeLoginIntro(){
+    if (!loginCoachmark) return;
+    loginCoachmark.classList.remove("show");
+    loginCoachmark.setAttribute("aria-hidden", "true");
+  }
+
+  function showLoginIntro(){
+    if (!loginCoachmark || !loginCoachmarkCard) return;
+
+    loginCoachmark.classList.add("show");
+    loginCoachmark.setAttribute("aria-hidden", "false");
+
+    requestAnimationFrame(() => {
+      const activeTab =
+        document.querySelector(".tabs .tab.active") ||
+        $("tabLogin");
+
+      if (!activeTab) return;
+
+      const tabRect = activeTab.getBoundingClientRect();
+      const cardRect = loginCoachmarkCard.getBoundingClientRect();
+
+      let left = tabRect.left + (tabRect.width / 2) - (cardRect.width / 2);
+      if (left < 12) left = 12;
+      if (left + cardRect.width > window.innerWidth - 12) {
+        left = window.innerWidth - cardRect.width - 12;
+      }
+
+      let top = tabRect.bottom + 14;
+      if (top + cardRect.height > window.innerHeight - 12) {
+        top = Math.max(12, tabRect.top - cardRect.height - 14);
+      }
+
+      loginCoachmarkCard.style.left = left + "px";
+      loginCoachmarkCard.style.top = top + "px";
+      loginCoachmarkCard.style.transform = "none";
+
+      if (loginCoachmarkArrow) {
+        const arrowLeft = (tabRect.left + tabRect.width / 2) - left - 11;
+        loginCoachmarkArrow.style.left = Math.max(20, Math.min(cardRect.width - 30, arrowLeft)) + "px";
+      }
+    });
+  }
+
+ function wireLast4(pId, l4Id, stId){
+    const p = $(pId);
+    const l4 = $(l4Id);
+    const st = $(stId);
+    if(!p || !l4) return;
+
+    const sync = () => {
+      const ph = onlyDigits(p.value);
+      l4.value = ph.length >= 4 ? ph.slice(-4) : "";
+
+      if(st){
+        st.textContent = "";
+      }
+    };
+
+    p.addEventListener("input", sync);
+    sync();
+  }
+
   wireLast4("su_phone","su_last4","su_status");
   wireLast4("li_phone","li_last4","li_status");
   wireLast4("rp_phone","rp_last4","rp_status");
 
-  // ===== LOGIN =====
-$("btnLogin").onclick = async ()=>{
-  const phone = onlyDigits($("li_phone").value);
-  const last4 = onlyDigits($("li_last4").value);
-  const pass  = $("li_pass").value;
-  const st    = $("li_status");
+  function getThreadId(){
+    const suTid = $("su_btnOtp")?.dataset?.threadId || "";
+    const rpTid = $("rp_btnOtp")?.dataset?.threadId || "";
+    return suTid || rpTid || initialThreadId || "";
+  }
 
-  if(!/^\d{9,12}$/.test(phone)) return st.textContent="Nombor telefon tak sah.";
-  if(!/^\d{4}$/.test(last4))    return st.textContent="Isi 4 digit terakhir.";
-  if(pass.length<6)             return st.textContent="Password minima 6 aksara.";
-  if(phone.slice(-4)!==last4)   return st.textContent="4 digit terakhir tak padan.";
+  function setThreadId(tid){
+    const v = String(tid || "").trim();
+    if(!v) return;
+    $("su_btnOtp").dataset.threadId = v;
+    $("rp_btnOtp").dataset.threadId = v;
+    $("su_btnCreate").dataset.threadId = v;
+    $("rp_btnDo").dataset.threadId = v;
+  }
 
-  if(!window.login_password){
-    st.textContent = "Skrip auth belum siap dimuat.";
+  async function postJson(url, payload){
+    const r = await fetch(url, {
+      method: "POST",
+      headers: { "Content-Type":"application/json" },
+      body: JSON.stringify(payload || {})
+    });
+    const j = await r.json().catch(() => ({}));
+    return { ok: r.ok, status: r.status, data: j };
+  }
+
+function getAgentSlug(){
+    try{
+      const v = window.EmasAmirAgent?.getRef?.();
+      return String(v || "").trim();
+    }catch(e){
+      return "";
+    }
+  }
+
+ async function afterAuthSession(phone, password, user, allowSignup){
+  if(user && window.auth_set){
+    window.auth_set({
+      id: user.id,
+      name: user.name,
+      phone: user.phone,
+      ic: user.ic,
+      alamat: user.alamat
+    });
+  }
+
+  savePW(password);
+  saveLastLoginPhone(phone);
+
+try{
+    if (isNativeCapacitorApp()) {
+      const NativeBiometric = getNativeBiometricPlugin();
+      if (NativeBiometric && password && password.length >= 6) {
+        await NativeBiometric.setCredentials({
+          username: phone,
+          password: password,
+          server: "emasamir.app"
+        });
+      }
+    }
+  }catch(e){
+    console.warn("[login] afterAuthSession native credential:", e);
+  }
+
+  try { await sb.auth.signOut(); } catch {}
+  await ensureSupabaseSession(phone, password, !!allowSignup);
+  try { await sb.auth.refreshSession(); } catch {}
+
+  try {
+    window.parent.postMessage({
+      type: "EA_AUTH_OK",
+      phone: phone,
+      thread_id: getThreadId() || null
+    }, location.origin);
+  } catch {}
+}
+
+  function setupPasswordToggle(inputId, buttonId){
+    const input = $(inputId);
+    const button = $(buttonId);
+    if(!input || !button) return;
+
+    button.addEventListener("click", function(){
+      const show = input.type === "password";
+      input.type = show ? "text" : "password";
+      button.textContent = show ? "🙈" : "👁️";
+    });
+  }
+
+  setupPasswordToggle("li_pass", "li_togglePass");
+  setupPasswordToggle("su_pass", "su_togglePass");
+  setupPasswordToggle("su_pass2", "su_togglePass2");
+  setupPasswordToggle("rp_pass1", "rp_togglePass1");
+  setupPasswordToggle("rp_pass2", "rp_togglePass2");
+
+  function bufferToBase64url(buf){
+    const bytes = new Uint8Array(buf);
+    let str = "";
+    for (let i = 0; i < bytes.length; i++) str += String.fromCharCode(bytes[i]);
+    return btoa(str).replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/g, "");
+  }
+
+  function base64urlToBuffer(base64url){
+    const base64 = String(base64url || "").replace(/-/g, "+").replace(/_/g, "/");
+    const pad = "=".repeat((4 - (base64.length % 4)) % 4);
+    const binary = atob(base64 + pad);
+    const bytes = new Uint8Array(binary.length);
+    for (let i = 0; i < binary.length; i++) bytes[i] = binary.charCodeAt(i);
+    return bytes.buffer;
+  }
+
+  function mapAllowCredentials(list){
+    if (!Array.isArray(list)) return [];
+    return list
+      .filter(Boolean)
+      .map(item => ({
+        ...item,
+        id: base64urlToBuffer(item.id)
+      }));
+  }
+
+async function tryNativeBiometricLogin(){
+    const NativeBiometric = getNativeBiometricPlugin();
+
+    if (!NativeBiometric){
+      setLoginStatus("Plugin Face ID belum tersedia dalam build ini.", "warn");
+      return false;
+    }
+
+    try{
+      const avail = await NativeBiometric.isAvailable();
+      const isAvail =
+        !!avail &&
+        (avail.isAvailable === true || avail.value === true || avail.available === true);
+
+      if (!isAvail){
+        setLoginStatus("Face ID / Touch ID tidak tersedia pada device ini.", "warn");
+        return false;
+      }
+
+      setLoginStatus("Mengesahkan Face ID…");
+
+      await NativeBiometric.verifyIdentity({
+        reason: "Sahkan identiti untuk log masuk",
+        title: "Login Pantas",
+        subtitle: "Emas Amir",
+        description: "Gunakan Face ID / Touch ID untuk log masuk"
+      });
+
+      const creds = await NativeBiometric.getCredentials({
+        server: "emasamir.app"
+      });
+
+      const phone = onlyDigits(creds?.username || "");
+      const pass  = String(creds?.password || "");
+
+      if (!phone || !pass || pass.length < 6){
+        setLoginStatus("Login pantas belum lengkap pada device ini. Sila login biasa dahulu.", "warn");
+        return false;
+      }
+
+      $("li_phone").value = phone.startsWith("60") ? ("0" + phone.slice(2)) : phone;
+      $("li_last4").value = phone.slice(-4);
+
+      if (!window.login_password){
+        setLoginStatus("Skrip auth belum siap dimuat.", "err");
+        return false;
+      }
+
+      const res = await window.login_password($("li_phone").value, pass);
+
+      if (!res.ok){
+        setLoginStatus(res.error || "Login Face ID gagal. Sila guna password biasa.", "err");
+        return false;
+      }
+
+      savePW(pass);
+      saveLastLoginPhone(phone);
+
+      try { await sb.auth.signOut(); } catch {}
+      await ensureSupabaseSession($("li_phone").value, pass);
+      try { await sb.auth.refreshSession(); } catch {}
+
+      try {
+        window.parent.postMessage({
+          type: "EA_AUTH_OK",
+          phone: $("li_phone").value,
+          thread_id: getThreadId() || null
+        }, location.origin);
+      } catch {}
+
+      setLoginStatus("Login Face ID berjaya. Mengalihkan…", "ok");
+      goBack();
+      return true;
+    }catch(e){
+      console.error("native biometric login error:", e);
+      setLoginStatus("Face ID dibatalkan atau gagal. Sila guna password biasa.", "warn");
+      return false;
+    }
+  }
+
+  async function tryPasskeyLogin(){
+    if (isNativeCapacitorApp()) {
+      return await tryNativeBiometricLogin();
+    }
+
+    if (!supportsPasskey()){
+      setFaceHint("Device / browser ini belum support Face ID passkey. Guna password biasa.", "warn");
+      return;
+    }
+
+    const phoneRaw = $("li_phone").value || getLastLoginPhone();
+    const phone = onlyDigits(phoneRaw);
+
+    if (!phone) {
+      setLoginStatus("Isi nombor telefon dulu atau login manual sekali dahulu.", "warn");
+      return;
+    }
+
+    if (!/^\d{9,12}$/.test(phone)) {
+      setLoginStatus("Nombor telefon tak sah untuk Face ID.", "warn");
+      return;
+    }
+
+    saveLastLoginPhone(phone);
+    setLoginStatus("Mencuba login dengan Face ID…");
+
+    const start = await postJson(PASSKEY_AUTH_START_URL, {
+      phone,
+      last4: phone.slice(-4)
+    });
+
+    if (!start.ok || start.data?.ok !== true) {
+      setLoginStatus(start.data?.error || "Face ID belum diaktifkan untuk device ini. Sila login biasa dahulu dan aktifkan dalam akaun.", "warn");
+      return;
+    }
+
+    try{
+      const publicKey = {
+        challenge: base64urlToBuffer(start.data.challenge),
+        rpId: start.data.rpId || location.hostname,
+        allowCredentials: mapAllowCredentials(start.data.allowCredentials),
+        timeout: Number(start.data.timeout || 60000),
+        userVerification: start.data.userVerification || "required"
+      };
+
+      const assertion = await navigator.credentials.get({ publicKey });
+
+      if (!assertion) {
+        setLoginStatus("Face ID dibatalkan.", "warn");
+        return;
+      }
+
+      const rawId = bufferToBase64url(assertion.rawId);
+      const response = assertion.response;
+
+      const finish = await postJson(PASSKEY_AUTH_FINISH_URL, {
+        phone,
+        credential: {
+          id: assertion.id,
+          rawId,
+          type: assertion.type,
+          response: {
+            authenticatorData: bufferToBase64url(response.authenticatorData),
+            clientDataJSON: bufferToBase64url(response.clientDataJSON),
+            signature: bufferToBase64url(response.signature),
+            userHandle: response.userHandle ? bufferToBase64url(response.userHandle) : null
+          }
+        }
+      });
+
+      if (!finish.ok || finish.data?.ok !== true) {
+        setLoginStatus(finish.data?.error || "Login Face ID gagal. Guna password biasa.", "err");
+        return;
+      }
+
+      const user = finish.data?.user || null;
+      const phoneOk = onlyDigits(finish.data?.phone || phone);
+      saveLastLoginPhone(phoneOk);
+
+      if (user && window.auth_set){
+        window.auth_set({
+          id: user.id,
+          name: user.name,
+          phone: user.phone,
+          ic: user.ic,
+          alamat: user.alamat
+        });
+      }
+
+      try {
+        window.parent.postMessage({
+          type: "EA_AUTH_OK",
+          phone: phoneOk,
+          thread_id: getThreadId() || null
+        }, location.origin);
+      } catch {}
+
+      setLoginStatus("Login Face ID berjaya. Mengalihkan…", "ok");
+      location.href = "account.html";
+    }catch(e){
+      console.error("passkey login error:", e);
+      setLoginStatus("Face ID tidak berjaya. Sila guna password biasa.", "warn");
+    }
+  }
+
+  $("btnUseManual").onclick = function(){
+    setLoginStatus("Boleh terus guna password biasa.");
+    $("li_pass").focus();
+  };
+
+  $("btnFaceLogin").onclick = async function(){
+    await tryPasskeyLogin();
+  };
+
+  $("btnLogin").onclick = async ()=>{
+   let phone = onlyDigits($("li_phone").value);
+
+// tukar 6013 → 013
+if (phone.startsWith("60")) {
+  phone = "0" + phone.slice(2);
+}
+    const last4 = onlyDigits($("li_last4").value);
+    const pass  = $("li_pass").value;
+    const st    = $("li_status");
+
+    if(!/^\d{9,12}$/.test(phone)) return st.textContent = "Nombor telefon tak sah.";
+    if(!/^\d{4}$/.test(last4))    return st.textContent = "Isi 4 digit terakhir.";
+    if(pass.length < 6)           return st.textContent = "Password minima 6 aksara.";
+    if(phone.slice(-4) !== last4) return st.textContent = "4 digit terakhir tak padan.";
+
+    if(!window.login_password){
+      st.textContent = "Skrip auth belum siap dimuat.";
+      return;
+    }
+
+    try{
+      st.textContent = "Sedang log masuk…";
+      const res = await window.login_password(phone, pass);
+
+      if (!res.ok){
+        st.textContent = res.error || "Log masuk gagal. Semak nombor / password.";
+        return;
+      }
+
+      savePW(pass);
+      saveLastLoginPhone(phone);
+
+try{
+        if (isNativeCapacitorApp()) {
+          const NativeBiometric = getNativeBiometricPlugin();
+          if (NativeBiometric) {
+            await NativeBiometric.setCredentials({
+              username: phone,
+              password: pass,
+              server: "emasamir.app"
+            });
+          }
+        }
+      }catch(e){
+        console.warn("[login] set native biometric credentials:", e);
+      }
+
+      try { await sb.auth.signOut(); } catch {}
+      await ensureSupabaseSession(phone, pass);
+      try { await sb.auth.refreshSession(); } catch {}
+
+      try {
+        window.parent.postMessage({
+          type: "EA_AUTH_OK",
+          phone: phone,
+          thread_id: getThreadId() || null
+        }, location.origin);
+      } catch {}
+
+      st.textContent = "Log masuk berjaya. Mengalihkan…";
+      goBack();
+    }catch(e){
+      console.error(e);
+      st.textContent = "Ralat tak dijangka semasa log masuk.";
+    }
+  };
+
+$("su_btnOtp").onclick = async ()=>{
+ let phone = onlyDigits($("su_phone").value);
+
+// tukar 6013 → 013
+if (phone.startsWith("60")) {
+  phone = "0" + phone.slice(2);
+}
+  const last4 = onlyDigits($("su_last4").value);
+  const name  = $("su_name").value.trim();
+  const st    = $("su_status");
+  const agentSlug = getAgentSlug();
+
+  if(!/^\d{9,12}$/.test(phone)) return st.textContent = "Nombor telefon tak sah.";
+  if(phone.slice(-4) !== last4) return st.textContent = "4 digit terakhir tak padan.";
+
+  const variants = window.phoneVariants ? window.phoneVariants(phone) : [phone];
+  const { data: existsRows, error: existsErr } = await sb
+    .from("customers")
+    .select("id, phone")
+    .in("phone", variants)
+    .limit(1);
+
+  if (existsErr) {
+    st.textContent = "Tak dapat semak nombor sekarang. Cuba lagi.";
+    return;
+  }
+
+  if (Array.isArray(existsRows) && existsRows.length > 0) {
+    st.textContent = "Nombor ini sudah berdaftar. Sila log masuk atau reset password.";
     return;
   }
 
   try{
-    st.textContent = "Sedang log masuk…";
-    const res = await window.login_password(phone, pass); // ❗ guna auth.js
+    st.textContent = "Menjana OTP melalui AI-DAN…";
 
-    if (!res.ok){
-      st.textContent = res.error || "Log masuk gagal. Semak nombor / password.";
-      return;
-    }
-
-    // auth_set + ensureSupabaseSession + syncAgentAfterAuth
-    // semuanya sudah dibuat dalam auth.js
-
-    savePW(pass);
-
-// ⭐ tambah 3 baris ini
-try { await sb.auth.signOut(); } catch {}
-await ensureSupabaseSession(phone, pass);
-try { await sb.auth.refreshSession(); } catch {}
-
-st.textContent = "Log masuk berjaya. Mengalihkan…";
-goBack();
-  }catch(e){
-    console.error(e);
-    st.textContent = "Ralat tak dijangka semasa log masuk.";
-  }
-};
-
-  // ===== SIGNUP + OTP =====
-  $("su_btnOtp").onclick = async ()=>{
-  const phone=onlyDigits($("su_phone").value);
-  const last4=onlyDigits($("su_last4").value);
-  const st=$("su_status");
-  if(!/^\d{9,12}$/.test(phone)) return st.textContent="Nombor telefon tak sah.";
-  if(phone.slice(-4)!==last4)   return st.textContent="4 digit terakhir tak padan.";
-
-  _otp=(Math.floor(100000+Math.random()*900000)).toString(); _otp_ts=Date.now();
-  const msg=`OTP Daftar Akaun Emas Amir\nTelefon: ${phone}\nOTP: ${_otp}\n\n(OTP sah 5 minit)`;
-
-  st.textContent = "Menghantar OTP melalui WhatsApp…";
-  const ok = await sendWA(toMsisdn(phone), msg);
-  st.textContent = ok ? "OTP dihantar. Semak WhatsApp anda." : "Gagal hantar OTP. Cuba lagi.";
-};
-
-  $("su_btnCreate").onclick = async () => {
-  const phone  = onlyDigits($("su_phone").value);
-  const last4  = onlyDigits($("su_last4").value);
-  const name   = $("su_name").value.trim();
-  const ic     = onlyDigits($("su_ic").value);
-  const alamat = $("su_alamat").value.trim();
-  const p1     = $("su_pass").value;
-  const p2     = $("su_pass2").value;
-  const code   = onlyDigits($("su_otp").value);
-  const st     = $("su_status");
-
-  // --- validasi sama macam sebelum ini ---
-  if (!/^\d{9,12}$/.test(phone)) return st.textContent="Nombor telefon tak sah.";
-  if (phone.slice(-4) !== last4)  return st.textContent="4 digit terakhir tak padan.";
-  if (!/^\d{6}$/.test(code))      return st.textContent="Isi OTP 6 digit.";
-  if (!_otp || Date.now() - _otp_ts > 5*60*1000)
-    return st.textContent="OTP tamat tempoh.";
-  if (code !== _otp)              return st.textContent="OTP salah.";
-  if (p1.length < 6 || p1 !== p2) return st.textContent="Password tak sah / tak sepadan.";
-  if (ic && ic.length !== 12)     return st.textContent="IC perlu 12 digit atau kosong.";
-  if (!sb)                        return st.textContent="Supabase belum dimuat.";
-
-  try {
-    st.textContent = "Memproses pendaftaran…";
-
-    // 👉 GUNA wrapper dari auth.js
-    const res = await window.register_finish({
+    const res = await postJson(OTP_START_URL, {
+      purpose: "signup",
       phone,
+      last4,
       name,
-      ic,
-      alamat,
-      otp: code,
-      password: p1
+      thread_id: getThreadId() || null,
+      agent_slug: agentSlug || null
     });
 
-    if (!res.ok) {
-      st.textContent = "Daftar gagal: " + (res.error || "ralat tidak diketahui.");
+    if(!res.ok || res.data?.ok !== true){
+      st.textContent = res.data?.error || "Gagal jana OTP.";
       return;
     }
 
-    st.textContent = "Pendaftaran berjaya! Mengalihkan…";
-    goBack(); // pergi ke account.html (macam sebelum ini)
-  } catch (e) {
+    const otp = String(res.data?.otp || "");
+    const threadId = String(res.data?.thread_id || "");
+
+    if (threadId) setThreadId(threadId);
+    if (/^\d{6}$/.test(otp)) $("su_otp").value = otp;
+
+    st.textContent = "OTP berjaya dijana ✅ Seterusnya, masukkan OTP 6 digit dan tetapkan password.";
+    $("su_otp").focus();
+  }catch(e){
     console.error(e);
-    st.textContent = "Ralat tak dijangka semasa daftar.";
+    st.textContent = "Gagal jana OTP.";
   }
 };
+ $("su_btnCreate").onclick = async () => {
+    let phone = onlyDigits($("su_phone").value);
 
-  // ===== RESET PASSWORD =====
-  let _rOtp=null,_rOtpTs=0;
+// tukar 6013 → 013
+if (phone.startsWith("60")) {
+  phone = "0" + phone.slice(2);
+}
+    const last4  = onlyDigits($("su_last4").value);
+    const name   = $("su_name").value.trim();
+    const ic     = onlyDigits($("su_ic").value);
+    const alamat = $("su_alamat").value.trim();
+    const p1     = $("su_pass").value;
+    const p2     = $("su_pass2").value;
+    const code   = onlyDigits($("su_otp").value);
+    const st     = $("su_status");
+    const agentSlug = getAgentSlug();
+
+    if (!/^\d{9,12}$/.test(phone)) return st.textContent = "Nombor telefon tak sah.";
+    if (phone.slice(-4) !== last4) return st.textContent = "4 digit terakhir tak padan.";
+    if (!/^\d{6}$/.test(code))     return st.textContent = "Isi OTP 6 digit.";
+    if (p1.length < 6 || p1 !== p2) return st.textContent = "Password tak sah / tak sepadan.";
+    if (ic && ic.length !== 12)    return st.textContent = "IC perlu 12 digit atau kosong.";
+
+    try {
+      st.textContent = "Memproses pendaftaran…";
+
+      const res = await postJson(OTP_SIGNUP_FINISH_URL, {
+        phone,
+        last4,
+        name,
+        ic,
+        alamat,
+        otp: code,
+        password: p1,
+        thread_id: getThreadId() || null,
+        agent_slug: agentSlug || null
+      });
+
+      if (!res.ok || res.data?.ok !== true) {
+        st.textContent = "Daftar gagal: " + (res.data?.error || "ralat tidak diketahui.");
+        return;
+      }
+
+      const user = res.data?.user || null;
+      const threadId = String(res.data?.thread_id || "");
+      if (threadId) setThreadId(threadId);
+
+      await afterAuthSession(phone, p1, user, true);
+
+      st.textContent = "Pendaftaran berjaya! Mengalihkan…";
+      goBack();
+    } catch (e) {
+      console.error(e);
+      st.textContent = "Ralat tak dijangka semasa daftar.";
+    }
+  };
+
   $("rp_btnOtp").onclick = async ()=>{
-  const phone=onlyDigits($("rp_phone").value);
-  const last4=onlyDigits($("rp_last4").value);
-  const st=$("rp_status");
-  if(!/^\d{9,12}$/.test(phone)) return st.textContent="Nombor telefon tak sah.";
-  if(phone.slice(-4)!==last4)   return st.textContent="4 digit terakhir tak padan.";
+    let phone = onlyDigits($("rp_phone").value);
 
-  _rOtp=(Math.floor(100000+Math.random()*900000)).toString(); _rOtpTs=Date.now();
-  const msg=`OTP Reset Password Emas Amir\nTelefon: ${phone}\nOTP: ${_rOtp}\n\n(OTP sah 5 minit)`;
+// tukar 6013 → 013
+if (phone.startsWith("60")) {
+  phone = "0" + phone.slice(2);
+}
+    const last4 = onlyDigits($("rp_last4").value);
+    const st = $("rp_status");
 
-  st.textContent = "Menghantar OTP melalui WhatsApp…";
-  const ok = await sendWA(toMsisdn(phone), msg);
-  st.textContent = ok ? "OTP dihantar. Semak WhatsApp anda." : "Gagal hantar OTP. Cuba lagi.";
-};
+    if(!/^\d{9,12}$/.test(phone)) return st.textContent = "Nombor telefon tak sah.";
+    if(phone.slice(-4) !== last4) return st.textContent = "4 digit terakhir tak padan.";
+
+    try{
+      st.textContent = "Menghantar OTP ke WhatsApp…";
+
+      const res = await postJson(OTP_START_URL, {
+        purpose: "reset",
+        channel: "whatsapp",
+        phone,
+        last4,
+        thread_id: getThreadId() || null
+      });
+
+      if(!res.ok || res.data?.ok !== true){
+        st.textContent = res.data?.error || "Gagal hantar OTP ke WhatsApp.";
+        return;
+      }
+
+      const threadId = String(res.data?.thread_id || "");
+      if (threadId) setThreadId(threadId);
+
+      $("rp_otp").value = "";
+     st.textContent = "OTP telah dihantar ke WhatsApp ✅ Seterusnya, masukkan OTP 6 digit dan tetapkan password baru.";
+      $("rp_otp").focus();
+    }catch(e){
+      console.error(e);
+      st.textContent = "Gagal hantar OTP ke WhatsApp.";
+    }
+  };
 
   $("rp_btnDo").onclick = async () => {
-  const phone = onlyDigits($("rp_phone").value);
-  const last4 = onlyDigits($("rp_last4").value);
-  const code  = onlyDigits($("rp_otp").value);
-  const p1    = $("rp_pass1").value;
-  const p2    = $("rp_pass2").value;
-  const st    = $("rp_status");
+    let phone = onlyDigits($("rp_phone").value);
 
-  if(!/^\d{9,12}$/.test(phone)) return st.textContent="Nombor telefon tak sah.";
-  if(phone.slice(-4)!==last4)   return st.textContent="4 digit terakhir tak padan.";
-  if(!/^\d{6}$/.test(code))     return st.textContent="Isi OTP 6 digit.";
-  if(!_rOtp||Date.now()-_rOtpTs>5*60*1000) return st.textContent="OTP tamat tempoh.";
-  if(code!==_rOtp)             return st.textContent="OTP salah.";
-  if(p1.length<6||p1!==p2)     return st.textContent="Password baharu tak sah / tak sepadan.";
-  if(!sb)                      return st.textContent="Supabase belum dimuat.";
+// tukar 6013 → 013
+if (phone.startsWith("60")) {
+  phone = "0" + phone.slice(2);
+}
+    const last4 = onlyDigits($("rp_last4").value);
+    const code  = onlyDigits($("rp_otp").value);
+    const p1    = $("rp_pass1").value;
+    const p2    = $("rp_pass2").value;
+    const st    = $("rp_status");
 
-  try{
-    st.textContent = "Menukar password…";
+    if(!/^\d{9,12}$/.test(phone)) return st.textContent = "Nombor telefon tak sah.";
+    if(phone.slice(-4) !== last4) return st.textContent = "4 digit terakhir tak padan.";
+    if(!/^\d{6}$/.test(code))     return st.textContent = "Isi OTP 6 digit.";
+    if(p1.length < 6 || p1 !== p2) return st.textContent = "Password baharu tak sah / tak sepadan.";
 
-    // (1) Tukar password dalam DB
-    const r1 = await sb.rpc("reset_password", { in_phone: phone, in_password: p1 });
-    if (r1.error) return st.textContent = "Reset gagal: " + r1.error.message;
+    try{
+      st.textContent = "Menukar password…";
 
-    // (2) ✅ Update password Supabase Auth (server-side)
-    const rr = await fetch("/.netlify/functions/auth-reset", {
-      method: "POST",
-      headers: { "Content-Type":"application/json" },
-      body: JSON.stringify({ phone, new_password: p1 })
-    });
-    const jj = await rr.json().catch(()=>({}));
-    if (!rr.ok || jj.ok !== true) {
-      throw new Error(jj.error || "Gagal sync Supabase Auth");
+      const res = await postJson(OTP_RESET_FINISH_URL, {
+        phone,
+        last4,
+        otp: code,
+        new_password: p1,
+        thread_id: getThreadId() || null
+      });
+
+      if (!res.ok || res.data?.ok !== true) {
+        st.textContent = "Reset gagal: " + (res.data?.error || "ralat tidak diketahui.");
+        return;
+      }
+
+      const user = res.data?.user || null;
+      const threadId = String(res.data?.thread_id || "");
+      if (threadId) setThreadId(threadId);
+
+      if (user) {
+        await afterAuthSession(phone, p1, user, true);
+      } else {
+        savePW(p1);
+        saveLastLoginPhone(phone);
+        try { await sb.auth.signOut(); } catch {}
+        await ensureSupabaseSession(phone, p1);
+        try { await sb.auth.refreshSession(); } catch {}
+      }
+
+      st.textContent = "✅ Password ditukar & boleh terus guna semua modul. Mengalihkan…";
+      location.href = "account.html";
+    }catch(e){
+      console.error(e);
+      st.textContent = "Reset gagal: " + (e.message || e);
     }
+  };
 
-    // (3) Ambil data user dari DB untuk auth_set
-    const login = await sb.rpc("login_password", { in_phone: phone, in_password: p1 });
-    if (login.error || !login.data || login.data.length===0){
-      st.textContent="Password ditukar. Sila log masuk semula.";
+  fillPhoneIfRemembered();
+
+  if (isNativeCapacitorApp()) {
+    if (getNativeBiometricPlugin()) {
+      setFaceHint("App ini support Face ID / Touch ID. Kalau sudah aktif dalam akaun, cik boleh terus guna.", "ok");
+    } else {
+      setFaceHint("Build app ini belum ada sokongan Face ID / Touch ID. Boleh guna password biasa.", "warn");
+    }
+  } else if (supportsPasskey()) {
+    setFaceHint("Device ini support Face ID / passkey. Kalau sudah aktif dalam akaun, cik boleh terus guna.", "ok");
+  } else {
+    setFaceHint("Device / browser ini belum support passkey. Boleh guna password biasa.", "warn");
+  }
+setTimeout(() => {
+    if (!hasSeenLoginIntro()) {
+      showLoginIntro();
+    }
+  }, 500);
+})();
+</script>
+<script>
+/* =========================
+   iPhone-style swipe back (login) with drag animation
+   - swipe dari tepi kiri
+   - page ikut jari
+   - tutup modal dulu jika ada
+   - kalau sedang #signup / #reset -> tukar ke #login TANPA tambah history
+   - kalau dah #login / kosong -> terus ke index.html
+   ========================= */
+(function(){
+  const page = document.querySelector('.page-shell');
+  if (!page) return;
+
+  let startX = 0;
+  let startY = 0;
+  let currentX = 0;
+  let tracking = false;
+  let dragging = false;
+  let blocked = false;
+
+  const EDGE_ZONE = 24;
+  const MAX_DY = 70;
+  const TRIGGER_RATIO = 0.33;
+
+  function getOpenModalEl(){
+    const modals = Array.from(document.querySelectorAll('.modal.show, .modal-overlay.show'));
+    return modals.length ? modals[modals.length - 1] : null;
+  }
+
+  function closeTopModal(){
+    const el = getOpenModalEl();
+    if (!el) return false;
+
+    try{
+      if (el.classList.contains('modal')){
+        const inst = bootstrap.Modal.getInstance(el) || bootstrap.Modal.getOrCreateInstance(el);
+        inst.hide();
+        return true;
+      }
+
+      if (el.classList.contains('modal-overlay')){
+        el.classList.remove('show');
+        el.setAttribute('aria-hidden', 'true');
+
+        const vid = el.querySelector('video');
+        if (vid){
+          try{ vid.pause(); }catch(_){}
+        }
+        return true;
+      }
+
+      return false;
+    }catch(_){
+      el.classList.remove('show');
+      el.style.display = 'none';
+      document.body.classList.remove('modal-open');
+      document.querySelectorAll('.modal-backdrop').forEach(x => x.remove());
+      return true;
+    }
+  }
+
+  function isBlockedTarget(target){
+    if (!target) return false;
+
+    return !!target.closest(
+      'input, textarea, select, button, label, ' +
+      '[contenteditable="true"], ' +
+      '.pw-toggle, .modal-box, .modal-body, video'
+    );
+  }
+
+  function clearPeekSoon(){
+    setTimeout(()=>{
+      document.body.classList.remove('swipe-peek');
+    }, 220);
+  }
+
+  function resetPage(){
+    page.classList.remove('dragging');
+    page.style.transition = '';
+    page.style.transform = 'translateX(0)';
+    clearPeekSoon();
+  }
+
+  function normalizeToLoginWithoutHistory(){
+    const loginView  = document.getElementById('loginView');
+    const signupView = document.getElementById('signupView');
+    const resetView  = document.getElementById('resetView');
+
+    const tabLogin  = document.getElementById('tabLogin');
+    const tabSignup = document.getElementById('tabSignup');
+    const tabReset  = document.getElementById('tabReset');
+
+    if (loginView)  loginView.style.display = 'block';
+    if (signupView) signupView.style.display = 'none';
+    if (resetView)  resetView.style.display = 'none';
+
+    if (tabLogin)  tabLogin.classList.add('active');
+    if (tabSignup) tabSignup.classList.remove('active');
+    if (tabReset)  tabReset.classList.remove('active');
+
+    history.replaceState(null, '', location.pathname + location.search + '#login');
+
+    page.style.transition = 'none';
+    page.style.transform = 'translateX(0)';
+    void page.offsetHeight;
+    page.style.transition = '';
+
+    document.body.classList.remove('swipe-peek');
+  }
+
+  function goBackPage(){
+    const h = location.hash || '#login';
+
+    if (h === '#signup' || h === '#reset'){
+      normalizeToLoginWithoutHistory();
       return;
     }
-    const u = Array.isArray(login.data) ? login.data[0] : login.data;
 
-    // simpan user + pw
-    window.auth_set({ id:u.id, name:u.name, phone:u.phone, ic:u.ic, alamat:u.alamat });
-    try { sessionStorage.setItem("ea_pw", p1); } catch {}
-
-    // (4) Create session Supabase Auth fresh
-    try { await sb.auth.signOut(); } catch {}
-    await ensureSupabaseSession(phone, p1);
-    try { await sb.auth.refreshSession(); } catch {}
-
-    st.textContent="✅ Password ditukar & boleh terus guna semua modul. Mengalihkan…";
-    location.href = "account.html";
-
-  }catch(e){
-    console.error(e);
-    st.textContent = "Reset gagal: " + (e.message || e);
+    location.href = 'index.html';
   }
-};
+
+  document.addEventListener('touchstart', function(e){
+    if (!e.touches || !e.touches.length) return;
+
+    const t = e.touches[0];
+    startX = t.clientX;
+    startY = t.clientY;
+    currentX = 0;
+    dragging = false;
+
+    blocked = isBlockedTarget(e.target);
+    tracking = (startX <= EDGE_ZONE) && !blocked;
+  }, { passive:true });
+
+  document.addEventListener('touchmove', function(e){
+    if (!tracking || blocked || !e.touches || !e.touches.length) return;
+
+    const t = e.touches[0];
+    const dx = t.clientX - startX;
+    const dy = Math.abs(t.clientY - startY);
+
+    if (dy > MAX_DY) return;
+    if (dx <= 0) return;
+
+    currentX = dx;
+    dragging = true;
+
+    document.body.classList.add('swipe-peek');
+    page.classList.add('dragging');
+    page.style.transform = `translateX(${dx}px)`;
+  }, { passive:true });
+
+  document.addEventListener('touchend', function(){
+    if (!tracking) return;
+
+    tracking = false;
+    page.classList.remove('dragging');
+
+    if (!dragging || blocked){
+      blocked = false;
+      document.body.classList.remove('swipe-peek');
+      return;
+    }
+
+    const threshold = window.innerWidth * TRIGGER_RATIO;
+
+    if (currentX >= threshold){
+      page.style.transform = `translateX(${window.innerWidth}px)`;
+
+      setTimeout(()=>{
+        if (closeTopModal()){
+          page.style.transition = 'none';
+          page.style.transform = 'translateX(0)';
+          void page.offsetHeight;
+          page.style.transition = '';
+          document.body.classList.remove('swipe-peek');
+          blocked = false;
+          return;
+        }
+
+        blocked = false;
+        goBackPage();
+      }, 180);
+    }else{
+      blocked = false;
+      resetPage();
+    }
+
+    dragging = false;
+    currentX = 0;
+  }, { passive:true });
 })();
 </script>
 </body>

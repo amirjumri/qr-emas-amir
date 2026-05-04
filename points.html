@@ -1,362 +1,1896 @@
 <!doctype html>
 <html lang="ms">
 <head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width,initial-scale=1">
-  <title>Point & Ganjaran Saya — Emas Amir</title>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
+  <title>Point Saya — Emas Amir</title>
+
+  <link rel="stylesheet" href="/global.css">
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
   <style>
-    body{background:#f9fafb;}
-    .container-narrow{max-width:960px}
-    .card+.card{margin-top:14px}
-    .badge-soft{background:#eef7ff;color:#0d6efd;border:1px solid #d7ebff}
-    .table-xs td,.table-xs th{padding:.45rem .55rem}
+    :root{
+      --ea-bg:#f6f7f9;
+      --ea-card:#ffffff;
+      --ea-line:#e9ecef;
+      --ea-text:#1f2937;
+      --ea-muted:#6b7280;
+      --ea-dark:#111827;
+      --ea-gold:#d4a017;
+      --ea-gold-soft:#fff8e1;
+      --ea-green:#16a34a;
+      --ea-red:#dc2626;
+      --ea-blue:#2563eb;
+    }
+
+    html,body{
+      background:var(--ea-bg);
+      color:var(--ea-text);
+    }
+
+    body{
+      margin:0;
+      font-family:Inter,system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;
+    }
+
+    .wrap{
+      max-width:980px;
+      margin:16px auto;
+      padding:12px;
+      padding-bottom:40px;
+    }
+
+    .box{
+      background:#fff;
+      border:1px solid var(--ea-line);
+      border-radius:16px;
+      padding:16px;
+    }
+
+    .muted{color:var(--ea-muted)}
+    .xsmall{font-size:.8rem}
+    .small-muted{font-size:12px;color:var(--ea-muted)}
+
+    .pill{
+      display:inline-flex;
+      align-items:center;
+      gap:8px;
+      padding:6px 10px;
+      border-radius:999px;
+      background:#eef1f4;
+      font-size:12px;
+      color:#495057;
+      font-weight:700;
+    }
+
+    .topbar{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:10px;
+      flex-wrap:wrap;
+      margin-bottom:12px;
+    }
+
+    .top-left{
+      display:flex;
+      align-items:center;
+      gap:10px;
+      flex-wrap:wrap;
+    }
+
+    .brand-title{
+      font-weight:900;
+      font-size:18px;
+      letter-spacing:.2px;
+      margin:0;
+      line-height:1.1;
+    }
+
+    .icon-btn{
+      border-radius:12px;
+    }
+
+    .point-hero{
+      background:linear-gradient(135deg,#111827 0%, #1f2937 55%, #7c5a11 100%);
+      color:#fff;
+      border:0;
+      position:relative;
+      overflow:hidden;
+    }
+
+    .point-hero::after{
+      content:"";
+      position:absolute;
+      right:-40px;
+      bottom:-70px;
+      width:220px;
+      height:220px;
+      border-radius:999px;
+      background:radial-gradient(circle at center, rgba(255,215,0,.22), rgba(255,215,0,0));
+      pointer-events:none;
+    }
+
+    .hero-top{
+      display:flex;
+      justify-content:space-between;
+      align-items:flex-start;
+      gap:12px;
+      flex-wrap:wrap;
+    }
+
+    .point-balance{
+      font-size:44px;
+      line-height:1;
+      font-weight:900;
+      letter-spacing:-1px;
+      margin:14px 0 6px;
+    }
+
+    .hero-sub{
+      color:rgba(255,255,255,.78);
+      font-size:13px;
+    }
+
+    .hero-mini{
+      display:grid;
+      grid-template-columns:repeat(3,1fr);
+      gap:10px;
+      margin-top:16px;
+    }
+
+    .hero-mini-card{
+      background:rgba(255,255,255,.09);
+      border:1px solid rgba(255,255,255,.13);
+      border-radius:14px;
+      padding:14px;
+    }
+
+    .hero-mini-label{
+      font-size:12px;
+      color:rgba(255,255,255,.72);
+      margin-bottom:6px;
+    }
+
+    .hero-mini-value{
+      font-size:20px;
+      line-height:1.1;
+      font-weight:900;
+    }
+
+    .hero-rules{
+      margin-top:14px;
+      display:grid;
+      grid-template-columns:repeat(2,1fr);
+      gap:10px;
+    }
+
+    .rule-chip{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:10px;
+      padding:10px 12px;
+      border-radius:14px;
+      border:1px solid rgba(255,255,255,.12);
+      background:rgba(255,255,255,.92);
+      color:#111827;
+      font-size:13px;
+      font-weight:700;
+    }
+
+    .rule-chip strong{
+      font-weight:900;
+      white-space:nowrap;
+    }
+
+    .action-list{
+      display:grid;
+      gap:10px;
+    }
+
+    .action-item{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:10px;
+      padding:14px 14px;
+      border:1px solid #e9ecef;
+      border-radius:14px;
+      background:#fff;
+      cursor:pointer;
+      transition:transform .06s ease, box-shadow .06s ease;
+    }
+
+    .action-item:active{transform:scale(.995)}
+
+    .action-left{
+      display:flex;
+      align-items:center;
+      gap:12px;
+    }
+
+    .action-ico{
+      width:38px;
+      height:38px;
+      border-radius:12px;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      background:#f3f4f6;
+      font-size:18px;
+      flex:0 0 auto;
+    }
+
+    .action-title{
+      font-weight:800;
+    }
+
+    .action-sub{
+      font-size:12px;
+      color:#6b7280;
+      margin-top:2px;
+    }
+
+    .chev{
+      color:#9ca3af;
+      font-weight:700;
+      font-size:18px;
+    }
+
+    .panel{
+      border:1px solid #e9ecef;
+      border-radius:16px;
+      background:#fff;
+    }
+
+    .panel .panel-h{
+      padding:14px 14px;
+      border-bottom:1px solid #eef1f4;
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:10px;
+    }
+
+    .panel .panel-b{
+      padding:14px;
+    }
+
+    .summary-grid{
+      display:grid;
+      grid-template-columns:repeat(3,1fr);
+      gap:12px;
+    }
+
+    .metric-card{
+      border:1px solid var(--ea-line);
+      border-radius:16px;
+      background:#fff;
+      padding:16px;
+      height:100%;
+    }
+
+    .metric-icon{
+      width:40px;
+      height:40px;
+      border-radius:12px;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      font-size:20px;
+      background:#f3f4f6;
+      margin-bottom:10px;
+    }
+
+    .metric-label{
+      font-size:13px;
+      color:var(--ea-muted);
+      margin-bottom:6px;
+    }
+
+    .metric-value{
+      font-size:20px;
+      font-weight:900;
+      line-height:1.15;
+    }
+
+    .metric-note{
+      margin-top:6px;
+      font-size:12px;
+      color:var(--ea-muted);
+    }
+
+    .reward-grid{
+      display:grid;
+      grid-template-columns:repeat(2,1fr);
+      gap:12px;
+    }
+
+    .reward-card{
+      position:relative;
+      overflow:hidden;
+      border-radius:16px;
+      border:1px solid var(--ea-line);
+      background:#fff;
+      padding:16px;
+      height:100%;
+    }
+
+    .reward-card.recommended{
+      border-color:#f0d98c;
+      box-shadow:0 10px 26px rgba(212,160,23,.08);
+    }
+
+    .badge-rec{
+      position:absolute;
+      top:12px;
+      right:12px;
+      background:#fff7db;
+      color:#8a6500;
+      border:1px solid #f0d98c;
+      padding:6px 10px;
+      border-radius:999px;
+      font-size:11px;
+      font-weight:800;
+    }
+
+    .reward-top{
+      display:flex;
+      align-items:center;
+      gap:12px;
+      margin-bottom:12px;
+    }
+
+    .reward-icon{
+      width:50px;
+      height:50px;
+      border-radius:14px;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      font-size:24px;
+      background:#fff8e1;
+      border:1px solid #f4e2a3;
+      flex:0 0 auto;
+    }
+
+    .reward-title{
+      font-weight:800;
+      font-size:17px;
+      margin:0;
+      line-height:1.2;
+    }
+
+    .reward-sub{
+      font-size:12px;
+      color:var(--ea-muted);
+      margin-top:3px;
+    }
+
+    .reward-points{
+      display:inline-flex;
+      align-items:center;
+      gap:8px;
+      padding:8px 12px;
+      background:#111827;
+      color:#fff;
+      border-radius:999px;
+      font-weight:800;
+      font-size:13px;
+      margin-bottom:10px;
+    }
+
+    .reward-desc{
+      font-size:13px;
+      color:var(--ea-muted);
+      min-height:38px;
+      margin-bottom:14px;
+    }
+
+    .progress-wrap{margin-bottom:8px}
+    .progress{
+      height:10px;
+      border-radius:999px;
+      background:#eef2f7;
+    }
+    .progress-bar{border-radius:999px}
+
+    .reward-meta{
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+      gap:10px;
+      font-size:12px;
+      color:var(--ea-muted);
+      margin-bottom:14px;
+    }
+
+    .how-list{
+      display:grid;
+      gap:10px;
+    }
+
+    .how-item{
+      display:flex;
+      align-items:flex-start;
+      gap:12px;
+      padding:12px;
+      border:1px solid var(--ea-line);
+      border-radius:14px;
+      background:#fff;
+    }
+
+    .how-num{
+      width:34px;
+      height:34px;
+      border-radius:999px;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      background:#111827;
+      color:#fff;
+      font-weight:900;
+      font-size:13px;
+      flex:0 0 auto;
+    }
+
+    .how-title{
+      font-size:14px;
+      font-weight:800;
+      margin:0 0 2px;
+    }
+
+    .how-desc{
+      color:var(--ea-muted);
+      font-size:13px;
+      margin:0;
+    }
+
+    .note-box{
+      border-radius:14px;
+      background:#fffdf5;
+      border:1px solid #f2e6b2;
+      padding:14px;
+      color:#6b5b1a;
+      font-size:13px;
+    }
+
+    .table-wrap{
+      overflow:auto;
+      border:1px solid var(--ea-line);
+      border-radius:16px;
+      background:#fff;
+    }
+
+    table{
+      width:100%;
+      min-width:820px;
+      border-collapse:collapse;
+    }
+
+    th,td{
+      padding:14px 12px;
+      border-bottom:1px solid #edf1f6;
+      vertical-align:middle;
+      font-size:13px;
+    }
+
+    th{
+      background:#fafbfc;
+      color:#6b7280;
+      font-weight:800;
+      white-space:nowrap;
+    }
+
+    .t-strong{
+      font-weight:800;
+      color:#111827;
+    }
+
+    .source-pill{
+      display:inline-flex;
+      align-items:center;
+      gap:6px;
+      padding:6px 10px;
+      border-radius:999px;
+      font-size:11px;
+      font-weight:800;
+      background:#f4f6fa;
+      color:#475569;
+      border:1px solid #e7ebf1;
+      white-space:nowrap;
+    }
+
+    .pts-plus{
+      color:var(--ea-green);
+      font-weight:900;
+    }
+
+    .pts-minus{
+      color:var(--ea-red);
+      font-weight:900;
+    }
+
+    .empty-box{
+      border:1px dashed #d6dbe5;
+      border-radius:16px;
+      background:#fff;
+      padding:26px;
+      text-align:center;
+      color:var(--ea-muted);
+    }
+
+    .btn-ea{
+      border-radius:12px;
+      padding:12px 14px;
+      font-weight:800;
+    }
+
+    .btn-gold{
+      background:#111827;
+      color:#fff;
+      border:1px solid #111827;
+    }
+
+    .btn-gold:hover{
+      background:#0b1220;
+      border-color:#0b1220;
+      color:#fff;
+    }
+
+    .btn-soft{
+      background:#fff8e1;
+      color:#8a6500;
+      border:1px solid #f0d98c;
+    }
+
+    .btn-soft:hover{
+      background:#ffefbd;
+      color:#8a6500;
+      border-color:#e8ca67;
+    }
+
+    .loading-skeleton{
+      background:linear-gradient(90deg,#eef2f7 25%,#f7f9fc 37%,#eef2f7 63%);
+      background-size:400% 100%;
+      animation:shine 1.25s infinite linear;
+      border-radius:16px;
+      min-height:88px;
+    }
+
+    @keyframes shine{
+      0%{background-position:100% 0}
+      100%{background-position:0 0}
+    }
+
+    @media (max-width: 991.98px){
+      .summary-grid,
+      .reward-grid,
+      .hero-mini,
+      .hero-rules{
+        grid-template-columns:1fr;
+      }
+
+      .point-balance{
+        font-size:36px;
+      }
+
+      .reward-meta{
+        flex-direction:column;
+        align-items:flex-start;
+      }
+    }
   </style>
 </head>
 <body>
-<div class="container container-narrow py-3">
-  <div class="d-flex justify-content-between align-items-center mb-2">
-    <h3 class="m-0">Point &amp; Ganjaran Saya</h3>
-    <a href="account.html" class="btn btn-outline-secondary btn-sm">Kembali ke Akaun</a>
-  </div>
-  <div id="authInfo" class="text-muted small mb-2">Memuatkan maklumat akaun…</div>
+<div class="page-shell">
+  <div class="wrap">
 
-  <!-- Baki Point -->
-  <div class="card">
-    <div class="card-body">
-      <h5 class="card-title mb-2">Jumlah Point</h5>
-      <div class="d-flex align-items-baseline gap-3">
+    <div class="topbar">
+      <div class="top-left">
+        <a href="index.html" class="btn btn-outline-secondary icon-btn">🏠</a>
         <div>
-          <div id="ptBalance" class="display-5 fw-bold">0</div>
-          <div class="text-muted small">Point terkumpul</div>
+          <div class="brand-title">🪙 Point Saya</div>
+          <div class="muted xsmall">Beli emas • Kumpul point • Tebus ke Tabung</div>
         </div>
-        <div class="ms-auto text-end small text-muted">
-          Point akan bertambah setiap kali pembelian anda ditandakan sebagai <b>PAID</b>.<br>
-          Point hanya boleh digunakan sebagai <b>diskaun belian / pos</b>, bukan tunai.
+        <span id="loginStatus" class="pill">Memuatkan…</span>
+      </div>
+
+      <div class="d-flex gap-2">
+        <button id="btnRefresh" class="btn btn-outline-secondary icon-btn" type="button">Refresh</button>
+      </div>
+    </div>
+
+    <div id="alertBox" class="mb-3"></div>
+
+    <div class="box point-hero mb-3">
+      <div class="hero-top">
+        <div>
+          <span class="pill">🪙 Ganjaran Emas Amir</span>
+          <div class="point-balance" id="heroBalance">0 Point</div>
+          <div class="hero-sub">Balance point semasa anda dikira daripada transaksi PAID yang layak.</div>
+        </div>
+        <div class="text-md-end">
+          <div class="small text-white-50">Nilai Point Semasa</div>
+          <div class="fw-bold fs-5" id="ruleValueTop">100 point = RM1</div>
+        </div>
+      </div>
+
+      <div class="hero-mini">
+        <div class="hero-mini-card">
+          <div class="hero-mini-label">Jumlah Dapat</div>
+          <div class="hero-mini-value" id="heroEarned">0</div>
+        </div>
+
+        <div class="hero-mini-card">
+          <div class="hero-mini-label">Jumlah Digunakan</div>
+          <div class="hero-mini-value" id="heroRedeemed">0</div>
+        </div>
+
+        <div class="hero-mini-card">
+          <div class="hero-mini-label">Kategori Aktif</div>
+          <div class="hero-mini-value">916 / 999 / Tabung</div>
+        </div>
+      </div>
+
+      <div class="hero-rules">
+        <div class="rule-chip">
+          <span>💍 Barang Kemas 916</span>
+          <strong id="ruleJ916">RM2 = 1 point</strong>
+        </div>
+        <div class="rule-chip">
+          <span>🪙 Gold Bar / Coin</span>
+          <strong id="ruleGold999">RM8 = 1 point</strong>
+        </div>
+        <div class="rule-chip">
+          <span>🏦 Tabung Emas</span>
+          <strong id="ruleTabung">RM4 = 1 point</strong>
+        </div>
+        <div class="rule-chip">
+          <span>⭐ Nilai point</span>
+          <strong id="ruleValue">100 point = RM1</strong>
         </div>
       </div>
     </div>
-  </div>
 
-  <!-- Ganjaran boleh tebus -->
-  <div class="card">
-    <div class="card-body">
-      <h5 class="card-title mb-2">Ganjaran Boleh Tebus</h5>
-      <p class="text-muted small">
-        Pilih ganjaran di bawah. Bila anda tebus, sistem akan cipta <b>kupon khas</b> untuk nombor telefon anda.
-        Kupon itu boleh digunakan di ruangan kupon semasa checkout.
-      </p>
-      <div class="table-responsive">
-        <table class="table table-sm align-middle table-xs">
-          <thead>
-            <tr>
-              <th>Ganjaran</th>
-              <th>Perlu Point</th>
-              <th>Diskaun</th>
-              <th>Min Order</th>
-              <th>Sah (hari)</th>
-              <th class="text-end">Tindakan</th>
-            </tr>
-          </thead>
-          <tbody id="rwAvail">
-            <tr><td colspan="6">Memuatkan…</td></tr>
-          </tbody>
-        </table>
-      </div>
-      <div id="redeemMsg" class="small mt-2 text-muted"></div>
-    </div>
-  </div>
+    <div class="box mb-3">
+      <div class="fw-semibold mb-2">Tindakan</div>
 
-  <!-- Sejarah Point -->
-  <div class="card">
-    <div class="card-body">
-      <h5 class="card-title mb-2">Sejarah Point</h5>
-      <div class="table-responsive">
-        <table class="table table-sm table-xs align-middle">
-          <thead>
-            <tr>
-              <th>Tarikh</th>
-              <th>Keterangan</th>
-              <th class="text-end">Perubahan</th>
-            </tr>
-          </thead>
-          <tbody id="ptHist">
-            <tr><td colspan="3">Memuatkan…</td></tr>
-          </tbody>
-        </table>
+      <div class="action-list">
+        <div class="action-item" data-open="panelSummary">
+          <div class="action-left">
+            <div class="action-ico">📊</div>
+            <div>
+              <div class="action-title">Ringkasan Point</div>
+              <div class="action-sub">Lihat point ikut kategori 916, Gold Bar / Coin dan Tabung</div>
+            </div>
+          </div>
+          <div class="chev">›</div>
+        </div>
+
+        <div class="action-item" data-open="panelReward">
+          <div class="action-left">
+            <div class="action-ico">🎁</div>
+            <div>
+              <div class="action-title">Reward Tebusan</div>
+              <div class="action-sub">Semak reward yang boleh ditebus ke Tabung Emas</div>
+            </div>
+          </div>
+          <div class="chev">›</div>
+        </div>
+
+        <div class="action-item" data-open="panelHow">
+          <div class="action-left">
+            <div class="action-ico">ℹ️</div>
+            <div>
+              <div class="action-title">Cara Ia Berfungsi</div>
+              <div class="action-sub">Tengok flow point daripada belian sampai tebusan</div>
+            </div>
+          </div>
+          <div class="chev">›</div>
+        </div>
+
+        <div class="action-item" data-open="panelHist">
+          <div class="action-left">
+            <div class="action-ico">🕘</div>
+            <div>
+              <div class="action-title">Sejarah Point</div>
+              <div class="action-sub">Rekod transaksi point dan tebusan anda</div>
+            </div>
+          </div>
+          <div class="chev">›</div>
+        </div>
       </div>
     </div>
+
+    <div class="collapse mb-3" id="panelSummary">
+      <div class="panel">
+        <div class="panel-h">
+          <div class="fw-semibold">📊 Ringkasan Point</div>
+          <button class="btn btn-sm btn-outline-secondary" type="button" data-bs-toggle="collapse" data-bs-target="#panelSummary">Tutup</button>
+        </div>
+        <div class="panel-b">
+          <div id="summaryGrid" class="summary-grid">
+            <div class="metric-card">
+              <div class="metric-icon">💍</div>
+              <div class="metric-label">Point dari Barang Kemas 916</div>
+              <div class="metric-value" id="ptsJ916">0</div>
+              <div class="metric-note" id="amtJ916">Belian layak: RM0.00</div>
+            </div>
+
+            <div class="metric-card">
+              <div class="metric-icon">🪙</div>
+              <div class="metric-label">Point dari Gold Bar / Coin</div>
+              <div class="metric-value" id="ptsGold999">0</div>
+              <div class="metric-note" id="amtGold999">Belian layak: RM0.00</div>
+            </div>
+
+            <div class="metric-card">
+              <div class="metric-icon">🏦</div>
+              <div class="metric-label">Point dari Tabung Emas</div>
+              <div class="metric-value" id="ptsTabung">0</div>
+              <div class="metric-note" id="amtTabung">Belian layak: RM0.00</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="collapse mb-3" id="panelReward">
+      <div class="panel">
+        <div class="panel-h">
+          <div class="fw-semibold">🎁 Reward Tebusan</div>
+          <button class="btn btn-sm btn-outline-secondary" type="button" data-bs-toggle="collapse" data-bs-target="#panelReward">Tutup</button>
+        </div>
+        <div class="panel-b">
+          <div class="note-box mb-3">
+            Tebusan utama yang disyorkan ialah <strong>tukar point kepada emas dan masuk terus ke Tabung Emas</strong>.
+          </div>
+          <div id="rewardGrid" class="reward-grid"></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="collapse mb-3" id="panelHow">
+      <div class="panel">
+        <div class="panel-h">
+          <div class="fw-semibold">ℹ️ Cara Ia Berfungsi</div>
+          <button class="btn btn-sm btn-outline-secondary" type="button" data-bs-toggle="collapse" data-bs-target="#panelHow">Tutup</button>
+        </div>
+        <div class="panel-b">
+          <div class="how-list">
+            <div class="how-item">
+              <div class="how-num">1</div>
+              <div>
+                <p class="how-title">Beli emas seperti biasa</p>
+                <p class="how-desc">Setiap transaksi PAID yang layak akan dikira point secara automatik mengikut kategori produk.</p>
+              </div>
+            </div>
+
+            <div class="how-item">
+              <div class="how-num">2</div>
+              <div>
+                <p class="how-title">Point terkumpul dalam akaun anda</p>
+                <p class="how-desc">Page ini tunjuk baki point semasa, sejarah point, dan lagi berapa point untuk capai reward tertentu.</p>
+              </div>
+            </div>
+
+            <div class="how-item">
+              <div class="how-num">3</div>
+              <div>
+                <p class="how-title">Tebus kepada emas</p>
+                <p class="how-desc">Apabila point cukup, anda boleh tebus reward dan ia akan dimasukkan ke Tabung Emas anda selepas diluluskan / diproses.</p>
+              </div>
+            </div>
+
+            <div class="how-item">
+              <div class="how-num">4</div>
+              <div>
+                <p class="how-title">Lebih belanja, lebih cepat capai emas tambahan</p>
+                <p class="how-desc">Sistem ini direka supaya beli emas → dapat point → point jadi emas semula.</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="collapse mb-3" id="panelHist">
+      <div class="panel">
+        <div class="panel-h">
+          <div>
+            <div class="fw-semibold">🕘 Sejarah Point</div>
+            <div class="muted xsmall">Hanya transaksi PAID / COMPLETED yang layak akan dikira.</div>
+          </div>
+          <button class="btn btn-sm btn-outline-secondary" type="button" data-bs-toggle="collapse" data-bs-target="#panelHist">Tutup</button>
+        </div>
+        <div class="panel-b">
+          <div id="historyWrap" class="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>Tarikh</th>
+                  <th>Sumber</th>
+                  <th>Butiran</th>
+                  <th>Jumlah Belian</th>
+                  <th>Point</th>
+                  <th>Status</th>
+                </tr>
+              </thead>
+              <tbody id="historyBody"></tbody>
+            </table>
+          </div>
+
+          <div id="historyEmpty" class="empty-box d-none mt-2">
+            Belum ada transaksi yang layak untuk point.
+          </div>
+        </div>
+      </div>
+    </div>
+
   </div>
 </div>
 
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<script src="auth.js?v=13.1"></script>
+  <div class="modal fade" id="redeemModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content" style="border-radius:16px;border:1px solid #e9ecef;">
+        <div class="modal-header border-0 pb-0">
+          <h5 class="modal-title fw-bold">Sahkan Tebusan</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Tutup"></button>
+        </div>
+        <div class="modal-body pt-2">
+          <div class="box p-3 mb-3" style="border-radius:14px;">
+            <div class="d-flex justify-content-between align-items-center gap-3">
+              <div>
+                <div class="fw-bold" id="redeemRewardName">0.05g Emas</div>
+                <div class="small-muted" id="redeemRewardDesc">Akan dimasukkan ke Tabung Emas</div>
+              </div>
+              <div class="text-end">
+                <div class="small-muted">Kos Tebusan</div>
+                <div class="fw-bold" id="redeemRewardCost">2000 point</div>
+              </div>
+            </div>
+          </div>
 
+          <div class="note-box mb-3">
+            Permintaan tebusan akan direkodkan. Lepas itu admin boleh semak dan proses masuk ke Tabung Emas anda.
+          </div>
+
+          <div class="form-check">
+            <input class="form-check-input" type="checkbox" id="redeemAgree">
+            <label class="form-check-label" for="redeemAgree">
+              Saya faham point akan ditolak apabila permintaan tebusan direkodkan / diproses.
+            </label>
+          </div>
+        </div>
+        <div class="modal-footer border-0 pt-0">
+          <button type="button" class="btn btn-outline-secondary btn-ea" data-bs-dismiss="modal">Tutup</button>
+          <button type="button" class="btn btn-gold btn-ea" id="btnConfirmRedeem">Hantar Permintaan Tebus</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+  <script src="/auth.js?v=13.1"></script>
 <script>
-// ================== Supabase & util asas ==================
-const SB_URL = "https://dduizetstqqjrpsezbpi.supabase.co";
-const SB_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRkdWl6ZXRzdHFxanJwc2V6YnBpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTg3MzI0ODQsImV4cCI6MjA3NDMwODQ4NH0.CrlHXrmHtKgR9qc2192U6quRb5lpFEeOSgwG0Lb8KRM";
+    (function(){
+      "use strict";
 
-window.sb = window.sb || window.supabase.createClient(SB_URL, SB_KEY);
-const sb = window.sb;
+      const SUPABASE_URL = "https://dduizetstqqjrpsezbpi.supabase.co";
+      const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRkdWl6ZXRzdHFxanJwc2V6YnBpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTg3MzI0ODQsImV4cCI6MjA3NDMwODQ4NH0.CrlHXrmHtKgR9qc2192U6quRb5lpFEeOSgwG0Lb8KRM";
 
-const $  = id => document.getElementById(id);
-const MY = "ms-MY";
+      window.sb = window.sb || window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
+        auth: {
+          persistSession: true,
+          autoRefreshToken: true,
+          detectSessionInUrl: true,
+          storage: window.localStorage
+        }
+      });
 
-function money(n){ return Number(n||0).toFixed(2); }
-function dt(x){
-  try{
-    return new Date(x).toLocaleString(MY,{dateStyle:"medium",timeStyle:"short",hour12:true});
-  }catch{ return x; }
-}
+      const supabase = window.sb;
 
-// ================== LOCALSTORAGE: kupon loyalty ==================
-const LS_MY_COUPONS = "emasamir_loyalty_coupons_v1";
+      const POINT_RULES = {
+        j916_rm_per_point: 2,
+        gold999_rm_per_point: 8,
+        tabung_rm_per_point: 4,
+        points_per_rm: 100,
+        points_enabled: 1
+      };
 
-/**
- * Simpan kupon hasil tebus ke localStorage
- * Format yang akan dibaca oleh page checkout:
- *   [{ code, label, min_order, expires_at }, ...]
- */
-function saveLoyaltyCouponToLocal(coupon){
-  try{
-    if (!coupon || !coupon.code) return;
+      let REWARDS = [];
 
-    const raw  = localStorage.getItem(LS_MY_COUPONS);
-    const arr  = raw ? JSON.parse(raw) : [];
-    const list = Array.isArray(arr) ? arr.filter(x => x.code !== coupon.code) : [];
+      const state = {
+        identity: {
+          customerId: null,
+          phone: null,
+          phoneVariants: []
+        },
+        summary: {
+          earned_points: 0,
+          redeemed_points: 0,
+          balance_points: 0,
+          by_source: {
+            J916: { amount: 0, points: 0 },
+            GOLD999: { amount: 0, points: 0 },
+            TABUNG: { amount: 0, points: 0 }
+          }
+        },
+        rows: [],
+        redeemRows: [],
+        selectedReward: null
+      };
 
-    list.push({
-      code      : coupon.code,
-      label     : coupon.label || "",
-      min_order : Number(coupon.min_order || 0),
-      expires_at: coupon.expires_at || null
-    });
+      const el = {
+        alertBox: document.getElementById("alertBox"),
+        loginStatus: document.getElementById("loginStatus"),
+        heroBalance: document.getElementById("heroBalance"),
+        heroEarned: document.getElementById("heroEarned"),
+        heroRedeemed: document.getElementById("heroRedeemed"),
+        ptsJ916: document.getElementById("ptsJ916"),
+        ptsGold999: document.getElementById("ptsGold999"),
+        ptsTabung: document.getElementById("ptsTabung"),
+        amtJ916: document.getElementById("amtJ916"),
+        amtGold999: document.getElementById("amtGold999"),
+        amtTabung: document.getElementById("amtTabung"),
+        rewardGrid: document.getElementById("rewardGrid"),
+        historyWrap: document.getElementById("historyWrap"),
+        historyBody: document.getElementById("historyBody"),
+        historyEmpty: document.getElementById("historyEmpty"),
+        btnRefresh: document.getElementById("btnRefresh"),
+        redeemRewardName: document.getElementById("redeemRewardName"),
+        redeemRewardDesc: document.getElementById("redeemRewardDesc"),
+        redeemRewardCost: document.getElementById("redeemRewardCost"),
+        redeemAgree: document.getElementById("redeemAgree"),
+        btnConfirmRedeem: document.getElementById("btnConfirmRedeem"),
+        ruleJ916: document.getElementById("ruleJ916"),
+        ruleGold999: document.getElementById("ruleGold999"),
+        ruleTabung: document.getElementById("ruleTabung"),
+        ruleValue: document.getElementById("ruleValue"),
+        ruleValueTop: document.getElementById("ruleValueTop")
+      };
 
-    localStorage.setItem(LS_MY_COUPONS, JSON.stringify(list));
-    console.log("[LOYALTY] saved coupon:", coupon);
-  }catch(e){
-    console.warn("[LOYALTY] cannot save coupon:", e);
+      const redeemModal = new bootstrap.Modal(document.getElementById("redeemModal"));
+
+      let _panels = {};
+      let _historyLoadedOnce = false;
+
+      function initPanels(){
+        _panels = {
+          panelSummary: document.getElementById("panelSummary"),
+          panelReward: document.getElementById("panelReward"),
+          panelHow: document.getElementById("panelHow"),
+          panelHist: document.getElementById("panelHist")
+        };
+
+        document.querySelectorAll(".action-item[data-open]").forEach(item => {
+          item.addEventListener("click", async () => {
+            const id = item.getAttribute("data-open");
+            await openPanel(id);
+          });
+        });
+      }
+
+      async function openPanel(id){
+        Object.keys(_panels).forEach(pid => {
+          if (pid !== id){
+            try{
+              const inst = bootstrap.Collapse.getOrCreateInstance(_panels[pid], { toggle:false });
+              inst.hide();
+            }catch{}
+          }
+        });
+
+        const target = _panels[id];
+        if (!target) return;
+
+        try{
+          const inst = bootstrap.Collapse.getOrCreateInstance(target, { toggle:false });
+          inst.show();
+        }catch{
+          target.classList.add("show");
+        }
+
+        if (id === "panelHist" && !_historyLoadedOnce){
+          _historyLoadedOnce = true;
+          renderHistory();
+        }
+
+        setTimeout(() => {
+          try{ target.scrollIntoView({ behavior:"smooth", block:"start" }); }catch{}
+        }, 140);
+      }
+
+      function money(v){
+        const n = Number(v || 0);
+        return new Intl.NumberFormat("ms-MY", {
+          style: "currency",
+          currency: "MYR",
+          minimumFractionDigits: 2,
+          maximumFractionDigits: 2
+        }).format(n);
+      }
+
+      function fmtDate(dt){
+        if (!dt) return "-";
+        const d = new Date(dt);
+        if (Number.isNaN(d.getTime())) return String(dt);
+        return d.toLocaleString("ms-MY", {
+          year: "numeric",
+          month: "short",
+          day: "2-digit",
+          hour: "2-digit",
+          minute: "2-digit"
+        });
+      }
+
+      function fmtPoint(n){
+        return new Intl.NumberFormat("ms-MY", {
+          maximumFractionDigits: 0
+        }).format(parseNum(n));
+      }
+
+      function escapeHtml(str){
+        return String(str ?? "")
+          .replaceAll("&", "&amp;")
+          .replaceAll("<", "&lt;")
+          .replaceAll(">", "&gt;")
+          .replaceAll('"', "&quot;")
+          .replaceAll("'", "&#039;");
+      }
+
+      function showAlert(type, msg){
+        el.alertBox.innerHTML = `
+          <div class="alert alert-${type} alert-dismissible fade show" role="alert" style="border-radius:16px;">
+            ${msg}
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Tutup"></button>
+          </div>
+        `;
+      }
+
+      function clearAlert(){
+        el.alertBox.innerHTML = "";
+      }
+
+      function digitsOnly(s){
+        return String(s || "").replace(/\D+/g, "");
+      }
+
+      function phoneVariants(phone){
+        const raw = digitsOnly(phone);
+        const set = new Set();
+        if (!raw) return [];
+
+        set.add(raw);
+
+        if (raw.startsWith("60") && raw.length > 2){
+          set.add("0" + raw.slice(2));
+        }
+
+        if (raw.startsWith("0")){
+          set.add("60" + raw.slice(1));
+        }
+
+        if (!raw.startsWith("0") && !raw.startsWith("60")){
+          set.add(raw);
+          set.add("0" + raw);
+          set.add("60" + raw.replace(/^0+/, ""));
+        }
+
+        return Array.from(set).filter(Boolean);
+      }
+
+      function parseNum(v){
+        const n = Number(v);
+        return Number.isFinite(n) ? n : 0;
+      }
+
+      function calcPoints(amount, rmPerPoint){
+        const amt = parseNum(amount);
+        const rate = parseNum(rmPerPoint);
+        if (amt <= 0 || rate <= 0) return 0;
+        return Math.floor(amt / rate);
+      }
+
+      function pct(a, b){
+        if (!b || b <= 0) return 0;
+        return Math.max(0, Math.min(100, (a / b) * 100));
+      }
+
+      function setLoading(){
+        el.rewardGrid.innerHTML = `
+          <div class="loading-skeleton"></div>
+          <div class="loading-skeleton"></div>
+        `;
+        el.historyBody.innerHTML = `
+          <tr><td colspan="6"><div class="loading-skeleton"></div></td></tr>
+          <tr><td colspan="6"><div class="loading-skeleton"></div></td></tr>
+        `;
+      }
+
+      function updateRuleText(){
+        el.ruleJ916.textContent = `RM${POINT_RULES.j916_rm_per_point} = 1 point`;
+        el.ruleGold999.textContent = `RM${POINT_RULES.gold999_rm_per_point} = 1 point`;
+        el.ruleTabung.textContent = `RM${POINT_RULES.tabung_rm_per_point} = 1 point`;
+        el.ruleValue.textContent = `${POINT_RULES.points_per_rm} point = RM1`;
+        el.ruleValueTop.textContent = `${POINT_RULES.points_per_rm} point = RM1`;
+      }
+
+      async function loadPointConfigAndRewards(){
+        try{
+          const { data: cfgRows, error: cfgError } = await supabase
+            .from("points_config")
+            .select("key,value_num,value_text");
+
+          if (!cfgError && Array.isArray(cfgRows)){
+            const map = new Map(cfgRows.map(r => [String(r.key || ""), r]));
+            POINT_RULES.j916_rm_per_point = Number(map.get("j916_rm_per_point")?.value_num || POINT_RULES.j916_rm_per_point);
+            POINT_RULES.gold999_rm_per_point = Number(map.get("gold999_rm_per_point")?.value_num || POINT_RULES.gold999_rm_per_point);
+            POINT_RULES.tabung_rm_per_point = Number(map.get("tabung_rm_per_point")?.value_num || POINT_RULES.tabung_rm_per_point);
+            POINT_RULES.points_per_rm = Number(map.get("points_per_rm")?.value_num || POINT_RULES.points_per_rm);
+            POINT_RULES.points_enabled = Number(map.get("points_enabled")?.value_num || 1);
+          }
+
+          const { data: rewardRows, error: rewardError } = await supabase
+            .from("points_rewards")
+            .select("*")
+            .eq("is_active", true)
+            .order("sort_order", { ascending: true })
+            .order("created_at", { ascending: true });
+
+          if (!rewardError && Array.isArray(rewardRows)){
+            REWARDS = rewardRows.map((r, i) => ({
+              code: r.code,
+              name: r.name,
+              kind: r.reward_kind,
+              grams: Number(r.reward_grams || 0),
+              points_cost: Number(r.points_cost || 0),
+              value_rm: Number(r.reward_value_rm || 0),
+              recommended: i === 0,
+              desc: r.description || ""
+            }));
+          }
+
+          if (!REWARDS.length){
+            REWARDS = [
+              {
+                code: "TABUNG_005G",
+                name: "0.05g Emas",
+                kind: "TABUNG_GOLD",
+                grams: 0.05,
+                points_cost: 2000,
+                value_rm: 20,
+                recommended: true,
+                desc: "Dimasukkan ke Tabung Emas anda selepas permintaan diproses."
+              },
+              {
+                code: "TABUNG_010G",
+                name: "0.10g Emas",
+                kind: "TABUNG_GOLD",
+                grams: 0.10,
+                points_cost: 5000,
+                value_rm: 50,
+                recommended: false,
+                desc: "Ganjaran emas lebih besar untuk pelanggan yang konsisten membeli."
+              }
+            ];
+          }
+        }catch(e){
+          console.warn("[points] loadPointConfigAndRewards:", e);
+        }
+      }
+
+      async function getSessionUser(){
+        try{
+          const { data } = await supabase.auth.getUser();
+          return data?.user || null;
+        }catch(_e){
+          return null;
+        }
+      }
+
+      function getLocalValue(keys){
+        for (const key of keys){
+          const v = localStorage.getItem(key);
+          if (v) return v;
+        }
+        return "";
+      }
+
+      function renderAuthStatus(user){
+        const a = (window.auth_get && window.auth_get()) || {};
+        const name = a?.name || user?.user_metadata?.name || user?.email || state.identity.phone || "pengguna";
+        el.loginStatus.textContent = "Log masuk sebagai " + name;
+      }
+
+      async function resolveIdentity(){
+        const params = new URLSearchParams(location.search);
+        const user = await getSessionUser();
+        const auth = (window.auth_get && window.auth_get()) || {};
+
+        let customerId =
+          params.get("customer_id") ||
+          auth.customer_id ||
+          auth.id ||
+          getLocalValue(["ea_customer_id", "customer_id", "user_id", "uid"]) ||
+          "";
+
+        let phone =
+          params.get("phone") ||
+          auth.phone ||
+          getLocalValue(["ea_phone", "customer_phone", "phone", "user_phone"]) ||
+          user?.phone ||
+          user?.user_metadata?.phone ||
+          user?.phone_number ||
+          "";
+
+        customerId = customerId ? String(customerId).trim() : "";
+        phone = phone ? String(phone).trim() : "";
+
+        state.identity.customerId = customerId || null;
+        state.identity.phone = phone || null;
+        state.identity.phoneVariants = phoneVariants(phone);
+
+        if (!state.identity.customerId && state.identity.phoneVariants.length){
+          try{
+            const { data, error } = await supabase
+              .from("customers")
+              .select("id, phone")
+              .in("phone", state.identity.phoneVariants)
+              .limit(1)
+              .maybeSingle();
+
+            if (!error && data?.id){
+              state.identity.customerId = data.id;
+            }
+          }catch(e){
+            console.warn("[points] resolveIdentity customers lookup:", e);
+          }
+        }
+
+        try{
+          if (state.identity.customerId) localStorage.setItem("ea_customer_id", state.identity.customerId);
+          if (state.identity.phone) localStorage.setItem("ea_phone", state.identity.phone);
+        }catch(e){}
+
+        renderAuthStatus(user);
+
+        if (!state.identity.customerId && !state.identity.phoneVariants.length){
+          showAlert("warning", "Page point tak jumpa identiti customer. Sila login semula dahulu.");
+        }
+      }
+
+      async function fetchJ916Rows(){
+        const rows = [];
+        const seen = new Set();
+
+        if (state.identity.customerId){
+          const { data, error } = await supabase
+            .from("j916_orders")
+            .select("id,reference,order_code,name,grand_total_rm,subtotal_rm,unit_rm,qty,status,created_at,paid_at,customer_id,phone,weight_g")
+            .eq("customer_id", state.identity.customerId)
+            .in("status", ["PAID", "COMPLETED"]);
+
+          if (!error && Array.isArray(data)){
+            for (const row of data){
+              const key = row.id || row.reference || row.order_code;
+              if (!seen.has(key)){
+                seen.add(key);
+                rows.push(row);
+              }
+            }
+          }
+        }
+
+        if (state.identity.phoneVariants.length){
+          const { data, error } = await supabase
+            .from("j916_orders")
+            .select("id,reference,order_code,name,grand_total_rm,subtotal_rm,unit_rm,qty,status,created_at,paid_at,customer_id,phone,weight_g")
+            .in("phone", state.identity.phoneVariants)
+            .in("status", ["PAID", "COMPLETED"]);
+
+          if (!error && Array.isArray(data)){
+            for (const row of data){
+              const key = row.id || row.reference || row.order_code;
+              if (!seen.has(key)){
+                seen.add(key);
+                rows.push(row);
+              }
+            }
+          }
+        }
+
+        return rows;
+      }
+
+      async function fetchGoldbarRows(){
+        if (!state.identity.phoneVariants.length) return [];
+
+        const { data, error } = await supabase
+          .from("goldbar_order")
+          .select("id,reference_1,status,kind,weight_g,qty,design_name,grand_total_rm,total_rm,subtotal_rm,created_at,paid_at,customer_phone")
+          .in("customer_phone", state.identity.phoneVariants)
+          .in("status", ["PAID", "COMPLETED"]);
+
+        if (error || !Array.isArray(data)) return [];
+        return data;
+      }
+
+      async function fetchTabungRows(){
+        const rows = [];
+        const seen = new Set();
+
+        if (state.identity.customerId){
+          const { data, error } = await supabase
+            .from("tabung_txn")
+            .select("id,user_id,user_phone,kind,units,price_per_unit,total,status,created_at,paid_at,reference_1")
+            .eq("user_id", state.identity.customerId)
+            .eq("kind", "BUY")
+            .in("status", ["PAID", "APPROVED"]);
+
+          if (!error && Array.isArray(data)){
+            for (const row of data){
+              const key = row.id || row.reference_1;
+              if (!seen.has(key)){
+                seen.add(key);
+                rows.push(row);
+              }
+            }
+          }
+        }
+
+        if (state.identity.phoneVariants.length){
+          const { data, error } = await supabase
+            .from("tabung_txn")
+            .select("id,user_id,user_phone,kind,units,price_per_unit,total,status,created_at,paid_at,reference_1")
+            .in("user_phone", state.identity.phoneVariants)
+            .eq("kind", "BUY")
+            .in("status", ["PAID", "APPROVED"]);
+
+          if (!error && Array.isArray(data)){
+            for (const row of data){
+              const key = row.id || row.reference_1;
+              if (!seen.has(key)){
+                seen.add(key);
+                rows.push(row);
+              }
+            }
+          }
+        }
+
+        return rows;
+      }
+
+      async function fetchRedeemRows(){
+        const rows = [];
+        const seen = new Set();
+
+        try{
+          if (state.identity.customerId){
+            const { data, error } = await supabase
+              .from("points_redeem_requests")
+              .select("id,customer_id,phone,reward_code,reward_name,points_cost,reward_kind,reward_grams,reward_value_rm,status,created_at")
+              .eq("customer_id", state.identity.customerId)
+              .in("status", ["PENDING", "APPROVED", "DONE"]);
+
+            if (!error && Array.isArray(data)){
+              for (const row of data){
+                const key = row.id;
+                if (!seen.has(key)){
+                  seen.add(key);
+                  rows.push(row);
+                }
+              }
+            }
+          }
+
+          if (state.identity.phoneVariants.length){
+            const { data, error } = await supabase
+              .from("points_redeem_requests")
+              .select("id,customer_id,phone,reward_code,reward_name,points_cost,reward_kind,reward_grams,reward_value_rm,status,created_at")
+              .in("phone", state.identity.phoneVariants)
+              .in("status", ["PENDING", "APPROVED", "DONE"]);
+
+            if (!error && Array.isArray(data)){
+              for (const row of data){
+                const key = row.id;
+                if (!seen.has(key)){
+                  seen.add(key);
+                  rows.push(row);
+                }
+              }
+            }
+          }
+        }catch(_e){
+          return [];
+        }
+
+        return rows;
+      }
+
+      function buildHistory(j916Rows, goldRows, tabungRows, redeemRows){
+        const rows = [];
+        const summary = {
+          earned_points: 0,
+          redeemed_points: 0,
+          balance_points: 0,
+          by_source: {
+            J916: { amount: 0, points: 0 },
+            GOLD999: { amount: 0, points: 0 },
+            TABUNG: { amount: 0, points: 0 }
+          }
+        };
+
+        for (const row of j916Rows){
+          const amount = parseNum(row.grand_total_rm || row.subtotal_rm || (parseNum(row.unit_rm) * parseNum(row.qty)));
+          const points = calcPoints(amount, POINT_RULES.j916_rm_per_point);
+
+          summary.by_source.J916.amount += amount;
+          summary.by_source.J916.points += points;
+          summary.earned_points += points;
+
+          rows.push({
+            when: row.paid_at || row.created_at,
+            source: "J916",
+            detail: `${row.name || "Barang Kemas"}${row.order_code ? " • " + row.order_code : ""}${row.weight_g ? " • " + row.weight_g + "g" : ""}`,
+            amount,
+            points,
+            status: row.status || "PAID",
+            type: "EARN"
+          });
+        }
+
+        for (const row of goldRows){
+          const amount = parseNum(row.grand_total_rm || row.total_rm || row.subtotal_rm);
+          const points = calcPoints(amount, POINT_RULES.gold999_rm_per_point);
+
+          summary.by_source.GOLD999.amount += amount;
+          summary.by_source.GOLD999.points += points;
+          summary.earned_points += points;
+
+          rows.push({
+            when: row.paid_at || row.created_at,
+            source: "GOLD999",
+            detail: `${String(row.kind || "gold").toUpperCase()}${row.design_name ? " • " + row.design_name : ""}${row.qty ? " • Qty " + row.qty : ""}${row.weight_g ? " • " + row.weight_g + "g" : ""}`,
+            amount,
+            points,
+            status: row.status || "PAID",
+            type: "EARN"
+          });
+        }
+
+        for (const row of tabungRows){
+          const amount = parseNum(row.total);
+          const points = calcPoints(amount, POINT_RULES.tabung_rm_per_point);
+
+          summary.by_source.TABUNG.amount += amount;
+          summary.by_source.TABUNG.points += points;
+          summary.earned_points += points;
+
+          rows.push({
+            when: row.paid_at || row.created_at,
+            source: "TABUNG",
+            detail: `Tabung BUY${row.units ? " • " + row.units + " unit" : ""}${row.price_per_unit ? " • " + money(row.price_per_unit) + "/unit" : ""}`,
+            amount,
+            points,
+            status: row.status || "PAID",
+            type: "EARN"
+          });
+        }
+
+        for (const row of redeemRows){
+          const points = Math.abs(parseNum(row.points_cost));
+          summary.redeemed_points += points;
+
+          rows.push({
+            when: row.created_at,
+            source: "REDEEM",
+            detail: `${row.reward_name || row.reward_code || "Tebusan Point"}${row.reward_grams ? " • " + row.reward_grams + "g" : ""}`,
+            amount: parseNum(row.reward_value_rm),
+            points: -points,
+            status: row.status || "PENDING",
+            type: "REDEEM"
+          });
+        }
+
+        summary.balance_points = Math.max(0, summary.earned_points - summary.redeemed_points);
+
+        rows.sort((a, b) => new Date(b.when || 0) - new Date(a.when || 0));
+
+        state.rows = rows;
+        state.summary = summary;
+      }
+
+      function renderSummary(){
+        el.heroBalance.textContent = fmtPoint(state.summary.balance_points) + " Point";
+        el.heroEarned.textContent = fmtPoint(state.summary.earned_points);
+        el.heroRedeemed.textContent = fmtPoint(state.summary.redeemed_points);
+
+        el.ptsJ916.textContent = fmtPoint(state.summary.by_source.J916.points);
+        el.ptsGold999.textContent = fmtPoint(state.summary.by_source.GOLD999.points);
+        el.ptsTabung.textContent = fmtPoint(state.summary.by_source.TABUNG.points);
+
+        el.amtJ916.textContent = "Belian layak: " + money(state.summary.by_source.J916.amount);
+        el.amtGold999.textContent = "Belian layak: " + money(state.summary.by_source.GOLD999.amount);
+        el.amtTabung.textContent = "Belian layak: " + money(state.summary.by_source.TABUNG.amount);
+      }
+
+      function renderRewards(){
+        const bal = state.summary.balance_points;
+
+        if (!POINT_RULES.points_enabled){
+          el.rewardGrid.innerHTML = `
+            <div class="empty-box">
+              Sistem point sedang ditutup sementara oleh admin.
+            </div>
+          `;
+          return;
+        }
+
+        el.rewardGrid.innerHTML = "";
+
+        for (const reward of REWARDS){
+          const enough = bal >= reward.points_cost;
+          const progress = pct(bal, reward.points_cost);
+          const remain = Math.max(0, reward.points_cost - bal);
+
+          const div = document.createElement("div");
+          div.className = "reward-card" + (reward.recommended ? " recommended" : "");
+
+          div.innerHTML = `
+            ${reward.recommended ? `<div class="badge-rec">Paling Popular</div>` : ``}
+            <div class="reward-top">
+              <div class="reward-icon">🪙</div>
+              <div>
+                <h3 class="reward-title">${escapeHtml(reward.name)}</h3>
+                <div class="reward-sub">${reward.grams ? reward.grams + "g" : ""} • Masuk Tabung Emas</div>
+              </div>
+            </div>
+
+            <div class="reward-points">⭐ ${fmtPoint(reward.points_cost)} point</div>
+
+            <div class="reward-desc">${escapeHtml(reward.desc)}</div>
+
+            <div class="progress-wrap">
+              <div class="progress">
+                <div class="progress-bar bg-dark" role="progressbar" style="width:${progress}%"></div>
+              </div>
+            </div>
+
+            <div class="reward-meta">
+              <span>${enough ? "Point cukup untuk tebus" : "Lagi " + fmtPoint(remain) + " point diperlukan"}</span>
+              <span>Nilai anggaran: ${money(reward.value_rm)}</span>
+            </div>
+
+            <button class="btn ${enough ? "btn-gold" : "btn-outline-dark"} btn-ea w-100 btn-redeem" data-code="${reward.code}">
+              ${enough ? "Tebus ke Tabung" : "Belum Cukup"}
+            </button>
+          `;
+
+          el.rewardGrid.appendChild(div);
+        }
+
+        document.querySelectorAll(".btn-redeem").forEach(btn => {
+          btn.addEventListener("click", () => {
+            const code = btn.getAttribute("data-code");
+            const reward = REWARDS.find(x => x.code === code);
+            if (!reward) return;
+
+            if (state.summary.balance_points < reward.points_cost){
+              showAlert("warning", `Point anda belum cukup untuk tebus <strong>${escapeHtml(reward.name)}</strong>.`);
+              return;
+            }
+
+            state.selectedReward = reward;
+            el.redeemAgree.checked = false;
+            el.redeemRewardName.textContent = reward.name;
+            el.redeemRewardDesc.textContent = reward.desc;
+            el.redeemRewardCost.textContent = fmtPoint(reward.points_cost) + " point";
+            redeemModal.show();
+          });
+        });
+      }
+
+      function sourceLabel(source){
+        if (source === "J916") return "💍 916";
+        if (source === "GOLD999") return "🪙 Gold Bar / Coin";
+        if (source === "TABUNG") return "🏦 Tabung";
+        if (source === "REDEEM") return "🎁 Tebusan";
+        return source;
+      }
+
+      function renderHistory(){
+        el.historyBody.innerHTML = "";
+
+        if (!state.rows.length){
+          el.historyWrap.classList.add("d-none");
+          el.historyEmpty.classList.remove("d-none");
+          return;
+        }
+
+        el.historyWrap.classList.remove("d-none");
+        el.historyEmpty.classList.add("d-none");
+
+        for (const row of state.rows){
+          const tr = document.createElement("tr");
+          tr.innerHTML = `
+            <td>${escapeHtml(fmtDate(row.when))}</td>
+            <td><span class="source-pill">${escapeHtml(sourceLabel(row.source))}</span></td>
+            <td class="t-strong">${escapeHtml(row.detail || "-")}</td>
+            <td>${money(row.amount)}</td>
+            <td class="${row.points >= 0 ? "pts-plus" : "pts-minus"}">${row.points >= 0 ? "+" : ""}${fmtPoint(row.points)}</td>
+            <td>${escapeHtml(row.status || "-")}</td>
+          `;
+          el.historyBody.appendChild(tr);
+        }
+      }
+
+      async function submitRedeemRequest(){
+        if (!state.selectedReward) return;
+
+        if (!el.redeemAgree.checked){
+          showAlert("warning", "Sila tandakan pengesahan sebelum hantar permintaan tebus.");
+          return;
+        }
+
+        const reward = state.selectedReward;
+
+        if (state.summary.balance_points < reward.points_cost){
+          showAlert("warning", "Point tidak mencukupi untuk tebus reward ini.");
+          return;
+        }
+
+        el.btnConfirmRedeem.disabled = true;
+        el.btnConfirmRedeem.textContent = "Sedang hantar...";
+
+        try{
+          const { data: authRes, error: authErr } = await supabase.auth.getUser();
+          if (authErr) throw authErr;
+
+          const authUid = authRes?.user?.id || null;
+          if (!authUid){
+            throw new Error("Sesi login tak sah. Sila login semula.");
+          }
+
+          const cleanPhone = String(state.identity.phone || "").trim().replace(/\D/g, "");
+
+          const payload = {
+            customer_id: authUid,
+            phone: cleanPhone,
+            reward_code: reward.code,
+            reward_name: reward.name,
+            points_cost: Number(reward.points_cost || 0),
+            reward_kind: reward.kind,
+            reward_grams: Number(reward.grams || 0),
+            reward_value_rm: Number(reward.value_rm || 0),
+            status: "PENDING",
+            notes: "Permintaan tebus dari page Point Saya"
+          };
+
+          const { error } = await supabase
+            .from("points_redeem_requests")
+            .insert(payload);
+
+          if (error) throw error;
+
+          redeemModal.hide();
+          showAlert("success", `Permintaan tebus untuk <strong>${escapeHtml(reward.name)}</strong> berjaya dihantar.`);
+          await loadAll();
+
+        }catch(err){
+          console.error(err);
+          showAlert("danger", `Permintaan tebus gagal: ${escapeHtml(err?.message || "Ralat tidak diketahui")}`);
+        }finally{
+          el.btnConfirmRedeem.disabled = false;
+          el.btnConfirmRedeem.textContent = "Hantar Permintaan Tebus";
+        }
+      }
+
+      async function loadAll(){
+        clearAlert();
+        setLoading();
+
+        await loadPointConfigAndRewards();
+        updateRuleText();
+        await resolveIdentity();
+
+        const [j916Rows, goldRows, tabungRows, redeemRows] = await Promise.all([
+          fetchJ916Rows(),
+          fetchGoldbarRows(),
+          fetchTabungRows(),
+          fetchRedeemRows()
+        ]);
+
+        state.redeemRows = redeemRows;
+        buildHistory(j916Rows, goldRows, tabungRows, redeemRows);
+        renderSummary();
+        renderRewards();
+
+        if (_historyLoadedOnce){
+          renderHistory();
+        } else {
+          el.historyBody.innerHTML = `<tr><td colspan="6" class="muted">Sejarah belum dibuka…</td></tr>`;
+        }
+      }
+
+      function bind(){
+        el.btnRefresh.addEventListener("click", loadAll);
+        el.btnConfirmRedeem.addEventListener("click", submitRedeemRequest);
+      }
+
+      initPanels();
+      bind();
+      loadAll();
+    })();
+  </script>
+<script>
+/* =========================
+   iPhone-style swipe back (Tabung) with drag animation
+   - swipe dari tepi kiri
+   - page ikut jari
+   - modal tutup dulu
+   - offcanvas tutup dulu
+   - wheel picker tak trigger swipe
+   ========================= */
+(function(){
+  const page = document.querySelector('.page-shell');
+  if (!page) return;
+
+  let startX = 0;
+  let startY = 0;
+  let currentX = 0;
+  let tracking = false;
+  let dragging = false;
+
+  const EDGE_ZONE = 24;
+  const MAX_DY = 70;
+  const TRIGGER_RATIO = 0.33;
+
+  function getOpenModalEl(){
+    const modals = Array.from(document.querySelectorAll('.modal.show'));
+    return modals.length ? modals[modals.length - 1] : null;
   }
-}
 
-// ================== Telefon normalise (selari SQL) ==================
-function normalizePhone(raw){
-  if(!raw) return null;
-  let v = (""+raw).trim();
-  if(!v) return null;
+  function getOpenOffcanvasEl(){
+    const panels = Array.from(document.querySelectorAll('.offcanvas.show'));
+    return panels.length ? panels[panels.length - 1] : null;
+  }
 
-  if(v.startsWith("+"))  return v;              // +60..., +65...
-  if(v.startsWith("00")) return "+"+v.slice(2); // 0065.. -> +65..
-  if(v.startsWith("601"))return "+"+v;          // 6013.. -> +6013..
-  if(v.startsWith("0"))  return "+60"+v.slice(1); // 013.. -> +6013..
+  function isWheelPickerOpen(){
+    const picker = document.getElementById('numberPickerModal');
+    return !!(picker && picker.classList.contains('show'));
+  }
 
-  return v; // fallback
-}
+  function closeTopModal(){
+    const el = getOpenModalEl();
+    if (!el) return false;
 
-// ================== State global ==================
-let gUser      = null;
-let gPhoneE164 = null;
-let gBalance   = 0;
-
-// ================== Auth & load asas ==================
-async function requireLogin(){
-  const infoEl = $("authInfo");
-  try{
-    const a = (window.auth_get && window.auth_get()) || null;
-    if(!a){
-      infoEl.textContent = "Sila log masuk terlebih dahulu.";
-      return null;
+    try{
+      const inst = bootstrap.Modal.getInstance(el) || bootstrap.Modal.getOrCreateInstance(el);
+      inst.hide();
+      return true;
+    }catch(_){
+      el.classList.remove('show');
+      el.style.display = 'none';
+      document.body.classList.remove('modal-open');
+      document.querySelectorAll('.modal-backdrop').forEach(x => x.remove());
+      return true;
     }
-    const phone = a.phone || a.msisdn || a.username || "";
-    const nrm   = normalizePhone(phone);
-    gUser       = a;
-    gPhoneE164  = nrm;
-
-    infoEl.textContent = `Log masuk sebagai: ${nrm || phone || "(tanpa nombor telefon)"}`;
-    return a;
-  }catch(e){
-    infoEl.textContent = "Ralat semak akaun: " + (e?.message||e);
-    return null;
-  }
-}
-
-async function loadBalance(){
-  if(!gPhoneE164){
-    $("ptBalance").textContent = "0";
-    return;
   }
 
-  const { data, error } = await sb
-    .from("v_loyalty_balance")
-    .select("phone_e164, balance")
-    .eq("phone_e164", gPhoneE164)
-    .maybeSingle();
+  function closeOffcanvas(){
+    const el = getOpenOffcanvasEl();
+    if (!el) return false;
 
-  if(error){
-    $("ptBalance").textContent = "0";
-    console.error("balance error", error);
-    return;
+    try{
+      const inst = bootstrap.Offcanvas.getInstance(el) || bootstrap.Offcanvas.getOrCreateInstance(el);
+      inst.hide();
+      return true;
+    }catch(_){
+      el.classList.remove('show');
+      el.style.visibility = 'hidden';
+      document.body.classList.remove('offcanvas-open');
+      document.querySelectorAll('.offcanvas-backdrop').forEach(x => x.remove());
+      return true;
+    }
   }
 
-  gBalance = data?.balance || 0;
-  $("ptBalance").textContent = gBalance;
-}
-
-async function loadHistory(limit=50){
-  const body = $("ptHist");
-  if(!gPhoneE164){
-    body.innerHTML = `<tr><td colspan="3">Tiada sejarah point (tiada nombor telefon).</td></tr>`;
-    return;
+  function goBackPage(){
+    if (window.history.length > 1){
+      history.back();
+    }else{
+      location.href = 'index.html';
+    }
   }
 
-  const { data, error } = await sb
-    .from("loyalty_points_ledger")
-    .select("created_at, points, note, direction")
-    .eq("phone_e164", gPhoneE164)
-    .order("created_at", { ascending:false })
-    .limit(limit);
-
-  if(error){
-    body.innerHTML = `<tr><td colspan="3">Ralat: ${error.message}</td></tr>`;
-    return;
-  }
-  if(!data || !data.length){
-    body.innerHTML = `<tr><td colspan="3">Belum ada rekod point.</td></tr>`;
-    return;
+  function resetPage(){
+    page.classList.remove('dragging');
+    page.style.transform = 'translateX(0)';
+    setTimeout(()=>{
+      document.body.classList.remove('swipe-peek');
+    }, 220);
   }
 
-  body.innerHTML = data.map(r=>{
-    const sign = r.points > 0 ? "+" : "";
-    const cls  = r.points > 0 ? "text-success" : "text-danger";
-    const note = r.note || (r.direction === "EARN" ? "Dapat point" : "Tebus / pelarasan");
-    return `
-      <tr>
-        <td>${dt(r.created_at)}</td>
-        <td>${note}</td>
-        <td class="text-end ${cls}">${sign}${r.points}</td>
-      </tr>
-    `;
-  }).join("");
-}
+  document.addEventListener('touchstart', function(e){
+    if (!e.touches || !e.touches.length) return;
+    if (isWheelPickerOpen()) return;
 
-// ================== Ganjaran boleh tebus ==================
-async function loadAvailableRewards(){
-  const body = $("rwAvail");
-  const msg  = $("redeemMsg");
+    const t = e.touches[0];
+    startX = t.clientX;
+    startY = t.clientY;
+    currentX = 0;
+    dragging = false;
 
-  const { data, error } = await sb
-    .from("loyalty_rewards")
-    .select("*")
-    .eq("is_active", true)
-    .order("required_points", { ascending:true });
+    tracking = startX <= EDGE_ZONE;
+  }, { passive:true });
 
-  if(error){
-    body.innerHTML = `<tr><td colspan="6">Ralat muat ganjaran: ${error.message}</td></tr>`;
-    return;
-  }
-  if(!data || !data.length){
-    body.innerHTML = `<tr><td colspan="6">Tiada ganjaran aktif buat masa ini.</td></tr>`;
-    return;
-  }
+  document.addEventListener('touchmove', function(e){
+    if (!tracking || !e.touches || !e.touches.length) return;
+    if (isWheelPickerOpen()) return;
 
-  body.innerHTML = data.map(r=>{
-    const jenis = r.discount_type === "percent"
-      ? `${Number(r.discount_value||0).toFixed(2)}%`
-      : `RM ${money(r.discount_value)}`;
-    const perlu  = r.required_points || 0;
-    const bolehTebus = gBalance >= perlu;
-    const disabledAttr = bolehTebus ? "" : "disabled";
-    const btnLabel = bolehTebus ? "Tebus" : "Tidak cukup point";
+    const t = e.touches[0];
+    const dx = t.clientX - startX;
+    const dy = Math.abs(t.clientY - startY);
 
-    return `
-      <tr>
-        <td>
-          <b>${r.title || r.code}</b>
-          <div class="small text-muted">${r.description || ""}</div>
-        </td>
-        <td>${perlu}</td>
-        <td>${jenis}</td>
-        <td>RM ${money(r.min_order_rm||0)}</td>
-        <td>${r.valid_days || 0}</td>
-        <td class="text-end">
-          <button class="btn btn-sm btn-primary"
-                  data-reward="${r.id}"
-                  ${disabledAttr}>${btnLabel}</button>
-        </td>
-      </tr>
-    `;
-  }).join("");
+    if (dy > MAX_DY) return;
+    if (dx <= 0) return;
 
-  // Wiring butang Tebus
-  [...body.querySelectorAll("button[data-reward]")].forEach(btn=>{
-    btn.onclick = async ()=>{
-      const rewardId = btn.getAttribute("data-reward");
-      if(!gUser || !gPhoneE164){
-        alert("Sila log masuk terlebih dahulu.");
-        return;
-      }
-      if(btn.disabled) return;
-      if(!confirm("Tebus ganjaran ini dengan point anda?")) return;
+    currentX = dx;
+    dragging = true;
 
-      msg.textContent = "Menebus ganjaran…";
+    document.body.classList.add('swipe-peek');
+    page.classList.add('dragging');
+    page.style.transform = `translateX(${dx}px)`;
+  }, { passive:true });
 
-      try{
-        // Cari row ganjaran asal (untuk ambil min_order dll)
-        const reward = (data || []).find(r => String(r.id) === String(rewardId)) || null;
+  document.addEventListener('touchend', function(){
+    if (!tracking) return;
 
-        const { data: d2, error: e2 } = await sb.rpc("redeem_loyalty_reward", {
-          p_phone_raw: gPhoneE164,
-          p_reward_id: rewardId
-        });
-        if(e2) throw e2;
+    tracking = false;
+    page.classList.remove('dragging');
 
-        const row   = (Array.isArray(d2) && d2[0]) ? d2[0] : d2;
-        const code  = row?.coupon_code || row?.code || "(tiada kod)";
-        const endAt = row?.coupon_end_at || row?.end_at || null;
-        const minRm = row?.min_order_rm ?? reward?.min_order_rm ?? 0;
-        const label =
-          row?.coupon_title ||
-          row?.title ||
-          row?.reward_title ||
-          row?.description ||
-          reward?.title ||
-          reward?.code ||
-          "Kupon loyalty";
+    if (!dragging){
+      document.body.classList.remove('swipe-peek');
+      return;
+    }
 
-        msg.innerHTML =
-          `✔ Berjaya tebus! Kupon anda: <b>${code}</b> ` +
-          `(sila lihat di bahagian kupon semasa checkout).`;
+    const threshold = window.innerWidth * TRIGGER_RATIO;
 
-        // 🔸 Simpan ke localStorage untuk digunakan di checkout (J916 / lain2)
-        saveLoyaltyCouponToLocal({
-          code      : code,
-          label     : label,
-          min_order : Number(minRm || 0),
-          expires_at: endAt
-        });
+    if (currentX >= threshold){
+      page.style.transform = `translateX(${window.innerWidth}px)`;
 
-        // Refresh baki & sejarah & senarai ganjaran
-        await loadBalance();
-        await loadHistory();
-        await loadAvailableRewards();
-      }catch(e){
-        console.error("redeem_loyalty_reward error:", e);
-        msg.textContent = "Gagal tebus: " + (e?.message || e);
-      }
-    };
-  });
-}
+      setTimeout(()=>{
+        if (closeTopModal()) {
+          page.style.transition = 'none';
+          page.style.transform = 'translateX(0)';
+          void page.offsetHeight;
+          page.style.transition = '';
+          document.body.classList.remove('swipe-peek');
+          return;
+        }
 
-// ================== Init ==================
-(async ()=>{
-  const u = await requireLogin();
-  if(!u) return;
+        if (closeOffcanvas()) {
+          page.style.transition = 'none';
+          page.style.transform = 'translateX(0)';
+          void page.offsetHeight;
+          page.style.transition = '';
+          document.body.classList.remove('swipe-peek');
+          return;
+        }
 
-  await loadBalance();
-  await loadHistory();
-  await loadAvailableRewards();
+        goBackPage();
+      }, 180);
+    } else {
+      resetPage();
+    }
+
+    dragging = false;
+    currentX = 0;
+  }, { passive:true });
 })();
-</script>
+ </script>
 </body>
 </html>

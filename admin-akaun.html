@@ -2,7 +2,8 @@
 <html lang="ms">
 <head>
   <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<link rel="stylesheet" href="/global.css">
   <title>Admin • Cashbook (Close Day) — Emas Amir</title>
 
   <!-- Libs -->
@@ -233,7 +234,7 @@
         <div class="card-body">
           <div class="fw-semibold">Auto Sources (Audit)</div>
           <div class="small text-muted">
-            Ringkasan auto: Sales Journal 916 + Misc Postage + Misc Service − Trade-in − Atome fee.
+            Ringkasan auto: Sales Journal 916 + Sales Journal 916 + Misc Postage + Misc Service − Trade-in − Atome fee.
           </div>
 
           <div class="table-responsive mt-3">
@@ -320,6 +321,16 @@ const SRC_SALES_916 = {
   mode: 'SALES_EXCL_SHIPPING'       // ✅ mode baru: tolak shipping supaya tak double
 };
 
+const SRC_SALES_999 = {
+  name: 'Sales Journal 999',
+  table: 'goldbar_order',
+  dateFieldCandidates: ['paid_at','created_at'],
+  statusField: 'status',
+  statusPaid: 'PAID',
+  payField: null,
+  amountField: '__AUTO__',
+  mode: 'SALES_999_EXCL_SHIPPING'
+};
 const SRC_POSTAGE = {
   name: 'Misc Postage',
   table: 'j916_orders',
@@ -441,6 +452,39 @@ function normalizePayMethod(v){
   return x;
 }
 
+function parseManualBillTextJ999(text){
+  const raw = safeStr(text).trim();
+  if(!raw) return { isManual:false, method:'' };
+
+  const upper = raw.toUpperCase();
+
+  if (upper === 'MANUAL_MAYBANK') return { isManual:true, method:'MAYBANK' };
+  if (upper === 'MANUAL_CASH')    return { isManual:true, method:'CASH' };
+  if (upper === 'MANUAL_CARD')    return { isManual:true, method:'CARD' };
+  if (upper === 'MANUAL_ATOME')   return { isManual:true, method:'ATOME' };
+  if (upper.startsWith('MANUAL_SPLIT')) return { isManual:true, method:'SPLIT' };
+
+  return { isManual:false, method:'' };
+}
+
+function normalizeGold999PayMethod(row){
+  // 1) manual override dari bill_id_text
+  const manual = parseManualBillTextJ999(row.bill_id_text);
+  if (manual.isManual) return manual.method;
+
+  // 2) kalau ada pay_method dalam row, guna itu
+  const pay = safeStr(row.pay_method).toUpperCase().trim();
+  if (pay){
+    if (pay.includes('ATOME') || pay === 'BNPL') return 'ATOME';
+    if (pay.includes('CARD') || pay.includes('EWALLET')) return 'CARD';
+    if (pay.includes('FPX') || pay.includes('BANK') || pay.includes('TRANSFER') || pay === 'QR') return 'MAYBANK';
+    if (pay.includes('CASH')) return 'CASH';
+  }
+
+  // 3) fallback: online masuk MAYBANK (selamat untuk buku tunai semasa)
+  return 'MAYBANK';
+}
+
 function readRmFromRowAuto(row){
   // cuba semua kemungkinan amount RM
   const rmCandidates = [
@@ -539,7 +583,7 @@ async function loadSourceGeneric(cfg, day){
 
   // ✅ fields selection
   let fields = '';
-  if(cfg.mode === 'POSTAGE'){
+ if(cfg.mode === 'POSTAGE'){
     // Untuk postage, kita WAJIB ada paid_at & created_at dalam select (untuk effective_ts)
     fields = [
       'paid_at',
@@ -557,6 +601,20 @@ async function loadSourceGeneric(cfg, day){
       'created_at',
       cfg.statusField,
       cfg.payField,
+      'subtotal_rm',
+      'pay_disc_rm',
+      'coupon_disc_rm',
+      'grand_total_rm',
+      'shipping_rm'
+    ].filter(Boolean).join(',');
+
+} else if(cfg.mode === 'SALES_999_EXCL_SHIPPING'){
+    // ✅ khas untuk J999
+    fields = [
+      'paid_at',
+      'created_at',
+      cfg.statusField,
+      'bill_id_text',
       'subtotal_rm',
       'pay_disc_rm',
       'coupon_disc_rm',
@@ -656,7 +714,7 @@ async function loadSourceGeneric(cfg, day){
 
     let amt = 0;
 
-    if(cfg.mode === 'POSTAGE'){
+  if(cfg.mode === 'POSTAGE'){
       // ✅ ikut admin-report: tracking_no mesti ada & bukan kosong
       if(safeStr(row.tracking_no).trim() === '') continue;
       amt = readShippingRmFromOrder(row);
@@ -675,6 +733,29 @@ async function loadSourceGeneric(cfg, day){
       }
 
       amt = net - ship;
+
+    } else if(cfg.mode === 'SALES_999_EXCL_SHIPPING'){
+      const ship = n2(row.shipping_rm);
+
+      let net = n2(row.grand_total_rm);
+      if(!(net > 0)){
+        const gross = n2(row.subtotal_rm);
+        const disc  = n2(row.pay_disc_rm) + n2(row.coupon_disc_rm);
+        net = gross - disc;
+      }
+
+      amt = net - ship;
+      if(!(amt > 0)) continue;
+
+      const pay999 = normalizeGold999PayMethod(row);
+
+      // split manual: agih ke MAYBANK sebagai selamat, jangan ganggu flow lain
+      if(pay999 === 'SPLIT'){
+        addInOut(out, 'MAYBANK', 'IN', amt);
+      } else {
+        addInOut(out, pay999, 'IN', amt);
+      }
+      continue;
 
 } else if(cfg.mode === 'TRADEIN_SPLIT'){
   const cashPart = n2(row.pay_cash_rm);
@@ -912,15 +993,16 @@ applyDayStatusUI(dayRow);
 
     // AUTO SOURCES
     const s1 = await loadSourceGeneric(SRC_SALES_916, day);
+    const s999 = await loadSourceGeneric(SRC_SALES_999, day);
     const s2 = await loadSourceGeneric(SRC_POSTAGE, day);
     const s3 = await loadSourceGeneric(SRC_SERVICE, day);
     const s4 = await loadSourceGeneric(SRC_TRADEIN, day);
 
-    warns.push(...(s1.warn||[]), ...(s2.warn||[]), ...(s3.warn||[]), ...(s4.warn||[]));
+    warns.push(...(s1.warn||[]), ...(s999.warn||[]), ...(s2.warn||[]), ...(s3.warn||[]), ...(s4.warn||[]));
 
     // Combine auto totals
     const autoCombined = blankPayObj();
-    for(const src of [s1,s2,s3,s4]){
+    for(const src of [s1, s999, s2, s3, s4]){
       for(const p of PAY){
         autoCombined[p].in  += n2(src.totals[p]?.in);
         autoCombined[p].out += n2(src.totals[p]?.out);
@@ -936,7 +1018,14 @@ applyDayStatusUI(dayRow);
     warns.push(...(manual.warn||[]));
 
     // Render tables
-    renderSourceTable('autoTbody', [s1,s2,s3,s4, {name: feeRow.name, totals: feeRow.totals}]);
+   renderSourceTable('autoTbody', [
+      s1,
+      s999,
+      s2,
+      s3,
+      s4,
+      {name: feeRow.name, totals: feeRow.totals}
+    ]);
     renderSourceTable('manualTbody', [manual]);
 
     // Combine ALL totals (auto + fee + manual)
@@ -978,6 +1067,7 @@ applyDayStatusUI(dayRow);
       sources: {
         auto: {
           sales_916: s1.totals,
+          sales_999: s999.totals,
           postage: s2.totals,
           service: s3.totals,
           tradein: s4.totals,

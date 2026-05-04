@@ -1,0 +1,1645 @@
+<!doctype html>
+<html lang="ms">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<link rel="stylesheet" href="/global.css">
+  <title>Admin • Gold999 Production — Emas Amir</title>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="auth.js?v=13.1"></script>
+  <script src="admin-guard.js?v=1"></script>
+
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+
+  <style>
+    :root{
+      --bg:#f6f7f9;
+      --card:#ffffff;
+      --border:#e9ecef;
+      --soft:#f8f9fa;
+      --muted:#6c757d;
+      --text:#212529;
+      --brand:#0d6efd;
+      --ok:#198754;
+      --warn:#fd7e14;
+      --danger:#dc3545;
+      --shadow:0 1px 2px rgba(16,24,40,.04);
+      --radius:16px;
+    }
+    *{box-sizing:border-box}
+    body{margin:0;background:var(--bg);color:var(--text);font:14px/1.45 system-ui,-apple-system,Segoe UI,Roboto,Arial}
+    .page{max-width:1400px;margin:0 auto;padding:16px}
+    .topbar{
+      display:flex;align-items:center;justify-content:space-between;gap:12px;
+      background:#fff;border:1px solid var(--border);border-radius:18px;
+      padding:12px 14px;box-shadow:var(--shadow);margin-bottom:14px
+    }
+    .top-left{display:flex;align-items:center;gap:12px;min-width:0}
+    .brand-title{font-weight:800;font-size:18px}
+    .muted{color:var(--muted)}
+    .xsmall{font-size:12px}
+    .pill{
+      display:inline-flex;align-items:center;gap:8px;
+      padding:8px 12px;border-radius:999px;background:#eef1f4;
+      border:1px solid #e5e7eb;font-size:12px;white-space:nowrap
+    }
+    .icon-btn{border-radius:12px}
+    .grid{
+      display:grid;grid-template-columns:360px minmax(0,1fr);gap:14px
+    }
+    .cardx{
+      background:var(--card);border:1px solid var(--border);
+      border-radius:var(--radius);box-shadow:var(--shadow)
+    }
+    .cardx .head{
+      padding:14px 16px;border-bottom:1px solid var(--border);
+      display:flex;align-items:center;justify-content:space-between;gap:10px
+    }
+    .cardx .body{padding:14px 16px}
+    .section-title{font-weight:800;font-size:16px}
+    .summary-grid{
+      display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px
+    }
+    .kpi{
+      border:1px solid var(--border);border-radius:14px;background:var(--soft);padding:12px
+    }
+    .kpi .label{font-size:12px;color:var(--muted);margin-bottom:4px}
+    .kpi .value{font-size:22px;font-weight:800}
+    .stack{display:flex;flex-direction:column;gap:14px}
+    .table-wrap{overflow:auto}
+    table{width:100%;border-collapse:collapse}
+    th,td{padding:10px 8px;border-bottom:1px solid var(--border);vertical-align:middle}
+    th{font-size:12px;color:var(--muted);font-weight:700;background:#fafbfc;position:sticky;top:0}
+    .badge-soft{
+      display:inline-flex;align-items:center;justify-content:center;
+      border:1px solid var(--border);border-radius:999px;padding:4px 10px;
+      background:#f8f9fa;font-size:12px;font-weight:700
+    }
+    .status-DRAFT{background:#eef1f4}
+    .status-DONE{background:#e8fff1;color:#136c43;border-color:#ccefd9}
+    .status-RETURN_MELT{background:#fff3e8;color:#a14c00;border-color:#ffd7b8}
+    .status-CANCEL{background:#fff1f3;color:#b42318;border-color:#fecdd3}
+    .status-LOCKED{background:#fff1f3;color:#b42318;border-color:#fecdd3}
+    .status-DRAFT-BATCH{background:#eef1f4}
+    .small-input{min-width:100px}
+    .toolbar{display:flex;flex-wrap:wrap;gap:8px}
+    .right{text-align:right}
+    .mono{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace}
+    .empty{
+      border:1px dashed var(--border);border-radius:14px;padding:18px;color:var(--muted);
+      text-align:center;background:#fafbfc
+    }
+    .clickable-row{cursor:pointer}
+    .clickable-row.active{background:#f4f8ff}
+    .sticky-actions{
+      position:sticky;bottom:0;background:linear-gradient(to top,#fff,rgba(255,255,255,.9));
+      border-top:1px solid var(--border);padding-top:12px;margin-top:12px
+    }
+    .piece-tools{
+      display:grid;
+      grid-template-columns:1.1fr 1.3fr 120px auto;
+      gap:10px;
+      margin-bottom:12px
+    }
+    .piece-filters{
+      display:grid;
+      grid-template-columns:1fr 1fr;
+      gap:10px;
+      margin-bottom:12px
+    }
+    .piece-group-row td{
+      background:#f7f9fc;
+      font-weight:800;
+      color:#334155;
+      border-top:2px solid #e9edf3
+    }
+    .read-badge{
+      display:inline-flex;
+      align-items:center;
+      min-height:31px;
+      padding:6px 10px;
+      border:1px solid var(--border);
+      border-radius:10px;
+      background:#fafbfc;
+      font-size:12px
+    }
+    .piece-actions{
+      display:flex;
+      flex-wrap:wrap;
+      gap:6px
+    }
+    .muted-box{
+      border:1px solid var(--border);
+      background:#fafbfc;
+      border-radius:12px;
+      padding:10px 12px;
+      color:var(--muted);
+      font-size:12px
+    }
+    @media (max-width: 1100px){
+      .grid{grid-template-columns:1fr}
+      .summary-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
+      .piece-tools{grid-template-columns:1fr 1fr}
+    }
+    @media (max-width: 680px){
+      .summary-grid{grid-template-columns:1fr}
+      .topbar{flex-direction:column;align-items:stretch}
+      .top-left{align-items:flex-start}
+      .piece-tools{grid-template-columns:1fr}
+      .piece-filters{grid-template-columns:1fr}
+    }
+  </style>
+</head>
+<body>
+  <div class="page">
+
+    <div class="topbar">
+      <div class="top-left">
+        <a href="index.html" class="btn btn-outline-secondary icon-btn">🏠</a>
+        <div>
+          <div class="brand-title">🏭 Admin Gold999 Production</div>
+          <div class="muted xsmall">Batch • Source • Piece • Melt • Lock • Barcode Asas</div>
+        </div>
+        <span id="who" class="pill">Memuatkan…</span>
+      </div>
+
+      <div class="d-flex gap-2">
+        <button class="btn btn-outline-secondary icon-btn" type="button" data-bs-toggle="offcanvas" data-bs-target="#menuCanvas" aria-controls="menuCanvas">
+          ☰ Menu
+        </button>
+        <a id="logout" class="btn btn-outline-secondary icon-btn" href="javascript:">Log keluar</a>
+      </div>
+    </div>
+
+    <div class="grid">
+
+      <div class="stack">
+        <div class="cardx">
+          <div class="head">
+            <div class="section-title">Batch</div>
+            <button id="btnNewBatch" class="btn btn-primary btn-sm">+ Batch Baru</button>
+          </div>
+          <div class="body">
+            <div class="mb-3">
+              <label class="form-label">Carian Batch</label>
+              <input id="searchBatch" class="form-control" placeholder="Cari batch no...">
+            </div>
+
+            <div class="table-wrap" style="max-height:520px">
+              <table>
+                <thead>
+                  <tr>
+                    <th>Batch</th>
+                    <th>Tarikh</th>
+                    <th>Status</th>
+                  </tr>
+                </thead>
+                <tbody id="batchList"></tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <div class="cardx">
+          <div class="head">
+            <div class="section-title">Batch Form</div>
+            <span id="selectedBatchStatus" class="badge-soft status-DRAFT-BATCH">Tiada batch</span>
+          </div>
+          <div class="body">
+            <div class="mb-3">
+              <label class="form-label">Batch No</label>
+              <input id="batchNo" class="form-control" placeholder="Contoh: GB-20260320-001">
+            </div>
+            <div class="mb-3">
+              <label class="form-label">Tarikh</label>
+              <input id="batchDate" type="date" class="form-control">
+            </div>
+            <div class="mb-3">
+              <label class="form-label">Nota</label>
+              <textarea id="batchNotes" class="form-control" rows="3" placeholder="Nota batch..."></textarea>
+            </div>
+
+            <div class="sticky-actions d-flex flex-wrap gap-2">
+              <button id="btnSaveBatch" class="btn btn-primary">Simpan Batch</button>
+              <button id="btnLockBatch" class="btn btn-danger">Lock Batch</button>
+              <button id="btnRefresh" class="btn btn-outline-secondary">Refresh</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="stack">
+        <div class="cardx">
+          <div class="head">
+            <div class="section-title">Summary Batch</div>
+            <div class="toolbar">
+              <span id="batchMeta" class="pill">Belum pilih batch</span>
+            </div>
+          </div>
+
+<div class="cardx">
+  <div class="head">
+    <div class="section-title">Queue Order J999</div>
+    <div class="toolbar">
+      <span id="prodQueueMeta" class="pill">Memuatkan…</span>
+    </div>
+  </div>
+  <div class="body">
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>Tarikh</th>
+            <th>Customer</th>
+            <th>Butiran</th>
+            <th>Status</th>
+            <th>Tindakan</th>
+          </tr>
+        </thead>
+        <tbody id="prodQueueBody">
+          <tr><td colspan="5"><div class="empty">Belum ada queue production</div></td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+          <div class="body">
+            <div class="summary-grid">
+              <div class="kpi">
+                <div class="label">Total Source</div>
+                <div id="sumTotalSource" class="value mono">0.000</div>
+              </div>
+              <div class="kpi">
+                <div class="label">Used Before Kikis</div>
+                <div id="sumUsedBefore" class="value mono">0.000</div>
+              </div>
+              <div class="kpi">
+                <div class="label">Available Stock</div>
+                <div id="sumAvailable" class="value mono">0.000</div>
+              </div>
+              <div class="kpi">
+                <div class="label">Done Goods</div>
+                <div id="sumDone" class="value mono">0.000</div>
+              </div>
+              <div class="kpi">
+                <div class="label">Return Melt</div>
+                <div id="sumReturnMelt" class="value mono">0.000</div>
+              </div>
+              <div class="kpi">
+                <div class="label">Lebihan Kikis</div>
+                <div id="sumScrapKikis" class="value mono">0.000</div>
+              </div>
+              <div class="kpi">
+                <div class="label">Allocated Draft</div>
+                <div id="sumAllocatedDraft" class="value mono">0.000</div>
+              </div>
+              <div class="kpi">
+                <div class="label">Lost Lebur</div>
+                <div id="sumMeltLoss" class="value mono">0.000</div>
+              </div>
+              <div class="kpi">
+                <div class="label">Batch Status</div>
+                <div id="sumBatchStatus" class="value" style="font-size:18px">-</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="cardx">
+          <div class="head">
+            <div class="section-title">Source / Stok Masuk</div>
+            <button id="btnAddSource" class="btn btn-primary btn-sm">+ Source</button>
+          </div>
+          <div class="body">
+            <div class="table-wrap">
+              <table id="sourceTable">
+                <thead>
+                  <tr>
+                    <th>Jenis</th>
+                    <th class="right">Berat (g)</th>
+                    <th>Nota</th>
+                    <th>Tindakan</th>
+                  </tr>
+                </thead>
+                <tbody id="sourceBody"></tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <div class="cardx">
+          <div class="head">
+            <div class="section-title">Piece Individual</div>
+            <div class="toolbar">
+              <span class="pill">Pilih group → isi qty → tambah terus</span>
+            </div>
+          </div>
+          <div class="body">
+
+            <div class="piece-tools">
+              <div>
+                <label class="form-label">Kategori</label>
+                <select id="pieceAddCategory" class="form-select">
+                  <option value="coin">Gold Coin</option>
+                  <option value="goldbar">Gold Bar</option>
+                  <option value="dinar">Dinar</option>
+                </select>
+              </div>
+
+              <div>
+                <label class="form-label">Group / Template</label>
+                <select id="pieceAddTemplate" class="form-select"></select>
+              </div>
+
+              <div>
+                <label class="form-label">Qty Pcs</label>
+                <input id="pieceAddQty" type="number" min="1" step="1" value="1" class="form-control">
+              </div>
+
+              <div class="d-flex align-items-end">
+                <button id="btnAddPieceBulk" class="btn btn-primary w-100">+ Tambah Pcs</button>
+              </div>
+            </div>
+
+            <div class="piece-filters">
+              <div>
+                <label class="form-label">View Kategori</label>
+                <select id="pieceViewCategory" class="form-select">
+                  <option value="">Semua Kategori</option>
+                  <option value="coin">Gold Coin</option>
+                  <option value="goldbar">Gold Bar</option>
+                  <option value="dinar">Dinar</option>
+                </select>
+              </div>
+              <div>
+                <label class="form-label">View Group</label>
+                <select id="pieceViewGroup" class="form-select">
+                  <option value="">Semua Group</option>
+                </select>
+              </div>
+            </div>
+
+            <div class="muted-box mb-3">
+              Tip: group dan target akan auto ikut pilihan. Staff cuma isi code, sebelum kikis, selepas kikis.
+            </div>
+
+            <div class="table-wrap">
+              <table id="pieceTable">
+                <thead>
+                  <tr>
+                    <th>No</th>
+                    <th>Code</th>
+                    <th>Jenis</th>
+                    <th>Group</th>
+                    <th class="right">Target</th>
+                    <th class="right">Sblm Kikis</th>
+                    <th class="right">Slps Kikis</th>
+                    <th class="right">Lebihan</th>
+                    <th>Status</th>
+                    <th>Barcode</th>
+                    <th>Tindakan</th>
+                  </tr>
+                </thead>
+                <tbody id="pieceBody"></tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <div class="cardx">
+          <div class="head">
+            <div class="section-title">Rekod Lebur</div>
+            <button id="btnAddMelt" class="btn btn-primary btn-sm">+ Melt</button>
+          </div>
+          <div class="body">
+            <div class="table-wrap">
+              <table id="meltTable">
+                <thead>
+                  <tr>
+                    <th>No Lebur</th>
+                    <th class="right">Sblm Lebur</th>
+                    <th class="right">Slps Lebur</th>
+                    <th class="right">Lost/Gain</th>
+                    <th>Include Lebihan Kikis</th>
+                    <th>Nota</th>
+                    <th>Tindakan</th>
+                  </tr>
+                </thead>
+                <tbody id="meltBody"></tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+  <div class="offcanvas offcanvas-end" tabindex="-1" id="menuCanvas" aria-labelledby="menuCanvasLabel">
+    <div class="offcanvas-header">
+      <h5 class="offcanvas-title" id="menuCanvasLabel">Menu Admin</h5>
+      <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Tutup"></button>
+    </div>
+    <div class="offcanvas-body">
+      <div class="d-grid gap-2">
+        <a class="btn btn-outline-secondary text-start" href="index.html">🏠 Dashboard</a>
+        <a class="btn btn-outline-secondary text-start" href="admin-j999.html">🪙 Admin J999</a>
+        <a class="btn btn-outline-secondary text-start" href="admin-gold999-production.html">🏭 Gold999 Production</a>
+      </div>
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+
+  <script>
+    function getSupabaseClient() {
+      if (window.sb) return window.sb;
+      if (window.supabaseClient) return window.supabaseClient;
+      if (window._supabase) return window._supabase;
+
+      if (window.SUPABASE_URL && window.SUPABASE_ANON_KEY) {
+        return window.supabase.createClient(window.SUPABASE_URL, window.SUPABASE_ANON_KEY);
+      }
+
+      throw new Error(
+        'Supabase client tidak dijumpai. Pastikan auth.js expose client, atau set window.SUPABASE_URL dan window.SUPABASE_ANON_KEY.'
+      );
+    }
+
+    const sb = getSupabaseClient();
+
+    let currentUser = null;
+    let currentBatchId = null;
+    let currentBatch = null;
+
+    const PIECE_CATALOG = {
+      goldbar: [
+        { key: 'goldbar_0_5g', label: '0.5g', item_kind: 'goldbar', group_name: '0.5g', target_weight_g: 0.500 },
+        { key: 'goldbar_1g', label: '1g', item_kind: 'goldbar', group_name: '1g', target_weight_g: 1.000 }
+      ],
+      coin: [
+        { key: 'coin_0_1g_9mm', label: '0.1g 9mm', item_kind: 'coin', group_name: '0.1g 9mm', target_weight_g: 0.100 },
+        { key: 'coin_0_15g_12mm', label: '0.15g 12mm', item_kind: 'coin', group_name: '0.15g 12mm', target_weight_g: 0.150 },
+        { key: 'coin_0_25g_9mm', label: '0.25g 9mm', item_kind: 'coin', group_name: '0.25g 9mm', target_weight_g: 0.250 },
+        { key: 'coin_0_25g_12mm', label: '0.25g 12mm', item_kind: 'coin', group_name: '0.25g 12mm', target_weight_g: 0.250 },
+        { key: 'coin_0_5g_12mm', label: '0.5g 12mm', item_kind: 'coin', group_name: '0.5g 12mm', target_weight_g: 0.500 },
+        { key: 'coin_1g_12mm', label: '1g 12mm', item_kind: 'coin', group_name: '1g 12mm', target_weight_g: 1.000 },
+        { key: 'coin_1g_17mm', label: '1g 17mm', item_kind: 'coin', group_name: '1g 17mm', target_weight_g: 1.000 },
+        { key: 'coin_1_5g_17mm', label: '1.5g 17mm', item_kind: 'coin', group_name: '1.5g 17mm', target_weight_g: 1.500 },
+        { key: 'coin_2_5g_21mm', label: '2.5g 21mm', item_kind: 'coin', group_name: '2.5g 21mm', target_weight_g: 2.500 },
+        { key: 'coin_3g_21mm', label: '3g 21mm', item_kind: 'coin', group_name: '3g 21mm', target_weight_g: 3.000 },
+        { key: 'coin_5g_21mm', label: '5g 21mm', item_kind: 'coin', group_name: '5g 21mm', target_weight_g: 5.000 }
+      ],
+      dinar: [
+        { key: 'dinar_1', label: '1 Dinar', item_kind: 'dinar', group_name: '1 Dinar', target_weight_g: 4.250 },
+        { key: 'dinar_1_2', label: '1/2 Dinar', item_kind: 'dinar', group_name: '1/2 Dinar', target_weight_g: 2.125 },
+        { key: 'dinar_1_4', label: '1/4 Dinar', item_kind: 'dinar', group_name: '1/4 Dinar', target_weight_g: 1.063 }
+      ]
+    };
+
+    const els = {
+      who: document.getElementById('who'),
+      logout: document.getElementById('logout'),
+
+      searchBatch: document.getElementById('searchBatch'),
+      batchList: document.getElementById('batchList'),
+
+      batchNo: document.getElementById('batchNo'),
+      batchDate: document.getElementById('batchDate'),
+      batchNotes: document.getElementById('batchNotes'),
+      selectedBatchStatus: document.getElementById('selectedBatchStatus'),
+
+      btnNewBatch: document.getElementById('btnNewBatch'),
+      btnSaveBatch: document.getElementById('btnSaveBatch'),
+      btnLockBatch: document.getElementById('btnLockBatch'),
+      btnRefresh: document.getElementById('btnRefresh'),
+
+prodQueueMeta: document.getElementById('prodQueueMeta'),
+      prodQueueBody: document.getElementById('prodQueueBody'),
+
+      batchMeta: document.getElementById('batchMeta'),
+      sumTotalSource: document.getElementById('sumTotalSource'),
+      sumUsedBefore: document.getElementById('sumUsedBefore'),
+      sumAvailable: document.getElementById('sumAvailable'),
+      sumDone: document.getElementById('sumDone'),
+      sumReturnMelt: document.getElementById('sumReturnMelt'),
+      sumScrapKikis: document.getElementById('sumScrapKikis'),
+      sumAllocatedDraft: document.getElementById('sumAllocatedDraft'),
+      sumMeltLoss: document.getElementById('sumMeltLoss'),
+      sumBatchStatus: document.getElementById('sumBatchStatus'),
+
+      btnAddSource: document.getElementById('btnAddSource'),
+      sourceBody: document.getElementById('sourceBody'),
+
+      pieceAddCategory: document.getElementById('pieceAddCategory'),
+      pieceAddTemplate: document.getElementById('pieceAddTemplate'),
+      pieceAddQty: document.getElementById('pieceAddQty'),
+      btnAddPieceBulk: document.getElementById('btnAddPieceBulk'),
+      pieceViewCategory: document.getElementById('pieceViewCategory'),
+      pieceViewGroup: document.getElementById('pieceViewGroup'),
+      pieceBody: document.getElementById('pieceBody'),
+
+      btnAddMelt: document.getElementById('btnAddMelt'),
+      meltBody: document.getElementById('meltBody')
+    };
+
+    function todayStr() {
+      const d = new Date();
+      const yyyy = d.getFullYear();
+      const mm = String(d.getMonth() + 1).padStart(2, '0');
+      const dd = String(d.getDate()).padStart(2, '0');
+      return `${yyyy}-${mm}-${dd}`;
+    }
+
+    function num(v) {
+      const n = Number(v);
+      return Number.isFinite(n) ? n : 0;
+    }
+
+    function fmt3(v) {
+      return num(v).toFixed(3);
+    }
+
+    function esc(s) {
+      return String(s || '')
+        .replaceAll('&', '&amp;')
+        .replaceAll('<', '&lt;')
+        .replaceAll('>', '&gt;')
+        .replaceAll('"', '&quot;')
+        .replaceAll("'", '&#39;');
+    }
+
+    function isLockedBatch() {
+      return currentBatch && currentBatch.status === 'LOCKED';
+    }
+
+    function requireBatch() {
+      if (!currentBatchId) {
+        alert('Pilih batch dulu.');
+        return false;
+      }
+      return true;
+    }
+
+    function setBatchFormEmpty() {
+      currentBatchId = null;
+      currentBatch = null;
+
+      els.batchNo.value = '';
+      els.batchDate.value = todayStr();
+      els.batchNotes.value = '';
+
+      els.selectedBatchStatus.textContent = 'Tiada batch';
+      els.selectedBatchStatus.className = 'badge-soft status-DRAFT-BATCH';
+      els.batchMeta.textContent = 'Belum pilih batch';
+
+      clearSummary();
+
+      els.sourceBody.innerHTML = `<tr><td colspan="4"><div class="empty">Belum ada source</div></td></tr>`;
+      els.pieceBody.innerHTML = `<tr><td colspan="11"><div class="empty">Belum ada piece</div></td></tr>`;
+      els.meltBody.innerHTML = `<tr><td colspan="7"><div class="empty">Belum ada rekod lebur</div></td></tr>`;
+
+      toggleLockState();
+    }
+
+    function clearSummary() {
+      els.sumTotalSource.textContent = '0.000';
+      els.sumUsedBefore.textContent = '0.000';
+      els.sumAvailable.textContent = '0.000';
+      els.sumDone.textContent = '0.000';
+      els.sumReturnMelt.textContent = '0.000';
+      els.sumScrapKikis.textContent = '0.000';
+      els.sumAllocatedDraft.textContent = '0.000';
+      els.sumMeltLoss.textContent = '0.000';
+      els.sumBatchStatus.textContent = '-';
+    }
+
+    function getCategoryLabel(v) {
+      if (v === 'coin') return 'Gold Coin';
+      if (v === 'goldbar') return 'Gold Bar';
+      if (v === 'dinar') return 'Dinar';
+      return v || '';
+    }
+
+    function getTemplatesByCategory(category) {
+      return PIECE_CATALOG[category] || [];
+    }
+
+    function getTemplateByKey(category, key) {
+      return getTemplatesByCategory(category).find(x => x.key === key) || null;
+    }
+
+    function renderTemplateOptions(selectEl, category, withAll = false) {
+      const templates = getTemplatesByCategory(category);
+      let html = withAll ? `<option value="">Semua Group</option>` : '';
+      for (const item of templates) {
+        html += `<option value="${esc(item.group_name)}">${esc(item.label)}</option>`;
+      }
+      selectEl.innerHTML = html;
+    }
+
+    function syncAddTemplateOptions() {
+      const category = els.pieceAddCategory.value;
+      const templates = getTemplatesByCategory(category);
+      let html = '';
+      for (const item of templates) {
+        html += `<option value="${esc(item.key)}">${esc(item.label)}</option>`;
+      }
+      els.pieceAddTemplate.innerHTML = html;
+    }
+
+    function syncViewGroupOptions() {
+      const category = els.pieceViewCategory.value;
+      if (!category) {
+        let all = `<option value="">Semua Group</option>`;
+        for (const cat of Object.keys(PIECE_CATALOG)) {
+          for (const item of PIECE_CATALOG[cat]) {
+            all += `<option value="${esc(item.group_name)}">${esc(getCategoryLabel(item.item_kind))} • ${esc(item.group_name)}</option>`;
+          }
+        }
+        els.pieceViewGroup.innerHTML = all;
+        return;
+      }
+      renderTemplateOptions(els.pieceViewGroup, category, true);
+    }
+
+    async function initAuth() {
+      const { data: { user } } = await sb.auth.getUser();
+      if (!user) {
+        location.href = 'login.html';
+        return;
+      }
+      currentUser = user;
+      els.who.textContent = user.email || 'Admin';
+    }
+
+    async function logout() {
+      await sb.auth.signOut();
+      location.href = 'login.html';
+    }
+
+    function buildNextBatchNo() {
+      const d = new Date();
+      const y = d.getFullYear();
+      const m = String(d.getMonth() + 1).padStart(2, '0');
+      const day = String(d.getDate()).padStart(2, '0');
+      const rand = String(Date.now()).slice(-3);
+      return `GB-${y}${m}${day}-${rand}`;
+    }
+
+    async function loadBatchList() {
+      const keyword = els.searchBatch.value.trim();
+
+      let query = sb
+        .from('gold999_batches')
+        .select('id,batch_no,batch_date,status,created_at')
+        .order('batch_date', { ascending: false })
+        .order('created_at', { ascending: false });
+
+      if (keyword) {
+        query = query.ilike('batch_no', `%${keyword}%`);
+      }
+
+      const { data, error } = await query;
+
+      if (error) {
+        console.error(error);
+        alert('Gagal load batch.');
+        return;
+      }
+
+      els.batchList.innerHTML = '';
+
+      if (!data || !data.length) {
+        els.batchList.innerHTML = `<tr><td colspan="3"><div class="empty">Tiada batch</div></td></tr>`;
+        return;
+      }
+
+      for (const row of data) {
+        const active = row.id === currentBatchId ? 'active' : '';
+        const badgeClass = row.status === 'LOCKED' ? 'status-LOCKED' : 'status-DRAFT-BATCH';
+
+        const tr = document.createElement('tr');
+        tr.className = `clickable-row ${active}`;
+        tr.innerHTML = `
+          <td class="mono">${esc(row.batch_no)}</td>
+          <td>${esc(row.batch_date)}</td>
+          <td><span class="badge-soft ${badgeClass}">${esc(row.status)}</span></td>
+        `;
+        tr.addEventListener('click', () => selectBatch(row.id));
+        els.batchList.appendChild(tr);
+      }
+    }
+
+    async function selectBatch(batchId) {
+      currentBatchId = batchId;
+
+      const { data: batch, error: batchErr } = await sb
+        .from('gold999_batches')
+        .select('*')
+        .eq('id', batchId)
+        .single();
+
+      if (batchErr) {
+        console.error(batchErr);
+        alert('Gagal baca batch.');
+        return;
+      }
+
+      currentBatch = batch;
+      els.batchNo.value = batch.batch_no || '';
+      els.batchDate.value = batch.batch_date || todayStr();
+      els.batchNotes.value = batch.notes || '';
+
+      els.selectedBatchStatus.textContent = batch.status;
+      els.selectedBatchStatus.className = `badge-soft ${batch.status === 'LOCKED' ? 'status-LOCKED' : 'status-DRAFT-BATCH'}`;
+      els.batchMeta.textContent = `${batch.batch_no} • ${batch.batch_date}`;
+
+      await Promise.all([
+        loadBatchList(),
+        loadProductionQueue(),
+        loadSummary(),
+        loadSources(),
+        loadPieces(),
+        loadMelts()
+      ]);
+
+      toggleLockState();
+    }
+
+    function toggleLockState() {
+      const locked = isLockedBatch();
+
+      els.batchNo.disabled = locked;
+      els.batchDate.disabled = locked;
+      els.batchNotes.disabled = locked;
+
+      els.btnSaveBatch.disabled = locked;
+      els.btnAddSource.disabled = locked;
+      els.btnAddPieceBulk.disabled = locked;
+      els.btnAddMelt.disabled = locked;
+      els.btnLockBatch.disabled = locked || !currentBatchId;
+
+      els.pieceAddCategory.disabled = locked;
+      els.pieceAddTemplate.disabled = locked;
+      els.pieceAddQty.disabled = locked;
+    }
+
+    async function saveBatch() {
+      const batchNo = els.batchNo.value.trim();
+      const batchDate = els.batchDate.value || todayStr();
+      const notes = els.batchNotes.value.trim();
+
+      if (!batchNo) {
+        alert('Batch no wajib isi.');
+        return;
+      }
+
+      if (currentBatchId) {
+        if (isLockedBatch()) {
+          alert('Batch sudah lock. Tak boleh ubah.');
+          return;
+        }
+
+        const { error } = await sb
+          .from('gold999_batches')
+          .update({
+            batch_no: batchNo,
+            batch_date: batchDate,
+            notes
+          })
+          .eq('id', currentBatchId);
+
+        if (error) {
+          console.error(error);
+          alert('Gagal update batch.');
+          return;
+        }
+
+        els.searchBatch.value = '';
+        await loadBatchList();
+        await selectBatch(currentBatchId);
+        alert('Batch berjaya dikemaskini.');
+        return;
+      }
+
+      const { data, error } = await sb
+        .from('gold999_batches')
+        .insert({
+          batch_no: batchNo,
+          batch_date: batchDate,
+          notes,
+          status: 'DRAFT'
+        })
+        .select()
+        .single();
+
+      if (error) {
+        console.error(error);
+        alert('Gagal simpan batch baru.');
+        return;
+      }
+
+      els.searchBatch.value = '';
+      await loadBatchList();
+      await selectBatch(data.id);
+      alert('Batch baru berjaya disimpan.');
+    }
+
+    async function lockBatch() {
+      if (!requireBatch()) return;
+      if (isLockedBatch()) return;
+
+      const ok = confirm('Lock batch ini? Bila lock, semua data batch ini tak boleh diubah.');
+      if (!ok) return;
+
+      const { error } = await sb
+        .from('gold999_batches')
+        .update({ status: 'LOCKED' })
+        .eq('id', currentBatchId);
+
+      if (error) {
+        console.error(error);
+        alert('Gagal lock batch.');
+        return;
+      }
+
+      await selectBatch(currentBatchId);
+      alert('Batch sudah di-lock.');
+    }
+
+async function loadProductionQueue() {
+  const { data, error } = await sb
+    .from('goldbar_order')
+    .select('id,created_at,reference_1,customer_name,customer_phone,kind,card_type,design_name,weight_g,qty,status,production_status')
+    .eq('status', 'PAID')
+    .eq('production_status', 'QUEUED')
+    .order('production_sent_at', { ascending: true, nullsFirst: false })
+    .order('created_at', { ascending: true });
+
+  if (error) {
+    console.error(error);
+    els.prodQueueMeta.textContent = 'Ralat load queue';
+    els.prodQueueBody.innerHTML = `<tr><td colspan="5"><div class="empty">Gagal load queue production</div></td></tr>`;
+    return;
+  }
+
+  const rows = Array.isArray(data) ? data : [];
+  els.prodQueueMeta.textContent = `${rows.length} order dalam queue`;
+
+  if (!rows.length) {
+    els.prodQueueBody.innerHTML = `<tr><td colspan="5"><div class="empty">Belum ada queue production</div></td></tr>`;
+    return;
+  }
+
+  els.prodQueueBody.innerHTML = rows.map(r => `
+    <tr>
+      <td>${esc(new Date(r.created_at).toLocaleString('ms-MY', { hour12:false }))}</td>
+      <td>
+        <div>${esc(r.customer_name || '-')}</div>
+        <div class="muted xsmall">${esc(r.customer_phone || '-')}</div>
+        <div class="muted xsmall mono">${esc(r.reference_1 || r.id)}</div>
+      </td>
+      <td>
+        <div>${esc(r.kind || '-')} • ${esc(r.card_type || '-')}</div>
+        <div class="muted xsmall">${esc(r.design_name || '-')}</div>
+        <div class="muted xsmall">${fmt3(r.weight_g || 0)}g × ${num(r.qty || 1)}</div>
+      </td>
+      <td>
+        <span class="badge-soft">QUEUED</span>
+      </td>
+      <td>
+        <button class="btn btn-sm btn-success" onclick="markProductionDone('${r.id}')">
+          Siap
+        </button>
+      </td>
+    </tr>
+  `).join('');
+}
+
+window.markProductionDone = async function(orderId) {
+  const ok = confirm('Tanda order ini sebagai siap production?');
+  if (!ok) return;
+
+  const { error } = await sb
+    .from('goldbar_order')
+    .update({
+      production_status: 'DONE',
+      production_done_at: new Date().toISOString()
+    })
+    .eq('id', orderId)
+    .eq('production_status', 'QUEUED');
+
+  if (error) {
+    console.error(error);
+    alert('Gagal update production siap.');
+    return;
+  }
+
+  await loadProductionQueue();
+  alert('Order ditanda siap.');
+};
+
+
+    async function loadSummary() {
+      if (!currentBatchId) {
+        clearSummary();
+        return;
+      }
+
+      const { data, error } = await sb
+        .from('v_gold999_batch_summary')
+        .select('*')
+        .eq('batch_id', currentBatchId)
+        .single();
+
+      if (error) {
+        console.error(error);
+        clearSummary();
+        return;
+      }
+
+      els.sumTotalSource.textContent = fmt3(data.total_source_g);
+      els.sumUsedBefore.textContent = fmt3(data.total_used_before_kikis_g);
+      els.sumAvailable.textContent = fmt3(data.available_stock_g);
+      els.sumDone.textContent = fmt3(data.total_done_g);
+      els.sumReturnMelt.textContent = fmt3(data.total_return_melt_g);
+      els.sumScrapKikis.textContent = fmt3(data.total_scrap_kikis_g);
+      els.sumAllocatedDraft.textContent = fmt3(data.total_allocated_draft_g);
+      els.sumMeltLoss.textContent = fmt3(data.total_melt_loss_g);
+      els.sumBatchStatus.textContent = data.status || '-';
+    }
+
+    async function loadSources() {
+      if (!currentBatchId) {
+        els.sourceBody.innerHTML = '';
+        return;
+      }
+
+      const { data, error } = await sb
+        .from('gold999_batch_sources')
+        .select('*')
+        .eq('batch_id', currentBatchId)
+        .order('created_at', { ascending: true });
+
+      if (error) {
+        console.error(error);
+        alert('Gagal load source.');
+        return;
+      }
+
+      els.sourceBody.innerHTML = '';
+
+      if (!data || !data.length) {
+        els.sourceBody.innerHTML = `<tr><td colspan="4"><div class="empty">Belum ada source</div></td></tr>`;
+        return;
+      }
+
+      const locked = isLockedBatch();
+
+      for (const row of data) {
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+          <td>
+            <select class="form-select form-select-sm source-type" ${locked ? 'disabled' : ''}>
+              <option value="OPENING_STOCK" ${row.source_type === 'OPENING_STOCK' ? 'selected' : ''}>OPENING_STOCK</option>
+              <option value="NEW_STOCK" ${row.source_type === 'NEW_STOCK' ? 'selected' : ''}>NEW_STOCK</option>
+              <option value="SCRAP_KIKIS" ${row.source_type === 'SCRAP_KIKIS' ? 'selected' : ''}>SCRAP_KIKIS</option>
+              <option value="RETURN_MELT" ${row.source_type === 'RETURN_MELT' ? 'selected' : ''}>RETURN_MELT</option>
+              <option value="ADJUSTMENT" ${row.source_type === 'ADJUSTMENT' ? 'selected' : ''}>ADJUSTMENT</option>
+            </select>
+          </td>
+          <td class="right">
+            <input class="form-control form-control-sm text-end source-weight small-input" type="number" step="0.001" min="0" value="${fmt3(row.weight_g)}" ${locked ? 'disabled' : ''}>
+          </td>
+          <td>
+            <input class="form-control form-control-sm source-notes" value="${esc(row.notes || '')}" ${locked ? 'disabled' : ''}>
+          </td>
+          <td>
+            <div class="d-flex gap-2">
+              <button class="btn btn-sm btn-outline-primary btn-save-source" ${locked ? 'disabled' : ''}>Simpan</button>
+              <button class="btn btn-sm btn-outline-danger btn-del-source" ${locked ? 'disabled' : ''}>Padam</button>
+            </div>
+          </td>
+        `;
+
+        tr.querySelector('.btn-save-source').addEventListener('click', async () => {
+          const source_type = tr.querySelector('.source-type').value;
+          const weight_g = num(tr.querySelector('.source-weight').value);
+          const notes = tr.querySelector('.source-notes').value.trim();
+
+          const { error: upErr } = await sb
+            .from('gold999_batch_sources')
+            .update({ source_type, weight_g, notes })
+            .eq('id', row.id);
+
+          if (upErr) {
+            console.error(upErr);
+            alert('Gagal simpan source.');
+            return;
+          }
+
+          await Promise.all([loadSources(), loadSummary()]);
+        });
+
+        tr.querySelector('.btn-del-source').addEventListener('click', async () => {
+          if (!confirm('Padam source ini?')) return;
+
+          const { error: delErr } = await sb
+            .from('gold999_batch_sources')
+            .delete()
+            .eq('id', row.id);
+
+          if (delErr) {
+            console.error(delErr);
+            alert('Gagal padam source.');
+            return;
+          }
+
+          await Promise.all([loadSources(), loadSummary()]);
+        });
+
+        els.sourceBody.appendChild(tr);
+      }
+    }
+
+    async function addSourceRow() {
+      if (!requireBatch()) return;
+      if (isLockedBatch()) {
+        alert('Batch sudah lock.');
+        return;
+      }
+
+      const { error } = await sb
+        .from('gold999_batch_sources')
+        .insert({
+          batch_id: currentBatchId,
+          source_type: 'OPENING_STOCK',
+          weight_g: 0,
+          notes: ''
+        });
+
+      if (error) {
+        console.error(error);
+        alert('Gagal tambah source.');
+        return;
+      }
+
+      await Promise.all([loadSources(), loadSummary()]);
+    }
+
+    async function getNextPieceNo() {
+      const { data, error } = await sb
+        .from('gold999_pieces')
+        .select('piece_no')
+        .eq('batch_id', currentBatchId)
+        .order('piece_no', { ascending: false })
+        .limit(1);
+
+      if (error) {
+        console.error(error);
+        return 1;
+      }
+
+      return data && data.length ? Number(data[0].piece_no) + 1 : 1;
+    }
+
+    function generate999Barcode(itemKind, runningNo) {
+  const kind = String(itemKind || '').toLowerCase();
+
+  if (kind === 'goldbar') return 'GB' + String(runningNo).padStart(7, '0');
+  if (kind === 'coin')    return 'GC' + String(runningNo).padStart(7, '0');
+  if (kind === 'dinar')   return 'GD' + String(runningNo).padStart(7, '0');
+
+  return 'GX' + String(runningNo).padStart(7, '0');
+}
+
+async function getNext999Barcode(itemKind) {
+  const kind = String(itemKind || '').toLowerCase();
+  if (!kind) throw new Error('item_kind kosong.');
+
+  const { data: row, error: readErr } = await sb
+    .from('gold999_barcode_counter')
+    .select('item_kind,last_no')
+    .eq('item_kind', kind)
+    .maybeSingle();
+
+  if (readErr) throw readErr;
+
+  const nextNo = row ? (Number(row.last_no || 1000000) + 1) : 1000001;
+  const barcode = generate999Barcode(kind, nextNo);
+
+  const { error: upErr } = await sb
+    .from('gold999_barcode_counter')
+    .upsert({
+      item_kind: kind,
+      last_no: nextNo,
+      updated_at: new Date().toISOString()
+    });
+
+  if (upErr) throw upErr;
+
+  return barcode;
+}
+
+    async function addPieceRowsBulk() {
+      if (!requireBatch()) return;
+      if (isLockedBatch()) {
+        alert('Batch sudah lock.');
+        return;
+      }
+
+      const category = els.pieceAddCategory.value;
+      const templateKey = els.pieceAddTemplate.value;
+      const qty = Math.max(1, parseInt(els.pieceAddQty.value || '1', 10));
+
+      const template = getTemplateByKey(category, templateKey);
+      if (!template) {
+        alert('Pilih group dulu.');
+        return;
+      }
+
+      let nextNo = await getNextPieceNo();
+      const rows = [];
+
+      for (let i = 0; i < qty; i++) {
+        rows.push({
+          batch_id: currentBatchId,
+          piece_no: nextNo + i,
+          code: '',
+          item_kind: template.item_kind,
+          group_name: template.group_name,
+          target_weight_g: template.target_weight_g,
+          before_kikis_g: 0,
+          after_kikis_g: null,
+          status: 'DRAFT',
+          notes: ''
+        });
+      }
+
+      const { error } = await sb
+        .from('gold999_pieces')
+        .insert(rows);
+
+      if (error) {
+        console.error(error);
+        alert('Gagal tambah piece ikut group.');
+        return;
+      }
+
+      els.pieceViewCategory.value = category;
+      syncViewGroupOptions();
+      els.pieceViewGroup.value = template.group_name;
+
+      await Promise.all([loadPieces(), loadSummary()]);
+    }
+
+    async function loadPieces() {
+      if (!currentBatchId) {
+        els.pieceBody.innerHTML = '';
+        return;
+      }
+
+      let query = sb
+        .from('gold999_pieces')
+        .select('*')
+        .eq('batch_id', currentBatchId)
+        .order('item_kind', { ascending: true })
+        .order('group_name', { ascending: true })
+        .order('piece_no', { ascending: true });
+
+      const viewCategory = els.pieceViewCategory.value;
+      const viewGroup = els.pieceViewGroup.value;
+
+      if (viewCategory) {
+        query = query.eq('item_kind', viewCategory);
+      }
+      if (viewGroup) {
+        query = query.eq('group_name', viewGroup);
+      }
+
+      const { data, error } = await query;
+
+      if (error) {
+        console.error(error);
+        alert('Gagal load piece.');
+        return;
+      }
+
+      els.pieceBody.innerHTML = '';
+
+      if (!data || !data.length) {
+        els.pieceBody.innerHTML = `<tr><td colspan="11"><div class="empty">Belum ada piece untuk view ini</div></td></tr>`;
+        return;
+      }
+
+      const locked = isLockedBatch();
+      let lastGroupKey = '';
+
+      for (const row of data) {
+        const groupKey = `${row.item_kind}__${row.group_name || ''}`;
+
+        if (groupKey !== lastGroupKey) {
+          const grp = document.createElement('tr');
+          grp.className = 'piece-group-row';
+          grp.innerHTML = `
+            <td colspan="11">
+              ${esc(getCategoryLabel(row.item_kind))} • ${esc(row.group_name || '-')}
+            </td>
+          `;
+          els.pieceBody.appendChild(grp);
+          lastGroupKey = groupKey;
+        }
+
+        const after = row.after_kikis_g == null ? '' : fmt3(row.after_kikis_g);
+        const diff = row.kikis_diff_g == null ? '' : fmt3(row.kikis_diff_g);
+        const statusClass = `status-${row.status}`;
+
+        const tr = document.createElement('tr');
+        tr.dataset.itemKind = row.item_kind || '';
+        tr.dataset.groupName = row.group_name || '';
+        tr.innerHTML = `
+          <td class="mono">${row.piece_no}</td>
+          <td><input class="form-control form-control-sm piece-code" value="${esc(row.code || '')}" ${locked ? 'disabled' : ''}></td>
+          <td><span class="read-badge">${esc(getCategoryLabel(row.item_kind))}</span></td>
+          <td><span class="read-badge">${esc(row.group_name || '')}</span></td>
+          <td class="right"><input class="form-control form-control-sm text-end piece-target small-input" type="number" step="0.001" min="0" value="${row.target_weight_g == null ? '' : fmt3(row.target_weight_g)}" disabled></td>
+          <td class="right"><input class="form-control form-control-sm text-end piece-before small-input" type="number" step="0.001" min="0" value="${fmt3(row.before_kikis_g)}" ${locked ? 'disabled' : ''}></td>
+          <td class="right"><input class="form-control form-control-sm text-end piece-after small-input" type="number" step="0.001" min="0" value="${after}" ${locked ? 'disabled' : ''}></td>
+          <td class="right mono">${diff}</td>
+          <td><span class="badge-soft ${statusClass}">${esc(row.status)}</span></td>
+          <td class="mono">${esc(row.barcode_value || '')}</td>
+          <td>
+            <div class="piece-actions">
+              <button class="btn btn-sm btn-outline-primary btn-save-piece" ${locked ? 'disabled' : ''}>Simpan</button>
+              <button class="btn btn-sm btn-success btn-done-piece" ${locked ? 'disabled' : ''}>Done</button>
+              <button class="btn btn-sm btn-warning btn-return-piece" ${locked ? 'disabled' : ''}>Return Melt</button>
+              <button class="btn btn-sm btn-outline-dark btn-reprint-piece" ${!row.barcode_value ? 'disabled' : ''}>Reprint</button>
+              <button class="btn btn-sm btn-outline-danger btn-cancel-piece" ${locked ? 'disabled' : ''}>Cancel</button>
+            </div>
+          </td>
+        `;
+
+        tr.querySelector('.btn-save-piece').addEventListener('click', async () => {
+          const payload = getPiecePayloadFromRow(tr, row);
+          if (!payload) return;
+
+          const { error: upErr } = await sb
+            .from('gold999_pieces')
+            .update(payload)
+            .eq('id', row.id);
+
+          if (upErr) {
+            console.error(upErr);
+            alert('Gagal simpan piece.');
+            return;
+          }
+
+          await Promise.all([loadPieces(), loadSummary()]);
+        });
+
+        tr.querySelector('.btn-done-piece').addEventListener('click', async () => {
+  const payload = getPiecePayloadFromRow(tr, row);
+  if (!payload) return;
+
+  if (payload.after_kikis_g == null || payload.after_kikis_g <= 0) {
+    alert('Selepas kikis wajib isi untuk DONE.');
+    return;
+  }
+
+  let barcode_value = row.barcode_value;
+
+  if (!barcode_value) {
+    try {
+      barcode_value = await getNext999Barcode(row.item_kind);
+    } catch (e) {
+      console.error(e);
+      alert('Gagal jana barcode 999: ' + (e?.message || e));
+      return;
+    }
+  }
+
+  const { error: upErr } = await sb
+    .from('gold999_pieces')
+    .update({
+      ...payload,
+      status: 'DONE',
+      barcode_value,
+      barcode_created_at: row.barcode_created_at || new Date().toISOString(),
+      done_at: new Date().toISOString()
+    })
+    .eq('id', row.id);
+
+  if (upErr) {
+    console.error(upErr);
+    alert('Gagal DONE piece.');
+    return;
+  }
+
+  await Promise.all([loadPieces(), loadSummary()]);
+  alert(`Piece DONE.\nBarcode: ${barcode_value}`);
+});
+
+        tr.querySelector('.btn-return-piece').addEventListener('click', async () => {
+          const payload = getPiecePayloadFromRow(tr, row);
+          if (!payload) return;
+
+          if (payload.after_kikis_g == null || payload.after_kikis_g <= 0) {
+            alert('Selepas kikis wajib isi untuk RETURN_MELT.');
+            return;
+          }
+
+          const ok = confirm('Return piece ini ke melt stock?');
+          if (!ok) return;
+
+          const { error: upErr } = await sb
+            .from('gold999_pieces')
+            .update({
+              ...payload,
+              status: 'RETURN_MELT',
+              return_melt_at: new Date().toISOString()
+            })
+            .eq('id', row.id);
+
+          if (upErr) {
+            console.error(upErr);
+            alert('Gagal return melt.');
+            return;
+          }
+
+          await Promise.all([loadPieces(), loadSummary()]);
+          alert('Piece ditanda RETURN_MELT. Berat selepas kikis kini masuk kiraan return melt.');
+        });
+
+       tr.querySelector('.btn-reprint-piece').addEventListener('click', async () => {
+  if (!row.barcode_value) return;
+
+  const printUrl = `print-tag-999.html?codes=${encodeURIComponent(row.barcode_value)}`;
+  window.open(printUrl, '_blank');
+
+  const { error: upErr } = await sb
+    .from('gold999_pieces')
+    .update({
+      barcode_print_count: Number(row.barcode_print_count || 0) + 1,
+      last_printed_at: new Date().toISOString()
+    })
+    .eq('id', row.id);
+
+  if (upErr) {
+    console.error(upErr);
+    return;
+  }
+
+  await loadPieces();
+});
+
+        tr.querySelector('.btn-cancel-piece').addEventListener('click', async () => {
+          const ok = confirm('Cancel piece ini?');
+          if (!ok) return;
+
+          const { error: upErr } = await sb
+            .from('gold999_pieces')
+            .update({ status: 'CANCEL' })
+            .eq('id', row.id);
+
+          if (upErr) {
+            console.error(upErr);
+            alert('Gagal cancel piece.');
+            return;
+          }
+
+          await Promise.all([loadPieces(), loadSummary()]);
+        });
+
+        els.pieceBody.appendChild(tr);
+      }
+    }
+
+    function getPiecePayloadFromRow(tr, row) {
+      const code = tr.querySelector('.piece-code').value.trim();
+      const item_kind = tr.dataset.itemKind || row.item_kind;
+      const group_name = tr.dataset.groupName || row.group_name;
+
+      const targetRaw = tr.querySelector('.piece-target').value;
+      const beforeRaw = tr.querySelector('.piece-before').value;
+      const afterRaw = tr.querySelector('.piece-after').value;
+
+      const target_weight_g = targetRaw === '' ? null : num(targetRaw);
+      const before_kikis_g = num(beforeRaw);
+      const after_kikis_g = afterRaw === '' ? null : num(afterRaw);
+
+      if (before_kikis_g < 0) {
+        alert('Sebelum kikis tak sah.');
+        return null;
+      }
+
+      if (after_kikis_g != null && after_kikis_g > before_kikis_g) {
+        const ok = confirm('Selepas kikis lebih besar dari sebelum kikis. Teruskan?');
+        if (!ok) return null;
+      }
+
+      return {
+        code,
+        item_kind,
+        group_name,
+        target_weight_g,
+        before_kikis_g,
+        after_kikis_g
+      };
+    }
+
+    async function getNextMeltNo() {
+      const { data, error } = await sb
+        .from('gold999_melts')
+        .select('melt_no')
+        .eq('batch_id', currentBatchId)
+        .order('melt_no', { ascending: false })
+        .limit(1);
+
+      if (error) {
+        console.error(error);
+        return 1;
+      }
+
+      return data && data.length ? Number(data[0].melt_no) + 1 : 1;
+    }
+
+    async function addMeltRow() {
+      if (!requireBatch()) return;
+      if (isLockedBatch()) {
+        alert('Batch sudah lock.');
+        return;
+      }
+
+      const melt_no = await getNextMeltNo();
+
+      const { error } = await sb
+        .from('gold999_melts')
+        .insert({
+          batch_id: currentBatchId,
+          melt_no,
+          before_melt_g: 0,
+          after_melt_g: 0,
+          include_scrap_kikis: false,
+          notes: ''
+        });
+
+      if (error) {
+        console.error(error);
+        alert('Gagal tambah melt.');
+        return;
+      }
+
+      await Promise.all([loadMelts(), loadSummary()]);
+    }
+
+    async function loadMelts() {
+      if (!currentBatchId) {
+        els.meltBody.innerHTML = '';
+        return;
+      }
+
+      const { data, error } = await sb
+        .from('gold999_melts')
+        .select('*')
+        .eq('batch_id', currentBatchId)
+        .order('melt_no', { ascending: true });
+
+      if (error) {
+        console.error(error);
+        alert('Gagal load melt.');
+        return;
+      }
+
+      els.meltBody.innerHTML = '';
+
+      if (!data || !data.length) {
+        els.meltBody.innerHTML = `<tr><td colspan="7"><div class="empty">Belum ada rekod lebur</div></td></tr>`;
+        return;
+      }
+
+      const locked = isLockedBatch();
+
+      for (const row of data) {
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+          <td class="mono">${row.melt_no}</td>
+          <td class="right"><input class="form-control form-control-sm text-end melt-before small-input" type="number" step="0.001" min="0" value="${fmt3(row.before_melt_g)}" ${locked ? 'disabled' : ''}></td>
+          <td class="right"><input class="form-control form-control-sm text-end melt-after small-input" type="number" step="0.001" min="0" value="${fmt3(row.after_melt_g)}" ${locked ? 'disabled' : ''}></td>
+          <td class="right mono">${fmt3(row.melt_diff_g)}</td>
+          <td class="text-center"><input class="form-check-input melt-include" type="checkbox" ${row.include_scrap_kikis ? 'checked' : ''} ${locked ? 'disabled' : ''}></td>
+          <td><input class="form-control form-control-sm melt-notes" value="${esc(row.notes || '')}" ${locked ? 'disabled' : ''}></td>
+          <td>
+            <div class="d-flex gap-2">
+              <button class="btn btn-sm btn-outline-primary btn-save-melt" ${locked ? 'disabled' : ''}>Simpan</button>
+              <button class="btn btn-sm btn-outline-danger btn-del-melt" ${locked ? 'disabled' : ''}>Padam</button>
+            </div>
+          </td>
+        `;
+
+        tr.querySelector('.btn-save-melt').addEventListener('click', async () => {
+          const before_melt_g = num(tr.querySelector('.melt-before').value);
+          const after_melt_g = num(tr.querySelector('.melt-after').value);
+          const include_scrap_kikis = tr.querySelector('.melt-include').checked;
+          const notes = tr.querySelector('.melt-notes').value.trim();
+
+          const { error: upErr } = await sb
+            .from('gold999_melts')
+            .update({
+              before_melt_g,
+              after_melt_g,
+              include_scrap_kikis,
+              notes
+            })
+            .eq('id', row.id);
+
+          if (upErr) {
+            console.error(upErr);
+            alert('Gagal simpan melt.');
+            return;
+          }
+
+          await Promise.all([loadMelts(), loadSummary()]);
+        });
+
+        tr.querySelector('.btn-del-melt').addEventListener('click', async () => {
+          if (!confirm('Padam rekod melt ini?')) return;
+
+          const { error: delErr } = await sb
+            .from('gold999_melts')
+            .delete()
+            .eq('id', row.id);
+
+          if (delErr) {
+            console.error(delErr);
+            alert('Gagal padam melt.');
+            return;
+          }
+
+          await Promise.all([loadMelts(), loadSummary()]);
+        });
+
+        els.meltBody.appendChild(tr);
+      }
+    }
+
+    function wireEvents() {
+      els.logout.addEventListener('click', logout);
+
+      els.btnNewBatch.addEventListener('click', async () => {
+        els.searchBatch.value = '';
+        setBatchFormEmpty();
+        els.batchNo.value = buildNextBatchNo();
+        els.batchDate.value = todayStr();
+        await loadBatchList();
+      });
+
+      els.btnSaveBatch.addEventListener('click', saveBatch);
+      els.btnLockBatch.addEventListener('click', lockBatch);
+      els.btnRefresh.addEventListener('click', async () => {
+        await loadBatchList();
+        await loadProductionQueue();
+        if (currentBatchId) {
+          await selectBatch(currentBatchId);
+        } else {
+          setBatchFormEmpty();
+        }
+      });
+
+      els.searchBatch.addEventListener('input', loadBatchList);
+
+      els.btnAddSource.addEventListener('click', addSourceRow);
+      els.btnAddPieceBulk.addEventListener('click', addPieceRowsBulk);
+      els.btnAddMelt.addEventListener('click', addMeltRow);
+
+      els.pieceAddCategory.addEventListener('change', () => {
+        syncAddTemplateOptions();
+      });
+
+      els.pieceViewCategory.addEventListener('change', async () => {
+        syncViewGroupOptions();
+        await loadPieces();
+      });
+
+      els.pieceViewGroup.addEventListener('change', loadPieces);
+    }
+
+    async function start() {
+      await initAuth();
+      syncAddTemplateOptions();
+      syncViewGroupOptions();
+      wireEvents();
+      setBatchFormEmpty();
+      els.batchNo.value = buildNextBatchNo();
+      els.batchDate.value = todayStr();
+     await Promise.all([
+        loadBatchList(),
+        loadProductionQueue()
+      ]);
+    }
+
+    start();
+  </script>
+</body>
+</html>

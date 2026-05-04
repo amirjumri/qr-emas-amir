@@ -332,16 +332,31 @@ function groupIdFromKey(x){
         return;
       }
 
-      sale   = row.sale_order_code || sale;
+     sale   = row.sale_order_code || sale;
       trade  = row.tradein_id || trade;
       note   = (row.note ?? note) || '';
       ref    = (row.ref ?? ref) || '';
       method = (row.cashout_method ?? method) || '';
 
+      // normalize sale_order_code dari settlement_txn
+      // kes 1: GROUP:<id>
+      if (isGroupKey(sale)) {
+        sale_group = groupIdFromKey(sale);
+        sale_list = '';
+      }
+      // kes 2: multi order_code dipisah comma
+      else if (String(sale).includes(',')) {
+        sale_list = sale;
+      }
+
       // header resit berdasarkan created_at settlement
       const baseDate = row.created_at || new Date().toISOString();
       $('resitDate').textContent = 'Tarikh: ' + fmtMY(baseDate);
-      $('resitNo').textContent   = 'No Resit: ' + resitNo(sale, String(trade||''), baseDate);
+      $('resitNo').textContent   = 'No Resit: ' + resitNo(
+        sale_group ? ('GROUP:'+sale_group) : sale,
+        String(trade||''),
+        baseDate
+      );
 
       // rujukan
       setText('resitRef', ref || '-', '-');
@@ -369,6 +384,16 @@ function groupIdFromKey(x){
           method = method || (j.method||'');
         }
       }catch(_){}
+    }
+
+// fallback: kalau sale mengandungi comma, anggap ia sale_list
+    if (!sale_list && sale && String(sale).includes(',')) {
+      sale_list = sale;
+    }
+
+    // fallback: kalau sale berbentuk GROUP:<id>, extract ke sale_group
+    if (!sale_group && isGroupKey(sale)) {
+      sale_group = groupIdFromKey(sale);
     }
 
     // =====================

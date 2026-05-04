@@ -1,0 +1,1523 @@
+<!doctype html>
+<html lang="ms">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<link rel="stylesheet" href="/global.css">
+  <title>Admin • Voice Batch Stok 916 — Emas Amir</title>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="auth.js?v=13.1"></script>
+  <script src="admin-guard.js?v=1"></script>
+
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+
+  <style>
+    body{background:#fff}
+    .container-narrow{max-width:1150px}
+    .auth-pill{border:1px solid #e5e7eb;border-radius:999px;padding:.2rem .6rem;background:#fafafa;color:#555}
+    .btn-chip{border:1px solid #e5e7eb;background:#f8fafc;padding:6px 10px;border-radius:999px;font-size:.9rem}
+    .mono{font-family:ui-monospace,Menlo,monospace}
+    .card-soft{border:1px solid #e5e7eb;border-radius:14px}
+    .right{text-align:right}
+    .small-help{font-size:12px;color:#6b7280}
+    .list-wrap{max-height:420px;overflow:auto}
+    .pill{display:inline-block;padding:.15rem .55rem;border:1px solid #e5e7eb;border-radius:999px;background:#fafafa;font-size:12px}
+    .list-row td{vertical-align:middle}
+    .kbd{
+      display:inline-block;
+      padding:2px 6px;
+      border:1px solid #e5e7eb;
+      border-bottom-width:2px;
+      border-radius:6px;
+      background:#fff;
+      font-size:12px;
+      font-family:ui-monospace,Menlo,monospace;
+    }
+    .live-dot{display:inline-block;width:10px;height:10px;border-radius:999px;background:#ef4444}
+    .ok-dot{display:inline-block;width:10px;height:10px;border-radius:999px;background:#22c55e}
+    .warn-dot{display:inline-block;width:10px;height:10px;border-radius:999px;background:#f59e0b}
+    .muted{color:#6b7280}
+    .history-wrap{max-height:420px;overflow:auto}
+    .history-detail{background:#fcfcfd}
+    .history-detail .mini-table td,.history-detail .mini-table th{font-size:12px;padding:6px 8px}
+    .sticky-head thead th{position:sticky;top:0;background:#fff;z-index:2}
+  </style>
+</head>
+
+<body>
+<div class="container container-narrow py-3">
+
+  <div class="d-flex justify-content-between align-items-center mb-2">
+    <div class="small auth-pill" id="authStatus">Memuatkan…</div>
+    <div class="d-flex flex-wrap gap-2">
+      <a class="btn btn-outline-secondary btn-chip" href="index.html">Halaman Utama</a>
+      <a class="btn btn-outline-secondary btn-chip" href="admin.html">Admin</a>
+      <a class="btn btn-outline-secondary btn-chip" href="admin-j916.html">Admin 916</a>
+      <a class="btn btn-outline-secondary btn-chip" href="admin-stok-j916.html">Stok 916 (Asal)</a>
+      <button id="btnLogin" class="btn btn-outline-secondary btn-chip" type="button">Log masuk</button>
+      <button id="btnLogout" class="btn btn-outline-secondary btn-chip" type="button" style="display:none">Log keluar</button>
+    </div>
+  </div>
+  <hr class="mb-3">
+
+  <div class="d-flex justify-content-between align-items-end flex-wrap gap-2">
+    <div>
+      <h1 class="h4 mb-1">Voice Batch • Stok Masuk 916</h1>
+      <div class="text-muted small">
+        Set sekali (Design + Upah + Lebar) → sebut <span class="kbd">0.75 17.5</span> → masuk list → edit kalau salah → Simpan Semua → Print A4.
+      </div>
+    </div>
+    <div class="text-end">
+      <div class="small text-muted">Status Mic:</div>
+      <div class="d-flex justify-content-end align-items-center gap-2">
+        <span id="micDot" class="warn-dot"></span>
+        <span class="mono" id="micStatus">Belum mula</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="row g-3 mt-2">
+
+    <div class="col-lg-5">
+      <div class="card card-soft">
+        <div class="card-body">
+
+          <div class="fw-semibold mb-2">1) Set Batch (sekali sahaja)</div>
+
+          <div class="mb-2">
+            <label class="form-label">Pilih Design</label>
+            <input id="designSearch" class="form-control mb-2" placeholder="Taip untuk cari design…">
+            <select id="b_design_id" class="form-select"></select>
+            <div class="small-help mt-1">Design aktif sahaja dipaparkan.</div>
+          </div>
+
+          <div class="row g-2">
+            <div class="col-6">
+              <label class="form-label">Upah (RM)</label>
+              <input id="b_upah" class="form-control" type="number" step="0.01" min="0" placeholder="auto ikut design">
+              <div class="small-help mt-1">Kosong → auto ikut upah default design.</div>
+            </div>
+            <div class="col-6">
+              <label class="form-label">Lebar (cm)</label>
+              <input id="b_width" class="form-control" type="number" step="0.1" min="0" placeholder="cth 0.2">
+              <div class="small-help mt-1">Lebar tetap untuk batch design ni.</div>
+            </div>
+          </div>
+
+          <hr class="my-3">
+
+          <div class="fw-semibold mb-2">2) Kod Unik Auto</div>
+          <div class="row g-2">
+            <div class="col-7">
+              <label class="form-label">Kod Mula</label>
+              <input id="b_code_start" class="form-control mono" placeholder="RT1000300">
+              <div class="small-help mt-1">
+                RT scan <span class="mono">RT100%</span>. Prefix lain scan <span class="mono">PREFIX100%</span>.
+                Kalau belum ada dalam DB: RT mula <span class="mono">RT1000300</span>, lain mula <span class="mono">1000001</span>.
+              </div>
+            </div>
+            <div class="col-5">
+              <label class="form-label">Preview Next</label>
+              <div class="form-control mono" id="b_code_next" style="background:#f8fafc">—</div>
+              <div class="small-help mt-1">Kod semasa / next untuk item seterusnya.</div>
+            </div>
+          </div>
+
+          <hr class="my-3">
+
+          <div class="fw-semibold mb-2">3) Voice Record</div>
+
+          <div class="d-flex gap-2 flex-wrap">
+            <button id="btnVoiceClear" class="btn btn-outline-danger ms-auto" type="button">Kosongkan List</button>
+          </div>
+
+          <div class="small-help mt-2">
+            <div class="mb-1">✅ Cara sebut (paling laju): <span class="kbd">0.75 17.5</span></div>
+            <div class="mb-1">✅ Boleh juga: <span class="kbd">kosong point tujuh lima… tujuh belas point lima</span></div>
+            <div>✅ Setiap 2 nombor = 1 item: nombor 1 = <b>berat (g)</b>, nombor 2 = <b>panjang (cm)</b>. Lebar ambil dari header.</div>
+          </div>
+
+          <div class="mt-2">
+            <div><b>Saya dengar:</b></div>
+            <div id="liveTranscript" class="form-control mono" style="background:#f8fafc; min-height:40px"></div>
+          </div>
+
+          <hr class="my-3">
+
+          <div class="d-flex justify-content-between align-items-center">
+            <div>
+              <div class="fw-semibold">Ringkasan</div>
+              <div class="small text-muted" id="summaryLine">0 item • 0.00 g</div>
+            </div>
+            <div class="text-end">
+              <div class="pill">Berat: 2 decimal</div>
+              <div class="pill">Lebar: header</div>
+            </div>
+          </div>
+
+          <div class="d-grid gap-2 mt-3">
+            <button id="btnCommit" class="btn btn-primary" type="button">💾 Simpan Semua ke Stok</button>
+            <button id="btnPrintA4" class="btn btn-dark" type="button">🖨️ Print A4 (Detail Stok Masuk)</button>
+            <button id="btnPrintTags" class="btn btn-outline-dark" type="button">🧾 Print Tag (Semua dalam Senarai)</button>
+          </div>
+
+          <div class="small text-muted mt-2" id="msg"></div>
+
+        </div>
+      </div>
+    </div>
+
+    <div class="col-lg-7">
+      <div class="card card-soft">
+        <div class="card-body">
+
+          <div class="d-flex justify-content-between align-items-center mb-2 gap-2 flex-wrap">
+            <div class="fw-semibold">Senarai Item (Sesi Ini)</div>
+            <div class="d-flex align-items-center gap-2 flex-wrap">
+              <button id="btnVoiceToggle" class="btn btn-success btn-sm" type="button">🎤 Start</button>
+              <span class="pill">Boleh edit terus dalam jadual</span>
+            </div>
+          </div>
+
+          <div class="list-wrap table-responsive">
+            <table class="table table-sm align-middle">
+              <thead class="table-light">
+                <tr>
+                  <th style="width:44px">#</th>
+                  <th style="width:170px">Kod</th>
+                  <th class="right" style="width:110px">Berat (g)</th>
+                  <th class="right" style="width:130px">Panjang (cm)</th>
+                  <th class="right" style="width:110px">Lebar (cm)</th>
+                  <th class="right" style="width:120px">Upah (RM)</th>
+                  <th style="width:70px" class="right">—</th>
+                </tr>
+              </thead>
+              <tbody id="listBody">
+                <tr><td colspan="7" class="text-muted">Belum ada item. Tekan Start & sebut “0.75 17.5”.</td></tr>
+              </tbody>
+            </table>
+          </div>
+
+          <div class="d-flex justify-content-between align-items-center mt-2">
+            <div class="text-muted small">Tip: Bila auto code ON, kod akan auto isi. Kalau salah, edit kod terus di table.</div>
+            <div class="fw-semibold">Total Gram: <span class="mono" id="totalGram">0.00</span> g</div>
+          </div>
+
+          <div class="mt-2 small text-muted">
+            <span class="pill">Simpan DB hanya bila tekan “Simpan Semua”</span>
+            <span class="pill">Selepas simpan, list kekal untuk Print A4</span>
+          </div>
+
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <div class="card card-soft mt-3">
+    <div class="card-body">
+      <div class="d-flex justify-content-between align-items-center mb-2 flex-wrap gap-2">
+        <div>
+          <div class="fw-semibold">Sejarah Sesi Batch</div>
+          <div class="small text-muted">Batch yang sudah berjaya disimpan. Boleh buka balik, print list, print semua tag, atau print tag individual.</div>
+        </div>
+        <button id="btnReloadHistory" class="btn btn-outline-secondary btn-sm" type="button">Reload sejarah</button>
+      </div>
+
+      <div class="history-wrap table-responsive">
+        <table class="table table-sm align-middle sticky-head">
+          <thead>
+            <tr>
+              <th style="width:165px">Tarikh</th>
+              <th>Design</th>
+              <th style="width:90px">Prefix</th>
+              <th style="width:110px" class="right">Items</th>
+              <th style="width:110px" class="right">Gram</th>
+              <th style="width:190px">Code</th>
+              <th style="width:260px" class="right">Actions</th>
+            </tr>
+          </thead>
+          <tbody id="historyBody">
+            <tr><td colspan="7" class="text-muted py-3">Belum load sejarah.</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+/* ===== Config ===== */
+const SB_URL = "https://dduizetstqqjrpsezbpi.supabase.co";
+const SB_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRkdWl6ZXRzdHFxanJwc2V6YnBpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTg3MzI0ODQsImV4cCI6MjA3NDMwODQ4NH0.CrlHXrmHtKgR9qc2192U6quRb5lpFEeOSgwG0Lb8KRM";
+
+window.sb = window.sb || window.supabase.createClient(SB_URL, SB_KEY);
+const sb = window.sb;
+const $ = (id)=>document.getElementById(id);
+
+const HISTORY_LIMIT = 50;
+const TABLE_BATCH_SESSIONS = "j916_batch_sessions";
+const TABLE_BATCH_ITEMS = "j916_batch_session_items";
+
+function money(n){ return "RM " + Number(n||0).toFixed(2); }
+function safeStr(v){ return v == null ? "" : String(v); }
+function fmtDateTime(d){
+  try{
+    return new Date(d).toLocaleString("ms-MY",{hour12:false});
+  }catch(_){
+    return safeStr(d);
+  }
+}
+
+/* ===== Auth topbar ===== */
+(function(){
+  const pill=$('authStatus'), login=$('btnLogin'), logout=$('btnLogout');
+  try{
+    const a=(window.auth_get&&window.auth_get())||null;
+    if(a){
+      pill.textContent='Log masuk (admin) — '+(a.phone||a.msisdn||'');
+      login.style.display='none'; logout.style.display='';
+      logout.onclick=()=>{window.auth_clear&&window.auth_clear();location.reload();};
+    }else{
+      pill.textContent='Tidak log masuk';
+      login.style.display=''; logout.style.display='none';
+      login.onclick=()=>location.href='login.html#login';
+    }
+  }catch(_){}
+})();
+
+async function fallbackRequireAdmin(){
+  const a=(window.auth_get&&window.auth_get())||null;
+  if(!a){ location.href="login.html#login"; return false; }
+  const phone=(a.phone||a.msisdn||a.username||"").replace(/\D/g,'');
+  if(!phone){ alert("Akses terhad."); location.href="index.html"; return false; }
+  const norm = phone.startsWith('60') ? phone : ('6'+phone);
+  const {data,error}=await sb.from("admin_users").select("phone,is_active").eq("phone",norm).eq("is_active",true).maybeSingle();
+  if(error||!data){ alert("Akses terhad (bukan admin)."); location.href="index.html"; return false; }
+  return true;
+}
+
+function getCurrentAdminPhone(){
+  try{
+    const a = (window.auth_get && window.auth_get()) || null;
+    return String(a?.phone || a?.msisdn || a?.username || "").trim() || null;
+  }catch(_){
+    return null;
+  }
+}
+
+/* ===== State ===== */
+let _allDesigns = [];
+let _batchItems = [];
+let _codeSeed = null;
+let _historyRows = [];
+let _historyItemsCache = {};
+
+/* ===== Code generator ===== */
+function parseCodeSeed(code){
+  const s = String(code||"").trim();
+  if(!s) return null;
+  const m = s.match(/^([A-Za-z]+)(\d+)$/);
+  if(!m) return null;
+  return { prefix: m[1].toUpperCase(), num: parseInt(m[2],10), width: m[2].length };
+}
+function formatCode(seed){
+  if(!seed) return "";
+  const n = String(seed.num).padStart(seed.width,'0');
+  return seed.prefix + n;
+}
+function bumpCode(seed){
+  if(!seed) return null;
+  return { prefix: seed.prefix, num: seed.num + 1, width: seed.width };
+}
+function getSelectedPrefix(){
+  const d = getSelectedDesign();
+  return String(d?.cat_code || "").trim().toUpperCase() || "";
+}
+
+const CODE_DEFAULT_START = {
+  RT: "RT1000300",
+  RL: "RL1000001",
+  CC: "CC1000001",
+  RK: "RK1000001",
+  LK: "LK1000001",
+  SB: "SB1000001",
+  BC: "BC1000001"
+};
+
+function defaultSeedForPrefix(prefix){
+  const p = String(prefix||"").trim().toUpperCase();
+  if(!p) return null;
+  const base = CODE_DEFAULT_START[p] || (p + "1000001");
+  return parseCodeSeed(base);
+}
+
+async function getLastSavedCodeFromDB(prefix){
+  const p = String(prefix||"").trim().toUpperCase();
+  if(!p) return null;
+
+  const likePattern = p + "100%";
+  const { data, error } = await sb
+    .from("j916_items")
+    .select("code")
+    .like("code", likePattern)
+    .order("code", { ascending:false })
+    .limit(1);
+
+  if(error) throw error;
+
+  const last = Array.isArray(data) && data[0] ? String(data[0].code || "").trim().toUpperCase() : "";
+  return last || null;
+}
+
+async function getNextSeedFromDB(prefix){
+  const p = String(prefix||"").trim().toUpperCase();
+  if(!p) return null;
+
+  const last = await getLastSavedCodeFromDB(p);
+  if(last){
+    const seed = parseCodeSeed(last);
+    if(seed) return bumpCode(seed);
+  }
+  return defaultSeedForPrefix(p);
+}
+
+async function refreshCodePreview(forceDb=false){
+  const inp = $('b_code_start');
+  if(!inp) return;
+
+  const manual = String(inp.value || "").trim();
+  if(manual && !forceDb){
+    _codeSeed = parseCodeSeed(manual);
+    $('b_code_next').textContent = _codeSeed ? formatCode(_codeSeed) : '—';
+    return;
+  }
+
+  const prefix = getSelectedPrefix();
+  if(!prefix){
+    _codeSeed = null;
+    inp.value = "";
+    $('b_code_next').textContent = '—';
+    return;
+  }
+
+  try{
+    const seed = await getNextSeedFromDB(prefix);
+    _codeSeed = seed;
+    inp.value = seed ? formatCode(seed) : "";
+    $('b_code_next').textContent = seed ? formatCode(seed) : '—';
+  }catch(e){
+    console.error(e);
+    _codeSeed = null;
+    $('b_code_next').textContent = '—';
+    $('msg').textContent = "Ralat ambil kod dari DB: " + (e?.message || e);
+  }
+}
+
+/* ===== Designs ===== */
+function renderDesignOptions(filterText){
+  const sel = $('b_design_id');
+  const f = String(filterText||"").trim().toLowerCase();
+  const prev = sel.value || "";
+
+  const rows = _allDesigns.filter(r=>{
+    if(!f) return true;
+    const label = ((r.cat_code ? ('['+r.cat_code+'] ') : '') + (r.name||'')).toLowerCase();
+    return label.includes(f);
+  });
+
+  if(!rows.length){
+    sel.innerHTML = '<option value="">— Tiada padanan —</option>';
+    return;
+  }
+
+  sel.innerHTML = rows.map(r=>{
+    const label = (r.cat_code ? ('['+r.cat_code+'] ') : '') + (r.name||'');
+    return '<option value="'+r.id+'">'+label+'</option>';
+  }).join('');
+
+  const still = rows.find(x=>String(x.id)===String(prev));
+  if(still){
+    sel.value = String(prev);
+  }else{
+    sel.value = String(rows[0].id);
+  }
+}
+
+async function loadDesigns(){
+  const sel = $('b_design_id');
+  sel.innerHTML = '<option value="">Memuatkan…</option>';
+  try{
+    const {data,error}=await sb.rpc('j916_admin_products_list_v1');
+    if(error) throw error;
+
+    const rows = (Array.isArray(data)?data:[]).map(r=>({
+      id: r.id,
+      name: r.name,
+      cat_code: r.cat_code || r.category || '',
+      upah_default_rm: Number(r.upah_default_rm ?? r.wage_default ?? 0),
+      is_active: !!r.is_active
+    }));
+
+    _allDesigns = rows.filter(r=>r.is_active);
+    if(!_allDesigns.length){
+      sel.innerHTML = '<option value="">— Tiada design aktif —</option>';
+      return;
+    }
+
+    renderDesignOptions(($('designSearch')?.value||""));
+    await syncHeaderDefaults();
+  }catch(e){
+    console.error(e);
+    sel.innerHTML = '<option value="">— Ralat load design —</option>';
+  }
+}
+
+function getSelectedDesign(){
+  const id = $('b_design_id')?.value || '';
+  return _allDesigns.find(d=>String(d.id)===String(id)) || null;
+}
+
+async function syncHeaderDefaults(){
+  const d = getSelectedDesign();
+  if(!d) return;
+
+  const cur = ($('b_upah')?.value||"").trim();
+  if(cur === ""){
+    $('b_upah').value = Number(d.upah_default_rm||0).toFixed(2);
+  }
+
+  await refreshCodePreview(true);
+}
+
+/* ===== List render/edit ===== */
+function calcTotalGram(items){
+  const rows = Array.isArray(items) ? items : _batchItems;
+  return rows.reduce((s,x)=>s + Number(x.weight_g||0), 0);
+}
+
+function updateSummary(){
+  const n = _batchItems.length;
+  const total = calcTotalGram(_batchItems);
+  $('totalGram').textContent = total.toFixed(2);
+  $('summaryLine').textContent = n + ' item • ' + total.toFixed(2) + ' g';
+}
+
+function renderList(){
+  const body = $('listBody');
+  if(!body) return;
+
+  if(!_batchItems.length){
+    body.innerHTML = '<tr><td colspan="7" class="text-muted">Belum ada item. Tekan Start & sebut “0.75 17.5”.</td></tr>';
+    updateSummary();
+    return;
+  }
+
+  body.innerHTML = _batchItems.map((r,idx)=>`
+    <tr class="list-row" data-idx="${idx}">
+      <td>${idx+1}</td>
+      <td>
+        <input class="form-control form-control-sm mono" value="${escapeAttr(r.code||'')}" data-field="code">
+      </td>
+      <td class="right">
+        <input class="form-control form-control-sm right" type="number" step="0.01" min="0.01" inputmode="decimal"
+               value="${Number(r.weight_g||0).toFixed(2)}" data-field="weight_g">
+      </td>
+      <td class="right">
+        <input class="form-control form-control-sm right" type="number" step="0.1" min="0" inputmode="decimal"
+               value="${Number(r.length_cm||0).toFixed(1)}" data-field="length_cm">
+      </td>
+      <td class="right">
+        <input class="form-control form-control-sm right" type="number" step="0.1" min="0" inputmode="decimal"
+               value="${Number(r.width_cm||0).toFixed(1)}" data-field="width_cm">
+      </td>
+      <td class="right">
+        <input class="form-control form-control-sm right" type="number" step="0.01" min="0" inputmode="decimal"
+               value="${(r.upah_rm===null || r.upah_rm===undefined) ? '' : Number(r.upah_rm||0).toFixed(2)}" data-field="upah_rm" placeholder="ikut design">
+      </td>
+      <td class="right">
+        <button class="btn btn-sm btn-outline-danger" type="button" data-del="${idx}">Buang</button>
+      </td>
+    </tr>
+  `).join('');
+
+  body.querySelectorAll('tr[data-idx]').forEach(tr=>{
+    const idx = Number(tr.getAttribute('data-idx'));
+    tr.querySelectorAll('input[data-field]').forEach(inp=>{
+      inp.addEventListener('change', ()=>{
+        const f = inp.getAttribute('data-field');
+        let v = inp.value;
+
+        if(f==='code'){
+          _batchItems[idx].code = String(v||'').trim().toUpperCase();
+        }else if(f==='weight_g'){
+          const n = Number(v||0);
+          _batchItems[idx].weight_g = isFinite(n) ? Number(n.toFixed(2)) : 0;
+          inp.value = Number(_batchItems[idx].weight_g||0).toFixed(2);
+        }else if(f==='length_cm'){
+          const n = Number(v||0);
+          _batchItems[idx].length_cm = isFinite(n) ? Number(n.toFixed(1)) : 0;
+          inp.value = Number(_batchItems[idx].length_cm||0).toFixed(1);
+        }else if(f==='width_cm'){
+          const n = Number(v||0);
+          _batchItems[idx].width_cm = isFinite(n) ? Number(n.toFixed(1)) : 0;
+          inp.value = Number(_batchItems[idx].width_cm||0).toFixed(1);
+        }else if(f==='upah_rm'){
+          const s = String(v||'').trim();
+          if(s===''){
+            _batchItems[idx].upah_rm = null;
+          }else{
+            const n = Number(s||0);
+            _batchItems[idx].upah_rm = isFinite(n) ? Number(n.toFixed(2)) : null;
+            inp.value = _batchItems[idx].upah_rm===null ? '' : Number(_batchItems[idx].upah_rm).toFixed(2);
+          }
+        }
+        updateSummary();
+      });
+    });
+  });
+
+  body.querySelectorAll('[data-del]').forEach(btn=>{
+    btn.addEventListener('click', ()=>{
+      const i = Number(btn.getAttribute('data-del'));
+      _batchItems.splice(i,1);
+
+      for(let k=i; k<_batchItems.length; k++){
+        const code = String(_batchItems[k].code||"");
+        const m = code.match(/^([A-Z]+)(\d+)$/);
+        if(m){
+          const prefix = m[1];
+          const num = parseInt(m[2],10)-1;
+          const width = m[2].length;
+          _batchItems[k].code = prefix + String(num).padStart(width,'0');
+        }
+      }
+
+      if(_batchItems.length){
+        const last = String(_batchItems[_batchItems.length - 1].code || "").trim();
+        const lastSeed = parseCodeSeed(last);
+        if(lastSeed){
+          _codeSeed = bumpCode(lastSeed);
+          $('b_code_start').value = formatCode(_codeSeed);
+          $('b_code_next').textContent = formatCode(_codeSeed);
+        }
+      }else{
+        $('b_code_start').value = "";
+        refreshCodePreview(true);
+      }
+
+      renderList();
+    });
+  });
+
+  updateSummary();
+}
+
+/* ===== Save All -> Supabase ===== */
+async function saveBatchHistory(savedItems){
+  if(!Array.isArray(savedItems) || !savedItems.length) return null;
+
+  const d = getSelectedDesign();
+  const totalGram = calcTotalGram(savedItems);
+  const codeStart = String(savedItems[0]?.code || "").trim() || null;
+  const codeEnd = String(savedItems[savedItems.length - 1]?.code || "").trim() || null;
+
+  const header = {
+    design_id: d?.id || null,
+    design_name: ((d?.cat_code ? '[' + d.cat_code + '] ' : '') + (d?.name || '')).trim() || null,
+    cat_code: String(d?.cat_code || "").trim().toUpperCase() || null,
+    upah_header_rm: (($('b_upah')?.value || "").trim() === "" ? null : Number($('b_upah')?.value || 0)),
+    width_header_cm: Number($('b_width')?.value || 0),
+    code_start: codeStart,
+    code_end: codeEnd,
+    total_items: savedItems.length,
+    total_gram: Number(totalGram.toFixed(2)),
+    created_by: getCurrentAdminPhone()
+  };
+
+  const headerRes = await sb.from(TABLE_BATCH_SESSIONS).insert(header).select('*').single();
+  if(headerRes.error) throw headerRes.error;
+
+  const sessionId = headerRes.data.id;
+  const itemPayload = savedItems.map((x,idx)=>({
+    session_id: sessionId,
+    item_no: idx + 1,
+    code: String(x.code || "").trim(),
+    weight_g: Number(x.weight_g || 0),
+    length_cm: Number(x.length_cm || 0),
+    width_cm: Number(x.width_cm || 0),
+    upah_rm: (x.upah_rm===null || x.upah_rm===undefined || x.upah_rm==='') ? null : Number(x.upah_rm || 0)
+  }));
+
+  const itemRes = await sb.from(TABLE_BATCH_ITEMS).insert(itemPayload);
+  if(itemRes.error) throw itemRes.error;
+
+  _historyItemsCache[sessionId] = itemPayload.map(x=>({
+    code: x.code,
+    weight_g: Number(x.weight_g||0),
+    length_cm: Number(x.length_cm||0),
+    width_cm: Number(x.width_cm||0),
+    upah_rm: x.upah_rm===null ? null : Number(x.upah_rm||0)
+  }));
+
+  return headerRes.data;
+}
+
+async function saveAllToDB(){
+  const d = getSelectedDesign();
+  if(!d){ alert("Sila pilih design."); return; }
+  if(!_batchItems.length){ alert("Tiada item dalam list."); return; }
+
+  const bad = _batchItems.find(x=>Number(x.weight_g||0)<=0 || !isFinite(Number(x.weight_g||0)));
+  if(bad){ alert("Ada berat tak sah dalam list. Sila betulkan."); return; }
+
+  const codes = _batchItems.map(x=>String(x.code||'').trim()).filter(Boolean);
+  const dup = codes.find((c,i)=>codes.indexOf(c)!==i);
+  if(dup){ alert("Ada kod duplicate dalam list: " + dup); return; }
+
+  $('msg').textContent = "Menyimpan…";
+  $('btnCommit').disabled = true;
+
+  try{
+    let ok=0, fail=0;
+    const savedItems = [];
+
+    for(let i=0;i<_batchItems.length;i++){
+      const x = _batchItems[i];
+      const upahOverride = (x.upah_rm===null || x.upah_rm===undefined || x.upah_rm==='') ? null : Number(x.upah_rm||0);
+
+      let code = String(x.code||'').trim().toUpperCase();
+      if(!code){
+        const prefix = (d.cat_code || 'IT').toUpperCase();
+        const t = new Date();
+        const y = String(t.getFullYear()).slice(2);
+        const m = String(t.getMonth()+1).padStart(2,'0');
+        const day = String(t.getDate()).padStart(2,'0');
+        const hh = String(t.getHours()).padStart(2,'0');
+        const mm = String(t.getMinutes()).padStart(2,'0');
+        const ss = String(t.getSeconds()).padStart(2,'0');
+        code = prefix + y + m + day + hh + mm + ss + String(i+1).padStart(3,'0');
+        _batchItems[i].code = code;
+      }
+
+      const payload = {
+        p_id: null,
+        p_code: code,
+        p_design_id: d.id,
+        p_weight_g: Number(x.weight_g||0),
+        p_length_cm: Number(x.length_cm||0),
+        p_width_cm: Number(x.width_cm||0),
+        p_upah_override_rm: upahOverride,
+        p_status: "AVAILABLE",
+        p_is_active: true,
+        p_rfid: null
+      };
+
+      const {error} = await sb.rpc('j916_admin_items_upsert_v1', payload);
+
+      if(error){
+        console.warn("save fail", code, error);
+        fail++;
+      }else{
+        ok++;
+        savedItems.push({
+          code,
+          weight_g: Number(x.weight_g||0),
+          length_cm: Number(x.length_cm||0),
+          width_cm: Number(x.width_cm||0),
+          upah_rm: upahOverride
+        });
+      }
+
+      $('msg').textContent = "Menyimpan… " + (ok+fail) + "/" + _batchItems.length + " (ok " + ok + ", fail " + fail + ")";
+    }
+
+    if(savedItems.length){
+      try{
+        await saveBatchHistory(savedItems);
+      }catch(histErr){
+        console.error(histErr);
+        $('msg').textContent = "Stok berjaya simpan, tapi sejarah sesi gagal: " + (histErr?.message || histErr);
+      }
+    }
+
+    renderList();
+    $('msg').textContent = "Selesai simpan. OK: " + ok + " • Gagal: " + fail;
+    alert("Selesai simpan.\nOK: " + ok + "\nGagal: " + fail);
+
+    $('b_code_start').value = "";
+    await refreshCodePreview(true);
+    await loadBatchHistory();
+  }catch(e){
+    console.error(e);
+    $('msg').textContent = "Ralat: " + (e?.message||e);
+    alert("Ralat simpan: " + (e?.message||e));
+  }finally{
+    $('btnCommit').disabled = false;
+  }
+}
+
+/* ===== Print helpers ===== */
+function escapeHtml(s){
+  return String(s||'')
+    .replace(/&/g,'&amp;')
+    .replace(/</g,'&lt;')
+    .replace(/>/g,'&gt;')
+    .replace(/"/g,'&quot;')
+    .replace(/'/g,'&#039;');
+}
+function escapeAttr(s){
+  return String(s||'')
+    .replace(/&/g,'&amp;')
+    .replace(/"/g,'&quot;')
+    .replace(/</g,'&lt;')
+    .replace(/>/g,'&gt;');
+}
+
+function buildPrintA4Html({ title, designLabel, upahHeaderText, widthHeaderText, items, printedAt, footerNote }){
+  const total = calcTotalGram(items);
+  const rows = items.map((x,i)=>`
+    <tr>
+      <td>${i+1}</td>
+      <td class="mono">${escapeHtml(x.code||'')}</td>
+      <td class="right">${Number(x.weight_g||0).toFixed(2)}</td>
+      <td class="right">${Number(x.length_cm||0).toFixed(1)}</td>
+      <td class="right">${Number(x.width_cm||0).toFixed(1)}</td>
+      <td class="right">${(x.upah_rm===null || x.upah_rm===undefined || x.upah_rm==='') ? '—' : Number(x.upah_rm||0).toFixed(2)}</td>
+    </tr>
+  `).join('');
+
+  return `
+<!doctype html>
+<html lang="ms">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>${escapeHtml(title)}</title>
+<style>
+  @page { size: A4; margin: 12mm; }
+  body{font-family: Arial, Helvetica, sans-serif; color:#111; font-size:12px}
+  h1{font-size:16px;margin:0 0 6px 0}
+  .muted{color:#555}
+  .mono{font-family: ui-monospace, Menlo, monospace}
+  .row{display:flex;justify-content:space-between;gap:12px;align-items:flex-start}
+  .box{border:1px solid #ddd;border-radius:10px;padding:10px;margin:10px 0}
+  table{width:100%;border-collapse:collapse}
+  th,td{border:1px solid #e5e7eb;padding:6px 8px}
+  th{background:#f8fafc;text-align:left}
+  .right{text-align:right}
+  .small{font-size:11px}
+</style>
+</head>
+<body>
+  <div class="row">
+    <div>
+      <h1>${escapeHtml(title)}</h1>
+      <div class="muted small">Dicetak: ${escapeHtml(printedAt)}</div>
+    </div>
+    <div class="right">
+      <div><b>Total Item:</b> ${items.length}</div>
+      <div><b>Total Berat:</b> ${total.toFixed(2)} g</div>
+    </div>
+  </div>
+
+  <div class="box">
+    <div><b>Design:</b> ${escapeHtml(designLabel || '-')}</div>
+    <div><b>Upah Header:</b> ${escapeHtml(upahHeaderText || '-')}</div>
+    <div><b>Lebar Header:</b> ${escapeHtml(widthHeaderText || '-')}</div>
+    <div class="muted small">Nota: Kolum Upah = upah override (kalau ada). Jika kosong/— → ikut upah default design.</div>
+  </div>
+
+  <table>
+    <thead>
+      <tr>
+        <th style="width:40px">#</th>
+        <th>Kod</th>
+        <th class="right" style="width:90px">Berat (g)</th>
+        <th class="right" style="width:100px">Panjang (cm)</th>
+        <th class="right" style="width:90px">Lebar (cm)</th>
+        <th class="right" style="width:90px">Upah</th>
+      </tr>
+    </thead>
+    <tbody>
+      ${rows}
+    </tbody>
+  </table>
+
+  <div class="box">
+    <div><b>Ringkasan:</b></div>
+    <div class="small">• Total item: ${items.length}</div>
+    <div class="small">• Total berat: ${total.toFixed(2)} g</div>
+    <div class="small muted">${escapeHtml(footerNote || 'Disediakan oleh sistem Emas Amir.')}</div>
+  </div>
+
+<script>
+  window.onload = function(){ window.print(); };
+<\/script>
+</body>
+</html>
+  `.trim();
+}
+
+function openPrintHtml(html){
+  const w = window.open('', '_blank');
+  if(!w){
+    alert("Pop-up block. Sila allow pop-up untuk print.");
+    return;
+  }
+  w.document.open();
+  w.document.write(html);
+  w.document.close();
+}
+
+function printA4(){
+  const d = getSelectedDesign();
+  if(!d){ alert("Pilih design dahulu."); return; }
+  if(!_batchItems.length){ alert("Tiada item untuk print."); return; }
+
+  const now = new Date();
+  const dt = now.toLocaleString('ms-MY',{day:'2-digit',month:'2-digit',year:'numeric',hour:'2-digit',minute:'2-digit',hour12:true});
+  const upahHeader = ($('b_upah')?.value==='' ? 'Ikut design' : money(Number($('b_upah')?.value||0)));
+  const widthHeader = Number($('b_width')?.value||0);
+  const designLabel = (d.cat_code ? ('['+d.cat_code+'] ') : '') + (d.name||'');
+
+  const html = buildPrintA4Html({
+    title: 'EMAS AMIR SDN. BHD. • Stok Masuk 916 (Voice Batch)',
+    designLabel,
+    upahHeaderText: upahHeader,
+    widthHeaderText: (isFinite(widthHeader)?Number(widthHeader).toFixed(1):'0.0') + ' cm',
+    items: _batchItems,
+    printedAt: dt,
+    footerNote: 'Disediakan oleh sistem Emas Amir.'
+  });
+
+  openPrintHtml(html);
+}
+
+function printTagsByCodes(codes){
+  const clean = (Array.isArray(codes) ? codes : [])
+    .map(x=>String(x||'').trim())
+    .filter(Boolean);
+
+  if(!clean.length){
+    alert("Tiada kod sah untuk dicetak.");
+    return;
+  }
+
+  const url = `print-tag-j916.html?codes=${encodeURIComponent(clean.join(","))}`;
+  window.open(url, "_blank");
+}
+
+function printTags(){
+  if(!_batchItems.length){
+    alert("Tiada item untuk print tag.");
+    return;
+  }
+
+  const codes = _batchItems.map(x => String(x.code || "").trim()).filter(Boolean);
+  printTagsByCodes(codes);
+}
+
+/* ===== History ===== */
+async function loadBatchHistory(){
+  const body = $('historyBody');
+  body.innerHTML = `<tr><td colspan="7" class="text-muted py-3">Memuatkan sejarah…</td></tr>`;
+
+  try{
+    const {data,error} = await sb
+      .from(TABLE_BATCH_SESSIONS)
+      .select('*')
+      .order('created_at', { ascending:false })
+      .limit(HISTORY_LIMIT);
+
+    if(error) throw error;
+
+    _historyRows = Array.isArray(data) ? data : [];
+    renderBatchHistory();
+  }catch(e){
+    console.error(e);
+    body.innerHTML = `<tr><td colspan="7" class="text-danger py-3">Ralat load sejarah: ${escapeHtml(e?.message || e)}</td></tr>`;
+  }
+}
+
+function renderBatchHistory(){
+  const body = $('historyBody');
+
+  if(!_historyRows.length){
+    body.innerHTML = `<tr><td colspan="7" class="text-muted py-3">Belum ada sejarah sesi.</td></tr>`;
+    return;
+  }
+
+  body.innerHTML = _historyRows.map((r,idx)=>`
+    <tr>
+      <td>${escapeHtml(fmtDateTime(r.created_at))}</td>
+      <td>
+        <div>${escapeHtml(r.design_name || '-')}</div>
+        <div class="small text-muted">${escapeHtml(r.created_by || '')}</div>
+      </td>
+      <td class="mono">${escapeHtml(r.cat_code || '-')}</td>
+      <td class="right">${Number(r.total_items || 0)}</td>
+      <td class="right">${Number(r.total_gram || 0).toFixed(2)} g</td>
+      <td class="mono">
+        <div>${escapeHtml(r.code_start || '-')}</div>
+        <div class="small text-muted">${escapeHtml(r.code_end || '-')}</div>
+      </td>
+      <td class="right">
+        <div class="d-flex flex-wrap gap-2 justify-content-end">
+          <button class="btn btn-sm btn-outline-secondary" type="button" data-h-detail="${r.id}">Detail</button>
+          <button class="btn btn-sm btn-outline-primary" type="button" data-h-open="${r.id}">Buka Sesi</button>
+          <button class="btn btn-sm btn-outline-dark" type="button" data-h-a4="${r.id}">Print A4</button>
+          <button class="btn btn-sm btn-outline-dark" type="button" data-h-tags="${r.id}">Print Semua Tag</button>
+        </div>
+      </td>
+    </tr>
+    <tr id="history-detail-row-${idx}" class="history-detail" style="display:none">
+      <td colspan="7">
+        <div id="history-detail-box-${idx}" class="small text-muted">Memuatkan detail…</div>
+      </td>
+    </tr>
+  `).join('');
+
+  body.querySelectorAll('[data-h-detail]').forEach(btn=>{
+    btn.addEventListener('click', async ()=>{
+      const sessionId = btn.getAttribute('data-h-detail');
+      const idx = _historyRows.findIndex(x=>String(x.id)===String(sessionId));
+      if(idx < 0) return;
+
+      const row = $('history-detail-row-' + idx);
+      const box = $('history-detail-box-' + idx);
+
+      if(row.style.display !== 'none'){
+        row.style.display = 'none';
+        return;
+      }
+
+      row.style.display = '';
+      box.innerHTML = 'Memuatkan detail…';
+
+      try{
+        const items = await getHistoryItems(sessionId);
+        box.innerHTML = buildHistoryDetailHtml(sessionId, items);
+        wireHistoryDetailActions(box, sessionId, items);
+      }catch(e){
+        console.error(e);
+        box.innerHTML = `<div class="text-danger">Ralat detail: ${escapeHtml(e?.message || e)}</div>`;
+      }
+    });
+  });
+
+  body.querySelectorAll('[data-h-open]').forEach(btn=>{
+    btn.addEventListener('click', async ()=>{
+      const sessionId = btn.getAttribute('data-h-open');
+      const header = _historyRows.find(x=>String(x.id)===String(sessionId));
+      if(!header) return;
+
+      const items = await getHistoryItems(sessionId);
+      if(!items.length){
+        alert("Tiada item dalam sesi ini.");
+        return;
+      }
+
+      if(!confirm("Buka semula sesi ini ke Senarai Item sekarang?")){
+        return;
+      }
+
+      _batchItems = items.map(x=>({
+        code: String(x.code || '').trim(),
+        weight_g: Number(x.weight_g || 0),
+        length_cm: Number(x.length_cm || 0),
+        width_cm: Number(x.width_cm || 0),
+        upah_rm: (x.upah_rm===null || x.upah_rm===undefined) ? null : Number(x.upah_rm || 0)
+      }));
+
+      if(header.design_id){
+        const hasDesign = _allDesigns.find(d=>String(d.id)===String(header.design_id));
+        if(hasDesign){
+          $('b_design_id').value = String(header.design_id);
+        }
+      }
+      $('b_upah').value = (header.upah_header_rm===null || header.upah_header_rm===undefined) ? '' : Number(header.upah_header_rm || 0).toFixed(2);
+      $('b_width').value = Number(header.width_header_cm || 0).toFixed(1);
+
+      if(_batchItems.length){
+        const lastSeed = parseCodeSeed(_batchItems[_batchItems.length - 1].code);
+        _codeSeed = lastSeed ? bumpCode(lastSeed) : null;
+        $('b_code_start').value = _codeSeed ? formatCode(_codeSeed) : "";
+        $('b_code_next').textContent = _codeSeed ? formatCode(_codeSeed) : "—";
+      }else{
+        $('b_code_start').value = "";
+        await refreshCodePreview(true);
+      }
+
+      renderList();
+      $('msg').textContent = "Sesi lama dibuka semula ke Senarai Item.";
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    });
+  });
+
+  body.querySelectorAll('[data-h-a4]').forEach(btn=>{
+    btn.addEventListener('click', async ()=>{
+      const sessionId = btn.getAttribute('data-h-a4');
+      const header = _historyRows.find(x=>String(x.id)===String(sessionId));
+      if(!header) return;
+      const items = await getHistoryItems(sessionId);
+      printA4FromHistory(header, items);
+    });
+  });
+
+  body.querySelectorAll('[data-h-tags]').forEach(btn=>{
+    btn.addEventListener('click', async ()=>{
+      const sessionId = btn.getAttribute('data-h-tags');
+      const items = await getHistoryItems(sessionId);
+      printTagsByCodes(items.map(x=>x.code));
+    });
+  });
+}
+
+async function getHistoryItems(sessionId){
+  const key = String(sessionId || "");
+  if(_historyItemsCache[key]) return _historyItemsCache[key];
+
+  const {data,error} = await sb
+    .from(TABLE_BATCH_ITEMS)
+    .select('*')
+    .eq('session_id', key)
+    .order('item_no', { ascending:true });
+
+  if(error) throw error;
+
+  const items = (Array.isArray(data) ? data : []).map(x=>({
+    code: String(x.code || '').trim(),
+    weight_g: Number(x.weight_g || 0),
+    length_cm: Number(x.length_cm || 0),
+    width_cm: Number(x.width_cm || 0),
+    upah_rm: (x.upah_rm===null || x.upah_rm===undefined) ? null : Number(x.upah_rm || 0)
+  }));
+
+  _historyItemsCache[key] = items;
+  return items;
+}
+
+function buildHistoryDetailHtml(sessionId, items){
+  if(!items.length){
+    return `<div class="text-muted">Tiada item.</div>`;
+  }
+
+  const rows = items.map((x,i)=>`
+    <tr>
+      <td>${i+1}</td>
+      <td class="mono">${escapeHtml(x.code)}</td>
+      <td class="right">${Number(x.weight_g||0).toFixed(2)}</td>
+      <td class="right">${Number(x.length_cm||0).toFixed(1)}</td>
+      <td class="right">${Number(x.width_cm||0).toFixed(1)}</td>
+      <td class="right">${x.upah_rm===null ? '—' : Number(x.upah_rm||0).toFixed(2)}</td>
+      <td class="right">
+        <button class="btn btn-sm btn-outline-secondary" type="button" data-h-one-tag="${escapeAttr(x.code)}">Tag</button>
+      </td>
+    </tr>
+  `).join('');
+
+  return `
+    <div class="d-flex justify-content-between align-items-center mb-2 flex-wrap gap-2">
+      <div class="fw-semibold">Detail Item Sesi</div>
+      <div class="d-flex gap-2 flex-wrap">
+        <button class="btn btn-sm btn-outline-dark" type="button" data-h-box-tags="${escapeAttr(sessionId)}">Print Semua Tag</button>
+      </div>
+    </div>
+
+    <div class="table-responsive">
+      <table class="table table-sm mini-table align-middle mb-0">
+        <thead class="table-light">
+          <tr>
+            <th style="width:44px">#</th>
+            <th>Kod</th>
+            <th class="right" style="width:90px">Berat</th>
+            <th class="right" style="width:90px">Panjang</th>
+            <th class="right" style="width:90px">Lebar</th>
+            <th class="right" style="width:90px">Upah</th>
+            <th style="width:80px" class="right">Tag</th>
+          </tr>
+        </thead>
+        <tbody>${rows}</tbody>
+      </table>
+    </div>
+  `;
+}
+
+function wireHistoryDetailActions(box, sessionId, items){
+  box.querySelectorAll('[data-h-one-tag]').forEach(btn=>{
+    btn.addEventListener('click', ()=>{
+      const code = btn.getAttribute('data-h-one-tag');
+      printTagsByCodes([code]);
+    });
+  });
+
+  const btnAll = box.querySelector('[data-h-box-tags]');
+  if(btnAll){
+    btnAll.addEventListener('click', ()=>{
+      printTagsByCodes(items.map(x=>x.code));
+    });
+  }
+}
+
+function printA4FromHistory(header, items){
+  if(!items.length){
+    alert("Tiada item dalam sesi ini.");
+    return;
+  }
+
+  const dt = new Date().toLocaleString('ms-MY',{day:'2-digit',month:'2-digit',year:'numeric',hour:'2-digit',minute:'2-digit',hour12:true});
+  const html = buildPrintA4Html({
+    title: 'EMAS AMIR SDN. BHD. • Sejarah Batch 916',
+    designLabel: header.design_name || '-',
+    upahHeaderText: (header.upah_header_rm===null || header.upah_header_rm===undefined) ? 'Ikut design' : money(Number(header.upah_header_rm || 0)),
+    widthHeaderText: Number(header.width_header_cm || 0).toFixed(1) + ' cm',
+    items,
+    printedAt: dt,
+    footerNote: 'Cetakan semula dari sejarah batch.'
+  });
+
+  openPrintHtml(html);
+}
+
+/* ===== Wire ===== */
+$('designSearch')?.addEventListener('input', ()=>{
+  renderDesignOptions(($('designSearch')?.value||""));
+});
+
+$('b_design_id')?.addEventListener('change', async ()=>{
+  await syncHeaderDefaults();
+});
+
+$('b_code_start')?.addEventListener('input', ()=>{
+  const v = String($('b_code_start')?.value || "").trim().toUpperCase();
+  $('b_code_start').value = v;
+  _codeSeed = parseCodeSeed(v);
+  $('b_code_next').textContent = _codeSeed ? formatCode(_codeSeed) : '—';
+});
+
+$('btnVoiceToggle')?.addEventListener('click', ()=>{
+  if(isRecording){
+    stopRecording();
+  }else{
+    startRecording();
+  }
+});
+
+$('btnVoiceClear')?.addEventListener('click', async ()=>{
+  if(!_batchItems.length) return;
+  if(confirm("Kosongkan semua item dalam list?")){
+    _batchItems = [];
+    renderList();
+    $('msg').textContent = '';
+    $('liveTranscript').textContent = '';
+    $('b_code_start').value = "";
+    await refreshCodePreview(true);
+  }
+});
+
+$('btnCommit')?.addEventListener('click', saveAllToDB);
+$('btnPrintA4')?.addEventListener('click', printA4);
+$('btnPrintTags')?.addEventListener('click', printTags);
+$('btnReloadHistory')?.addEventListener('click', loadBatchHistory);
+
+/* ===== NORMALIZE Malay number speech -> digits ===== */
+function normalizeMalayNumbersToDigits(raw){
+  let t = String(raw || "").toLowerCase();
+
+  t = t.replace(/\bpoint\b/g, " poin ");
+  t = t.replace(/\bpoin\b/g, " . ");
+  t = t.replace(/\bsetengah\b/g, " .5 ");
+
+  const teens = [
+    ["sebelas", "11"],
+    ["dua belas", "12"],
+    ["tiga belas", "13"],
+    ["empat belas", "14"],
+    ["lima belas", "15"],
+    ["enam belas", "16"],
+    ["tujuh belas", "17"],
+    ["lapan belas", "18"],
+    ["sembilan belas", "19"],
+    ["sepuluh", "10"]
+  ];
+  teens.forEach(([k,v])=>{
+    const re = new RegExp("\\b" + k.replace(/\s+/g,"\\s+") + "\\b","g");
+    t = t.replace(re, " " + v + " ");
+  });
+
+  const tens = [
+    ["dua puluh", "20"],
+    ["tiga puluh", "30"],
+    ["empat puluh", "40"],
+    ["lima puluh", "50"],
+    ["enam puluh", "60"],
+    ["tujuh puluh", "70"],
+    ["lapan puluh", "80"],
+    ["sembilan puluh", "90"]
+  ];
+  tens.forEach(([k,v])=>{
+    const re = new RegExp("\\b" + k.replace(/\s+/g,"\\s+") + "\\b","g");
+    t = t.replace(re, " " + v + " ");
+  });
+
+  const digitMap = {
+    "kosong":"0",
+    "sifar":"0",
+    "satu":"1",
+    "dua":"2",
+    "tiga":"3",
+    "empat":"4",
+    "lima":"5",
+    "enam":"6",
+    "tujuh":"7",
+    "lapan":"8",
+    "sembilan":"9"
+  };
+  Object.keys(digitMap).forEach(w=>{
+    const re = new RegExp("\\b" + w + "\\b","g");
+    t = t.replace(re, " " + digitMap[w] + " ");
+  });
+
+  t = t.replace(/(\d)\s*\.\s*(\d)/g, "$1.$2");
+  t = t.replace(/(\d\.\d)\s+(\d)\b/g, "$1$2");
+  t = t.replace(/\b(20|30|40|50|60|70|80|90)\s+([0-9])\b/g, (m,a,b)=> String(Number(a)+Number(b)));
+  t = t.replace(/\s+/g," ").trim();
+  return t;
+}
+
+/* ===== OPENAI VOICE ===== */
+let mediaRecorder = null;
+let audioChunks = [];
+let isRecording = false;
+let currentStream = null;
+let recordMimeType = "";
+
+function getBestRecorderMimeType(){
+  if(typeof MediaRecorder === "undefined") return "";
+  const candidates = [
+    "audio/webm;codecs=opus",
+    "audio/webm",
+    "audio/mp4",
+    "audio/mpeg"
+  ];
+  for(const c of candidates){
+    try{
+      if(MediaRecorder.isTypeSupported && MediaRecorder.isTypeSupported(c)) return c;
+    }catch(_){}
+  }
+  return "";
+}
+
+function extFromMime(mime){
+  const m = String(mime || "").toLowerCase();
+  if(m.includes("webm")) return "webm";
+  if(m.includes("mp4")) return "mp4";
+  if(m.includes("mpeg")) return "mp3";
+  if(m.includes("ogg")) return "ogg";
+  if(m.includes("wav")) return "wav";
+  return "webm";
+}
+
+async function startRecording(){
+  if(isRecording) return;
+
+  if(!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia){
+    alert("Browser ini tak support microphone.");
+    return;
+  }
+  if(typeof MediaRecorder === "undefined"){
+    alert("Browser ini tak support rakaman suara untuk fungsi ini.");
+    return;
+  }
+
+  try{
+    currentStream = await navigator.mediaDevices.getUserMedia({ audio:true });
+
+    const bestMime = getBestRecorderMimeType();
+    recordMimeType = bestMime || "";
+    const options = bestMime ? { mimeType: bestMime } : {};
+
+    mediaRecorder = new MediaRecorder(currentStream, options);
+    audioChunks = [];
+
+    mediaRecorder.ondataavailable = e=>{
+      if(e.data && e.data.size > 0) audioChunks.push(e.data);
+    };
+
+    mediaRecorder.onstop = async ()=>{
+      const finalMime = recordMimeType || mediaRecorder.mimeType || "audio/webm";
+      const blob = new Blob(audioChunks, { type: finalMime });
+      await sendToWhisper(blob, finalMime);
+    };
+
+    mediaRecorder.start();
+    isRecording = true;
+    $('btnVoiceToggle').textContent = "⏹ Stop";
+    $('btnVoiceToggle').classList.remove("btn-success");
+    $('btnVoiceToggle').classList.add("btn-danger");
+    $('micStatus').textContent = "Recording...";
+    $('micDot').className = "live-dot";
+  }catch(e){
+    console.error(e);
+    $('micStatus').textContent = "Ralat";
+    $('micDot').className = "warn-dot";
+    alert("Gagal buka mic: " + (e?.message || e));
+  }
+}
+
+function stopRecording(){
+  if(!isRecording) return;
+
+  isRecording = false;
+
+  try{ mediaRecorder.stop(); }catch(_){}
+
+  if(currentStream){
+    currentStream.getTracks().forEach(track => track.stop());
+    currentStream = null;
+  }
+
+  $('btnVoiceToggle').textContent = "🎤 Start";
+  $('btnVoiceToggle').classList.remove("btn-danger");
+  $('btnVoiceToggle').classList.add("btn-success");
+  $('micStatus').textContent = "Processing...";
+  $('micDot').className = "warn-dot";
+}
+
+async function sendToWhisper(blob, mimeType){
+  try{
+    $('micStatus').textContent = "Transcribe…";
+    $('micDot').className = "warn-dot";
+
+    if(!blob || !blob.size){
+      throw new Error("Audio kosong / tiada data.");
+    }
+
+    const base64 = await new Promise((resolve,reject)=>{
+      const fr = new FileReader();
+      fr.onload = ()=> {
+        const s = String(fr.result || "");
+        const b64 = s.split(",")[1] || "";
+        resolve(b64);
+      };
+      fr.onerror = reject;
+      fr.readAsDataURL(blob);
+    });
+
+    const ext = extFromMime(mimeType || blob.type || "");
+    const filename = "audio." + ext;
+
+    const r = await fetch("/.netlify/functions/voice-transcribe",{
+      method:"POST",
+      headers:{ "content-type":"application/json" },
+      body: JSON.stringify({
+        audio: base64,
+        filename,
+        mime: mimeType || blob.type || "audio/webm",
+        language: "ms"
+      })
+    });
+
+    const data = await r.json();
+    if(!r.ok){
+      throw new Error(data?.error || ("HTTP " + r.status));
+    }
+
+    const raw = String(data.text || "").trim();
+    if(raw){
+      $('liveTranscript').textContent += raw + " ";
+      const norm = normalizeMalayNumbersToDigits(raw);
+      handleNumbers(norm);
+    }
+
+    $('micStatus').textContent = "Ready";
+    $('micDot').className = "ok-dot";
+  }catch(e){
+    console.error(e);
+    $('micStatus').textContent = "Ralat";
+    $('micDot').className = "warn-dot";
+    alert("Transcribe gagal: " + (e?.message || e));
+  }
+}
+
+/* ===== Convert suara → nombor ===== */
+let pendingWeight = null;
+
+function handleNumbers(text){
+  const nums = String(text||"").match(/\d+(\.\d+)?/g);
+  if(!nums) return;
+
+  const width = Number($('b_width')?.value||0);
+  const upah  = ($('b_upah')?.value==='' ? null : Number($('b_upah')?.value||0));
+
+  for(let i=0; i<nums.length; i++){
+    const val = Number(nums[i]);
+
+    if(pendingWeight===null){
+      if(isFinite(val) && val>0 && val<10){
+        pendingWeight = Number(val.toFixed(2));
+      }
+      continue;
+    }
+
+    const length = Number(val.toFixed(1));
+
+    let qty = 1;
+    const next = (i+1 < nums.length) ? Number(nums[i+1]) : null;
+
+    if(next !== null && isFinite(next) && next > 1){
+      qty = Math.max(1, Math.min(200, parseInt(next, 10) || 1));
+      i++;
+    }
+
+    for(let q=0; q<qty; q++){
+      _batchItems.push({
+        code: _codeSeed ? formatCode(_codeSeed) : "",
+        weight_g: pendingWeight,
+        length_cm: length,
+        width_cm: width,
+        upah_rm: upah
+      });
+
+      if(_codeSeed){
+        _codeSeed = bumpCode(_codeSeed);
+        $('b_code_start').value = formatCode(_codeSeed);
+        $('b_code_next').textContent = formatCode(_codeSeed);
+      }else{
+        $('b_code_next').textContent = '—';
+      }
+    }
+
+    pendingWeight = null;
+  }
+
+  renderList();
+}
+
+/* ===== Boot ===== */
+(async ()=>{
+  let ok=false;
+  if(window.adminGuard && typeof adminGuard.require==='function'){
+    ok = await adminGuard.require({
+      onChecking:()=> $('authStatus').textContent="Mengesahkan akses…",
+      onDenied:()=> $('authStatus').textContent="Akses ditolak",
+      onAllowed:(p)=> $('authStatus').textContent="Log masuk (admin) — "+p
+    });
+  }else{
+    ok = await fallbackRequireAdmin();
+    if(ok) $('authStatus').textContent="Log masuk (admin)";
+  }
+  if(!ok) return;
+
+  await loadDesigns();
+  await refreshCodePreview(true);
+  renderList();
+  await loadBatchHistory();
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,1733 @@
+<!doctype html>
+<html lang="ms">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<link rel="stylesheet" href="/global.css">
+<title>Chat Agen – Emas Amir</title>
+
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="auth.js?v=13.1"></script>
+<script src="https://cdn.socket.io/4.7.5/socket.io.min.js"></script>
+
+
+<style>
+  :root{
+    --bg:#f6f7f9;
+    --card:#ffffff;
+    --muted:#6b7280;
+    --border:#e5e7eb;
+    --soft:#f3f4f6;
+    --soft2:#eef1f4;
+    --text:#111827;
+    --mine:#111827;
+    --mineText:#ffffff;
+    --other:#f3f4f6;
+    --agent:#eef7ff;
+    --agentBorder:#d7ebff;
+
+    --dangerBg:#fff1f2;
+    --dangerBd:#fecdd3;
+    --dangerTx:#be123c;
+
+    --warnBg:#fffbeb;
+    --warnBd:#fde68a;
+    --warnTx:#92400e;
+
+    --okBg:#ecfdf5;
+    --okBd:#bbf7d0;
+    --okTx:#166534;
+
+    --infoBg:#eff6ff;
+    --infoBd:#bfdbfe;
+    --infoTx:#1d4ed8;
+  }
+
+  html,body{height:100%}
+  body{
+    background:var(--bg);
+    color:var(--text);
+    margin:0;
+  }
+
+  .page{
+    max-width:1400px;
+    margin:0 auto;
+    padding:14px;
+  }
+
+  .topbar{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap:12px;
+    margin-bottom:12px;
+    flex-wrap:wrap;
+  }
+
+  .topbar h3{
+    margin:0;
+    font-size:22px;
+    font-weight:800;
+  }
+
+  .app{
+    height:calc(100vh - 90px);
+    min-height:680px;
+    display:grid;
+    grid-template-columns:360px 1fr;
+    gap:12px;
+  }
+
+  .pane{
+    background:var(--card);
+    border:1px solid var(--border);
+    border-radius:18px;
+    overflow:hidden;
+  }
+
+  .left-head{
+    padding:14px;
+    border-bottom:1px solid var(--border);
+    background:#fff;
+  }
+
+  .summary-bar{
+    display:flex;
+    gap:8px;
+    flex-wrap:wrap;
+    margin-top:10px;
+  }
+
+  .summary-pill{
+    display:inline-flex;
+    align-items:center;
+    gap:6px;
+    padding:6px 10px;
+    border-radius:999px;
+    font-size:12px;
+    font-weight:700;
+    border:1px solid var(--border);
+    background:#fff;
+    color:#374151;
+  }
+
+  .summary-pill.unread{
+    background:var(--dangerBg);
+    border-color:var(--dangerBd);
+    color:var(--dangerTx);
+  }
+
+  .summary-pill.waiting{
+    background:var(--warnBg);
+    border-color:var(--warnBd);
+    color:var(--warnTx);
+  }
+
+  .summary-pill.read{
+    background:var(--okBg);
+    border-color:var(--okBd);
+    color:var(--okTx);
+  }
+
+  .left-search{
+    display:flex;
+    gap:8px;
+    margin-top:10px;
+  }
+
+  .left-search input,
+  .left-search select{
+    border-radius:12px;
+  }
+
+  .left-actions{
+    display:flex;
+    gap:8px;
+    margin-top:10px;
+    flex-wrap:wrap;
+  }
+
+  .thread-list{
+    height:calc(100% - 220px);
+    overflow:auto;
+  }
+
+  .thread-item{
+    padding:12px 14px;
+    border-bottom:1px solid #f1f3f5;
+    cursor:pointer;
+    background:#fff;
+    position:relative;
+  }
+
+  .thread-item:hover{background:#fafafa}
+  .thread-item.active{background:#f8fafc}
+
+  .thread-item.is-unread{
+    background:#fff7f7;
+    border-left:4px solid #e11d48;
+    padding-left:10px;
+  }
+
+  .thread-item.is-waiting{
+    background:#fffdf5;
+    border-left:4px solid #d97706;
+    padding-left:10px;
+  }
+
+  .thread-item.is-read{
+    background:#ffffff;
+  }
+
+  .thread-top{
+    display:flex;
+    justify-content:space-between;
+    gap:8px;
+    align-items:flex-start;
+  }
+
+  .thread-name{
+    font-weight:700;
+    font-size:14px;
+    line-height:1.2;
+  }
+
+  .thread-time{
+    font-size:11px;
+    color:var(--muted);
+    white-space:nowrap;
+  }
+
+  .thread-snippet{
+    margin-top:8px;
+    font-size:13px;
+    color:#374151;
+    white-space:nowrap;
+    overflow:hidden;
+    text-overflow:ellipsis;
+  }
+
+  .thread-badges{
+    display:flex;
+    gap:6px;
+    flex-wrap:wrap;
+    margin-top:8px;
+  }
+
+  .badge-soft{
+    display:inline-flex;
+    align-items:center;
+    gap:6px;
+    padding:4px 8px;
+    border-radius:999px;
+    background:#eef1f4;
+    font-size:11px;
+    color:#495057;
+    border:1px solid #e5e7eb;
+  }
+
+  .badge-unread{
+    background:var(--dangerBg);
+    border-color:var(--dangerBd);
+    color:var(--dangerTx);
+    font-weight:700;
+  }
+
+  .badge-read{
+    background:var(--okBg);
+    border-color:var(--okBd);
+    color:var(--okTx);
+    font-weight:700;
+  }
+
+  .badge-waiting{
+    background:var(--warnBg);
+    border-color:var(--warnBd);
+    color:var(--warnTx);
+    font-weight:700;
+  }
+
+  .right{
+    display:flex;
+    flex-direction:column;
+    min-width:0;
+  }
+
+  .chat-head{
+    padding:14px 16px;
+    border-bottom:1px solid var(--border);
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap:12px;
+    background:#fff;
+    flex-wrap:wrap;
+  }
+
+  .chat-head-title{
+    min-width:0;
+  }
+
+  .chat-head-title .name{
+    font-weight:800;
+    font-size:15px;
+    line-height:1.2;
+  }
+
+  .chat-head-title .meta{
+    color:var(--muted);
+    font-size:12px;
+    margin-top:4px;
+    white-space:nowrap;
+    overflow:hidden;
+    text-overflow:ellipsis;
+  }
+
+  .chat-head-right{
+    display:flex;
+    gap:8px;
+    align-items:center;
+    flex-wrap:wrap;
+  }
+
+  .chat-body{
+    flex:1;
+    overflow:auto;
+    background:#f8fafc;
+    padding:14px;
+  }
+
+  .empty-state{
+    height:100%;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    text-align:center;
+    color:var(--muted);
+    font-size:14px;
+    padding:24px;
+  }
+
+  .msg-wrap{
+    margin-bottom:8px;
+  }
+
+  .msg-row{
+    display:flex;
+    gap:10px;
+    align-items:flex-start;
+  }
+
+  .msg-row.customer{justify-content:flex-start}
+  .msg-row.ai{justify-content:flex-start}
+  .msg-row.agent{justify-content:flex-end}
+
+  .bubble{
+    max-width:82%;
+    padding:8px 10px;
+    border-radius:14px;
+    white-space:pre-wrap;
+    word-break:break-word;
+    box-shadow:0 1px 1px rgba(0,0,0,.03);
+    border:1px solid transparent;
+    line-height:1.35;
+    font-size:14px;
+    display:inline-block;
+    height:auto;
+    min-height:0;
+  }
+
+  .msg-row.customer .bubble{
+    background:var(--other);
+    color:var(--text);
+    border-top-left-radius:6px;
+  }
+
+  .msg-row.ai .bubble{
+    background:#f3f4f6;
+    color:var(--text);
+    border-top-left-radius:6px;
+  }
+
+  .msg-row.agent .bubble{
+    background:var(--agent);
+    color:var(--text);
+    border:1px solid var(--agentBorder);
+    border-top-right-radius:6px;
+  }
+
+  .msg-role{
+    font-size:11px;
+    font-weight:700;
+    margin-bottom:6px;
+    opacity:.8;
+  }
+
+  .msg-meta{
+    font-size:11px;
+    color:var(--muted);
+    margin-top:4px;
+  }
+
+  .bubble a{
+    color:inherit;
+    text-decoration:underline;
+  }
+
+  .attach-wrap{
+    margin-top:10px;
+  }
+
+  .attach-thumb{
+    width:220px;
+    max-width:100%;
+    border-radius:12px;
+    border:1px solid var(--border);
+    object-fit:cover;
+    display:block;
+    background:#fff;
+  }
+
+  .attach-link{
+    display:inline-flex;
+    gap:8px;
+    align-items:center;
+    padding:8px 10px;
+    border-radius:12px;
+    background:#fff;
+    border:1px solid var(--border);
+    text-decoration:none;
+    color:#111827;
+    margin-top:8px;
+  }
+
+  .reply-quote{
+    border-left:3px solid #94a3b8;
+    padding-left:8px;
+    margin-bottom:8px;
+    font-size:12px;
+    opacity:.9;
+  }
+
+  .reply-quote-name{
+    font-weight:700;
+    margin-bottom:2px;
+  }
+
+  .composer{
+    border-top:1px solid var(--border);
+    background:#fff;
+    padding:12px;
+  }
+
+  .composer-top{
+    display:flex;
+    gap:8px;
+    align-items:center;
+    margin-bottom:8px;
+    flex-wrap:wrap;
+  }
+
+  .composer-top input[type=file]{
+    max-width:340px;
+  }
+
+  .file-preview{
+    display:none;
+    margin-bottom:8px;
+  }
+
+  .file-pill{
+    display:inline-flex;
+    align-items:center;
+    gap:8px;
+    padding:8px 10px;
+    border-radius:999px;
+    background:#eef1f4;
+    font-size:13px;
+    color:#111827;
+    border:1px solid #e5e7eb;
+  }
+
+  .composer-row{
+    display:flex;
+    gap:8px;
+    align-items:flex-end;
+  }
+
+  .composer-row textarea{
+    resize:none;
+    min-height:52px;
+    max-height:160px;
+    border-radius:14px;
+  }
+
+  .right-status{
+    font-size:12px;
+    color:var(--muted);
+    margin-top:6px;
+  }
+
+  .scroll-bottom-btn{
+    position:absolute;
+    right:18px;
+    bottom:88px;
+    z-index:20;
+    border:none;
+    border-radius:999px;
+    padding:10px 12px;
+    background:#111827;
+    color:#fff;
+    font-size:18px;
+    line-height:1;
+    box-shadow:0 8px 24px rgba(0,0,0,.18);
+    display:none;
+  }
+
+  .scroll-bottom-btn.show{
+    display:inline-flex;
+    align-items:center;
+    justify-content:center;
+  }
+
+  .right-pane{
+    position:relative;
+  }
+
+  .mobile-back{
+    display:none;
+  }
+
+  .notice-card{
+    border:1px solid #fde68a;
+    background:#fffbeb;
+    color:#92400e;
+    border-radius:16px;
+    padding:12px 14px;
+    margin-top:10px;
+    font-size:13px;
+  }
+
+  @media (max-width: 980px){
+    .app{
+      grid-template-columns:1fr;
+      height:auto;
+      min-height:0;
+    }
+
+    .pane.left-pane,
+    .pane.right-pane{
+      height:calc(100vh - 110px);
+      min-height:0;
+    }
+
+    .thread-list{
+      height:calc(100% - 240px);
+    }
+
+    body.mobile-list-mode .right-pane{
+      display:none;
+    }
+
+    body.mobile-list-mode .left-pane{
+      display:block;
+    }
+
+    body.mobile-chat-mode .left-pane{
+      display:none;
+    }
+
+    body.mobile-chat-mode .right-pane{
+      display:flex;
+    }
+
+    .mobile-back{
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+    }
+
+    .bubble{
+      max-width:85%;
+      padding:8px 10px;
+      font-size:14px;
+      display:inline-block;
+      height:auto;
+      min-height:0;
+    }
+
+    .composer-row{
+      align-items:stretch;
+    }
+
+    .composer-row textarea{
+      min-height:46px;
+    }
+  }
+</style>
+</head>
+<body>
+<div class="page">
+
+  <div class="topbar">
+    <div>
+      <h3>Chat Agen</h3>
+      <div class="text-muted small">Chat pelanggan bawah agen sahaja</div>
+    </div>
+
+    <div class="d-flex gap-2 flex-wrap">
+      <a class="btn btn-outline-secondary btn-sm" href="affiliate.html">Panel Agen</a>
+      <a class="btn btn-outline-secondary btn-sm" href="index.html">Laman Utama</a>
+      <button id="btnRefreshAll" class="btn btn-dark btn-sm" type="button">Refresh</button>
+    </div>
+  </div>
+
+  <div class="app">
+
+    <div class="pane left-pane">
+      <div class="left-head">
+        <div class="fw-bold">Senarai Chat Customer</div>
+        <div class="text-muted small">Hanya customer bawah agen anda</div>
+
+        <div id="summaryBar" class="summary-bar">
+          <span class="summary-pill">Loading...</span>
+        </div>
+
+        <div class="left-search">
+          <input id="searchInput" class="form-control form-control-sm" placeholder="Cari nama / mesej">
+          <select id="statusFilter" class="form-select form-select-sm" style="max-width:170px">
+            <option value="">Semua</option>
+            <option value="UNREAD">UNREAD</option>
+            <option value="READ">READ</option>
+            <option value="WAITING_CUSTOMER">WAITING CUSTOMER</option>
+            <option value="OPEN">OPEN</option>
+            <option value="LOCK">LOCK</option>
+            <option value="PAY">PAY</option>
+            <option value="DONE">DONE</option>
+          </select>
+        </div>
+
+        <div class="left-actions">
+          <button id="btnFilterUnread" class="btn btn-outline-danger btn-sm" type="button">Unread</button>
+          <button id="btnFilterWaiting" class="btn btn-outline-warning btn-sm" type="button">Waiting</button>
+          <button id="btnFilterRead" class="btn btn-outline-success btn-sm" type="button">Read</button>
+          <button id="btnClearFilter" class="btn btn-outline-secondary btn-sm" type="button">Clear Filter</button>
+        </div>
+
+        <div class="notice-card">
+          Agen hanya nampak maklumat terhad. Nombor telefon, alamat, OTP dan maklumat sensitif disembunyikan.
+        </div>
+      </div>
+
+      <div id="threadList" class="thread-list"></div>
+    </div>
+
+    <div class="pane right-pane right">
+      <div class="chat-head">
+        <div class="chat-head-title">
+          <div class="d-flex align-items-center gap-2">
+            <button id="btnMobileBack" class="btn btn-outline-secondary btn-sm mobile-back" type="button">← Kembali</button>
+            <div id="headName" class="name">Pilih chat di sebelah kiri</div>
+          </div>
+          <div id="headMeta" class="meta">Maklumat terhad untuk agen</div>
+        </div>
+
+        <div class="chat-head-right">
+          <span id="headStatus" class="badge-soft">—</span>
+          <span id="headReadState" class="badge-soft">—</span>
+        </div>
+      </div>
+
+      <div id="chatBody" class="chat-body">
+        <div class="empty-state">
+          Tekan salah satu customer di sebelah kiri untuk buka thread.
+        </div>
+      </div>
+
+      <button id="btnScrollBottom" class="scroll-bottom-btn" type="button">↓</button>
+
+      <div class="composer">
+        <div class="composer-top">
+          <input id="fileInput" type="file" class="form-control form-control-sm" accept="image/*,application/pdf">
+          <button id="btnRemoveFile" type="button" class="btn btn-outline-secondary btn-sm">Buang fail</button>
+        </div>
+
+        <div id="filePreview" class="file-preview">
+          <span id="filePill" class="file-pill">Tiada fail</span>
+        </div>
+
+        <div id="replyPreview" class="file-preview">
+          <span id="replyPreviewPill" class="file-pill">Reply</span>
+          <button id="btnClearReplyPreview" type="button" class="btn btn-outline-secondary btn-sm ms-2">Buang reply</button>
+        </div>
+
+        <div class="composer-row">
+          <textarea id="replyInput" class="form-control" placeholder="Taip balasan agen..."></textarea>
+          <button id="btnSend" class="btn btn-dark" type="button">Hantar</button>
+        </div>
+
+        <div id="rightStatus" class="right-status"></div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<script>
+(function(){
+  "use strict";
+
+  const SB_URL = "https://dduizetstqqjrpsezbpi.supabase.co";
+  const SB_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRkdWl6ZXRzdHFxanJwc2V6YnBpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTg3MzI0ODQsImV4cCI6MjA3NDMwODQ4NH0.CrlHXrmHtKgR9qc2192U6quRb5lpFEeOSgwG0Lb8KRM";
+
+  window.sb = window.sb || window.supabase.createClient(SB_URL, SB_KEY);
+  const sb = window.sb;
+
+  const $ = (id) => document.getElementById(id);
+
+  const threadListEl  = $("threadList");
+  const searchInput   = $("searchInput");
+  const statusFilter  = $("statusFilter");
+  const btnRefreshAll = $("btnRefreshAll");
+
+  const btnFilterUnread = $("btnFilterUnread");
+  const btnFilterWaiting = $("btnFilterWaiting");
+  const btnFilterRead = $("btnFilterRead");
+  const btnClearFilter = $("btnClearFilter");
+  const summaryBar = $("summaryBar");
+
+  const headName   = $("headName");
+  const headMeta   = $("headMeta");
+  const headStatus = $("headStatus");
+  const headReadState = $("headReadState");
+  const btnMobileBack = $("btnMobileBack");
+
+  const chatBody   = $("chatBody");
+  const btnScrollBottom = $("btnScrollBottom");
+
+  const fileInput     = $("fileInput");
+  const btnRemoveFile = $("btnRemoveFile");
+  const filePreview   = $("filePreview");
+  const filePill      = $("filePill");
+
+  const replyPreview = $("replyPreview");
+  const replyPreviewPill = $("replyPreviewPill");
+  const btnClearReplyPreview = $("btnClearReplyPreview");
+
+  const replyInput = $("replyInput");
+  const btnSend    = $("btnSend");
+  const rightStatus = $("rightStatus");
+
+  let currentUser = null;
+  let currentAgent = null;
+  let currentThreadId = "";
+  let currentMessagesHash = "";
+  let pendingFile = null;
+  let replyToMessage = null;
+  let listTimer = null;
+let threadTimer = null;
+let lastRows = [];
+let lastCounts = null;
+
+let chatSocket = null;
+let currentSocketThreadId = "";
+const SOCKET_URL = "https://qr-emas-amir-production.up.railway.app";
+
+  let __listLoading = false;
+  let __threadLoading = false;
+
+  const LIST_REFRESH_MS = 30000;
+  const THREAD_REFRESH_MS = 0;
+
+  function setStatus(s){
+    rightStatus.textContent = s || "";
+  }
+
+  function isMobileView(){
+    return window.innerWidth <= 980;
+  }
+
+  function setMobileListMode(){
+    if (!isMobileView()){
+      document.body.classList.remove("mobile-list-mode", "mobile-chat-mode");
+      return;
+    }
+    document.body.classList.add("mobile-list-mode");
+    document.body.classList.remove("mobile-chat-mode");
+  }
+
+  function setMobileChatMode(){
+    if (!isMobileView()){
+      document.body.classList.remove("mobile-list-mode", "mobile-chat-mode");
+      return;
+    }
+    document.body.classList.add("mobile-chat-mode");
+    document.body.classList.remove("mobile-list-mode");
+  }
+
+  function syncResponsiveLayout(){
+    if (!isMobileView()){
+      document.body.classList.remove("mobile-list-mode", "mobile-chat-mode");
+      return;
+    }
+
+    if (currentThreadId){
+      document.body.classList.add("mobile-chat-mode");
+      document.body.classList.remove("mobile-list-mode");
+    } else {
+      document.body.classList.add("mobile-list-mode");
+      document.body.classList.remove("mobile-chat-mode");
+    }
+  }
+
+  function escapeHtml(str){
+    return String(str || "")
+      .replaceAll("&", "&amp;")
+      .replaceAll("<", "&lt;")
+      .replaceAll(">", "&gt;");
+  }
+
+  function linkify(text){
+    const esc = escapeHtml(text || "");
+    return esc.replace(
+      /(https?:\/\/[^\s<]+)/g,
+      '<a href="$1" target="_blank" rel="noopener">$1</a>'
+    );
+  }
+
+  function fmtDate(x){
+    if (!x) return "-";
+    try{
+      return new Date(x).toLocaleString("ms-MY", {
+        dateStyle:"medium",
+        timeStyle:"short",
+        hour12:true
+      });
+    }catch{
+      return x;
+    }
+  }
+
+  function statusLabel(st){
+    const s = String(st || "").toUpperCase();
+    if (!s) return "OPEN";
+    return s;
+  }
+
+  function statusBucket(st){
+    const s = String(st || "").toUpperCase();
+    if (s.startsWith("LOCK")) return "LOCK";
+    if (s.startsWith("PAY")) return "PAY";
+    if (s.startsWith("DONE")) return "DONE";
+    return s;
+  }
+
+  function autoGrow(el){
+    el.style.height = "52px";
+    el.style.height = Math.min(el.scrollHeight, 160) + "px";
+  }
+
+  function isNearBottom(el, gap = 120){
+    return (el.scrollHeight - el.scrollTop - el.clientHeight) < gap;
+  }
+
+  function scrollToBottom(force = false){
+    if (!chatBody) return;
+    if (force || isNearBottom(chatBody, 220)){
+      chatBody.scrollTop = chatBody.scrollHeight;
+    }
+  }
+
+  function updateScrollBottomBtn(){
+    if (!chatBody || !btnScrollBottom) return;
+    if (isNearBottom(chatBody, 160)){
+      btnScrollBottom.classList.remove("show");
+    } else {
+      btnScrollBottom.classList.add("show");
+    }
+  }
+
+  function normalizePhone(raw){
+    let d = String(raw || "").replace(/\D+/g, "");
+    if (!d) return "";
+    if (d.startsWith("00")) d = d.slice(2);
+    if (d.startsWith("0")) d = "60" + d.slice(1);
+    if (d.length === 8 && (d.startsWith("8") || d.startsWith("9"))) d = "65" + d;
+    return d;
+  }
+
+  function roleType(m){
+    const role = String(m?.role || "").toLowerCase();
+    const meta = m?.meta || {};
+
+    if (role === "customer") return "customer";
+    if (role === "agent") return "agent";
+    if (role === "admin") return "ai";
+    if (role === "ai" && meta.admin_reply === true) return "ai";
+    return "ai";
+  }
+
+  function roleLabel(m){
+    const type = roleType(m);
+    if (type === "customer") return "Customer";
+    if (type === "agent") return "Agen";
+    return "Emas Amir";
+  }
+
+  function attachmentFromMessage(m){
+    const meta = (m && typeof m.meta === "object" && m.meta) ? m.meta : {};
+    if (meta.attachment && meta.attachment.url){
+      return {
+        url: meta.attachment.url || "",
+        name: meta.attachment.name || "",
+        mime: meta.attachment.mime || ""
+      };
+    }
+    return null;
+  }
+
+  function redactPhoneText(text){
+    return String(text || "")
+      .replace(/\b(?:\+?60|0)\d{8,10}\b/g, "[Nombor telefon disembunyikan]")
+      .replace(/\b65\d{8}\b/g, "[Nombor telefon disembunyikan]");
+  }
+
+  function redactOtpText(text){
+    let out = String(text || "");
+    out = out.replace(/otp/gi, "[OTP disembunyikan]");
+    out = out.replace(/kod\s*otp/gi, "[OTP disembunyikan]");
+    out = out.replace(/reset\s*password/gi, "[Maklumat sensitif disembunyikan]");
+    out = out.replace(/log\s*masuk/gi, "log masuk");
+    out = out.replace(/daftar akaun/gi, "daftar akaun");
+    out = out.replace(/\b\d{4,8}\b/g, (m) => {
+      if (m.length >= 4 && m.length <= 8) return "[Kod disembunyikan]";
+      return m;
+    });
+    return out;
+  }
+
+  function redactAddressText(text){
+    let out = String(text || "");
+    out = out.replace(/alamat/gi, "[Alamat disembunyikan]");
+    out = out.replace(/postcode/gi, "[Alamat disembunyikan]");
+    out = out.replace(/poskod/gi, "[Alamat disembunyikan]");
+    return out;
+  }
+
+  function sanitizeTextForAgent(text){
+    let out = String(text || "");
+    out = redactPhoneText(out);
+    out = redactOtpText(out);
+    out = redactAddressText(out);
+
+    if (/otp|reset password|verification code|kod pengesahan/i.test(String(text || ""))){
+      out = "[Maklumat sensitif disembunyikan]";
+    }
+
+    return out;
+  }
+
+  function sanitizeSnippetForAgent(text){
+    const clean = sanitizeTextForAgent(text);
+    return clean.length > 140 ? (clean.slice(0, 137) + "...") : clean;
+  }
+
+  function sanitizeName(name){
+    const s = String(name || "").trim();
+    return s || "Customer";
+  }
+
+  function clearReplyPreview(){
+    replyToMessage = null;
+    replyPreview.style.display = "none";
+    replyPreviewPill.textContent = "Reply";
+  }
+
+  function setReplyPreview(messageObj){
+    replyToMessage = messageObj || null;
+
+    if (!replyToMessage){
+      clearReplyPreview();
+      return;
+    }
+
+    const who = roleLabel(replyToMessage);
+    const txt = sanitizeSnippetForAgent(String(replyToMessage.text || "(lampiran)").trim() || "(lampiran)");
+    replyPreviewPill.textContent = "↩ Reply " + who + ": " + txt;
+    replyPreview.style.display = "block";
+  }
+
+  function clearPendingFile(){
+    pendingFile = null;
+    fileInput.value = "";
+    filePreview.style.display = "none";
+    filePill.textContent = "Tiada fail";
+  }
+
+  async function apiPost(url, body){
+    const r = await fetch(url, {
+      method: "POST",
+      headers: { "Content-Type":"application/json" },
+      body: JSON.stringify(body || {})
+    });
+    const j = await r.json().catch(() => ({}));
+    if (!r.ok || j.ok !== true){
+      throw new Error(j.error || ("HTTP " + r.status));
+    }
+    return j;
+  }
+
+  async function fileToBase64(file){
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = () => {
+        const raw = String(reader.result || "");
+        const idx = raw.indexOf(",");
+        resolve(idx >= 0 ? raw.slice(idx + 1) : raw);
+      };
+      reader.onerror = reject;
+      reader.readAsDataURL(file);
+    });
+  }
+
+  async function uploadAgentAttachment(file){
+    const base64 = await fileToBase64(file);
+
+    const j = await apiPost("/.netlify/functions/agent-chat-upload", {
+      agent_user_id: currentUser?.id || "",
+      agent_slug: currentAgent?.slug || "",
+      thread_id: currentThreadId,
+      file_name: file.name || "file",
+      mime: file.type || "application/octet-stream",
+      content_base64: base64
+    });
+
+    return {
+      url: j.url || "",
+      name: j.name || file.name || "file",
+      mime: j.mime || file.type || "application/octet-stream"
+    };
+  }
+
+  function renderSummary(counts){
+    const c = counts || {
+      total: 0,
+      unread: 0,
+      read: 0,
+      waiting_customer: 0
+    };
+
+    summaryBar.innerHTML = `
+      <span class="summary-pill">Total: ${Number(c.total || 0)}</span>
+      <span class="summary-pill unread">Unread: ${Number(c.unread || 0)}</span>
+      <span class="summary-pill waiting">Waiting: ${Number(c.waiting_customer || 0)}</span>
+      <span class="summary-pill read">Read: ${Number(c.read || 0)}</span>
+    `;
+  }
+
+  function visibleFilteredRows(rows){
+    const q = String(searchInput.value || "").trim().toLowerCase();
+    const sf = String(statusFilter.value || "").trim().toUpperCase();
+
+    let filtered = Array.isArray(rows) ? rows.slice() : [];
+
+    if (sf === "UNREAD"){
+      filtered = filtered.filter(r => r.unread === true);
+    } else if (sf === "READ"){
+      filtered = filtered.filter(r => r.read === true);
+    } else if (sf === "WAITING_CUSTOMER"){
+      filtered = filtered.filter(r => r.waiting_customer === true);
+    } else if (sf){
+      filtered = filtered.filter(r => statusBucket(r.status) === sf || String(r.status || "").toUpperCase() === sf);
+    }
+
+    if (q){
+      filtered = filtered.filter(r => {
+        const hay = [
+          sanitizeName(r.customer_name || ""),
+          sanitizeSnippetForAgent(r.last_message_text || ""),
+          r.status || ""
+        ].join(" ").toLowerCase();
+
+        return hay.includes(q);
+      });
+    }
+
+    return filtered;
+  }
+
+  function renderReadStateBadge(thread){
+    if (!thread || typeof thread !== "object"){
+      headReadState.className = "badge-soft";
+      headReadState.textContent = "—";
+      return;
+    }
+
+    const unread = thread.unread === true;
+    const read = thread.read === true;
+    const waiting = thread.waiting_customer === true;
+
+    if (unread){
+      headReadState.className = "badge-soft badge-unread";
+      headReadState.textContent = "Unread";
+      return;
+    }
+
+    if (waiting){
+      headReadState.className = "badge-soft badge-waiting";
+      headReadState.textContent = "Waiting";
+      return;
+    }
+
+    if (read){
+      headReadState.className = "badge-soft badge-read";
+      headReadState.textContent = "Read";
+      return;
+    }
+
+    headReadState.className = "badge-soft";
+    headReadState.textContent = "—";
+  }
+
+  function renderThreadList(rows){
+    const filtered = visibleFilteredRows(rows);
+
+    if (!filtered.length){
+      threadListEl.innerHTML = `<div class="p-3 text-muted small">Tiada chat dijumpai.</div>`;
+      return;
+    }
+
+    threadListEl.innerHTML = filtered.map(r => {
+      const active = (currentThreadId && currentThreadId === r.thread_id) ? " active" : "";
+      const stateClass =
+        r.unread ? " is-unread" :
+        r.waiting_customer ? " is-waiting" :
+        r.read ? " is-read" : "";
+
+      const name = sanitizeName(r.customer_name || "Customer");
+      const time = fmtDate(r.last_message_at || r.created_at);
+      const status = statusLabel(r.status);
+      const snippet = sanitizeSnippetForAgent(r.last_message_text || "(tiada mesej)");
+
+      const stateBadges = [];
+      if (r.unread) stateBadges.push(`<span class="badge-soft badge-unread">Unread</span>`);
+      if (r.read) stateBadges.push(`<span class="badge-soft badge-read">Read</span>`);
+      if (r.waiting_customer) stateBadges.push(`<span class="badge-soft badge-waiting">Waiting</span>`);
+
+      return `
+        <div class="thread-item${active}${stateClass}" data-thread="${escapeHtml(r.thread_id || "")}">
+          <div class="thread-top">
+            <div style="min-width:0">
+             <div class="thread-name">${escapeHtml(name)}</div>
+            </div>
+            <div class="thread-time">${escapeHtml(time)}</div>
+          </div>
+
+          <div class="thread-snippet">${escapeHtml(snippet)}</div>
+
+          <div class="thread-badges">
+            <span class="badge-soft">${escapeHtml(status)}</span>
+            ${stateBadges.join("")}
+          </div>
+        </div>
+      `;
+    }).join("");
+
+    [...threadListEl.querySelectorAll(".thread-item")].forEach(el => {
+      el.onclick = async () => {
+        const threadId = el.getAttribute("data-thread") || "";
+        if (!threadId) return;
+
+        currentThreadId = threadId;
+        currentMessagesHash = "";
+        clearReplyPreview();
+        clearPendingFile();
+
+        renderThreadList(rows);
+        setMobileChatMode();
+        await loadThread(threadId);
+      };
+    });
+  }
+
+  function sanitizeMessageForAgent(message){
+    if (!message || typeof message !== "object") return null;
+
+    const cloned = JSON.parse(JSON.stringify(message));
+    cloned.text = sanitizeTextForAgent(cloned.text || "");
+
+    if (cloned.meta && typeof cloned.meta === "object"){
+      const meta = { ...cloned.meta };
+
+      delete meta.admin_comment;
+      delete meta.admin_reactions;
+      delete meta.internal_note;
+      delete meta.staff_note;
+      delete meta.customer_phone;
+      delete meta.address;
+      delete meta.full_address;
+      delete meta.email;
+      delete meta.ic;
+      delete meta.identity_no;
+      delete meta.paid_chat_order_refs;
+      delete meta.payment_reference;
+      delete meta.bank_ref;
+      delete meta.secret;
+      delete meta.otp_code;
+
+      if (meta.reply_preview && typeof meta.reply_preview === "object"){
+        meta.reply_preview = {
+          ...meta.reply_preview,
+          text: sanitizeTextForAgent(meta.reply_preview.text || "")
+        };
+      }
+
+      if (meta.attachment && typeof meta.attachment === "object"){
+        meta.attachment = {
+          url: String(meta.attachment.url || ""),
+          name: String(meta.attachment.name || "Fail"),
+          mime: String(meta.attachment.mime || "")
+        };
+      }
+
+      cloned.meta = meta;
+    }
+
+    return cloned;
+  }
+
+  function renderMessages(data){
+    const msgs = Array.isArray(data?.messages)
+      ? data.messages
+          .map(sanitizeMessageForAgent)
+          .filter(Boolean)
+          .sort((a, b) => {
+            const ta = new Date(a?.created_at || 0).getTime();
+            const tb = new Date(b?.created_at || 0).getTime();
+            return ta - tb;
+          })
+      : [];
+
+    const customer = data?.customer || {};
+    const thread = data?.thread || {};
+    const threadRow = lastRows.find(x => x.thread_id === thread.id) || null;
+
+    headName.textContent = sanitizeName(customer.name || thread.customer_name || "Customer");
+    headMeta.textContent = "Maklumat terhad untuk agen";
+    headStatus.textContent = statusLabel(thread.status || "OPEN");
+    renderReadStateBadge(threadRow || thread);
+
+    if (!msgs.length){
+      chatBody.innerHTML = `<div class="empty-state">Thread ini belum ada mesej.</div>`;
+      return;
+    }
+
+    chatBody.innerHTML = msgs.map(m => {
+      const type = roleType(m);
+      const label = roleLabel(m);
+      const textHtml = linkify(m.text || "");
+      const att = attachmentFromMessage(m);
+      const replyPreviewMeta = m?.meta?.reply_preview || null;
+
+      let replyHtml = "";
+      if (replyPreviewMeta){
+        const replyWho = String(replyPreviewMeta.role_label || replyPreviewMeta.role || "Mesej");
+        const replyTxtRaw = sanitizeTextForAgent(String(replyPreviewMeta.text || "(lampiran)").trim() || "(lampiran)");
+        const replyTxt = replyTxtRaw.length > 120 ? (replyTxtRaw.slice(0, 117) + "...") : replyTxtRaw;
+
+        replyHtml = `
+          <div class="reply-quote">
+            <div class="reply-quote-name">${escapeHtml(replyWho)}</div>
+            <div>${escapeHtml(replyTxt)}</div>
+          </div>
+        `;
+      }
+
+      let attachHtml = "";
+      if (att && att.url){
+        const isImg = /^image\//i.test(att.mime || "");
+        const isPdf = String(att.mime || "").toLowerCase() === "application/pdf";
+
+        attachHtml += `<div class="attach-wrap">`;
+
+        if (isImg){
+          attachHtml += `
+            <a href="${att.url}" target="_blank" rel="noopener">
+              <img class="attach-thumb" src="${att.url}" alt="${escapeHtml(att.name || "gambar")}">
+            </a>
+          `;
+        }
+
+        attachHtml += `
+          <a class="attach-link" href="${att.url}" target="_blank" rel="noopener">
+            <span>📎</span>
+            <span>${escapeHtml(att.name || (isPdf ? "PDF" : "Fail"))}</span>
+          </a>
+        `;
+        attachHtml += `</div>`;
+      }
+
+      return `
+        <div class="msg-wrap">
+          <div class="msg-row ${type}">
+            <div class="bubble">
+              <div class="msg-role">${escapeHtml(label)}</div>
+              ${replyHtml}
+              <div>${textHtml}</div>
+              ${attachHtml}
+              <div class="msg-meta">
+                ${escapeHtml(fmtDate(m.created_at))}
+                <button
+                  type="button"
+                  class="btn btn-link btn-sm p-0 ms-2"
+                  data-reply-id="${escapeHtml(m.id)}"
+                  style="font-size:11px;text-decoration:none"
+                >Reply</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      `;
+    }).join("");
+
+    chatBody.querySelectorAll("[data-reply-id]").forEach(btn => {
+      btn.onclick = () => {
+        const id = btn.getAttribute("data-reply-id") || "";
+        const msg = msgs.find(x => String(x.id) === id);
+        if (!msg) return;
+
+        setReplyPreview(msg);
+        replyInput.focus();
+      };
+    });
+  }
+
+async function unsubscribeAgentThread(){
+  try{
+    if (chatSocket && currentSocketThreadId){
+      chatSocket.emit("agent_leave_thread", {
+        thread_id: currentSocketThreadId,
+        agent_user_id: currentUser?.id || "",
+        agent_slug: currentAgent?.slug || ""
+      });
+    }
+
+    currentSocketThreadId = "";
+  }catch(e){
+    console.warn("[agent socket unsubscribe error]", e);
+  }
+}
+
+async function subscribeAgentThread(threadId){
+  const tid = String(threadId || "").trim();
+  if (!tid) return;
+
+  currentSocketThreadId = tid;
+
+  connectAgentChatSocket();
+
+  if (chatSocket && chatSocket.connected){
+    chatSocket.emit("agent_join_thread", {
+      thread_id: tid,
+      agent_user_id: currentUser?.id || "",
+      agent_slug: currentAgent?.slug || ""
+    });
+  }
+}
+
+function connectAgentChatSocket(){
+  try{
+    if (chatSocket) return;
+
+    chatSocket = io(SOCKET_URL, {
+      transports: ["websocket", "polling"]
+    });
+
+    chatSocket.on("connect", ()=>{
+      console.log("[agent chat socket] connected:", chatSocket.id);
+
+      chatSocket.emit("agent_join", {
+        agent_user_id: currentUser?.id || "",
+        agent_slug: currentAgent?.slug || ""
+      });
+
+      if (currentThreadId){
+        currentSocketThreadId = currentThreadId;
+
+        chatSocket.emit("agent_join_thread", {
+          thread_id: currentThreadId,
+          agent_user_id: currentUser?.id || "",
+          agent_slug: currentAgent?.slug || ""
+        });
+      }
+
+      setStatus("Socket aktif.");
+      setTimeout(()=>setStatus(""), 800);
+    });
+
+    chatSocket.on("disconnect", ()=>{
+      console.warn("[agent chat socket] disconnected");
+      setStatus("Socket terputus. Backup refresh masih jalan.");
+    });
+
+    function handleAgentChatRefresh(payload){
+      const tid = String(payload?.thread_id || payload?.threadId || "").trim();
+
+      loadList();
+
+      if (tid && currentThreadId && tid === currentThreadId){
+        loadThread(currentThreadId);
+      }
+    }
+
+    chatSocket.on("agent_chat_updated", handleAgentChatRefresh);
+    chatSocket.on("chat_thread_updated", handleAgentChatRefresh);
+    chatSocket.on("chat_message_new", handleAgentChatRefresh);
+    chatSocket.on("customer_message_new", handleAgentChatRefresh);
+    chatSocket.on("admin_message_new", handleAgentChatRefresh);
+    chatSocket.on("message:new", handleAgentChatRefresh);
+
+    chatSocket.on("connect_error", (err)=>{
+      console.warn("[agent chat socket] connect_error:", err?.message || err);
+      setStatus("Socket gagal sambung. Backup refresh masih jalan.");
+    });
+
+  }catch(e){
+    console.warn("connectAgentChatSocket error:", e);
+  }
+}
+
+  function stopTimers(){
+    if (listTimer){
+      clearInterval(listTimer);
+      listTimer = null;
+    }
+    if (threadTimer){
+      clearInterval(threadTimer);
+      threadTimer = null;
+    }
+  }
+
+ function startTimers(){
+  stopTimers();
+
+  listTimer = setInterval(async () => {
+    if (document.visibilityState !== "visible") return;
+    await loadList();
+  }, LIST_REFRESH_MS);
+
+  // Thread kanan guna Socket.IO.
+  // Tak perlu refresh setiap 8 saat.
+}
+
+  async function loadList(){
+    if (!currentUser?.id || !currentAgent?.slug) return;
+    if (__listLoading) return;
+
+    __listLoading = true;
+
+    try{
+      const j = await apiPost("/.netlify/functions/agent-chat-list", {
+        agent_user_id: currentUser.id,
+        agent_slug: currentAgent.slug
+      });
+
+      const rows = Array.isArray(j.rows) ? j.rows : [];
+      const counts = j.counts || null;
+
+      lastRows = rows;
+      lastCounts = counts;
+      renderSummary(counts);
+      renderThreadList(rows);
+    }catch(e){
+      threadListEl.innerHTML = `<div class="p-3 text-danger small">Ralat: ${escapeHtml(e.message || e)}</div>`;
+    }finally{
+      __listLoading = false;
+    }
+  }
+
+  async function loadThread(threadId){
+    if (!currentUser?.id || !currentAgent?.slug || !threadId) return;
+    if (__threadLoading) return;
+
+    __threadLoading = true;
+
+    try{
+      setStatus("Memuatkan thread...");
+
+      const wasNearBottom = isNearBottom(chatBody, 120);
+
+      const j = await apiPost("/.netlify/functions/agent-chat-thread", {
+        agent_user_id: currentUser.id,
+        agent_slug: currentAgent.slug,
+        thread_id: threadId
+      });
+
+      const orderedMsgs = Array.isArray(j.messages) ? j.messages : [];
+
+      const hash = JSON.stringify(
+        orderedMsgs.map(m => [
+          m.id || "",
+          m.created_at || "",
+          sanitizeTextForAgent(m.text || ""),
+          m.meta?.attachment?.url || "",
+          String(m.meta?.reply_to || ""),
+          String(m.meta?.reply_preview?.text || ""),
+          String(m.meta?.reply_preview?.role || ""),
+          String(m.meta?.reply_preview?.role_label || "")
+        ])
+      );
+
+      const shouldScroll = (currentMessagesHash !== hash);
+      currentMessagesHash = hash;
+
+      j.messages = orderedMsgs;
+      renderMessages(j);
+
+      if (shouldScroll && wasNearBottom){
+        scrollToBottom(true);
+      }
+
+      updateScrollBottomBtn();
+      setStatus("");
+    }catch(e){
+      setStatus("Ralat: " + (e.message || e));
+    }finally{
+      __threadLoading = false;
+    }
+  }
+
+  async function sendReply(){
+    if (!currentThreadId){
+      setStatus("Pilih thread dulu.");
+      return;
+    }
+
+    const text = String(replyInput.value || "").trim();
+    if (!text && !pendingFile){
+      setStatus("Mesej kosong.");
+      return;
+    }
+
+    try{
+      setStatus("Menghantar...");
+
+      let attachment = null;
+      if (pendingFile){
+        attachment = await uploadAgentAttachment(pendingFile);
+      }
+
+      await apiPost("/.netlify/functions/agent-chat-send", {
+  agent_user_id: currentUser?.id || "",
+  agent_slug: currentAgent?.slug || "",
+  thread_id: currentThreadId,
+  message: text,
+  attachment,
+  reply_to_message_id: replyToMessage?.id || null
+});
+
+try{
+  if (chatSocket && chatSocket.connected){
+    chatSocket.emit("agent_message_sent", {
+      agent_user_id: currentUser?.id || "",
+      agent_slug: currentAgent?.slug || "",
+      thread_id: currentThreadId,
+      message: text,
+      has_attachment: !!attachment
+    });
+  }
+}catch(e){
+  console.warn("agent_message_sent emit error:", e);
+}
+
+      replyInput.value = "";
+      autoGrow(replyInput);
+      clearPendingFile();
+      clearReplyPreview();
+
+      await loadList();
+      await loadThread(threadId);
+await subscribeAgentThread(threadId);
+      scrollToBottom(true);
+      updateScrollBottomBtn();
+
+      setStatus("Berjaya dihantar.");
+      setTimeout(() => setStatus(""), 1200);
+    }catch(e){
+      setStatus("Ralat: " + (e.message || e));
+    }
+  }
+
+  function clearCurrentThreadView(){
+  unsubscribeAgentThread();
+
+  currentThreadId = "";
+    currentMessagesHash = "";
+
+    headName.textContent = "Pilih chat di sebelah kiri";
+    headMeta.textContent = "Maklumat terhad untuk agen";
+    headStatus.textContent = "—";
+    headReadState.textContent = "—";
+
+    chatBody.innerHTML = `
+      <div class="empty-state">
+        Tekan salah satu customer di sebelah kiri untuk buka thread.
+      </div>
+    `;
+  }
+
+  async function findCurrentAgent(user){
+    const { data: agent, error } = await sb
+      .from("agents")
+      .select("id, user_id, slug, status, agent_code, name")
+      .eq("user_id", user.id)
+      .maybeSingle();
+
+    if (error && error.code !== "PGRST116") throw error;
+    return agent || null;
+  }
+
+  async function boot(){
+    try{
+      const { data, error } = await sb.auth.getUser();
+      const user = data?.user || null;
+
+      if (error || !user){
+        location.replace("login.html#login");
+        return;
+      }
+
+      currentUser = user;
+
+      const agent = await findCurrentAgent(user);
+      currentAgent = agent;
+
+      if (!agent){
+        threadListEl.innerHTML = `<div class="p-3 text-danger small">Akaun agen tidak dijumpai.</div>`;
+        return;
+      }
+
+      const st = String(agent.status || "").toUpperCase();
+      if (st !== "ACTIVE" && st !== "PENDING"){
+        threadListEl.innerHTML = `<div class="p-3 text-danger small">Akaun agen tidak aktif untuk akses chat.</div>`;
+        return;
+      }
+
+     syncResponsiveLayout();
+connectAgentChatSocket();
+await loadList();
+startTimers();
+    }catch(e){
+      threadListEl.innerHTML = `<div class="p-3 text-danger small">Ralat: ${escapeHtml(e.message || e)}</div>`;
+    }
+  }
+
+  searchInput.addEventListener("input", () => renderThreadList(lastRows));
+  statusFilter.addEventListener("change", () => renderThreadList(lastRows));
+
+  btnFilterUnread.onclick = () => {
+    statusFilter.value = "UNREAD";
+    renderThreadList(lastRows);
+  };
+
+  btnFilterWaiting.onclick = () => {
+    statusFilter.value = "WAITING_CUSTOMER";
+    renderThreadList(lastRows);
+  };
+
+  btnFilterRead.onclick = () => {
+    statusFilter.value = "READ";
+    renderThreadList(lastRows);
+  };
+
+  btnClearFilter.onclick = () => {
+    statusFilter.value = "";
+    searchInput.value = "";
+    renderThreadList(lastRows);
+  };
+
+  btnRefreshAll.onclick = async () => {
+    await loadList();
+    if (currentThreadId){
+      await loadThread(currentThreadId);
+    }
+    startTimers();
+  };
+
+  replyInput.addEventListener("input", () => autoGrow(replyInput));
+  replyInput.addEventListener("keydown", (e) => {
+    if (e.key === "Enter" && !e.shiftKey){
+      e.preventDefault();
+      sendReply();
+    }
+  });
+
+  btnSend.onclick = sendReply;
+
+  btnMobileBack.onclick = () => {
+    if (!isMobileView()) return;
+    clearCurrentThreadView();
+    renderThreadList(lastRows);
+    setMobileListMode();
+  };
+
+  fileInput.addEventListener("change", () => {
+    const f = fileInput.files && fileInput.files[0] ? fileInput.files[0] : null;
+    if (!f){
+      clearPendingFile();
+      return;
+    }
+
+    const okImg = /^image\//i.test(f.type || "");
+    const okPdf = String(f.type || "").toLowerCase() === "application/pdf";
+
+    if (!okImg && !okPdf){
+      alert("Fail hanya gambar atau PDF.");
+      clearPendingFile();
+      return;
+    }
+
+    pendingFile = f;
+    filePreview.style.display = "block";
+    filePill.textContent = "📎 " + (f.name || "fail");
+  });
+
+  btnRemoveFile.onclick = clearPendingFile;
+  btnClearReplyPreview.onclick = clearReplyPreview;
+
+  chatBody.addEventListener("scroll", updateScrollBottomBtn);
+
+  btnScrollBottom.onclick = () => {
+    scrollToBottom(true);
+    updateScrollBottomBtn();
+  };
+
+  document.addEventListener("visibilitychange", async () => {
+    if (document.visibilityState === "visible"){
+      await loadList();
+      if (currentThreadId){
+        await loadThread(currentThreadId);
+      }
+      startTimers();
+    }
+  });
+
+  window.addEventListener("focus", async () => {
+    await loadList();
+    if (currentThreadId){
+      await loadThread(currentThreadId);
+    }
+  });
+
+  window.addEventListener("resize", () => {
+    syncResponsiveLayout();
+  });
+
+  syncResponsiveLayout();
+  boot();
+})();
+</script>
+</body>
+</html>

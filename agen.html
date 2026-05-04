@@ -2,193 +2,805 @@
 <html lang="ms">
 <head>
   <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width,initial-scale=1">
-  <title>Panel Affiliate — Emas Amir</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <link rel="stylesheet" href="/global.css">
+  <title>Panel Affiliate – Emas Amir</title>
 
-  <!-- Supabase -->
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+
   <style>
-    body{background:#f8fafc;}
-    .container-narrow{max-width:1100px}
-    .card-soft{border-radius:18px;border:1px solid #e5e7eb;background:#fff}
-    .pill{display:inline-block;border-radius:999px;padding:2px 10px;font-size:12px;background:#eff6ff;color:#1d4ed8}
-    .wallet-number{font-size:28px;font-weight:700}
-    .muted{color:#6b7280;font-size:14px}
-    .link-box{font-family:monospace;font-size:13px;background:#f9fafb;border-radius:8px;padding:8px 10px;word-break:break-all}
-    .qr-box img{max-width:200px;}
+    :root{
+      --bg:#f6f7f9;
+      --card:#ffffff;
+      --chip:#eef1f4;
+      --border:#e9ecef;
+      --border-soft:#eef1f4;
+      --muted:#6c757d;
+      --text:#212529;
+      --shadow:0 1px 2px rgba(16,24,40,.04);
+      --success-bg:#eef9ee;
+      --success-border:#cfe8cf;
+      --success-text:#0b7a0b;
+      --warn-bg:#fff8e6;
+      --warn-border:#f1dfb0;
+      --warn-text:#8a5a00;
+      --danger-bg:#fff1f2;
+      --danger-border:#fecdd3;
+      --danger-text:#b42318;
+    }
+
+    *{box-sizing:border-box}
+    body{
+      margin:0;
+      background:var(--bg);
+      color:var(--text);
+      font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;
+    }
+
+    .wrap{
+      max-width:980px;
+      margin:16px auto 48px;
+      padding:12px;
+    }
+
+    .box{
+      background:var(--card);
+      border:1px solid var(--border);
+      border-radius:16px;
+      padding:16px;
+      box-shadow:var(--shadow);
+    }
+    .box + .box{ margin-top:14px; }
+
+    .muted{ color:var(--muted)!important; }
+    .mono{
+      font-family:ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,"Liberation Mono","Courier New",monospace;
+    }
+
+    .pill{
+      display:inline-flex;
+      align-items:center;
+      gap:8px;
+      padding:6px 10px;
+      border-radius:999px;
+      background:var(--chip);
+      font-size:12px;
+      color:#495057;
+      border:1px solid transparent;
+    }
+    .pill.ok{
+      background:var(--success-bg);
+      color:var(--success-text);
+      border-color:var(--success-border);
+    }
+    .pill.warn{
+      background:var(--warn-bg);
+      color:var(--warn-text);
+      border-color:var(--warn-border);
+    }
+    .pill.danger{
+      background:var(--danger-bg);
+      color:var(--danger-text);
+      border-color:var(--danger-border);
+    }
+
+    .icon-btn{ border-radius:12px; }
+
+    .topbar{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:10px;
+      flex-wrap:wrap;
+      margin-bottom:14px;
+    }
+
+    .top-left{
+      display:flex;
+      align-items:center;
+      gap:10px;
+      flex-wrap:wrap;
+    }
+
+    .brand-title{
+      font-weight:900;
+      font-size:18px;
+      letter-spacing:.2px;
+    }
+
+    .xsmall{ font-size:.8rem; }
+
+    .section-title{
+      font-weight:900;
+      font-size:18px;
+      margin-bottom:12px;
+    }
+
+    .sub-title{
+      font-weight:800;
+      font-size:16px;
+      margin-bottom:10px;
+    }
+
+    .mini-note{
+      color:#6b7280;
+      font-size:12px;
+    }
+
+    .info-strip{
+      display:flex;
+      align-items:stretch;
+      gap:10px;
+      flex-wrap:wrap;
+    }
+
+    .info-item{
+      flex:1 1 170px;
+      border:1px solid var(--border);
+      border-radius:14px;
+      padding:12px;
+      background:#fff;
+      min-width:0;
+    }
+
+    .stat-label{
+      font-size:12px;
+      color:#6b7280;
+      margin-bottom:6px;
+    }
+
+    .stat-value{
+      font-size:24px;
+      line-height:1.15;
+      font-weight:900;
+      letter-spacing:.1px;
+    }
+
+    .hero-card{
+      border:1px solid var(--border);
+      border-radius:16px;
+      background:#fff;
+      padding:14px;
+    }
+
+    .hero-head{
+      display:flex;
+      align-items:flex-start;
+      justify-content:space-between;
+      gap:12px;
+      flex-wrap:wrap;
+      margin-bottom:12px;
+    }
+
+    .hero-name{
+      font-size:20px;
+      font-weight:900;
+      line-height:1.1;
+      margin-bottom:4px;
+    }
+
+    .hero-sub{
+      font-size:13px;
+      color:#6b7280;
+    }
+
+    .action-list{
+      display:grid;
+      gap:10px;
+    }
+
+    .action-item{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:10px;
+      padding:14px;
+      border:1px solid var(--border);
+      border-radius:14px;
+      background:#fff;
+      cursor:pointer;
+      transition:transform .06s ease, box-shadow .06s ease, border-color .06s ease;
+    }
+
+    .action-item:hover{
+      border-color:#dde3ea;
+    }
+
+    .action-item:active{
+      transform:scale(.995);
+    }
+
+    .action-left{
+      display:flex;
+      align-items:center;
+      gap:12px;
+      min-width:0;
+    }
+
+    .action-ico{
+      width:38px;
+      height:38px;
+      border-radius:12px;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      background:#f3f4f6;
+      font-size:18px;
+      flex:0 0 38px;
+    }
+
+    .action-title{
+      font-weight:800;
+      line-height:1.1;
+    }
+
+    .action-sub{
+      font-size:12px;
+      color:#6b7280;
+      margin-top:2px;
+    }
+
+    .chev{
+      color:#9ca3af;
+      font-weight:700;
+      font-size:20px;
+      line-height:1;
+    }
+
+    .panel{
+      border:1px solid var(--border);
+      border-radius:16px;
+      background:#fff;
+      overflow:hidden;
+    }
+
+    .panel-h{
+      padding:14px;
+      border-bottom:1px solid var(--border-soft);
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:10px;
+      flex-wrap:wrap;
+    }
+
+    .panel-b{
+      padding:14px;
+    }
+
+    .link-box{
+      font-family:ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,"Liberation Mono","Courier New",monospace;
+      font-size:13px;
+      background:#f9fafb;
+      border:1px solid var(--border);
+      border-radius:12px;
+      padding:10px 12px;
+      word-break:break-all;
+      min-height:46px;
+      display:flex;
+      align-items:center;
+    }
+
+    .qr-card{
+      border:1px solid var(--border);
+      border-radius:14px;
+      background:#fff;
+      padding:14px;
+      text-align:center;
+    }
+
+    .qr-card img{
+      width:100%;
+      max-width:220px;
+      height:auto;
+      display:block;
+      margin:0 auto;
+    }
+
+    .notice-card{
+      border:1px solid var(--warn-border);
+      background:var(--warn-bg);
+      color:var(--warn-text);
+      border-radius:16px;
+      padding:14px;
+    }
+
+    .table-wrap{
+      border:1px solid var(--border);
+      border-radius:14px;
+      overflow:hidden;
+      background:#fff;
+    }
+
+    .table-sticky thead th{
+      position:sticky;
+      top:0;
+      background:#f8f9fb !important;
+      z-index:5;
+    }
+
+    .table > :not(caption) > * > *{
+      padding:.8rem .75rem;
+      border-bottom-color:var(--border-soft);
+      vertical-align:middle;
+    }
+
+    .btn, .form-control{
+      border-radius:12px;
+    }
+
+    @media (max-width:767.98px){
+      .wrap{
+        padding:10px;
+        margin-top:10px;
+      }
+
+      .top-left{
+        width:100%;
+        align-items:flex-start;
+      }
+
+      .topbar > .d-flex{
+        width:100%;
+      }
+
+      .topbar > .d-flex .btn{
+        flex:1 1 auto;
+      }
+
+      .info-item{
+        flex:1 1 calc(50% - 10px);
+      }
+    }
   </style>
 </head>
 <body>
-<div class="py-4">
-  <div class="container container-narrow">
 
-    <div class="mb-3">
-      <span class="pill">Panel Affiliate</span>
+<div class="wrap">
+
+  <!-- TOPBAR -->
+  <div class="topbar">
+    <div class="top-left">
+      <a href="index.html" class="btn btn-outline-secondary icon-btn">🏠</a>
+      <div>
+        <div class="brand-title">🤝 Panel Affiliate</div>
+        <div class="muted xsmall">Link • QR • Wallet • Aktiviti</div>
+      </div>
+      <span id="who" class="pill">Memuatkan…</span>
     </div>
 
-    <h1 class="h4 mb-3">Program Affiliate Emas Amir</h1>
-    <p class="muted mb-4">
-      Di sini pelanggan boleh memohon menjadi affiliate atau, jika sudah diluluskan, lihat E-Wallet komisen dan link khas untuk dikongsi.
-    </p>
-
-    <!-- Seksyen kalau BELUM agen -->
-    <div id="section-non-agent" class="card-soft p-4 mb-4 d-none">
-      <h2 class="h5 mb-2">Menjana pendapatan dengan mudah bersama Emas Amir</h2>
-      <p class="mb-3">
-        Daftar sebagai affiliate Emas Amir, kongsi link khas anda dan bantu pelanggan membeli
-        Tabung Emas, Goldbar/Coin dan barang kemas 916. Setiap jualan layak komisen
-        yang telus dan direkod dalam E-Wallet anda.
-      </p>
-
-      <ul class="mb-3">
-        <li>Komisen dikira secara automatik setiap kali tempahan <strong>PAID</strong>.</li>
-        <li>E-Wallet hanya rekod komisen (bayaran sebenar dibuat secara manual oleh admin).</li>
-        <li>Yuran pendaftaran affiliate: <span id="agent-fee-text"><strong>RM399</strong></span> <span class="muted">(boleh diubah dari admin nanti)</span></li>
-      </ul>
-
-      <button id="btn-open-agent-modal" class="btn btn-dark">
-        Berminat Jadi Affiliate Emas Amir? Klik Sini
-      </button>
+    <div class="d-flex gap-2">
+      <a href="account.html" class="btn btn-outline-secondary icon-btn">👤 Akaun</a>
+      <a id="logout" class="btn btn-outline-secondary icon-btn" href="javascript:">Log keluar</a>
     </div>
+  </div>
 
-    <!-- Seksyen kalau SUDAH agen -->
-    <div id="section-agent" class="card-soft p-4 mb-4 d-none">
-      <div class="d-flex justify-content-between align-items-center mb-3">
-        <div>
-          <div class="pill mb-1" id="agent-status-pill">Affiliate Aktif</div>
-          <h2 class="h5 mb-0">E-Wallet Komisen Anda</h2>
-          <div class="muted" id="agent-name-label"></div>
+  <!-- BELUM AGEN / CANCELLED -->
+  <div id="section-non-agent" class="d-none">
+    <div class="box">
+      <div class="section-title">Program Affiliate Emas Amir</div>
+
+      <div class="notice-card mb-3">
+        <div class="fw-bold mb-1">Jana pendapatan dengan berkongsi Emas Amir</div>
+        <div class="mini-note" style="color:inherit">
+          Mohon jadi affiliate, kongsi link khas anda, dan setiap jualan yang sah akan direkod dalam E-Wallet komisen anda.
         </div>
       </div>
 
-      <div class="row g-3 mb-4">
-        <div class="col-md-4">
-          <div class="p-3 border rounded-3 bg-light">
-            <div class="muted mb-1">Baki E-Wallet (Komisen)</div>
-            <div class="wallet-number" id="wallet-balance">RM0.00</div>
-          </div>
+      <div class="info-strip mb-3">
+        <div class="info-item">
+          <div class="fw-semibold">Komisen Automatik</div>
+          <div class="mini-note">Direkod apabila tempahan yang berkaitan disahkan PAID.</div>
         </div>
-        <div class="col-md-4">
-          <div class="p-3 border rounded-3 bg-light">
-            <div class="muted mb-1">Jumlah Komisen Terkumpul</div>
-            <div class="wallet-number" id="wallet-total-earned">RM0.00</div>
-          </div>
+        <div class="info-item">
+          <div class="fw-semibold">Bayaran Manual</div>
+          <div class="mini-note">Bayaran komisen sebenar dibuat secara manual oleh admin.</div>
         </div>
-        <div class="col-md-4">
-          <div class="p-3 border rounded-3 bg-light">
-            <div class="muted mb-1">Jumlah Jualan (Anggaran)</div>
-            <div class="wallet-number" id="wallet-total-sales">RM0.00</div>
-          </div>
+        <div class="info-item">
+          <div class="fw-semibold">Yuran Pendaftaran</div>
+          <div class="mini-note">Yuran semasa: <strong id="agent-fee-text">RM399</strong>.</div>
         </div>
       </div>
 
-      <div class="row g-3 mb-4">
-        <div class="col-md-6">
-          <h3 class="h6">Link Khas Untuk Dikongsi</h3>
-          <div class="link-box mb-2" id="agent-link-box">Memuatkan...</div>
-          <button id="btn-copy-link" class="btn btn-outline-secondary btn-sm">Salin Link</button>
-          <div class="muted mt-2">
-            Pelanggan yang membeli melalui link ini akan dikira di bawah akaun affiliate anda.
-          </div>
-        </div>
-        <div class="col-md-6 qr-box">
-          <h3 class="h6">QR Link Affiliate</h3>
-          <div id="agent-qr-wrapper" class="border rounded-3 p-2 d-inline-block">
-            <!-- QR akan dimuatkan melalui remote API image -->
-          </div>
-          <div class="muted mt-2">
-            Cetak atau simpan QR ini untuk diletakkan di poster, kaunter atau dikongsi di media sosial.
-          </div>
-        </div>
+      <div class="action-row d-flex flex-wrap gap-2">
+        <button id="btn-open-agent-modal" class="btn btn-dark">
+          Berminat Jadi Affiliate Emas Amir? Klik Sini
+        </button>
+        <a href="https://wa.me/60168055916" target="_blank" class="btn btn-outline-secondary">
+          WhatsApp Admin
+        </a>
       </div>
+    </div>
+  </div>
 
-      <h3 class="h6 mt-4 mb-2">Transaksi E-Wallet Terkini</h3>
-      <div class="table-responsive">
-        <table class="table table-sm align-middle">
-          <thead class="table-light">
-            <tr>
-              <th>Tarikh</th>
-              <th>Jenis</th>
-              <th>Order</th>
-              <th class="text-end">Amaun (RM)</th>
-              <th>Catatan</th>
-            </tr>
-          </thead>
-          <tbody id="wallet-tx-body">
-            <tr><td colspan="5" class="text-center muted">Tiada rekod lagi.</td></tr>
-          </tbody>
-        </table>
+  <!-- SUDAH AGEN -->
+  <div id="section-agent" class="d-none">
+
+    <!-- HERO -->
+    <div class="box">
+      <div class="hero-card">
+        <div class="hero-head">
+          <div>
+            <div id="agent-status-pill" class="pill warn mb-2">Menunggu Kelulusan</div>
+            <div class="hero-name">Affiliate Emas Amir</div>
+            <div class="hero-sub" id="agent-name-label">Memuatkan…</div>
+          </div>
+        </div>
+
+        <div class="info-strip">
+          <div class="info-item">
+            <div class="stat-label">Status Akaun</div>
+            <div class="stat-value" id="stat-status">—</div>
+          </div>
+          <div class="info-item">
+            <div class="stat-label">Kod Affiliate</div>
+            <div class="stat-value mono" id="stat-code">—</div>
+          </div>
+          <div class="info-item">
+            <div class="stat-label">Baki Komisen</div>
+            <div class="stat-value" id="wallet-balance">RM0.00</div>
+          </div>
+          <div class="info-item">
+            <div class="stat-label">Jumlah Terkumpul</div>
+            <div class="stat-value" id="wallet-total-earned">RM0.00</div>
+          </div>
+          <div class="info-item">
+            <div class="stat-label">Jumlah Jualan</div>
+            <div class="stat-value" id="wallet-total-sales">RM0.00</div>
+          </div>
+        </div>
       </div>
     </div>
 
-    <!-- Modal pop-up permohonan agen -->
-    <div class="modal fade" id="agentInfoModal" tabindex="-1" aria-hidden="true">
-      <div class="modal-dialog modal-dialog-centered">
-        <div class="modal-content">
-          <div class="modal-header">
-            <h5 class="modal-title">Jadi Affiliate Emas Amir</h5>
-            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Tutup"></button>
+    <!-- PILIH KATEGORI -->
+    <div class="box">
+      <div class="fw-semibold mb-2">Pilih Kategori</div>
+
+     <div class="action-list">
+        <div class="action-item" data-open="panelLinkQr">
+          <div class="action-left">
+            <div class="action-ico">🔗</div>
+            <div>
+              <div class="action-title">Link & QR Affiliate</div>
+              <div class="action-sub">Lihat link, salin dan kongsi QR affiliate anda</div>
+            </div>
           </div>
-          <div class="modal-body">
-            <p>
-              Menjana pendapatan tambahan dengan berkongsi link Emas Amir kepada rakan, keluarga dan pelanggan anda.
-              Setiap jualan Tabung Emas, Goldbar/Coin dan barang kemas 916 yang dibuat melalui link anda akan
-              memberikan komisen terus ke E-Wallet affiliate.
-            </p>
-            <ul>
-              <li>Rekod komisen telus dan boleh disemak dalam panel affiliate.</li>
-              <li>Bayaran komisen dibuat secara manual oleh pihak Emas Amir.</li>
-              <li>Yuran pendaftaran affiliate: <span id="agent-fee-text-modal"><strong>RM399</strong></span></li>
-            </ul>
-            <p class="mb-0">
-              Selepas klik <strong>Mohon Sekarang</strong>, permohonan anda akan direkod dan
-              anda serta admin akan menerima WhatsApp dengan maklumat yuran dan QR no. akaun.
-            </p>
+          <div class="chev">›</div>
+        </div>
+
+        <div class="action-item" data-open="panelWallet">
+          <div class="action-left">
+            <div class="action-ico">💰</div>
+            <div>
+              <div class="action-title">Wallet Komisen</div>
+              <div class="action-sub">Baki semasa, jumlah terkumpul dan jumlah jualan</div>
+            </div>
           </div>
-          <div class="modal-footer">
-            <button type="button" class="btn btn-light" data-bs-dismiss="modal">Batal</button>
-            <button type="button" id="btn-apply-agent" class="btn btn-dark">
-              Mohon Sekarang
-            </button>
+          <div class="chev">›</div>
+        </div>
+
+        <div class="action-item" onclick="location.href='agen-chat.html'">
+          <div class="action-left">
+            <div class="action-ico">💬</div>
+            <div>
+              <div class="action-title">Chat Agen</div>
+              <div class="action-sub">Lihat chat pelanggan bawah anda</div>
+            </div>
+          </div>
+          <div class="chev">›</div>
+        </div>
+
+        <div class="action-item" data-open="panelCustomers">
+          <div class="action-left">
+            <div class="action-ico">👥</div>
+            <div>
+              <div class="action-title">Pelanggan Bawah Anda</div>
+              <div class="action-sub">Lihat senarai nama pelanggan yang daftar di bawah affiliate anda</div>
+            </div>
+          </div>
+          <div class="chev">›</div>
+        </div>
+
+        <div class="action-item" data-open="panelActivity">
+          <div class="action-left">
+            <div class="action-ico">📋</div>
+            <div>
+              <div class="action-title">Aktiviti Komisen</div>
+              <div class="action-sub">Semak transaksi komisen dan payout terkini</div>
+            </div>
+          </div>
+          <div class="chev">›</div>
+        </div>
+
+        <div class="action-item" data-open="panelProgramInfo">
+          <div class="action-left">
+            <div class="action-ico">ℹ️</div>
+            <div>
+              <div class="action-title">Maklumat Program</div>
+              <div class="action-sub">Nota penting berkaitan kelulusan, bayaran dan penggunaan link</div>
+            </div>
+          </div>
+          <div class="chev">›</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- PANEL LINK & QR -->
+    <div class="collapse" id="panelLinkQr">
+      <div class="box">
+        <div class="panel">
+          <div class="panel-h">
+            <div>
+              <div class="fw-semibold">🔗 Link & QR Affiliate</div>
+              <div class="muted xsmall">Gunakan link ini untuk dikongsi kepada pelanggan</div>
+            </div>
+            <button class="btn btn-sm btn-outline-secondary" type="button" data-bs-toggle="collapse" data-bs-target="#panelLinkQr">Tutup</button>
+          </div>
+          <div class="panel-b">
+            <div id="pending-link-notice" class="notice-card mb-3 d-none">
+              <div class="fw-bold mb-1">Link affiliate belum tersedia</div>
+              <div class="mini-note" style="color:inherit">
+                Akaun anda masih menunggu kelulusan admin. Selepas diluluskan, link dan QR akan muncul di sini.
+              </div>
+            </div>
+
+            <div class="row g-3">
+              <div class="col-lg-7">
+                <div class="sub-title">Link Khas Untuk Dikongsi</div>
+                <div class="link-box mb-2" id="agent-link-box">Memuatkan...</div>
+
+                <div class="d-flex flex-wrap gap-2 mb-2">
+                  <button id="btn-copy-link" class="btn btn-outline-secondary btn-sm">Salin Link</button>
+                  <a id="btn-share-wa" href="javascript:" class="btn btn-outline-secondary btn-sm">Kongsi WhatsApp</a>
+                </div>
+
+                <div class="mini-note">
+                  Pelanggan yang membuka, mendaftar dan membeli melalui link ini akan dikira di bawah affiliate anda mengikut flow sistem semasa.
+                </div>
+              </div>
+
+              <div class="col-lg-5">
+                <div class="qr-card">
+                  <div class="sub-title mb-2">QR Affiliate</div>
+                  <div id="agent-qr-wrapper" class="mb-2"></div>
+                  <div class="mini-note">
+                    Simpan atau cetak QR ini untuk poster, kaunter atau kongsi masa live.
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- PANEL WALLET -->
+    <div class="collapse" id="panelWallet">
+      <div class="box">
+        <div class="panel">
+          <div class="panel-h">
+            <div>
+              <div class="fw-semibold">💰 Wallet Komisen</div>
+              <div class="muted xsmall">Ringkasan semasa akaun affiliate anda</div>
+            </div>
+            <button class="btn btn-sm btn-outline-secondary" type="button" data-bs-toggle="collapse" data-bs-target="#panelWallet">Tutup</button>
+          </div>
+          <div class="panel-b">
+            <div class="info-strip">
+              <div class="info-item">
+                <div class="stat-label">Baki E-Wallet</div>
+                <div class="stat-value" id="wallet-balance-2">RM0.00</div>
+              </div>
+              <div class="info-item">
+                <div class="stat-label">Jumlah Komisen Terkumpul</div>
+                <div class="stat-value" id="wallet-total-earned-2">RM0.00</div>
+              </div>
+              <div class="info-item">
+                <div class="stat-label">Jumlah Jualan</div>
+                <div class="stat-value" id="wallet-total-sales-2">RM0.00</div>
+              </div>
+            </div>
+
+            <div class="mini-note mt-3">
+              Nota: E-Wallet ini merekod komisen. Bayaran sebenar kepada affiliate dibuat secara manual oleh admin.
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- PANEL AKTIVITI -->
+    <div class="collapse" id="panelActivity">
+      <div class="box">
+        <div class="panel">
+          <div class="panel-h">
+            <div>
+              <div class="fw-semibold">📋 Aktiviti Komisen</div>
+              <div class="muted xsmall">Transaksi terkini untuk komisen dan bayaran keluar</div>
+            </div>
+            <button class="btn btn-sm btn-outline-secondary" type="button" data-bs-toggle="collapse" data-bs-target="#panelActivity">Tutup</button>
+          </div>
+          <div class="panel-b">
+            <div class="table-wrap">
+              <div class="table-responsive">
+                <table class="table table-sm align-middle table-sticky mb-0">
+                  <thead class="table-light">
+                    <tr>
+                      <th style="width:150px">Tarikh</th>
+                      <th style="width:120px">Jenis</th>
+                      <th style="width:120px">Order</th>
+                      <th class="text-end" style="width:120px">Amaun</th>
+                      <th>Catatan</th>
+                    </tr>
+                  </thead>
+                  <tbody id="wallet-tx-body">
+                    <tr><td colspan="5" class="text-center muted py-4">Tiada rekod lagi.</td></tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- PANEL INFO PROGRAM -->
+    <div class="collapse" id="panelProgramInfo">
+      <div class="box">
+        <div class="panel">
+          <div class="panel-h">
+            <div>
+              <div class="fw-semibold">ℹ️ Maklumat Program</div>
+              <div class="muted xsmall">Maklumat ringkas berkaitan affiliate Emas Amir</div>
+            </div>
+            <button class="btn btn-sm btn-outline-secondary" type="button" data-bs-toggle="collapse" data-bs-target="#panelProgramInfo">Tutup</button>
+          </div>
+          <div class="panel-b">
+            <div class="info-strip">
+              <div class="info-item">
+                <div class="fw-semibold mb-1">Status Akaun</div>
+                <div class="mini-note" id="info-status-text">
+                  Akaun anda sedang diproses.
+                </div>
+              </div>
+              <div class="info-item">
+                <div class="fw-semibold mb-1">Bayaran Komisen</div>
+                <div class="mini-note">
+                  Bayaran komisen sebenar dibuat secara manual oleh admin, bukan auto withdraw.
+                </div>
+              </div>
+              <div class="info-item">
+                <div class="fw-semibold mb-1">Link Affiliate</div>
+                <div class="mini-note">
+                  Link affiliate anda adalah identiti kekal untuk tracking. Jangan tukar tanpa sebab penting.
+                </div>
+              </div>
+            </div>
+
+            <div class="mini-note mt-3">
+              Jika ada sebarang masalah berkaitan kelulusan, bayaran atau link affiliate, sila hubungi admin Emas Amir.
+            </div>
           </div>
         </div>
       </div>
     </div>
 
   </div>
+
+<!-- PANEL PELANGGAN BAWAH ANDA -->
+<div class="collapse" id="panelCustomers">
+  <div class="box">
+    <div class="panel">
+      <div class="panel-h">
+        <div>
+          <div class="fw-semibold">👥 Pelanggan Bawah Anda</div>
+          <div class="muted xsmall">Senarai nama pelanggan yang mendaftar di bawah affiliate anda</div>
+        </div>
+        <button class="btn btn-sm btn-outline-secondary" type="button" data-bs-toggle="collapse" data-bs-target="#panelCustomers">Tutup</button>
+      </div>
+      <div class="panel-b">
+        <div class="table-wrap">
+          <div class="table-responsive">
+            <table class="table table-sm align-middle table-sticky mb-0">
+              <thead class="table-light">
+                <tr>
+                  <th style="width:170px">Tarikh Daftar</th>
+                  <th>Nama Pelanggan</th>
+                </tr>
+              </thead>
+              <tbody id="agent-customer-body">
+                <tr>
+                  <td colspan="2" class="text-center muted py-4">Memuatkan…</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <div class="mini-note mt-3" id="agent-customer-info">0 pelanggan</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+  <!-- MODAL APPLY -->
+  <div class="modal fade" id="agentInfoModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content" style="border-radius:18px">
+        <div class="modal-header">
+          <h5 class="modal-title">Jadi Affiliate Emas Amir</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Tutup"></button>
+        </div>
+        <div class="modal-body">
+          <p>
+            Menjana pendapatan tambahan dengan berkongsi link Emas Amir kepada rakan, keluarga dan pelanggan anda.
+            Setiap jualan Tabung Emas, Goldbar/Coin dan barang kemas 916 yang dibuat melalui link anda akan
+            memberikan komisen terus ke E-Wallet affiliate.
+          </p>
+          <ul>
+            <li>Rekod komisen telus dan boleh disemak dalam panel affiliate.</li>
+            <li>Bayaran komisen dibuat secara manual oleh pihak Emas Amir.</li>
+            <li>Yuran pendaftaran affiliate: <span id="agent-fee-text-modal"><strong>RM399</strong></span></li>
+          </ul>
+          <p class="mb-0">
+            Selepas klik <strong>Mohon Sekarang</strong>, permohonan anda akan direkod dan anda serta admin akan menerima WhatsApp dengan maklumat bayaran.
+          </p>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-light" data-bs-dismiss="modal">Batal</button>
+          <button type="button" id="btn-apply-agent" class="btn btn-dark">Mohon Sekarang</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 <script>
-  // ==========================
-  // Konfigurasi asas Supabase
-  // ==========================
+(() => {
+  "use strict";
+
+  const SB_URL = "https://dduizetstqqjrpsezbpi.supabase.co";
+  const SB_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJIUzI1NiIsInR5cCI6IkpXVCJ9";
+  // fallback kepada key sebenar di bawah kalau baris atas tak valid
+})();
+</script>
+
+<script>
   const SB_URL = "https://dduizetstqqjrpsezbpi.supabase.co";
   const SB_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRkdWl6ZXRzdHFxanJwc2V6YnBpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTg3MzI0ODQsImV4cCI6MjA3NDMwODQ4NH0.CrlHXrmHtKgR9qc2192U6quRb5lpFEeOSgwG0Lb8KRM";
   const sb = window.supabase.createClient(SB_URL, SB_KEY);
 
-  // Tetapan sementara untuk yuran agen (kalau nak nanti tarik dari table setting)
   const AGENT_FEE = 399;
-
-  // No WhatsApp rasmi kedai (msisdn)
   const ADMIN_WA = "60168055916";
 
-  // ==========================
-  // OnSend WhatsApp (sama gaya j916)
-  // ==========================
   const ONSEND_BASE  = "https://onsend.io/api/v1";
   const ONSEND_TOKEN = "4b879470cc16ca8f06c5ab9878a4578880cfd0fd7b7cfe0121499f3ab017dd04";
-
-  // QR DuitNow (guna page yang sama macam j916 / goldbar)
   const QR_DUITNOW_URL = "https://emasamir.app/qr-maybank.html";
+
+  const $ = id => document.getElementById(id);
 
   function toMsisdn(p){
     const d = String(p || "").replace(/\D+/g, "");
     if (!d) return "";
     if (d.startsWith("6")) return d;
     return "6" + d;
+  }
+
+  function money(v){
+    return "RM" + Number(v || 0).toFixed(2);
+  }
+
+  function formatDate(s){
+    if (!s) return "-";
+    const d = new Date(s);
+    if (isNaN(d)) return "-";
+    return d.toLocaleString("ms-MY", {
+      day:"2-digit", month:"short", year:"numeric",
+      hour:"2-digit", minute:"2-digit"
+    });
   }
 
   async function sendWA(msisdn, text){
@@ -217,163 +829,152 @@
     }
   }
 
-  // ==========================
-  // Init Page
-  // ==========================
-  document.addEventListener("DOMContentLoaded", initPage);
+  function openPanel(id){
+  const ids = ["panelLinkQr","panelWallet","panelCustomers","panelActivity","panelProgramInfo"];
+    ids.forEach(pid=>{
+      const el = $(pid);
+      if (!el) return;
+      const inst = bootstrap.Collapse.getOrCreateInstance(el, { toggle:false });
+      if (pid === id) inst.show();
+      else inst.hide();
+    });
+    const target = $(id);
+    if (target) {
+      setTimeout(() => {
+        try{ target.scrollIntoView({ behavior:"smooth", block:"start" }); }catch{}
+      }, 150);
+    }
+  }
 
-  async function initPage(){
+  async function handleApplyAgent(){
     try{
-      const { data, error } = await sb.auth.getUser();
-      const user = data?.user || null;
-
-      if (error || !user){
-        window.location.href = "login.html";
+      const { data: { user } } = await sb.auth.getUser();
+      if (!user){
+        alert("Sila log masuk dahulu.");
         return;
       }
 
-      // Update teks yuran
-      document.getElementById("agent-fee-text").innerText       = "RM" + AGENT_FEE;
-      document.getElementById("agent-fee-text-modal").innerText = "RM" + AGENT_FEE;
-
-      // Ikat butang
-      document.getElementById("btn-open-agent-modal")
-        .addEventListener("click", openInfoModal);
-      document.getElementById("btn-apply-agent")
-        .addEventListener("click", handleApplyAgent);
-      document.getElementById("btn-copy-link")
-        .addEventListener("click", copyAgentLink);
-
-      // check status agen user ini
-      await loadAgentState(user);
-    }catch(err){
-      console.error(err);
-      alert("Ralat memuatkan panel affiliate. Sila cuba lagi.");
-    }
-  }
-
-  function openInfoModal(){
-    const modalEl = document.getElementById("agentInfoModal");
-    const modal = bootstrap.Modal.getOrCreateInstance(modalEl);
-    modal.show();
-  }
-
- // ==========================
-// Permohonan agen (rekod + WhatsApp OnSend)
-// ==========================
-async function handleApplyAgent(){
-  try{
-    const { data: { user } } = await sb.auth.getUser();
-    if (!user){
-      alert("Sila log masuk dahulu.");
-      return;
-    }
-
-    // 1) Rekod permohonan agen & create wallet (RPC)
-    const { data: agent, error } = await sb.rpc("agent_apply_v1");
-    if (error){
-      console.error("agent_apply_v1 error:", error);
-      alert("Ralat merekod permohonan affiliate. Sila cuba lagi.");
-      return;
-    }
-
-    // 2) Dapatkan nama & phone pelanggan
-    let nama  = "Pelanggan";
-    let phone = "";
-
-    // Cuba direct dari customers (model baru: customers.id = auth.uid)
-    {
-      const { data: cust } = await sb
-        .from("customers")
-        .select("name, phone")
-        .eq("id", user.id)
-        .maybeSingle();
-
-      if (cust){
-        if (cust.name)  nama  = cust.name;
-        if (cust.phone) phone = cust.phone;
+      const { data: agent, error } = await sb.rpc("agent_apply_v1");
+      if (error){
+        console.error("agent_apply_v1 error:", error);
+        alert("Ralat merekod permohonan affiliate. " + (error.message || "Sila cuba lagi."));
+        return;
       }
-    }
 
-    // Fallback: auth_customer_map → customers
-    if (!phone){
-      const { data: mapRow } = await sb
-        .from("auth_customer_map")
-        .select("customer_id")
-        .eq("auth_uid", user.id)
-        .order("created_at", { ascending: false })
-        .limit(1)
-        .maybeSingle();
+      let nama = "Pelanggan";
+      let phone = "";
 
-      if (mapRow?.customer_id){
-        const { data: cust2 } = await sb
-          .from("customers")
-          .select("name, phone")
-          .eq("id", mapRow.customer_id)
-          .maybeSingle();
+      {
+      let cust = null;
 
-        if (cust2){
-          if (cust2.name)  nama  = cust2.name;
-          if (cust2.phone) phone = cust2.phone;
-        }
-      }
-    }
+// cuba ikut auth_customer_map dulu
+const { data: mapRow } = await sb
+  .from("auth_customer_map")
+  .select("customer_id")
+  .eq("auth_uid", user.id)
+  .order("created_at", { ascending:false })
+  .limit(1)
+  .maybeSingle();
 
-    // 3) Kalau still tak ada phone → rekod OK tapi bagitahu user, tak hantar WA
-    if (!phone){
-      alert("Permohonan affiliate direkod, tetapi nombor telefon anda tiada dalam sistem. Sila hubungi admin untuk maklumat bayaran.");
-      return;
-    }
+if (mapRow?.customer_id) {
+  const { data } = await sb
+    .from("customers")
+    .select("id, name, customer_name, phone")
+    .eq("id", mapRow.customer_id)
+    .maybeSingle();
 
-    // 4) Sediakan mesej WhatsApp
-    const feeText = "RM" + AGENT_FEE;
-
-    const msgAdmin =
-      "Permohonan affiliate baharu Emas Amir\n\n" +
-      "Nama: " + nama + "\n" +
-      "Telefon: " + phone + "\n" +
-      "Kod affiliate sementara: " + (agent.agent_code || "-") + "\n" +
-      "Status: " + (agent.status || "PENDING") + "\n\n" +
-      "Yuran pendaftaran: " + feeText + "\n" +
-      "Sila beri maklumat pembayaran yuran affiliate & pautan QR akaun kepada pelanggan.";
-
-    const msgCust =
-      "Assalamualaikum " + nama + ",\n\n" +
-      "Permohonan anda sebagai Affiliate Emas Amir telah direkod. ✅\n\n" +
-      "Yuran pendaftaran affiliate: " + feeText + "\n\n" +
-      "Maklumat pembayaran:\n" +
-      "Bank   : Maybank\n" +
-      "Nama   : EMAS AMIR SDN. BHD.\n" +
-      "No Akaun : 552031155695\n" +
-      "Rujukan : YURAN AFFILIATE " + (agent.agent_code || "") + "\n\n" +
-      (QR_DUITNOW_URL
-        ? "Atau boleh juga scan QR berikut:\n" + QR_DUITNOW_URL + "\n\n"
-        : "") +
-      "Selepas buat bayaran, sila hantar resit kepada admin Emas Amir untuk aktifkan akaun affiliate anda. Terima kasih. 🙏";
-
-    // 5) Hantar WhatsApp
-    await sendWA(ADMIN_WA, msgAdmin);  // ke admin kedai
-    await sendWA(phone,   msgCust);    // ke pelanggan/affiliate
-
-    alert("Permohonan affiliate direkod. WhatsApp maklumat bayaran akan dihantar kepada anda dan admin akan aktifkan selepas semakan.");
-
-    // Tutup modal
-    const modalEl = document.getElementById("agentInfoModal");
-    const modal   = bootstrap.Modal.getOrCreateInstance(modalEl);
-    modal.hide();
-
-    // Reload panel supaya terus nampak wallet agen (status PENDING)
-    await initPage();
-
-  }catch(err){
-    console.error(err);
-    alert("Ralat menghantar permohonan affiliate.");
-  }
+  if (data) cust = data;
 }
 
-  // ==========================
-  // Status agen & E-Wallet
-  // ==========================
+// fallback ikut phone auth
+if (!cust && user.phone) {
+  const d = String(user.phone || "").replace(/\D+/g, "");
+  const p60 = d.startsWith("60") ? d : (d.startsWith("0") ? "60" + d.slice(1) : d);
+  const p0  = d.startsWith("0") ? d : (d.startsWith("60") ? "0" + d.slice(2) : d);
+
+  const { data } = await sb
+    .from("customers")
+    .select("id, name, customer_name, phone")
+    .or(`phone.eq.${p60},phone.eq.${p0}`)
+    .limit(1)
+    .maybeSingle();
+
+  if (data) cust = data;
+}
+
+        if (cust){
+          if (cust.name) nama = cust.name;
+          if (cust.phone) phone = cust.phone;
+        }
+      }
+
+      if (!phone){
+        const { data: mapRow } = await sb
+          .from("auth_customer_map")
+          .select("customer_id")
+          .eq("auth_uid", user.id)
+          .order("created_at", { ascending:false })
+          .limit(1)
+          .maybeSingle();
+
+        if (mapRow?.customer_id){
+          const { data: cust2 } = await sb
+            .from("customers")
+            .select("name, phone")
+            .eq("id", mapRow.customer_id)
+            .maybeSingle();
+
+          if (cust2){
+            if (cust2.name) nama = cust2.name;
+            if (cust2.phone) phone = cust2.phone;
+          }
+        }
+      }
+
+      if (!phone){
+        alert("Permohonan affiliate direkod, tetapi nombor telefon anda tiada dalam sistem. Sila hubungi admin.");
+        return;
+      }
+
+      const feeText = "RM" + AGENT_FEE;
+
+      const msgAdmin =
+        "Permohonan affiliate baharu Emas Amir\n\n" +
+        "Nama: " + nama + "\n" +
+        "Telefon: " + phone + "\n" +
+        "Kod affiliate sementara: " + (agent?.agent_code || "-") + "\n" +
+        "Status: " + (agent?.status || "PENDING") + "\n\n" +
+        "Yuran pendaftaran: " + feeText + "\n" +
+        "Sila beri maklumat pembayaran yuran affiliate & pautan QR akaun kepada pelanggan.";
+
+      const msgCust =
+        "Assalamualaikum " + nama + ",\n\n" +
+        "Permohonan anda sebagai Affiliate Emas Amir telah direkod. ✅\n\n" +
+        "Yuran pendaftaran affiliate: " + feeText + "\n\n" +
+        "Maklumat pembayaran:\n" +
+        "Bank   : Maybank\n" +
+        "Nama   : EMAS AMIR SDN. BHD.\n" +
+        "No Akaun : 552031155695\n" +
+        "Rujukan : YURAN AFFILIATE " + (agent?.agent_code || "") + "\n\n" +
+        (QR_DUITNOW_URL ? "Atau boleh juga scan QR berikut:\n" + QR_DUITNOW_URL + "\n\n" : "") +
+        "Selepas buat bayaran, sila hantar resit kepada admin Emas Amir untuk aktifkan akaun affiliate anda. Terima kasih. 🙏";
+
+      await sendWA(ADMIN_WA, msgAdmin);
+      await sendWA(phone, msgCust);
+
+      alert("Permohonan affiliate direkod. WhatsApp maklumat bayaran akan dihantar kepada anda.");
+
+      const modalEl = $("agentInfoModal");
+      const modal = bootstrap.Modal.getOrCreateInstance(modalEl);
+      modal.hide();
+
+      await initPage();
+    }catch(err){
+      console.error(err);
+      alert("Ralat menghantar permohonan affiliate.");
+    }
+  }
+
   async function loadAgentState(user){
     try{
       const { data: agent, error } = await sb
@@ -386,76 +987,173 @@ async function handleApplyAgent(){
         console.error("Error agents:", error);
       }
 
-      if (!agent){
-        document.getElementById("section-non-agent").classList.remove("d-none");
-        document.getElementById("section-agent").classList.add("d-none");
+      if (!agent || String(agent.status || "").toUpperCase() === "CANCELLED"){
+        $("section-non-agent").classList.remove("d-none");
+        $("section-agent").classList.add("d-none");
         return;
       }
 
-      document.getElementById("section-non-agent").classList.add("d-none");
-      document.getElementById("section-agent").classList.remove("d-none");
+      $("section-non-agent").classList.add("d-none");
+      $("section-agent").classList.remove("d-none");
 
-      // Teks status
-      const pill = document.getElementById("agent-status-pill");
-      if (agent.status === "active"){
+      const st = String(agent.status || "").toUpperCase();
+      const pill = $("agent-status-pill");
+      const statStatus = $("stat-status");
+      const pendingNotice = $("pending-link-notice");
+      const infoStatusText = $("info-status-text");
+
+      if (st === "ACTIVE"){
         pill.textContent = "Affiliate Aktif";
-      } else if (agent.status === "pending"){
+        pill.className = "pill ok mb-2";
+        statStatus.textContent = "Aktif";
+        infoStatusText.textContent = "Akaun anda aktif. Link affiliate dan QR boleh terus digunakan untuk promosi.";
+      } else if (st === "PENDING"){
         pill.textContent = "Menunggu Kelulusan";
+        pill.className = "pill warn mb-2";
+        statStatus.textContent = "Pending";
+        infoStatusText.textContent = "Permohonan anda telah diterima dan sedang menunggu semakan admin selepas pembayaran.";
+      } else if (st === "SUSPENDED"){
+        pill.textContent = "Digantung";
+        pill.className = "pill danger mb-2";
+        statStatus.textContent = "Digantung";
+        infoStatusText.textContent = "Akaun affiliate anda sedang digantung. Sila hubungi admin untuk semakan lanjut.";
       } else {
-        pill.textContent = agent.status;
+        pill.textContent = agent.status || "-";
+        pill.className = "pill mb-2";
+        statStatus.textContent = agent.status || "-";
       }
 
-      // Papar nama + kod
-      const { data: cust } = await sb
-        .from("customers")
-        .select("name")
-        .eq("id", user.id)
+    let cust = null;
+
+      const { data: mapRow } = await sb
+        .from("auth_customer_map")
+        .select("customer_id")
+        .eq("auth_uid", user.id)
+        .order("created_at", { ascending:false })
+        .limit(1)
         .maybeSingle();
 
-      document.getElementById("agent-name-label").textContent =
-        (cust?.name || "Tanpa Nama") + " · Kod Affiliate: " + (agent.agent_code || "-");
+      if (mapRow?.customer_id){
+        const { data } = await sb
+          .from("customers")
+          .select("id, name, customer_name, phone")
+          .eq("id", mapRow.customer_id)
+          .maybeSingle();
 
-      // Load wallet ringkas
+        if (data) cust = data;
+      }
+
+      if (!cust && user.phone){
+        const d = String(user.phone || "").replace(/\D+/g, "");
+        const p60 = d.startsWith("60") ? d : (d.startsWith("0") ? "60" + d.slice(1) : d);
+        const p0  = d.startsWith("0") ? d : (d.startsWith("60") ? "0" + d.slice(2) : d);
+
+        const { data } = await sb
+          .from("customers")
+          .select("id, name, customer_name, phone")
+          .or(`phone.eq.${p60},phone.eq.${p0}`)
+          .limit(1)
+          .maybeSingle();
+
+        if (data) cust = data;
+      }
+
+      const custName = cust?.customer_name || cust?.name || "Tanpa Nama";
+
+      $("agent-name-label").textContent =
+        custName + " · Kod Affiliate: " + (agent.agent_code || "-");
+
+      $("stat-code").textContent = agent.agent_code || "-";
+
       const { data: wallet } = await sb
         .from("agent_wallet")
         .select("balance_rm, total_earned_rm, total_sales_rm")
         .eq("agent_id", agent.id)
         .maybeSingle();
 
-      const balance     = wallet?.balance_rm      || 0;
-      const totalEarned = wallet?.total_earned_rm || 0;
-      const totalSales  = wallet?.total_sales_rm  || 0;
+      const balance     = Number(wallet?.balance_rm || 0);
+      const totalEarned = Number(wallet?.total_earned_rm || 0);
+      const totalSales  = Number(wallet?.total_sales_rm || 0);
 
-      document.getElementById("wallet-balance").textContent      = money(balance);
-      document.getElementById("wallet-total-earned").textContent = money(totalEarned);
-      document.getElementById("wallet-total-sales").textContent  = money(totalSales);
+      $("wallet-balance").textContent = money(balance);
+      $("wallet-total-earned").textContent = money(totalEarned);
+      $("wallet-total-sales").textContent = money(totalSales);
 
-      // Link agen & QR
-      const link = buildAgentLink(agent);
-      const box  = document.getElementById("agent-link-box");
-      box.textContent = link;
-      box.dataset.link = link;
+      $("wallet-balance-2").textContent = money(balance);
+      $("wallet-total-earned-2").textContent = money(totalEarned);
+      $("wallet-total-sales-2").textContent = money(totalSales);
 
-      const qrWrapper = document.getElementById("agent-qr-wrapper");
-      const qrImg = document.createElement("img");
-      const qrUrl = "https://api.qrserver.com/v1/create-qr-code/?size=240x240&data=" + encodeURIComponent(link);
-      qrImg.src = qrUrl;
-      qrImg.alt = "QR Link Affiliate";
-      qrWrapper.innerHTML = "";
-      qrWrapper.appendChild(qrImg);
+      const box = $("agent-link-box");
+      const qrWrapper = $("agent-qr-wrapper");
+      const copyBtn = $("btn-copy-link");
+      const shareBtn = $("btn-share-wa");
 
-      // Transaksi wallet terkini
+      if (st === "ACTIVE" && agent.slug){
+        const link = buildAgentLink(agent);
+        box.textContent = link;
+        box.dataset.link = link;
+
+        const qrImg = document.createElement("img");
+        const qrUrl = "https://api.qrserver.com/v1/create-qr-code/?size=260x260&data=" + encodeURIComponent(link);
+        qrImg.src = qrUrl;
+        qrImg.alt = "QR Link Affiliate";
+        qrWrapper.innerHTML = "";
+        qrWrapper.appendChild(qrImg);
+
+        if (copyBtn) copyBtn.disabled = false;
+        if (shareBtn){
+          shareBtn.removeAttribute("aria-disabled");
+          shareBtn.href = "https://wa.me/?text=" + encodeURIComponent(
+            "Assalamualaikum 😊\n\nBoleh daftar / lihat Emas Amir melalui link saya di sini:\n" + link
+          );
+          shareBtn.target = "_blank";
+        }
+        pendingNotice.classList.add("d-none");
+      } else {
+        box.textContent = "Link akan diberikan selepas akaun affiliate diluluskan.";
+        box.dataset.link = "";
+        qrWrapper.innerHTML = `<div class="muted py-4 text-center">QR akan tersedia selepas kelulusan.</div>`;
+
+        if (copyBtn) copyBtn.disabled = true;
+        if (shareBtn){
+          shareBtn.href = "javascript:";
+          shareBtn.removeAttribute("target");
+        }
+        if (st === "PENDING") pendingNotice.classList.remove("d-none");
+        else pendingNotice.classList.add("d-none");
+      }
+
       const { data: txs } = await sb
         .from("agent_wallet_tx")
         .select("created_at, type, amount_rm, order_id, note")
         .eq("agent_id", agent.id)
-        .order("created_at", { ascending: false })
+        .order("created_at", { ascending:false })
         .limit(20);
 
       renderWalletTx(txs || []);
+
+      if (agent.slug){
+        const myPhone = cust?.phone || user.phone || "";
+        const myCustomerId = cust?.id || "";
+        const myName = cust?.customer_name || cust?.name || "";
+        await loadAgentCustomers(agent.slug, myPhone, myCustomerId, myName);
+      } else {
+        const tbody = $("agent-customer-body");
+        const info = $("agent-customer-info");
+
+        if (tbody){
+          tbody.innerHTML = `
+            <tr>
+              <td colspan="2" class="text-center muted py-4">Slug affiliate belum tersedia.</td>
+            </tr>
+          `;
+        }
+        if (info) info.textContent = "0 pelanggan";
+      }
     }catch(err){
       console.error(err);
-      document.getElementById("section-non-agent").classList.remove("d-none");
+      $("section-non-agent").classList.remove("d-none");
+      $("section-agent").classList.add("d-none");
     }
   }
 
@@ -468,13 +1166,11 @@ async function handleApplyAgent(){
   }
 
   function renderWalletTx(txs){
-    const tbody = document.getElementById("wallet-tx-body");
+    const tbody = $("wallet-tx-body");
     tbody.innerHTML = "";
 
     if (!txs.length){
-      const tr = document.createElement("tr");
-      tr.innerHTML = `<td colspan="5" class="text-center muted">Tiada rekod lagi.</td>`;
-      tbody.appendChild(tr);
+      tbody.innerHTML = `<tr><td colspan="5" class="text-center muted py-4">Tiada rekod lagi.</td></tr>`;
       return;
     }
 
@@ -482,38 +1178,129 @@ async function handleApplyAgent(){
       const tr = document.createElement("tr");
       const typeLabel =
         tx.type === "COMMISSION" ? "Komisen" :
-        tx.type === "PAYOUT"     ? "Bayaran Keluar" :
+        tx.type === "PAYOUT" ? "Bayaran Keluar" :
         "Pelaras";
+
       const amt = Number(tx.amount_rm || 0);
       const signClass = amt >= 0 ? "text-success" : "text-danger";
+
       tr.innerHTML = `
         <td>${formatDate(tx.created_at)}</td>
         <td>${typeLabel}</td>
         <td>${tx.order_id ? tx.order_id : "-"}</td>
-        <td class="text-end ${signClass}">${money(amt)}</td>
+        <td class="text-end ${signClass} fw-semibold">${money(amt)}</td>
         <td>${tx.note || ""}</td>
       `;
       tbody.appendChild(tr);
     }
   }
 
-  function money(v){
-    const n = Number(v || 0);
-    return "RM" + n.toFixed(2);
+function phoneVariants(raw){
+  const d = String(raw || "").replace(/\D+/g, "");
+  if (!d) return [];
+
+  const out = new Set();
+  out.add(d);
+
+  if (d.startsWith("60")) out.add("0" + d.slice(2));
+  if (d.startsWith("0")) out.add("60" + d.slice(1));
+  if (!d.startsWith("60") && !d.startsWith("0")) {
+    out.add("0" + d);
+    out.add("60" + d);
   }
 
-  function formatDate(s){
-    if (!s) return "-";
-    const d = new Date(s);
-    return d.toLocaleString("ms-MY", {
-      day:"2-digit", month:"short", year:"numeric",
-      hour:"2-digit", minute:"2-digit"
+  return [...out];
+}
+
+async function loadAgentCustomers(agentSlug, myPhone, myCustomerId, myName){
+  const tbody = $("agent-customer-body");
+  const info = $("agent-customer-info");
+
+  if (!tbody || !info) return;
+
+  tbody.innerHTML = `
+    <tr>
+      <td colspan="2" class="text-center muted py-4">Memuatkan…</td>
+    </tr>
+  `;
+
+  try{
+    const { data, error } = await sb
+      .from("customers")
+      .select("id, name, customer_name, phone, created_at")
+      .or(`agent_slug.eq.${agentSlug},ref_agent_slug.eq.${agentSlug}`)
+      .order("created_at", { ascending: false })
+      .limit(100);
+
+    if (error){
+      console.error("loadAgentCustomers error:", error);
+      tbody.innerHTML = `
+        <tr>
+          <td colspan="2" class="text-center text-danger py-4">Ralat memuatkan senarai pelanggan.</td>
+        </tr>
+      `;
+      info.textContent = "0 pelanggan";
+      return;
+    }
+
+    const myId = String(myCustomerId || "").trim();
+    const myNameLc = String(myName || "").trim().toLowerCase();
+    const myPhones = new Set(phoneVariants(myPhone));
+
+    const rows = (data || []).filter(row => {
+      const rowId = String(row.id || "").trim();
+      const rowName = String(row.customer_name || row.name || "").trim().toLowerCase();
+      const rowPhones = phoneVariants(row.phone);
+
+      // 1) buang diri sendiri ikut id
+      if (myId && rowId === myId) return false;
+
+      // 2) buang diri sendiri ikut phone (semua variant)
+      for (const p of rowPhones){
+        if (myPhones.has(p)) return false;
+      }
+
+      // 3) fallback ikut nama bila sama betul-betul
+      if (myNameLc && rowName && rowName === myNameLc) return false;
+
+      return true;
     });
-  }
 
-  async function copyAgentLink(){
-    const box = document.getElementById("agent-link-box");
+    if (!rows.length){
+      tbody.innerHTML = `
+        <tr>
+          <td colspan="2" class="text-center muted py-4">Belum ada pelanggan di bawah affiliate anda.</td>
+        </tr>
+      `;
+      info.textContent = "0 pelanggan";
+      return;
+    }
+
+    tbody.innerHTML = rows.map(row => {
+      const custName = row.customer_name || row.name || "-";
+      return `
+        <tr>
+          <td>${formatDate(row.created_at)}</td>
+          <td>${custName}</td>
+        </tr>
+      `;
+    }).join("");
+
+    info.textContent = `${rows.length} pelanggan`;
+  }catch(err){
+    console.error("loadAgentCustomers catch:", err);
+    tbody.innerHTML = `
+      <tr>
+        <td colspan="2" class="text-center text-danger py-4">Ralat memuatkan senarai pelanggan.</td>
+      </tr>
+    `;
+    info.textContent = "0 pelanggan";
+  }
+} 
+async function copyAgentLink(){
+    const box = $("agent-link-box");
     const link = box.dataset.link || box.textContent.trim();
+    if (!link || link.includes("akan diberikan")) return;
     try{
       await navigator.clipboard.writeText(link);
       alert("Link affiliate disalin.");
@@ -522,6 +1309,53 @@ async function handleApplyAgent(){
       alert("Tidak dapat salin link. Sila pilih dan salin secara manual.");
     }
   }
+
+  async function initPage(){
+    try{
+      const { data, error } = await sb.auth.getUser();
+      const user = data?.user || null;
+
+      if (error || !user){
+        window.location.href = "login.html";
+        return;
+      }
+
+      $("agent-fee-text").innerText = "RM" + AGENT_FEE;
+      $("agent-fee-text-modal").innerText = "RM" + AGENT_FEE;
+      $("who").textContent = "Log masuk sebagai affiliate";
+
+      $("btn-open-agent-modal")?.addEventListener("click", () => {
+        const modalEl = $("agentInfoModal");
+        const modal = bootstrap.Modal.getOrCreateInstance(modalEl);
+        modal.show();
+      });
+
+      $("btn-apply-agent")?.addEventListener("click", handleApplyAgent);
+      $("btn-copy-link")?.addEventListener("click", copyAgentLink);
+
+      await loadAgentState(user);
+    }catch(err){
+      console.error(err);
+      alert("Ralat memuatkan panel affiliate. Sila cuba lagi.");
+    }
+  }
+
+  document.addEventListener("DOMContentLoaded", () => {
+    initPage();
+
+    document.querySelectorAll(".action-item[data-open]").forEach(el => {
+      el.addEventListener("click", () => openPanel(el.getAttribute("data-open")));
+    });
+
+    $("logout")?.addEventListener("click", async (e) => {
+      e.preventDefault();
+      try{
+        if (window.auth_clear) window.auth_clear();
+        if (sb?.auth?.signOut) await sb.auth.signOut();
+      }catch{}
+      location.replace("login.html#login");
+    });
+  });
 </script>
 </body>
 </html>

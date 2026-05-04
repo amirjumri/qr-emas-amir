@@ -2,191 +2,859 @@
 <html lang="ms">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<link rel="stylesheet" href="/global.css">
 <title>Akaun – Emas Amir</title>
 
 <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+
 <style>
-  :root{ --chip:#eef1f4; --border:#e9ecef; --muted:#6c757d; }
-  body{background:#fafafa}
-  .page-wrap{max-width:960px;margin:18px auto 48px;padding:0 12px}
-  .section-card{background:#fff;border:1px solid var(--border);border-radius:14px;padding:18px}
-  .top-actions{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-bottom:12px}
-  .btn-chip{border-radius:999px;padding:.35rem .9rem}
-  .pill{display:inline-block;background:#f3f4f6;border:1px solid #e5e7eb;border-radius:999px;padding:4px 10px;font-size:12px}
-  .muted{color:#6c757d}
-  .ok{color:#0b7a0b;font-weight:700}
-  .err{color:#b91c1c;font-weight:700}
-  .mono{font-family:ui-monospace,SFMono-Regular,Menlo,monospace}
-  .table-sticky thead th{position:sticky;top:0;background:#fff;z-index:5}
-  .pager .page-link{border-radius:8px}
+  :root{
+    --bg:#f6f7f9;
+    --card:#ffffff;
+    --chip:#eef1f4;
+    --border:#e9ecef;
+    --border-soft:#eef1f4;
+    --muted:#6c757d;
+    --text:#212529;
+    --shadow:0 1px 2px rgba(16,24,40,.04);
+  }
+
+  *{box-sizing:border-box}
+  body{
+    background:var(--bg);
+    color:var(--text);
+  }
+
+  .wrap{
+    max-width:980px;
+    margin:16px auto 48px;
+    padding:12px;
+  }
+
+  .box{
+    background:var(--card);
+    border:1px solid var(--border);
+    border-radius:16px;
+    padding:16px;
+    box-shadow:var(--shadow);
+  }
+  .box + .box{ margin-top:14px; }
+
+  .muted{ color:var(--muted)!important; }
+  .ok{ color:#0b7a0b; font-weight:700; }
+  .err{ color:#b91c1c; font-weight:700; }
+
+  .mono{
+    font-family:ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,"Liberation Mono","Courier New",monospace;
+  }
+
+  .pill{
+    display:inline-flex;
+    align-items:center;
+    gap:8px;
+    padding:6px 10px;
+    border-radius:999px;
+    background:var(--chip);
+    font-size:12px;
+    color:#495057;
+    border:1px solid transparent;
+  }
+
+  .icon-btn{ border-radius:12px; }
+
+  .topbar{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap:10px;
+    flex-wrap:wrap;
+    margin-bottom:14px;
+  }
+
+  .top-left{
+    display:flex;
+    align-items:center;
+    gap:10px;
+    flex-wrap:wrap;
+  }
+
+  .brand-title{
+    font-weight:900;
+    font-size:18px;
+    letter-spacing:.2px;
+  }
+
+  .xsmall{ font-size:.8rem; }
+
+  .section-title{
+    font-weight:900;
+    font-size:18px;
+    margin-bottom:12px;
+  }
+
+  .sub-title{
+    font-weight:800;
+    font-size:16px;
+    margin-bottom:14px;
+  }
+
+  .panel{
+    border:1px solid var(--border);
+    border-radius:16px;
+    background:#fff;
+    overflow:hidden;
+  }
+
+  .panel-h{
+    padding:14px;
+    border-bottom:1px solid var(--border-soft);
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap:10px;
+    flex-wrap:wrap;
+  }
+
+  .panel-b{
+    padding:14px;
+  }
+
+  .form-label{
+    font-weight:600;
+    margin-bottom:.45rem;
+  }
+
+  .form-control,
+  .form-select,
+  .btn{
+    border-radius:12px;
+  }
+
+  textarea.form-control{
+    min-height:96px;
+  }
+
+  .action-row{
+    display:flex;
+    align-items:center;
+    gap:10px;
+    flex-wrap:wrap;
+  }
+
+  .table-wrap{
+    border:1px solid var(--border);
+    border-radius:14px;
+    overflow:hidden;
+    background:#fff;
+  }
+
+  .table-sticky thead th{
+    position:sticky;
+    top:0;
+    background:#f8f9fb !important;
+    z-index:5;
+  }
+
+  .table > :not(caption) > * > *{
+    padding:.8rem .75rem;
+    border-bottom-color:var(--border-soft);
+    vertical-align:middle;
+  }
+
+  .history-head{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap:12px;
+    flex-wrap:wrap;
+    margin-bottom:10px;
+  }
+
+  .filter-group .btn{
+    border-radius:10px !important;
+  }
+
+  .pagination.pager{
+    gap:6px;
+  }
+
+  .pager .page-link{
+    border-radius:8px;
+    border:1px solid #dee2e6;
+    color:#212529;
+  }
+
+  .pager .page-item.active .page-link{
+    background:#0d6efd;
+    border-color:#0d6efd;
+    color:#fff;
+  }
+
+  .mini-note{
+    color:#6b7280;
+    font-size:12px;
+  }
+
+  .info-strip{
+    display:flex;
+    align-items:flex-start;
+    gap:10px;
+    flex-wrap:wrap;
+  }
+
+  .info-item{
+    flex:1 1 220px;
+    border:1px solid var(--border);
+    border-radius:14px;
+    padding:12px;
+    background:#fff;
+  }
+
+  /* gaya action macam goldbar/tabung */
+  .action-list{
+    display:grid;
+    gap:10px;
+  }
+
+  .action-item{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap:10px;
+    padding:14px;
+    border:1px solid var(--border);
+    border-radius:14px;
+    background:#fff;
+    cursor:pointer;
+    transition:transform .06s ease, box-shadow .06s ease, border-color .06s ease;
+  }
+
+  .action-item:hover{
+    border-color:#dde3ea;
+  }
+
+  .action-item:active{
+    transform:scale(.995);
+  }
+
+  .action-left{
+    display:flex;
+    align-items:center;
+    gap:12px;
+    min-width:0;
+  }
+
+  .action-ico{
+    width:38px;
+    height:38px;
+    border-radius:12px;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    background:#f3f4f6;
+    font-size:18px;
+    flex:0 0 38px;
+  }
+
+  .action-title{
+    font-weight:800;
+    line-height:1.1;
+  }
+
+  .action-sub{
+    font-size:12px;
+    color:#6b7280;
+    margin-top:2px;
+  }
+
+  .chev{
+    color:#9ca3af;
+    font-weight:700;
+    font-size:20px;
+    line-height:1;
+  }
+
+  @media (max-width:767.98px){
+    .wrap{
+      padding:10px;
+      margin-top:10px;
+    }
+
+    .top-left{
+      width:100%;
+      align-items:flex-start;
+    }
+
+    .topbar > .d-flex{
+      width:100%;
+    }
+
+    .topbar > .d-flex .btn{
+      flex:1 1 auto;
+    }
+
+    .history-head{
+      align-items:flex-start;
+      flex-direction:column;
+    }
+
+    .filter-group{
+      width:100%;
+    }
+
+    .filter-group .btn-group{
+      width:100%;
+      display:grid;
+      grid-template-columns:repeat(2,minmax(0,1fr));
+      gap:8px;
+    }
+
+    .filter-group .btn-group .btn{
+      border-radius:12px !important;
+    }
+.offcanvas .btn{border-radius:12px}
+  }
+.face-card{
+    border:1px solid var(--border);
+    border-radius:16px;
+    background:#fff;
+    padding:14px;
+  }
+
+  .face-row{
+    display:flex;
+    align-items:flex-start;
+    justify-content:space-between;
+    gap:12px;
+    flex-wrap:wrap;
+  }
+
+  .face-badge{
+    display:inline-flex;
+    align-items:center;
+    gap:8px;
+    padding:6px 10px;
+    border-radius:999px;
+    font-size:12px;
+    border:1px solid var(--border);
+    background:#f8f9fa;
+  }
+
+  .face-badge.ok{
+    color:#0b7a0b;
+    border-color:#cfe8cf;
+    background:#eef9ee;
+  }
+
+  .face-badge.warn{
+    color:#8a5a00;
+    border-color:#f1dfb0;
+    background:#fff8e6;
+  }
+
+  .face-actions{
+    display:flex;
+    gap:8px;
+    flex-wrap:wrap;
+    margin-top:12px;
+  }
+
+  .pw-wrap{
+    position:relative;
+  }
+
+  .pw-wrap .form-control{
+    padding-right:46px;
+  }
+
+  .pw-toggle{
+    position:absolute;
+    right:10px;
+    top:50%;
+    transform:translateY(-50%);
+    border:0;
+    background:none;
+    cursor:pointer;
+    font-size:18px;
+    line-height:1;
+    padding:4px;
+  }
+
+.page-shell{
+  min-height:100vh;
+  background:#f6f7f9;
+  transform:translateX(0);
+  transition:transform .22s ease-out;
+  will-change:transform;
+}
+
+.page-shell.dragging{
+  transition:none;
+}
+
+body.swipe-peek{
+  background:#e5e7eb;
+}
+
+#gdexTrackModal{
+  position:absolute !important;
+  left:0 !important;
+  width:100vw !important;
+  z-index:2147483000 !important;
+  display:none !important;
+  align-items:center !important;
+  justify-content:center !important;
+  background:rgba(0,0,0,.45) !important;
+  padding:18px !important;
+  opacity:1 !important;
+  visibility:visible !important;
+}
+
+#gdexTrackModal.show{
+  display:flex !important;
+  opacity:1 !important;
+  visibility:visible !important;
+}
+
+#gdexTrackModal .modal-dialog{
+  width:100% !important;
+  max-width:520px !important;
+  margin:0 !important;
+  transform:none !important;
+}
+
+#gdexTrackModal .modal-content{
+  background:#fff !important;
+  border-radius:18px !important;
+  max-height:82vh !important;
+  overflow:hidden !important;
+  box-shadow:0 20px 60px rgba(0,0,0,.28) !important;
+}
+
+#gdexTrackModal .modal-body{
+  overflow:auto !important;
+  -webkit-overflow-scrolling:touch !important;
+}
+
+#gdexTrackModal .btn-close{
+  pointer-events:auto !important;
+  opacity:1 !important;
+}
+
+body.gdex-modal-open{
+  overflow:hidden !important;
+}
+
+.modal-backdrop{
+  display:none !important;
+}
+
 </style>
 </head>
 <body>
-<div class="page-wrap">
-  <!-- Top actions -->
-  <div class="top-actions">
-    <a href="index.html" class="btn btn-outline-secondary btn-chip">Halaman Utama</a>
-    <span id="who" class="pill">Memuatkan…</span>
-    <span class="flex-grow-1"></span>
-    
-    <a id="logout" class="btn btn-outline-secondary btn-chip" href="javascript:">Log keluar</a>
-  </div>
+<div class="page-shell">
 
-  <h3 class="mb-3">👤 <b>Akaun</b></h3>
+<div class="wrap">
 
-  <!-- ================== PROFIL (KEKAL) ================== -->
-  <div class="section-card mb-3">
-    <h5 class="mb-3">Profil</h5>
-    <div class="row g-3">
-      <div class="col-lg-6">
-        <label class="form-label">Nama</label>
-        <input id="name" class="form-control">
+  <!-- TOPBAR -->
+  <div class="topbar">
+    <div class="top-left">
+      <a href="index.html" class="btn btn-outline-secondary icon-btn">🏠</a>
+      <div>
+        <div class="brand-title">👤 Akaun</div>
+        <div class="muted xsmall">Profil • Password • Sejarah pesanan</div>
       </div>
-      <div class="col-lg-6">
-        <label class="form-label">Nombor Telefon</label>
-        <input id="phone" class="form-control" readonly>
-      </div>
-      <div class="col-lg-6">
-        <label class="form-label">IC (12 digit)</label>
-        <input id="ic" class="form-control" inputmode="numeric" placeholder="cth: 900101011234">
-      </div>
-      <div class="col-lg-6">
-        <label class="form-label">Email</label>
-        <input id="email" class="form-control" placeholder="cth: nama@email.com">
-      </div>
-      <div class="col-12">
-        <label class="form-label">Alamat</label>
-        <textarea id="alamat" class="form-control" rows="3" placeholder="Nama, alamat penuh, poskod, bandar, negeri"></textarea>
-      </div>
+      <span id="who" class="pill">Memuatkan…</span>
     </div>
 
-    <!-- 🔹 FIELD BARU: Poskod / Bandar / Negeri -->
-    <div class="row g-3 mt-1">
-      <div class="col-md-4">
-        <label class="form-label">Poskod</label>
-        <input id="poskod" class="form-control" inputmode="numeric" placeholder="cth: 09000">
-      </div>
-      <div class="col-md-4">
-        <label class="form-label">Bandar</label>
-        <input id="bandar" class="form-control" placeholder="cth: Kulim">
-      </div>
-      <div class="col-md-4">
-        <label class="form-label">Negeri</label>
-        <input id="negeri" class="form-control" placeholder="cth: Kedah">
-      </div>
-    </div>
-
-    <div class="row g-3 mt-1">
-      <div class="col-lg-6">
-        <label class="form-label">Nama Akaun Bank</label>
-        <input id="bank_acc_name" class="form-control" placeholder="cth: AMIRUL HAKIM BIN …">
-      </div>
-      <div class="col-lg-3">
-        <label class="form-label">No. Akaun Bank</label>
-        <input id="bank_acc_no" class="form-control" inputmode="numeric" placeholder="cth: 123456789012">
-      </div>
-      <div class="col-lg-3">
-        <label class="form-label">Nama Bank</label>
-        <input id="bank_name" class="form-control" placeholder="cth: Maybank / CIMB / Bank Islam">
-      </div>
-    </div>
-
-    <div class="d-flex align-items-center gap-2 mt-3">
-      <button id="saveProfile" class="btn btn-primary">Simpan Profil</button>
-      <span id="saveStatus" class="muted"></span>
+    <div class="d-flex gap-2">
+      <button class="btn btn-outline-secondary icon-btn" type="button" data-bs-toggle="offcanvas" data-bs-target="#menuCanvas" aria-controls="menuCanvas">
+        ☰ Menu
+      </button>
+      <a id="logout" class="btn btn-outline-secondary icon-btn" href="javascript:">Log keluar</a>
     </div>
   </div>
 
-  <!-- ================== PASSWORD (KEKAL) ================== -->
-  <div class="section-card mb-3">
-    <h5 class="mb-3">Tukar Password</h5>
-    <div class="row g-3">
-      <div class="col-lg-6">
-        <label class="form-label">Password Baru</label>
-        <input id="newpass1" type="password" class="form-control" placeholder="Min 6 aksara">
+  <!-- RINGKASAN -->
+  <div class="box mb-3">
+    <div class="section-title">Ringkasan Akaun</div>
+
+    <div class="info-strip">
+      <div class="info-item">
+        <div class="fw-semibold">Profil Pelanggan</div>
+        <div class="mini-note">Kemaskini nama, IC, alamat, email dan maklumat bank.</div>
       </div>
-      <div class="col-lg-6">
-        <label class="form-label">Sahkan Password Baru</label>
-        <input id="newpass2" type="password" class="form-control" placeholder="Ulang password">
+
+      <div class="info-item">
+        <div class="fw-semibold">Keselamatan</div>
+        <div class="mini-note">Tukar password untuk sistem pelanggan dan Supabase Auth.</div>
       </div>
-    </div>
-    <div class="d-flex align-items-center gap-2 mt-3">
-      <button id="changePass" class="btn btn-outline-secondary">Tukar Password</button>
-      <span id="passStatus" class="muted"></span>
+
+      <div class="info-item">
+        <div class="fw-semibold">Sejarah Pesanan</div>
+        <div class="mini-note">Semak pesanan GoldBar/Coin dan 916 mengikut status.</div>
+      </div>
     </div>
   </div>
 
-  <!-- ================== SEJARAH PESANAN GOLDBAR/COIN ================== -->
-  <div class="section-card">
-    <div class="d-flex align-items-center justify-content-between flex-wrap mb-2">
-      <h5 class="m-0">Sejarah Pesanan GoldBar/Coin</h5>
-      <div class="btn-group" role="group" aria-label="Status">
-        <button class="btn btn-sm btn-outline-secondary" data-filter="ALL">Semua</button>
-        <button class="btn btn-sm btn-outline-secondary" data-filter="PAID">PAID</button>
-        <button class="btn btn-sm btn-outline-secondary" data-filter="PENDING">PENDING</button>
-        <button class="btn btn-sm btn-outline-secondary" data-filter="COMPLETED">SELESAI</button>
+<!-- LOGIN PANTAS / FACE ID -->
+  <div class="box mb-3">
+    <div class="section-title">Login Pantas</div>
+
+    <div class="face-card">
+      <div class="face-row">
+        <div>
+          <div class="fw-semibold">🔐 Login Pantas (Face ID / Touch ID / Passkey)</div>
+<div class="mini-note">
+  Aktifkan login pantas untuk device ini. Dalam app iPhone atau Android, login pantas akan guna biometrik device. Dalam browser yang serasi, sistem akan guna passkey.
+</div>
+        </div>
+
+        <div>
+          <span id="faceStatusBadge" class="face-badge warn">Belum semak</span>
+        </div>
       </div>
-    </div>
 
-    <div class="table-responsive">
-      <table class="table table-sm align-middle table-sticky">
-        <thead class="table-light">
-          <tr>
-            <th style="width:140px">Tarikh</th>
-            <th>Order</th>
-            <th>Butiran</th>
-            <th class="text-end" style="width:120px">Jumlah</th>
-            <th style="width:110px">Status</th>
-          </tr>
-        </thead>
-        <tbody id="histTbody">
-          <tr><td colspan="5" class="text-muted py-4">Memuatkan…</td></tr>
-        </tbody>
-      </table>
-    </div>
+      <div class="face-actions">
+        <button id="btnPasskeyRegister" class="btn btn-primary" type="button">Aktifkan Login Pantas pada device ini</button>
+<button id="btnPasskeyRemove" class="btn btn-outline-secondary" type="button">Buang Login Pantas device ini</button>
+<button id="btnPasskeyRefresh" class="btn btn-outline-secondary" type="button">Semak status</button>
+      </div>
 
-    <div class="d-flex justify-content-between align-items-center">
-      <small class="text-muted" id="histInfo">0 rekod</small>
-      <ul class="pagination pager mb-0" id="histPager"></ul>
+      <div id="faceStatusText" class="muted mt-2">Sistem sedang semak sokongan device…</div>
     </div>
   </div>
 
-  <!-- ================== SEJARAH PESANAN 916 ================== -->
-  <div class="section-card mt-3">
-    <div class="d-flex align-items-center justify-content-between flex-wrap mb-2">
-      <h5 class="m-0">Sejarah Pesanan 916</h5>
-      <div class="btn-group" role="group" aria-label="Status 916">
-        <button class="btn btn-sm btn-outline-secondary" data-filter916="ALL">Semua</button>
-        <button class="btn btn-sm btn-outline-secondary" data-filter916="PAID">PAID</button>
-        <button class="btn btn-sm btn-outline-secondary" data-filter916="PENDING">PENDING</button>
-        <button class="btn btn-sm btn-outline-secondary" data-filter916="COMPLETED">SELESAI</button>
+  <!-- PILIH KATEGORI -->
+  <div class="box mb-3">
+    <div class="fw-semibold mb-2">Pilih Kategori</div>
+
+   <div class="action-list">
+  <div class="action-item" data-open="panelProfile">
+    <div class="action-left">
+      <div class="action-ico">👤</div>
+      <div>
+        <div class="action-title">Profil</div>
+        <div class="action-sub">Kemaskini maklumat pelanggan, alamat dan bank</div>
       </div>
     </div>
+    <div class="chev">›</div>
+  </div>
 
-    <div class="table-responsive">
-      <table class="table table-sm align-middle table-sticky">
-        <thead class="table-light">
-          <tr>
-            <th style="width:140px">Tarikh</th>
-            <th>Rujukan</th>
-            <th>Butiran</th>
-            <th class="text-end" style="width:120px">Jumlah</th>
-            <th style="width:110px">Status</th>
-          </tr>
-        </thead>
-        <tbody id="histTbody916">
-          <tr><td colspan="5" class="text-muted py-4">Memuatkan…</td></tr>
-        </tbody>
-      </table>
+  <div class="action-item" data-open="panelPassword">
+    <div class="action-left">
+      <div class="action-ico">🔒</div>
+      <div>
+        <div class="action-title">Tukar Password</div>
+        <div class="action-sub">Tukar password akaun pelanggan</div>
+      </div>
     </div>
+    <div class="chev">›</div>
+  </div>
 
-    <div class="d-flex justify-content-between align-items-center">
-      <small class="text-muted" id="histInfo916">0 rekod</small>
-      <ul class="pagination pager mb-0" id="histPager916"></ul>
+  <a class="action-item" href="delete-account.html" style="text-decoration:none;color:inherit">
+    <div class="action-left">
+      <div class="action-ico">🗑️</div>
+      <div>
+        <div class="action-title">Padam Akaun</div>
+        <div class="action-sub">Hantar permintaan untuk padam akaun pelanggan</div>
+      </div>
+    </div>
+    <div class="chev">›</div>
+  </a>
+
+<a class="action-item" href="gold-wallet.html" style="text-decoration:none;color:inherit">
+    <div class="action-left">
+      <div class="action-ico">📒</div>
+      <div>
+        <div class="action-title">Pengurusan Emas Saya</div>
+        <div class="action-sub">Lihat simpanan, target dan analitik emas anda</div>
+      </div>
+    </div>
+    <div class="chev">›</div>
+  </a>
+
+  <div class="action-item" data-open="panelGoldbarHistory">
+    <div class="action-left">
+      <div class="action-ico">🪙</div>
+      <div>
+        <div class="action-title">Sejarah Pesanan GoldBar/Coin</div>
+        <div class="action-sub">Semak pesanan gold bar, coin dan status bayaran</div>
+      </div>
+    </div>
+    <div class="chev">›</div>
+  </div>
+
+  <div class="action-item" data-open="panel916History">
+    <div class="action-left">
+      <div class="action-ico">💍</div>
+      <div>
+        <div class="action-title">Sejarah Pesanan 916</div>
+        <div class="action-sub">Semak pesanan barang kemas 916 dan tracking</div>
+      </div>
+    </div>
+    <div class="chev">›</div>
+  </div>
+</div>
+
+  <!-- PROFIL -->
+  <div class="collapse mb-3" id="panelProfile">
+    <div class="panel">
+      <div class="panel-h">
+        <div>
+          <div class="fw-semibold">👤 Profil</div>
+          <div class="muted xsmall">Kemaskini maklumat pelanggan anda</div>
+        </div>
+        <button class="btn btn-sm btn-outline-secondary" type="button" data-bs-toggle="collapse" data-bs-target="#panelProfile">Tutup</button>
+      </div>
+      <div class="panel-b">
+        <div class="row g-3">
+          <div class="col-lg-6">
+            <label class="form-label">Nama</label>
+            <input id="name" class="form-control">
+          </div>
+          <div class="col-lg-6">
+            <label class="form-label">Nombor Telefon</label>
+            <input id="phone" class="form-control" readonly>
+          </div>
+          <div class="col-lg-6">
+            <label class="form-label">IC (12 digit)</label>
+            <input id="ic" class="form-control" inputmode="numeric" placeholder="cth: 900101011234">
+          </div>
+          <div class="col-lg-6">
+            <label class="form-label">Email</label>
+            <input id="email" class="form-control" placeholder="cth: nama@email.com">
+          </div>
+          <div class="col-12">
+            <label class="form-label">Alamat</label>
+            <textarea id="alamat" class="form-control" rows="3" placeholder="Nama, alamat penuh, poskod, bandar, negeri"></textarea>
+          </div>
+        </div>
+
+        <div class="row g-3 mt-1">
+          <div class="col-md-4">
+            <label class="form-label">Poskod</label>
+            <input id="poskod" class="form-control" inputmode="numeric" placeholder="cth: 09000">
+          </div>
+          <div class="col-md-4">
+            <label class="form-label">Bandar</label>
+            <input id="bandar" class="form-control" placeholder="cth: Kulim">
+          </div>
+          <div class="col-md-4">
+            <label class="form-label">Negeri</label>
+            <input id="negeri" class="form-control" placeholder="cth: Kedah">
+          </div>
+        </div>
+
+        <div class="row g-3 mt-1">
+          <div class="col-lg-6">
+            <label class="form-label">Nama Akaun Bank</label>
+            <input id="bank_acc_name" class="form-control" placeholder="cth: AMIRUL HAKIM BIN …">
+          </div>
+          <div class="col-lg-3">
+            <label class="form-label">No. Akaun Bank</label>
+            <input id="bank_acc_no" class="form-control" inputmode="numeric" placeholder="cth: 123456789012">
+          </div>
+          <div class="col-lg-3">
+            <label class="form-label">Nama Bank</label>
+            <input id="bank_name" class="form-control" placeholder="cth: Maybank / CIMB / Bank Islam">
+          </div>
+        </div>
+
+        <div class="action-row mt-3">
+          <button id="saveProfile" class="btn btn-primary">Simpan Profil</button>
+          <span id="saveStatus" class="muted"></span>
+        </div>
+      </div>
     </div>
   </div>
-</div> <!-- penutup .page-wrap -->
+
+  <!-- PASSWORD -->
+  <div class="collapse mb-3" id="panelPassword">
+    <div class="panel">
+      <div class="panel-h">
+        <div>
+          <div class="fw-semibold">🔒 Tukar Password</div>
+          <div class="muted xsmall">Tukar password akaun pelanggan</div>
+        </div>
+        <button class="btn btn-sm btn-outline-secondary" type="button" data-bs-toggle="collapse" data-bs-target="#panelPassword">Tutup</button>
+      </div>
+      <div class="panel-b">
+       <div class="row g-3">
+  <div class="col-lg-6">
+    <label class="form-label">Password Baru</label>
+    <div class="pw-wrap">
+      <input id="newpass1" type="password" class="form-control" placeholder="Min 6 aksara">
+      <button id="toggleNewpass1" class="pw-toggle" type="button" aria-label="Lihat password">👁️</button>
+    </div>
+  </div>
+  <div class="col-lg-6">
+    <label class="form-label">Sahkan Password Baru</label>
+    <div class="pw-wrap">
+      <input id="newpass2" type="password" class="form-control" placeholder="Ulang password">
+      <button id="toggleNewpass2" class="pw-toggle" type="button" aria-label="Lihat password">👁️</button>
+    </div>
+  </div>
+</div>
+
+        <div class="action-row mt-3">
+          <button id="changePass" class="btn btn-outline-secondary">Tukar Password</button>
+          <span id="passStatus" class="muted"></span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- SEJARAH GOLDBAR/COIN -->
+  <div class="collapse mb-3" id="panelGoldbarHistory">
+    <div class="panel">
+      <div class="panel-h">
+        <div>
+          <div class="fw-semibold">🪙 Sejarah Pesanan GoldBar/Coin</div>
+          <div class="muted xsmall">Semak pesanan dan status bayaran</div>
+        </div>
+        <button class="btn btn-sm btn-outline-secondary" type="button" data-bs-toggle="collapse" data-bs-target="#panelGoldbarHistory">Tutup</button>
+      </div>
+      <div class="panel-b">
+        <div class="history-head">
+          <div>
+            <div class="sub-title mb-1">Sejarah Pesanan GoldBar/Coin</div>
+            <div class="mini-note">Tapis ikut status untuk semak pesanan pelanggan.</div>
+          </div>
+
+          <div class="filter-group">
+            <div class="btn-group" role="group" aria-label="Status">
+              <button class="btn btn-sm btn-outline-secondary" data-filter="ALL">Semua</button>
+              <button class="btn btn-sm btn-outline-secondary" data-filter="PAID">PAID</button>
+              <button class="btn btn-sm btn-outline-secondary" data-filter="PENDING">PENDING</button>
+              <button class="btn btn-sm btn-outline-secondary" data-filter="COMPLETED">SELESAI</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="table-wrap">
+          <div class="table-responsive">
+            <table class="table table-sm align-middle table-sticky mb-0">
+              <thead class="table-light">
+                <tr>
+                  <th style="width:140px">Tarikh</th>
+                  <th>Order</th>
+                  <th>Butiran</th>
+                  <th class="text-end" style="width:120px">Jumlah</th>
+                  <th style="width:110px">Status</th>
+                </tr>
+              </thead>
+              <tbody id="histTbody">
+                <tr><td colspan="5" class="text-muted py-4">Memuatkan…</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <div class="d-flex justify-content-between align-items-center flex-wrap gap-2 mt-3">
+          <small class="text-muted" id="histInfo">0 rekod</small>
+          <ul class="pagination pager mb-0" id="histPager"></ul>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- SEJARAH 916 -->
+  <div class="collapse mb-3" id="panel916History">
+    <div class="panel">
+      <div class="panel-h">
+        <div>
+          <div class="fw-semibold">💍 Sejarah Pesanan 916</div>
+          <div class="muted xsmall">Semak pesanan 916 dan tracking jika ada</div>
+        </div>
+        <button class="btn btn-sm btn-outline-secondary" type="button" data-bs-toggle="collapse" data-bs-target="#panel916History">Tutup</button>
+      </div>
+      <div class="panel-b">
+        <div class="history-head">
+          <div>
+            <div class="sub-title mb-1">Sejarah Pesanan 916</div>
+            <div class="mini-note">Pesanan 916 beserta status dan tracking jika ada.</div>
+          </div>
+
+          <div class="filter-group">
+            <div class="btn-group" role="group" aria-label="Status 916">
+              <button class="btn btn-sm btn-outline-secondary" data-filter916="ALL">Semua</button>
+              <button class="btn btn-sm btn-outline-secondary" data-filter916="PAID">PAID</button>
+              <button class="btn btn-sm btn-outline-secondary" data-filter916="PENDING">PENDING</button>
+              <button class="btn btn-sm btn-outline-secondary" data-filter916="COMPLETED">SELESAI</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="table-wrap">
+          <div class="table-responsive">
+            <table class="table table-sm align-middle table-sticky mb-0">
+              <thead class="table-light">
+                <tr>
+                  <th style="width:140px">Tarikh</th>
+                  <th>Rujukan</th>
+                  <th>Butiran</th>
+                  <th class="text-end" style="width:120px">Jumlah</th>
+                  <th style="width:110px">Status</th>
+                </tr>
+              </thead>
+              <tbody id="histTbody916">
+                <tr><td colspan="5" class="text-muted py-4">Memuatkan…</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <div class="d-flex justify-content-between align-items-center flex-wrap gap-2 mt-3">
+          <small class="text-muted" id="histInfo916">0 rekod</small>
+          <ul class="pagination pager mb-0" id="histPager916"></ul>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div>
+</div>
+
+<!-- MODAL TRACKING GDEX -->
+<div class="modal fade" id="gdexTrackModal" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable">
+    <div class="modal-content" style="border-radius:18px">
+      <div class="modal-header">
+        <div>
+          <h5 class="modal-title mb-0">Tracking GDEX</h5>
+          <div class="small text-muted" id="gdexTrackCn">-</div>
+        </div>
+        <button type="button" class="btn-close" id="btnCloseGdexTrackModal" aria-label="Tutup"></button>
+      </div>
+      <div class="modal-body">
+        <div id="gdexTrackStatus" class="mb-3 text-muted">Memuatkan…</div>
+        <div id="gdexTrackList"></div>
+      </div>
+    </div>
+  </div>
+</div>
+<!-- OFFCANVAS MENU -->
+<div class="offcanvas offcanvas-end" tabindex="-1" id="menuCanvas" aria-labelledby="menuCanvasLabel">
+  <div class="offcanvas-header">
+    <h5 class="offcanvas-title" id="menuCanvasLabel">Menu</h5>
+    <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Tutup"></button>
+  </div>
+  <div class="offcanvas-body">
+    <div class="d-grid gap-2">
+      <a href="index.html" class="btn btn-outline-secondary">🏠 Halaman Utama</a>
+      <a href="tabung.html" class="btn btn-outline-secondary">💰 Tabung Emas</a>
+      <a href="goldbar-coin.html" class="btn btn-outline-secondary">🪙 GoldBar / Coin Fizikal</a>
+      <a href="j916.html" class="btn btn-outline-secondary">Barang Kemas 916</a>
+      <a href="jual-emas.html" class="btn btn-outline-secondary">Jual Emas</a>
+      <a href="policy.html" class="btn btn-outline-secondary">Polisi</a>
+      <a href="account.html" class="btn btn-secondary">Akaun</a>
+      <hr>
+      <div class="muted xsmall">Tip: Tekan “Profil / Tukar Password / Sejarah Pesanan GoldBar/Coin / Sejarah Pesanan 916” untuk buka panel.</div>
+    </div>
+  </div>
+</div>
 
 <!-- Libs -->
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -197,6 +865,11 @@
   const $ = id => document.getElementById(id);
   const onlyDigits = s => String(s||"").replace(/\D+/g,"");
   const sb = window.sb; // dari auth.js
+
+const PASSKEY_REGISTER_START_URL  = "/.netlify/functions/passkey-register-start";
+  const PASSKEY_REGISTER_FINISH_URL = "/.netlify/functions/passkey-register-finish";
+  const PASSKEY_STATUS_URL          = "/.netlify/functions/passkey-status";
+  const PASSKEY_REMOVE_URL          = "/.netlify/functions/passkey-remove";
 
   const ses = (window.auth_get && window.auth_get()) || {};
   $("who").textContent = ses && (ses.name || ses.phone)
@@ -212,7 +885,6 @@
   $("bank_acc_no").value   = ses.bank_acc_no   || "";
   $("bank_name").value     = ses.bank_name     || "";
 
-  // 🔹 Prefill alamat pecah dari sesi (kalau ada)
   $("poskod").value = ses.postcode || ses.poskod || "";
   $("bandar").value = ses.city     || ses.bandar || "";
   $("negeri").value = ses.state    || ses.negeri || "";
@@ -226,7 +898,438 @@
   };
   const money  = n => 'RM ' + Number(n||0).toFixed(2);
 
-  /* ===== PROFIL (kekal) ===== */
+function isNativeCapacitorApp(){
+  try{
+    return !!(
+      window.Capacitor &&
+      typeof window.Capacitor.isNativePlatform === "function" &&
+      window.Capacitor.isNativePlatform()
+    );
+  }catch{
+    return false;
+  }
+}
+
+function getNativePlatform(){
+  try{
+    return String(window.Capacitor?.getPlatform?.() || "").toLowerCase();
+  }catch{
+    return "";
+  }
+}
+
+function getNativeBiometricPlugin(){
+  try{
+    const plugin = window.Capacitor?.Plugins?.NativeBiometric || null;
+    console.log("CAP NativeBiometric raw:", plugin);
+    return plugin;
+  }catch(e){
+    console.warn("getNativeBiometricPlugin error:", e);
+    return null;
+  }
+}
+function supportsPasskey(){
+  // Dalam app native, kita anggap sokong jika plugin biometric wujud
+  if (isNativeCapacitorApp()) {
+    return !!getNativeBiometricPlugin();
+  }
+
+  // Dalam browser biasa, guna passkey / WebAuthn
+  return !!(
+    window.PublicKeyCredential &&
+    navigator.credentials &&
+    typeof navigator.credentials.create === "function"
+  );
+}
+  function bufferToBase64url(buf){
+    const bytes = new Uint8Array(buf);
+    let str = "";
+    for(let i=0;i<bytes.length;i++) str += String.fromCharCode(bytes[i]);
+    return btoa(str).replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/g, "");
+  }
+
+  function base64urlToBuffer(base64url){
+    const base64 = String(base64url || "").replace(/-/g, "+").replace(/_/g, "/");
+    const pad = "=".repeat((4 - (base64.length % 4)) % 4);
+    const binary = atob(base64 + pad);
+    const bytes = new Uint8Array(binary.length);
+    for(let i=0;i<binary.length;i++) bytes[i] = binary.charCodeAt(i);
+    return bytes.buffer;
+  }
+
+  async function postJson(url, payload){
+    const r = await fetch(url, {
+      method: "POST",
+      headers: { "Content-Type":"application/json" },
+      body: JSON.stringify(payload || {})
+    });
+    const j = await r.json().catch(() => ({}));
+    return { ok: r.ok, status: r.status, data: j };
+  }
+
+  function setFaceBadge(text, mode){
+    const el = $("faceStatusBadge");
+    if (!el) return;
+    el.textContent = text || "Tidak diketahui";
+    el.className = "face-badge " + (mode || "warn");
+  }
+
+  function setFaceText(text, cls){
+    const el = $("faceStatusText");
+    if (!el) return;
+    el.className = (cls || "muted") + " mt-2";
+    el.textContent = text || "";
+  }
+
+  function setupPasswordToggle(inputId, buttonId){
+    const input = $(inputId);
+    const button = $(buttonId);
+    if(!input || !button) return;
+
+    button.addEventListener("click", ()=>{
+      const show = input.type === "password";
+      input.type = show ? "text" : "password";
+      button.textContent = show ? "🙈" : "👁️";
+    });
+  }
+
+async function refreshPasskeyStatus(){
+  const phone = $("phone")?.value?.trim() || ses.phone || "";
+  if (!phone){
+    setFaceBadge("Belum login", "warn");
+    setFaceText("Tiada nombor telefon sesi semasa.");
+    return;
+  }
+
+  if (isNativeCapacitorApp()) {
+    const nativePlatform = getNativePlatform();
+    const NativeBiometric = getNativeBiometricPlugin();
+
+console.log("=== FACE DEBUG ===");
+console.log("isNativeCapacitorApp:", isNativeCapacitorApp());
+console.log("nativePlatform:", nativePlatform);
+console.log("window.Capacitor ada:", !!window.Capacitor);
+console.log("window.Capacitor.Plugins ada:", !!window.Capacitor?.Plugins);
+console.log("NativeBiometric raw:", window.Capacitor?.Plugins?.NativeBiometric);
+console.log("NativeBiometric ada:", !!NativeBiometric);
+console.log("Plugins keys:", Object.keys(window.Capacitor?.Plugins || {}));
+console.log("=== FACE DEBUG END ===");
+    if (!NativeBiometric) {
+      setFaceBadge("Belum siap", "warn");
+      setFaceText(
+        nativePlatform === "android"
+          ? "Login pantas Android belum tersedia dalam build ini."
+          : "Face ID / Touch ID belum tersedia dalam build ini."
+      );
+      return;
+    }
+
+    try{
+      setFaceText("Menyemak status login pantas untuk device ini…");
+
+      const avail = await NativeBiometric.isAvailable();
+      const isAvail =
+        !!avail &&
+        (avail.isAvailable === true || avail.value === true || avail.available === true);
+
+      if (!isAvail) {
+        setFaceBadge("Tak tersedia", "warn");
+        setFaceText(
+          nativePlatform === "android"
+            ? "Biometrik tidak tersedia pada device Android ini."
+            : "Face ID / Touch ID tidak tersedia pada device ini."
+        );
+        return;
+      }
+
+      try{
+        const creds = await NativeBiometric.getCredentials({
+          server: "emasamir.app"
+        });
+
+        if (creds && creds.username) {
+          setFaceBadge("Sudah aktif", "ok");
+          setFaceText(
+            nativePlatform === "android"
+              ? "Login pantas / biometrik sudah aktif untuk device Android ini."
+              : "Face ID / Touch ID sudah aktif untuk device ini."
+          );
+          return;
+        }
+      }catch(_e){
+        // belum ada credential, terus fallback ke server check
+      }
+
+      const res = await postJson(PASSKEY_STATUS_URL, { phone });
+
+      if (res.ok && res.data?.ok === true && res.data?.registered){
+        setFaceBadge("Sudah aktif", "ok");
+        setFaceText(
+          nativePlatform === "android"
+            ? "Login pantas / biometrik sudah aktif untuk device Android ini."
+            : "Face ID / Touch ID sudah aktif untuk device ini."
+        );
+      } else {
+        setFaceBadge("Belum aktif", "warn");
+        setFaceText("Belum ada login pantas aktif untuk device ini.");
+      }
+    }catch(e){
+      console.warn("[account] refreshPasskeyStatus native:", e);
+      setFaceBadge("Ralat", "warn");
+      setFaceText("Tak dapat semak status login pantas sekarang.");
+    }
+    return;
+  }
+
+  if (!supportsPasskey()){
+    setFaceBadge("Device tak support", "warn");
+    setFaceText("Device / browser ini belum support Face ID / passkey.");
+    return;
+  }
+
+  try{
+    setFaceText("Menyemak status Face ID / passkey untuk device ini…");
+    const res = await postJson(PASSKEY_STATUS_URL, { phone });
+
+    if (!res.ok || res.data?.ok !== true){
+      setFaceBadge("Belum aktif", "warn");
+      setFaceText(res.data?.error || "Belum ada Face ID / passkey aktif untuk device ini.");
+      return;
+    }
+
+    if (res.data?.registered){
+      setFaceBadge("Sudah aktif", "ok");
+      setFaceText("Face ID / passkey sudah aktif untuk device ini.");
+    } else {
+      setFaceBadge("Belum aktif", "warn");
+      setFaceText("Belum ada Face ID / passkey aktif untuk device ini.");
+    }
+  }catch(e){
+    console.warn("[account] refreshPasskeyStatus web:", e);
+    setFaceBadge("Ralat", "warn");
+    setFaceText("Tak dapat semak status Face ID sekarang.");
+  }
+}
+
+  async function registerPasskey(){
+  const phone = $("phone")?.value?.trim() || ses.phone || "";
+  if (!phone){
+    setFaceBadge("Belum login", "warn");
+    setFaceText("Tiada nombor telefon sesi semasa.");
+    return;
+  }
+
+  if (isNativeCapacitorApp()) {
+    const nativePlatform = getNativePlatform();
+    const NativeBiometric = getNativeBiometricPlugin();
+
+    if (!NativeBiometric) {
+      setFaceBadge("Belum siap", "warn");
+      setFaceText(
+        nativePlatform === "android"
+          ? "Login pantas Android belum tersedia dalam build ini."
+          : "Face ID / Touch ID belum tersedia dalam build ini."
+      );
+      return;
+    }
+
+    try{
+      setFaceText(
+        nativePlatform === "android"
+          ? "Sahkan biometrik untuk aktifkan login pantas Android…"
+          : "Sahkan Face ID / Touch ID untuk aktifkan login pantas…"
+      );
+
+      const avail = await NativeBiometric.isAvailable();
+      const isAvail =
+        !!avail &&
+        (avail.isAvailable === true || avail.value === true || avail.available === true);
+
+      if (!isAvail) {
+        setFaceBadge("Tak tersedia", "warn");
+        setFaceText(
+          nativePlatform === "android"
+            ? "Biometrik tidak tersedia pada device Android ini."
+            : "Face ID / Touch ID tidak tersedia pada device ini."
+        );
+        return;
+      }
+
+      await NativeBiometric.verifyIdentity({
+        reason:
+          nativePlatform === "android"
+            ? "Sahkan identiti untuk aktifkan login pantas"
+            : "Sahkan identiti untuk aktifkan Face ID / Touch ID",
+        title: "Login Pantas",
+        subtitle: "Emas Amir",
+        description: "Gunakan biometrik device untuk aktifkan login pantas"
+      });
+
+      const currentPw = sessionStorage.getItem("ea_pw") || "";
+
+if (!currentPw || currentPw.length < 6) {
+  setFaceBadge("Perlu login semula", "warn");
+  setFaceText("Untuk aktifkan Login Pantas, sila login biasa dahulu supaya password semasa dapat disimpan dengan selamat pada device ini.");
+  return;
+}
+
+await NativeBiometric.setCredentials({
+  username: phone,
+  password: currentPw,
+  server: "emasamir.app"
+});
+
+      const res = await postJson(PASSKEY_REGISTER_FINISH_URL, {
+        phone,
+        mode: "native_biometric",
+        platform: nativePlatform
+      });
+
+      if (!res.ok || res.data?.ok !== true){
+        setFaceBadge("Gagal", "warn");
+        setFaceText(res.data?.error || "Tak berjaya aktifkan login pantas.");
+        return;
+      }
+
+      setFaceBadge("Sudah aktif", "ok");
+      setFaceText(
+        nativePlatform === "android"
+          ? "Login pantas Android berjaya diaktifkan untuk device ini."
+          : "Face ID / Touch ID berjaya diaktifkan untuk device ini."
+      );
+    }catch(e){
+      console.error("[account] registerPasskey native:", e);
+      setFaceBadge("Gagal", "warn");
+      setFaceText("Login pantas tak berjaya diaktifkan atau dibatalkan.");
+    }
+    return;
+  }
+
+  if (!supportsPasskey()){
+    setFaceBadge("Device tak support", "warn");
+    setFaceText("Device / browser ini belum support Face ID / passkey.");
+    return;
+  }
+
+  try{
+    setFaceText("Menyediakan Face ID / passkey untuk device ini…");
+
+    const start = await postJson(PASSKEY_REGISTER_START_URL, { phone });
+    if (!start.ok || start.data?.ok !== true){
+      setFaceBadge("Gagal", "warn");
+      setFaceText(start.data?.error || "Tak berjaya mula daftar Face ID / passkey.");
+      return;
+    }
+
+    const publicKey = {
+      challenge: base64urlToBuffer(start.data.challenge),
+      rp: start.data.rp,
+      user: {
+        id: base64urlToBuffer(start.data.user.id),
+        name: start.data.user.name,
+        displayName: start.data.user.displayName
+      },
+      pubKeyCredParams: start.data.pubKeyCredParams || [
+        { type: "public-key", alg: -7 },
+        { type: "public-key", alg: -257 }
+      ],
+      timeout: Number(start.data.timeout || 60000),
+      attestation: start.data.attestation || "none",
+      authenticatorSelection: start.data.authenticatorSelection || {
+        residentKey: "preferred",
+        userVerification: "required"
+      },
+      excludeCredentials: Array.isArray(start.data.excludeCredentials)
+        ? start.data.excludeCredentials.map(x => ({
+            ...x,
+            id: base64urlToBuffer(x.id)
+          }))
+        : []
+    };
+
+    const cred = await navigator.credentials.create({ publicKey });
+    if (!cred){
+      setFaceBadge("Batal", "warn");
+      setFaceText("Pendaftaran Face ID / passkey dibatalkan.");
+      return;
+    }
+
+    const finish = await postJson(PASSKEY_REGISTER_FINISH_URL, {
+      phone,
+      credential: {
+        id: cred.id,
+        rawId: bufferToBase64url(cred.rawId),
+        type: cred.type,
+        response: {
+          clientDataJSON: bufferToBase64url(cred.response.clientDataJSON),
+          attestationObject: bufferToBase64url(cred.response.attestationObject)
+        }
+      }
+    });
+
+    if (!finish.ok || finish.data?.ok !== true){
+      setFaceBadge("Gagal", "warn");
+      setFaceText(finish.data?.error || "Tak berjaya simpan Face ID / passkey.");
+      return;
+    }
+
+    setFaceBadge("Sudah aktif", "ok");
+    setFaceText("Face ID / passkey berjaya diaktifkan untuk device ini.");
+  }catch(e){
+    console.error("[account] registerPasskey web:", e);
+    setFaceBadge("Gagal", "warn");
+    setFaceText("Face ID / passkey tak berjaya diaktifkan.");
+  }
+}
+
+  async function removePasskey(){
+  const phone = $("phone")?.value?.trim() || ses.phone || "";
+  if (!phone){
+    setFaceBadge("Belum login", "warn");
+    setFaceText("Tiada nombor telefon sesi semasa.");
+    return;
+  }
+
+  try{
+    const nativePlatform = getNativePlatform();
+    const NativeBiometric = getNativeBiometricPlugin();
+
+    if (isNativeCapacitorApp() && NativeBiometric) {
+      try{
+        await NativeBiometric.deleteCredentials({
+          server: "emasamir.app"
+        });
+      }catch(e){
+        console.warn("[account] native delete credentials warn:", e);
+      }
+    }
+
+    setFaceText("Membuang login pantas untuk device ini…");
+    const res = await postJson(PASSKEY_REMOVE_URL, { phone });
+
+    if (!res.ok || res.data?.ok !== true){
+      setFaceBadge("Gagal", "warn");
+      setFaceText(res.data?.error || "Tak berjaya buang login pantas device ini.");
+      return;
+    }
+
+    setFaceBadge("Belum aktif", "warn");
+    setFaceText(
+      isNativeCapacitorApp()
+        ? (
+            nativePlatform === "android"
+              ? "Login pantas Android untuk device ini telah dibuang."
+              : "Face ID / Touch ID untuk device ini telah dibuang."
+          )
+        : "Face ID / passkey untuk device ini telah dibuang."
+    );
+  }catch(e){
+    console.warn("[account] removePasskey:", e);
+    setFaceBadge("Ralat", "warn");
+    setFaceText("Tak berjaya buang login pantas sekarang.");
+  }
+}
+
   async function loadProfile(){
     if (!sb || !ses.phone) return;
     try{
@@ -243,12 +1346,10 @@
         $("bank_acc_no").value   = data.bank_account_no     ?? $("bank_acc_no").value;
         $("bank_name").value     = data.bank_name           ?? $("bank_name").value;
 
-        // 🔹 Isi input baru jika ada dalam DB
         $("poskod").value = data.postcode ?? $("poskod").value;
         $("bandar").value = data.city     ?? $("bandar").value;
         $("negeri").value = data.state    ?? $("negeri").value;
 
-        // 🔹 Update sesi supaya boleh guna di tempat lain (AWB, dsb.)
         window.auth_set && window.auth_set({
           ...ses,
           name:   data.name   ?? ses.name   ?? "",
@@ -286,7 +1387,6 @@
       return;
     }
 
-    // Update session supaya UI nampak terus
     window.auth_set && window.auth_set({
       ...ses,
       name, phone, ic, alamat,
@@ -300,7 +1400,6 @@
     });
 
     try{
-      // ✅ HANTAR 11 PARAMETER (tambah poskod/bandar/negeri)
       const { error } = await sb.rpc("upsert_customer", {
         in_name:               name,
         in_phone:              phone,
@@ -344,20 +1443,16 @@
   }
 
   const phone = $("phone").value.trim();
-
-  // ✅ ambil password lama (yang disimpan masa login)
   let oldPw = "";
   try { oldPw = sessionStorage.getItem("ea_pw") || ""; } catch {}
 
   try{
-    // 1) Tukar password dalam sistem pelanggan (SQL)
     const { error } = await sb.rpc("reset_password", {
       in_phone: phone,
       in_password: p1
     });
     if (error) throw error;
 
-    // 2) ✅ Pastikan ada session Supabase Auth, kalau tak ada → login guna oldPw
     const ses0 = await sb.auth.getSession();
     const hasSession = !!ses0?.data?.session;
 
@@ -366,8 +1461,6 @@
         throw new Error("Tiada session Supabase Auth & tiada password lama. Sila log keluar & login semula dulu.");
       }
 
-      // guna helper sedia ada (auth.js) untuk wujudkan session guna password lama
-      // (supaya sb.auth.updateUser boleh jalan)
       if (window.ensureSupabaseSession){
         await window.ensureSupabaseSession(phone, oldPw);
       } else {
@@ -375,14 +1468,10 @@
       }
     }
 
-    // 3) ✅ Update password Supabase Auth (ini yang selama ni tak dibuat)
     const up = await sb.auth.updateUser({ password: p1 });
     if (up?.error) throw up.error;
 
-    // 4) Simpan password baru untuk tab ini (supaya flow lain stabil)
     try { sessionStorage.setItem("ea_pw", p1); } catch {}
-
-    // optional: refresh token
     try { await sb.auth.refreshSession(); } catch {}
 
     $("newpass1").value = "";
@@ -396,7 +1485,13 @@
   }
 };
 
-  // Log keluar terus (tanpa perlu refresh)
+setupPasswordToggle("newpass1", "toggleNewpass1");
+  setupPasswordToggle("newpass2", "toggleNewpass2");
+
+  $("btnPasskeyRegister")?.addEventListener("click", registerPasskey);
+  $("btnPasskeyRemove")?.addEventListener("click", removePasskey);
+  $("btnPasskeyRefresh")?.addEventListener("click", refreshPasskeyStatus);
+
   $("logout").addEventListener("click", async (e) => {
     e.preventDefault();
     try {
@@ -407,7 +1502,6 @@
     location.replace("login.html#login");
   });
 
-  /* ================= Sejarah Pesanan GoldBar/Coin ================= */
   function bothPhones(raw){
     const d = String(raw||'').replace(/\D/g,'');
     if(!d) return ['', ''];
@@ -415,31 +1509,33 @@
     const p0  = d.startsWith('0')  ? d : (d.startsWith('60') ? ('0'+d.slice(2)) : ('0'+d));
     return [p60, p0];
   }
-  function mapOrderRow(r){
-    return {
-      id: r.id,
-      created_at: r.created_at,
-      reference: r.reference_1 || r.id,
-      bill_id: r.bill_id_text || '-',
-      kind: (r.kind||'').toUpperCase(),
-      card_type: r.card_type || 'READY',
-      weight_g: Number(r.weight_g||0),
-      qty: Number(r.qty||1),
-      design_name: r.design_name || '-',
-      total_rm: Number(r.total_rm ?? r.grand_total_rm ?? 0),
-      status: (r.status||'PENDING').toUpperCase()
-    };
-  }
+
+ function mapOrderRow(r){
+  return {
+    id: r.id,
+    created_at: r.created_at,
+    reference: r.reference_1 || r.reference || r.order_code || r.id,
+    bill_id: r.bill_id_text || r.bill_id || '-',
+    kind: (r.kind || r.type || '').toUpperCase(),
+    card_type: r.card_type || 'READY',
+    weight_g: Number(r.weight_g || 0),
+    qty: Number(r.qty || r.units || 1),
+    design_name: r.design_name || r.item_name || r.product_name || '-',
+    total_rm: Number(r.total_rm ?? r.grand_total_rm ?? r.total ?? 0),
+    status: (r.status || 'PENDING').toUpperCase(),
+    awb: r.tracking_no || r.tracking || r.awb_no || r.consignment_no || null,
+    courier: r.courier || r.tracking_provider || 'GDEX'
+  };
+}
+
   const HIST_PAGE_SIZE = 5;
-  let   HIST_PAGE = 1;
-  let   HIST_STAT = 'ALL';
+  let HIST_PAGE = 1;
+  let HIST_STAT = 'ALL';
 
   async function fetchHistory(page, status){
     const raw = document.getElementById('phone').value.trim();
     const [p60, p0] = bothPhones(raw);
-    if (!p60 && !p0) {
-      return { items: [], total: 0 };
-    }
+    if (!p60 && !p0) return { items: [], total: 0 };
 
     const st = (status && status !== 'ALL') ? status : null;
 
@@ -448,9 +1544,7 @@
       .or(`customer_phone.eq.${p60},customer_phone.eq.${p0}`)
       .order('created_at', { ascending: false });
 
-    if (st){
-      q = q.eq('status', st);
-    }
+    if (st) q = q.eq('status', st);
 
     const start = (page - 1) * HIST_PAGE_SIZE;
     const end   = start + HIST_PAGE_SIZE - 1;
@@ -482,26 +1576,46 @@
       return;
     }
 
-    tb.innerHTML = items.map(r=>`
-      <tr>
-        <td style="width:160px">${fmtMY(r.created_at)}</td>
-        <td>
-          <div class="mono">${r.reference}</div>
-          <div class="text-muted small">Bill: ${r.bill_id||'-'}</div>
-        </td>
-        <td>
-          <div>${r.kind} • ${r.card_type}</div>
-          <div class="text-muted small">${r.weight_g.toFixed(3)}g × ${r.qty}</div>
-          <div class="text-muted small">${r.design_name}</div>
-        </td>
-        <td class="text-end fw-semibold" style="width:130px">${money(r.total_rm)}</td>
-        <td style="width:120px">
-          <span class="badge ${r.status==='PAID'?'bg-success':(r.status==='PENDING'?'bg-warning text-dark':(r.status==='COMPLETED'?'bg-primary':'bg-secondary'))}">
-            ${r.status}
-          </span>
-        </td>
-      </tr>
-    `).join('');
+   tb.innerHTML = items.map(r=>{
+  const badgeClass =
+    r.status === 'PAID'      ? 'bg-success' :
+    r.status === 'PENDING'   ? 'bg-warning text-dark' :
+    r.status === 'COMPLETED' ? 'bg-primary' : 'bg-secondary';
+
+  const trackingHtml = (r.awb && (r.status === 'PAID' || r.status === 'COMPLETED'))
+    ? `<div class="small text-muted mt-1">
+         ${escapeHtml(r.courier || 'GDEX')} Tracking:
+         <span class="mono">${escapeHtml(r.awb)}</span>
+         <button class="btn btn-link btn-sm p-0 ms-1"
+                 type="button"
+                 onclick="openGdexTracking('${escapeHtml(r.awb)}')">
+           Jejak parcel
+         </button>
+       </div>`
+    : '';
+
+  return `
+    <tr>
+      <td style="width:160px">${fmtMY(r.created_at)}</td>
+      <td>
+        <div class="mono">${escapeHtml(r.reference)}</div>
+        <div class="text-muted small">Bill: ${escapeHtml(r.bill_id || '-')}</div>
+      </td>
+      <td>
+        <div>${escapeHtml(r.kind)} • ${escapeHtml(r.card_type)}</div>
+        <div class="text-muted small">${Number(r.weight_g || 0).toFixed(3)}g × ${r.qty}</div>
+        <div class="text-muted small">${escapeHtml(r.design_name)}</div>
+        ${trackingHtml}
+      </td>
+      <td class="text-end fw-semibold" style="width:130px">${money(r.total_rm)}</td>
+      <td style="width:120px">
+        <span class="badge ${badgeClass}">
+          ${escapeHtml(r.status)}
+        </span>
+      </td>
+    </tr>
+  `;
+}).join('');
 
     const pages = Math.max(1, Math.ceil(total / HIST_PAGE_SIZE));
     pager.innerHTML = '';
@@ -509,9 +1623,12 @@
       const li = document.createElement('li');
       li.className = `page-item ${active?'active':''} ${disabled?'disabled':''}`;
       const a = document.createElement('a');
-      a.className = 'page-link'; a.href='#'; a.textContent = label;
+      a.className = 'page-link';
+      a.href='#';
+      a.textContent = label;
       a.onclick = (e)=>{ e.preventDefault(); if(disabled||active) return; HIST_PAGE=page; renderHistory(); };
-      li.appendChild(a); pager.appendChild(li);
+      li.appendChild(a);
+      pager.appendChild(li);
     };
     add('«', Math.max(1, HIST_PAGE-1), false, HIST_PAGE===1);
     const span=3, start=Math.max(1, HIST_PAGE-span), end=Math.min(pages, HIST_PAGE+span);
@@ -527,21 +1644,142 @@
     e.preventDefault();
     HIST_STAT = btn.getAttribute('data-filter') || 'ALL';
     HIST_PAGE = 1;
-    document.querySelectorAll('[data-filter]').forEach(b=> b.classList.remove('btn-primary'));
+    document.querySelectorAll('[data-filter]').forEach(b=>{
+      b.classList.remove('btn-primary');
+      b.classList.add('btn-outline-secondary');
+    });
+    btn.classList.remove('btn-outline-secondary');
     btn.classList.add('btn-primary');
     renderHistory();
   });
 
-  (async ()=>{
-    await loadProfile();
-    await renderHistory();
-  })();
-
-  /* ================= Sejarah Pesanan 916 ================= */
   const HIST916_PAGE_SIZE = 5;
-  let   HIST916_PAGE = 1;
-  let   HIST916_STAT = 'ALL';
+  let HIST916_PAGE = 1;
+  let HIST916_STAT = 'ALL';
 
+const GDEX_TRACK_URL = "/.netlify/functions/gdex-track";
+
+function escapeHtml(s){
+  return String(s || "")
+    .replace(/&/g,"&amp;")
+    .replace(/</g,"&lt;")
+    .replace(/>/g,"&gt;")
+    .replace(/"/g,"&quot;")
+    .replace(/'/g,"&#039;");
+}
+
+function gdexStatusLabel(n){
+  const map = {
+    0: "Pending",
+    1: "Pickup",
+    2: "In Transit",
+    3: "Out For Delivery",
+    4: "Delivered",
+    5: "Returned",
+    6: "Claim"
+  };
+  return map[Number(n)] || "-";
+}
+
+window.openGdexTracking = async function(awb){
+  awb = String(awb || "").trim();
+  if (!awb){
+    alert("Tracking number tiada.");
+    return;
+  }
+
+  $("gdexTrackCn").textContent = "CN: " + awb;
+  $("gdexTrackStatus").innerHTML = "Memuatkan status GDEX…";
+  $("gdexTrackList").innerHTML = "";
+
+  const modalEl = document.getElementById("gdexTrackModal");
+
+const vv = window.visualViewport;
+const topNow = window.scrollY + (vv ? vv.offsetTop : 0);
+const hNow = vv ? vv.height : window.innerHeight;
+
+modalEl.style.top = topNow + "px";
+modalEl.style.height = hNow + "px";
+modalEl.style.display = "flex";
+modalEl.classList.add("show");
+
+document.body.classList.add("gdex-modal-open");
+document.querySelectorAll(".modal-backdrop").forEach(x => x.remove());
+
+  try{
+    const res = await fetch(GDEX_TRACK_URL + "?consignmentNumber=" + encodeURIComponent(awb));
+    const json = await res.json().catch(()=>({}));
+
+    if (!res.ok || !json.ok){
+      throw new Error(json.message || json.error || "Gagal semak tracking.");
+    }
+
+    const r = json.data || {};
+    const latestStatus = r.latestConsignmentNoteStatus || gdexStatusLabel(r.latestEnumStatus);
+    const list = Array.isArray(r.cnDetailStatusList) ? r.cnDetailStatusList : [];
+
+    $("gdexTrackStatus").innerHTML = `
+      <div class="p-3 rounded-4 border bg-light">
+        <div class="small text-muted">Status terkini</div>
+        <div class="fw-bold">${escapeHtml(latestStatus || "-")}</div>
+      </div>
+    `;
+
+    if (!list.length){
+      $("gdexTrackList").innerHTML = `
+  <div class="text-muted small">
+    Parcel sedang menunggu update daripada GDEX. Timeline akan keluar selepas parcel mula di-scan / pickup oleh courier.
+  </div>
+`;
+      return;
+    }
+
+    $("gdexTrackList").innerHTML = list.map(x => `
+      <div class="border rounded-4 p-3 mb-2">
+        <div class="fw-semibold">${escapeHtml(x.consignmentNoteStatus || gdexStatusLabel(x.enumStatus))}</div>
+        <div class="small text-muted">${escapeHtml(x.statusDetail || "")}</div>
+        <div class="small mt-1">📍 ${escapeHtml(x.location || "-")}</div>
+        <div class="small text-muted">${fmtMY(x.dateScan)}</div>
+      </div>
+    `).join("");
+
+  }catch(e){
+    $("gdexTrackStatus").innerHTML = `<span class="text-danger fw-semibold">${escapeHtml(e.message || e)}</span>`;
+    $("gdexTrackList").innerHTML = "";
+  }
+};
+
+window.closeGdexTrackModal = function(){
+  const el = document.getElementById("gdexTrackModal");
+  if (!el) return;
+
+  el.classList.remove("show");
+el.style.display = "none";
+el.style.removeProperty("top");
+el.style.removeProperty("height");
+el.setAttribute("aria-hidden", "true");
+  el.removeAttribute("aria-modal");
+  el.removeAttribute("role");
+
+  document.body.classList.remove("gdex-modal-open");
+  document.body.classList.remove("modal-open");
+  document.body.style.removeProperty("overflow");
+  document.body.style.removeProperty("padding-right");
+
+  document.querySelectorAll(".modal-backdrop").forEach(x => x.remove());
+};
+document.addEventListener("click", function(e){
+  if (e.target && e.target.id === "btnCloseGdexTrackModal"){
+    e.preventDefault();
+    e.stopPropagation();
+    window.closeGdexTrackModal();
+  }
+});
+document.getElementById("gdexTrackModal")?.addEventListener("click", function(e){
+  if (e.target && e.target.id === "gdexTrackModal"){
+    window.closeGdexTrackModal();
+  }
+});
   function map916Row(r){
     return {
       id:        r.id,
@@ -624,15 +1862,17 @@
         r.status === 'PENDING'   ? 'bg-warning text-dark' :
         r.status === 'COMPLETED' ? 'bg-primary' : 'bg-secondary';
 
-      const trackingHtml = (r.awb && (r.status === 'PAID' || r.status === 'COMPLETED'))
-        ? `<div class="small text-muted mt-1">
-             ${r.courier || 'GDEX'} Tracking:
-             <span class="mono">${r.awb}</span>
-             <a href="https://gdexpress.com/tracking/" target="_blank" class="ms-1">
-               Jejak parcel
-             </a>
-           </div>`
-        : '';
+     const trackingHtml = (r.awb && (r.status === 'PAID' || r.status === 'COMPLETED'))
+  ? `<div class="small text-muted mt-1">
+       ${escapeHtml(r.courier || 'GDEX')} Tracking:
+       <span class="mono">${escapeHtml(r.awb)}</span>
+       <button class="btn btn-link btn-sm p-0 ms-1"
+               type="button"
+               onclick="openGdexTracking('${escapeHtml(r.awb)}')">
+         Jejak parcel
+       </button>
+     </div>`
+  : '';
 
       return `
       <tr>
@@ -658,9 +1898,12 @@
       const li = document.createElement('li');
       li.className = `page-item ${act?'active':''} ${dis?'disabled':''}`;
       const a = document.createElement('a');
-      a.className = 'page-link'; a.href='#'; a.textContent=lbl;
+      a.className = 'page-link';
+      a.href='#';
+      a.textContent=lbl;
       a.onclick = (e)=>{ e.preventDefault(); if(act||dis)return; HIST916_PAGE=p; renderHistory916(); };
-      li.appendChild(a); pager.appendChild(li);
+      li.appendChild(a);
+      pager.appendChild(li);
     };
     add('«', Math.max(1, HIST916_PAGE-1), false, HIST916_PAGE===1);
     for(let p=Math.max(1,HIST916_PAGE-3); p<=Math.min(pages,HIST916_PAGE+3); p++){
@@ -672,18 +1915,246 @@
   }
 
   document.addEventListener('click',(e)=>{
-    const b=e.target.closest('[data-filter916]');if(!b)return;
+    const b=e.target.closest('[data-filter916]');
+    if(!b)return;
     e.preventDefault();
     HIST916_STAT=b.getAttribute('data-filter916')||'ALL';
     HIST916_PAGE=1;
-    document.querySelectorAll('[data-filter916]').forEach(x=>x.classList.remove('btn-primary'));
+    document.querySelectorAll('[data-filter916]').forEach(x=>{
+      x.classList.remove('btn-primary');
+      x.classList.add('btn-outline-secondary');
+    });
+    b.classList.remove('btn-outline-secondary');
     b.classList.add('btn-primary');
     renderHistory916();
   });
 
-  (async()=>{ await renderHistory916(); })();
+ (async ()=>{
+    await loadProfile();
+    await refreshPasskeyStatus();
+    await renderHistory();
+    await renderHistory916();
+  })();
+
+  /* buka/tutup panel macam gold coin */
+  const panels = {
+    panelProfile: document.getElementById("panelProfile"),
+    panelPassword: document.getElementById("panelPassword"),
+    panelGoldbarHistory: document.getElementById("panelGoldbarHistory"),
+    panel916History: document.getElementById("panel916History")
+  };
+
+  function openPanel(id){
+    Object.keys(panels).forEach(pid=>{
+      if(pid !== id){
+        try{
+          const inst = bootstrap.Collapse.getOrCreateInstance(panels[pid], { toggle:false });
+          inst.hide();
+        }catch{}
+      }
+    });
+
+    const el = panels[id];
+    if(!el) return;
+
+    try{
+      const inst = bootstrap.Collapse.getOrCreateInstance(el, { toggle:false });
+      inst.show();
+    }catch{
+      el.classList.add("show");
+    }
+
+    setTimeout(()=>{
+      try{ el.scrollIntoView({ behavior:"smooth", block:"start" }); }catch{}
+    }, 150);
+  }
+
+  document.querySelectorAll(".action-item[data-open]").forEach(el=>{
+    el.addEventListener("click", ()=>{
+      openPanel(el.getAttribute("data-open"));
+    });
+  });
 })();
 </script>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+
+<script>
+/* =========================
+   iPhone-style swipe back (Chat) with drag animation
+   - mula dari tepi kiri
+   - page ikut jari
+   - tutup modal / offcanvas dulu
+   - elak ganggu input, gambar, carousel, composer
+   ========================= */
+(function(){
+  const page = document.querySelector('.page-shell');
+  if (!page) return;
+
+  let startX = 0;
+  let startY = 0;
+  let currentX = 0;
+  let tracking = false;
+  let dragging = false;
+  let blocked = false;
+
+  const EDGE_ZONE = 24;
+  const MAX_DY = 70;
+  const TRIGGER_RATIO = 0.33;
+
+  function getOpenModalEl(){
+    const modals = Array.from(document.querySelectorAll('.modal.show'));
+    return modals.length ? modals[modals.length - 1] : null;
+  }
+
+  function getOpenOffcanvasEl(){
+    const panels = Array.from(document.querySelectorAll('.offcanvas.show'));
+    return panels.length ? panels[panels.length - 1] : null;
+  }
+
+  function closeTopModal(){
+    const el = getOpenModalEl();
+    if (!el) return false;
+
+    try{
+      const inst = bootstrap.Modal.getInstance(el) || bootstrap.Modal.getOrCreateInstance(el);
+      inst.hide();
+      return true;
+    }catch(_){
+      el.classList.remove('show');
+      el.style.display = 'none';
+      document.body.classList.remove('modal-open');
+      document.querySelectorAll('.modal-backdrop').forEach(x => x.remove());
+      return true;
+    }
+  }
+
+  function closeOffcanvas(){
+    const el = getOpenOffcanvasEl();
+    if (!el) return false;
+
+    try{
+      const inst = bootstrap.Offcanvas.getInstance(el) || bootstrap.Offcanvas.getOrCreateInstance(el);
+      inst.hide();
+      return true;
+    }catch(_){
+      el.classList.remove('show');
+      el.style.visibility = 'hidden';
+      document.body.classList.remove('offcanvas-open');
+      document.querySelectorAll('.offcanvas-backdrop').forEach(x => x.remove());
+      return true;
+    }
+  }
+
+  function goBackPage(){
+    if (window.history.length > 1){
+      history.back();
+    }else{
+      location.href = 'index.html';
+    }
+  }
+
+  function isBlockedTarget(target){
+    if (!target) return false;
+
+    return !!target.closest(
+      'input, textarea, select, button, a, label, ' +
+      '[contenteditable="true"], ' +
+      '.composer, .chat-composer, .message-input, .reply-box, ' +
+      '.carousel, .carousel-inner, .carousel-item, ' +
+      '.attachment, .attachment-preview, .image-preview, .lightbox, ' +
+      '.quick-replies, .design-grid, .thumb-strip'
+    );
+  }
+
+  function resetPage(){
+    page.classList.remove('dragging');
+    page.style.transform = 'translateX(0)';
+    setTimeout(()=>{
+      document.body.classList.remove('swipe-peek');
+    }, 220);
+  }
+
+  document.addEventListener('touchstart', function(e){
+    if (!e.touches || !e.touches.length) return;
+
+    const t = e.touches[0];
+    startX = t.clientX;
+    startY = t.clientY;
+    currentX = 0;
+    dragging = false;
+
+    blocked = isBlockedTarget(e.target);
+    tracking = (startX <= EDGE_ZONE) && !blocked;
+  }, { passive:true });
+
+  document.addEventListener('touchmove', function(e){
+    if (!tracking || blocked || !e.touches || !e.touches.length) return;
+
+    const t = e.touches[0];
+    const dx = t.clientX - startX;
+    const dy = Math.abs(t.clientY - startY);
+
+    if (dy > MAX_DY) return;
+    if (dx <= 0) return;
+
+    currentX = dx;
+    dragging = true;
+
+    document.body.classList.add('swipe-peek');
+    page.classList.add('dragging');
+    page.style.transform = `translateX(${dx}px)`;
+  }, { passive:true });
+
+  document.addEventListener('touchend', function(){
+    if (!tracking) return;
+
+    tracking = false;
+    page.classList.remove('dragging');
+
+    if (!dragging || blocked){
+      blocked = false;
+      document.body.classList.remove('swipe-peek');
+      return;
+    }
+
+    const threshold = window.innerWidth * TRIGGER_RATIO;
+
+    if (currentX >= threshold){
+      page.style.transform = `translateX(${window.innerWidth}px)`;
+
+      setTimeout(()=>{
+        if (closeTopModal()){
+          page.style.transition = 'none';
+          page.style.transform = 'translateX(0)';
+          void page.offsetHeight;
+          page.style.transition = '';
+          document.body.classList.remove('swipe-peek');
+          blocked = false;
+          return;
+        }
+
+        if (closeOffcanvas()){
+          page.style.transition = 'none';
+          page.style.transform = 'translateX(0)';
+          void page.offsetHeight;
+          page.style.transition = '';
+          document.body.classList.remove('swipe-peek');
+          blocked = false;
+          return;
+        }
+
+        blocked = false;
+        goBackPage();
+      }, 180);
+    } else {
+      blocked = false;
+      resetPage();
+    }
+
+    dragging = false;
+    currentX = 0;
+  }, { passive:true });
+})();
+</script>
 </body>
 </html>

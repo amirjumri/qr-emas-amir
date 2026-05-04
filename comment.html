@@ -2,16 +2,95 @@
 <html lang="ms">
 <head>
   <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<link rel="stylesheet" href="/global.css">
   <title>Komen Live • Emas Amir</title>
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css">
 
   <style>
-    body{background:#020617;color:#e5e7eb;margin:0;}
-    .container-narrow{max-width:1100px}
+    html, body{
+  margin:0;
+  padding-top: env(safe-area-inset-top, 0px);
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+}
 
-    .pill{display:inline-block;background:#0b1120;border-radius:999px;padding:2px 10px;font-size:12px;border:1px solid #1f2937;color:#e5e7eb}
-    .btn-chip{border-radius:999px}
+body{
+  background:#f6f7f9;
+  color:#212529;
+}
+
+.page-shell{
+  min-height:100vh;
+  background:#f6f7f9;
+  transform:translateX(0);
+  transition:transform .22s ease-out;
+  will-change:transform;
+}
+
+.page-shell.dragging{
+  transition:none;
+}
+
+body.swipe-peek{
+  background:#e5e7eb;
+}
+
+.wrap{
+  max-width:980px;
+  margin:16px auto;
+  padding:12px;
+  padding-top:18px;
+}
+
+.container-narrow{max-width:980px}
+
+.pill{
+  display:inline-flex;
+  align-items:center;
+  gap:8px;
+  padding:6px 10px;
+  border-radius:999px;
+  background:#eef1f4;
+  font-size:12px;
+  color:#495057;
+  border:1px solid #e5e7eb;
+}
+.btn-chip{border-radius:999px}
+
+/* Minimal topbar ikut Tabung */
+.topbar{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:10px;
+  flex-wrap:wrap;
+}
+.top-left{
+  display:flex;
+  align-items:center;
+  gap:10px;
+  flex-wrap:wrap;
+}
+.brand-title{
+  font-weight:900;
+  font-size:18px;
+  letter-spacing:.2px;
+  color:#111827;
+}
+.icon-btn{
+  border-radius:12px;
+}
+.top-sub{
+  color:#6c757d;
+  font-size:12px;
+}
+.offcanvas .btn{
+  border-radius:12px;
+}
+
+.live-section-title{
+  color:#111827 !important;
+}
 
     /* Hero atas */
     .hero-wrap{
@@ -61,67 +140,94 @@
       font-size:0.9rem;
     }
 
-    /* Input komen */
-    .comment-wrap{
-      margin-top:14px;
-      display:flex;
-      align-items:center;
-      gap:8px;
-    }
-    .comment-wrap input{
-      flex:1;
-      border-radius:999px;
-      border:none;
-      padding:8px 14px;
-      font-size:16px;           /* elak iPhone zoom */
-      background:rgba(15,23,42,0.9);
-      color:#f9fafb;
-      outline:none;
-    }
-    .comment-wrap input::placeholder{color:#9ca3af;}
-    .comment-wrap button{
-      border-radius:999px;
-      font-size:0.9rem;
-      font-weight:600;
-    }
+    /* ===== INPUT KOMEN (PUTIH FULL CLEAN) ===== */
+.comment-wrap{
+  position:sticky;
+  bottom:0;
+  display:flex;
+  align-items:center;
+  gap:8px;
+  padding:10px;
+  background:#ffffff;
+  border-top:1px solid #e5e7eb;
+  z-index:30;
+  box-shadow:0 -8px 25px rgba(0,0,0,0.15);
+}
 
-    /* Stream komen (untuk semua pelanggan, kini besar + scroll) */
-    #overlayChatList{
-      margin-top:8px;
-      font-size:0.8rem;
-      max-height:220px;       /* lebih tinggi */
-      overflow-y:auto;        /* boleh scroll */
-    }
-    .overlay-msg{
-      color:#e5e7eb;
-      text-shadow:0 1px 2px rgba(0,0,0,0.5);
-      margin-bottom:4px;
-    }
-    .overlay-msg-name{
-      font-weight:600;
-    }
-    .overlay-msg-text{
-      font-size:0.8rem;
-      color:#e5e7eb;
-    }
+.comment-wrap input{
+  flex:1;
+  border-radius:999px;
+  border:1px solid #e5e7eb;
+  padding:10px 16px;
+  font-size:16px;
+  background:#ffffff;
+  color:#111827;
+  outline:none;
+}
 
-    /* Senarai komen (panel admin sahaja) */
-    .card-chat-panel{
-      background:#020617;
-      border-radius:14px;
-      border:1px solid #1f2933;
-      color:#e5e7eb;
-    }
-    .card-chat-panel .card-header{
-      border-bottom-color:#111827;
-      background:#020617;
-    }
-    #chatListPanel{
-      max-height:260px;
-      overflow-y:auto;
-      font-size:0.9rem;
-    }
-    hr.my-1{border-color:#111827;}
+.comment-wrap input::placeholder{
+  color:#6b7280;
+}
+
+.comment-wrap button{
+  border-radius:999px;
+  font-size:0.9rem;
+  font-weight:700;
+  padding:8px 16px;
+}
+
+/* ===== BOX CHAT (TRANSPARENT DARK SO TEXT POP) ===== */
+#overlayChatList{
+  margin-top:8px;
+  font-size:0.85rem;
+  max-height:240px;
+  overflow-y:auto;
+  padding-right:4px;
+}
+
+/* ===== MESSAGE STYLE ===== */
+.overlay-msg{
+  background:rgba(0,0,0,0.55);
+  backdrop-filter:blur(6px);
+  border-radius:10px;
+  padding:6px 10px;
+  margin-bottom:6px;
+  color:#f9fafb;
+}
+
+.overlay-msg-name{
+  font-weight:700;
+  font-size:0.8rem;
+  color:#facc15;
+}
+
+.overlay-msg-text{
+  font-size:0.85rem;
+  color:#ffffff;
+}
+
+/* ===== ADMIN PANEL (KEEP DARK PREMIUM) ===== */
+.card-chat-panel{
+  background:#020617;
+  border-radius:14px;
+  border:1px solid #1f2933;
+  color:#e5e7eb;
+}
+
+.card-chat-panel .card-header{
+  border-bottom-color:#111827;
+  background:#020617;
+}
+
+#chatListPanel{
+  max-height:260px;
+  overflow-y:auto;
+  font-size:0.9rem;
+}
+
+hr.my-1{
+  border-color:#111827;
+}
 
     /* Barang live sekarang */
     .live-card{border:1px solid #111827;border-radius:14px;overflow:hidden;background:#020617;color:#e5e7eb}
@@ -129,7 +235,85 @@
     .mono{font-family:ui-monospace,Menlo,Consolas,monospace}
     .price-wrap{display:flex;gap:.5rem;align-items:baseline}
     .price-old{text-decoration:line-through;color:#9ca3af;font-weight:600}
-    .price-new{color:#f97316;font-weight:800}
+    .price-new{
+  color:#f97316;
+  font-weight:900;
+  text-shadow:0 0 8px rgba(251,146,60,.65);
+  animation:pulsePrice 1.2s ease-in-out infinite;
+}
+
+.live-media{
+  position:relative;
+  width:100%;
+  height:220px;
+  background:#030712;
+  overflow:hidden;
+}
+
+.live-media img,
+.live-media video{
+  width:100%;
+  height:220px;
+  object-fit:cover;
+  object-position:center center;
+  display:block;
+  background:#030712;
+}
+
+.live-media-img{
+  width:100%;
+  height:220px;
+  object-fit:cover;
+  display:block;
+}
+
+.live916-video-frame{
+  width:100%;
+  height:100%;
+  border:0;
+  display:block;
+  background:#030712;
+  transform:scale(2.45);
+  transform-origin:center center;
+  pointer-events:none;
+}
+.live-media.smart-ended video{
+  display:none;
+}
+
+.live-media.smart-ended img{
+  display:block;
+}
+.live916-video-frame{
+  width:100%;
+  height:220px;
+  border:0;
+  display:block;
+  background:#030712;
+}
+
+.live-media-img{
+  width:100%;
+  height:220px;
+  object-fit:cover;
+  display:block;
+}
+
+.live-media .carousel-control-prev,
+.live-media .carousel-control-next{
+  width:18%;
+}
+
+@keyframes pulsePrice{
+  0%,100%{transform:scale(1);}
+  50%{transform:scale(1.06);}
+}
+
+@keyframes pulsePrice{
+  0%{transform:scale(1);}
+  50%{transform:scale(1.08);}
+  100%{transform:scale(1);}
+}
 
     .live-section-title{color:#f9fafb;}
 
@@ -167,19 +351,561 @@
       background:#020617;
       padding:8px;
     }
+
+/* harga & specs live lebih jelas */
+.overlay-product .spec{
+  font-size:.78rem;
+  color:#e5e7eb;
+  font-weight:700;
+}
+
+.overlay-product .price-old,
+.live-card .price-old{
+  color:#e5e7eb !important;
+  opacity:.75;
+  text-decoration:line-through;
+}
+
+.overlay-product .price-new,
+.live-card .price-new{
+  color:#fb923c !important;
+  font-weight:900;
+}
+
+.live-card .live-spec{
+  color:#e5e7eb !important;
+  font-weight:700;
+  opacity:.95;
+}
+
+.price-new{
+  text-shadow: 0 0 8px rgba(251,146,60,0.6);
+}
+/* ===== J999 LIVE CARD — asing dari 916 ===== */
+.j999-live-card{
+  border:1px solid #3f2f12;
+  border-radius:14px;
+  overflow:hidden;
+  background:linear-gradient(180deg,#1f1606,#020617);
+  color:#e5e7eb;
+  box-shadow:0 12px 28px rgba(0,0,0,.35);
+}
+.j999-live-img{
+  width:100%;
+  height:220px;
+  object-fit:cover;
+  background:#111827;
+}
+.badge-live-j999{
+  background:#f59e0b;
+  color:#111827;
+  border-radius:999px;
+  padding:2px 8px;
+  font-size:11px;
+  font-weight:900;
+}
+.j999-live-spec{
+  color:#e5e7eb;
+  font-weight:700;
+  opacity:.95;
+}
+
+/* ===== TABUNG LIVE CARD ===== */
+.tabung-live-box{
+  border:1px solid #14532d;
+  border-radius:16px;
+  background:linear-gradient(180deg,#052e16,#020617);
+  color:#e5e7eb;
+  padding:16px;
+  box-shadow:0 14px 32px rgba(0,0,0,.35);
+}
+.tabung-live-title{
+  font-weight:900;
+  font-size:18px;
+}
+.tabung-live-price{
+  font-size:22px;
+  font-weight:900;
+  color:#22c55e;
+}
+.tabung-live-note{
+  color:#9ca3af;
+  font-size:13px;
+}
+.live-ended-box{
+  margin-top:10px;
+  border-radius:14px;
+  padding:12px;
+  background:rgba(15,23,42,.72);
+  border:1px solid rgba(255,255,255,.12);
+  color:#e5e7eb;
+}
+.live-ended-title{
+  font-weight:900;
+  color:#fbbf24;
+}
+
+.live-ended-backdrop{
+  position:fixed;
+  inset:0;
+  background:rgba(2,6,23,.88);
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  padding:18px;
+  z-index:99999;
+  backdrop-filter:blur(8px);
+}
+
+.live-ended-card{
+  width:100%;
+  max-width:390px;
+  border-radius:22px;
+  padding:24px 18px;
+  background:
+    radial-gradient(circle at top left, rgba(250,204,21,.35), transparent 38%),
+    linear-gradient(180deg,#111827,#020617);
+  color:#e5e7eb;
+  border:1px solid rgba(250,204,21,.35);
+  box-shadow:0 24px 70px rgba(0,0,0,.75);
+}
+
+/* ===== LIVE CHECKOUT BOTTOM SHEET ===== */
+.live-checkout-backdrop{
+  position:fixed;
+  inset:0;
+  background:rgba(2,6,23,.72);
+  display:none;
+  align-items:flex-end;
+  justify-content:center;
+  z-index:999999;
+  backdrop-filter:blur(6px);
+}
+
+.live-checkout-sheet{
+  width:100%;
+  max-width:520px;
+  max-height:92vh;
+  overflow:auto;
+  background:#fff;
+  color:#111827;
+  border-radius:24px 24px 0 0;
+  box-shadow:0 -20px 60px rgba(0,0,0,.35);
+  padding:16px;
+}
+
+.live-checkout-handle{
+  width:48px;
+  height:5px;
+  border-radius:999px;
+  background:#d1d5db;
+  margin:0 auto 12px;
+}
+
+.live-checkout-item{
+  display:flex;
+  gap:12px;
+  align-items:center;
+  padding:12px;
+  border:1px solid #e5e7eb;
+  border-radius:16px;
+  background:#f9fafb;
+}
+
+.live-checkout-img{
+  width:76px;
+  height:76px;
+  border-radius:14px;
+  object-fit:cover;
+  background:#e5e7eb;
+}
+
+.live-choice{
+  border:1px solid #d1d5db;
+  border-radius:14px;
+  padding:10px 12px;
+  background:#fff;
+  font-weight:800;
+}
+
+.live-choice.active{
+  border-color:#e11d48;
+  background:#fff1f2;
+  color:#be123c;
+}
+
+.live-submit-bar{
+  position:sticky;
+  bottom:0;
+  background:#fff;
+  padding-top:12px;
+  border-top:1px solid #eef2f7;
+}
+
+#overlayChatList{
+  background:rgba(0,0,0,0.6);
+  border-radius:12px 12px 0 0;
+  padding:8px;
+}
+
+.comment-wrap{
+  border-radius:0 0 12px 12px;
+}
+
+/* ===== FLOATING AI-DAN CHAT BUBBLE ===== */
+.aidan-float-wrap{
+  position:fixed;
+  right:18px;
+  bottom:88px;
+  z-index:999998;
+  touch-action:none;
+}
+
+.aidan-float-btn{
+  width:74px;
+  height:74px;
+  border-radius:999px;
+  border:0;
+  background:linear-gradient(135deg,#16a34a,#22c55e);
+  color:#fff;
+  box-shadow:0 16px 36px rgba(0,0,0,.35);
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  font-size:34px;
+  position:relative;
+}
+
+.aidan-float-label{
+  position:absolute;
+  right:62px;
+  top:50%;
+  transform:translateY(-50%);
+  white-space:nowrap;
+  background:#0f172a;
+  color:#fff;
+  font-weight:900;
+  font-size:13px;
+  padding:8px 12px;
+  border-radius:999px;
+  box-shadow:0 10px 24px rgba(0,0,0,.25);
+}
+
+.aidan-popup{
+  position:fixed;
+  right:14px;
+  bottom:92px;
+  width:min(420px, calc(100vw - 28px));
+  height:min(680px, calc(100vh - 120px));
+  background:#fff;
+  border-radius:22px;
+  overflow:hidden;
+  box-shadow:0 22px 70px rgba(0,0,0,.45);
+  z-index:999999;
+  display:none;
+  border:1px solid rgba(15,23,42,.15);
+}
+
+.aidan-popup-head{
+  height:54px;
+  background:#0f172a;
+  color:#fff;
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:10px;
+  padding:0 12px;
+  font-weight:900;
+}
+
+.aidan-popup-close{
+  border:0;
+  background:#fff;
+  color:#111827;
+  width:34px;
+  height:34px;
+  border-radius:999px;
+  font-weight:900;
+}
+
+.aidan-popup iframe{
+  width:100%;
+  height:calc(100% - 54px);
+  border:0;
+  display:block;
+  background:#fff;
+}
+
+@media(max-width:576px){
+  .aidan-float-wrap{
+    right:16px;
+    bottom:82px;
+  }
+
+  .aidan-float-btn{
+    width:68px;
+    height:68px;
+    font-size:31px;
+  }
+
+  .aidan-popup{
+    right:10px;
+    bottom:86px;
+    width:calc(100vw - 20px);
+    height:72vh;
+  }
+}
+
+/* ===== LIVE MEDIA FULLSCREEN GALLERY ===== */
+.live-media{
+  cursor:pointer;
+}
+
+.live-zoom-hint{
+  position:absolute;
+  left:12px;
+  top:12px;
+  z-index:5;
+  background:rgba(15,23,42,.88);
+  color:#fff;
+  border:1px solid rgba(255,255,255,.25);
+  border-radius:999px;
+  padding:7px 11px;
+  font-size:12px;
+  font-weight:800;
+  box-shadow:0 8px 24px rgba(0,0,0,.35);
+  animation:liveHintPulse 1.2s ease-in-out infinite;
+  pointer-events:none;
+}
+
+.live-zoom-hint::after{
+  content:"";
+  position:absolute;
+  left:18px;
+  top:100%;
+  border-left:8px solid transparent;
+  border-right:8px solid transparent;
+  border-top:10px solid rgba(15,23,42,.88);
+}
+
+@keyframes liveHintPulse{
+  0%,100%{transform:translateY(0) scale(1);}
+  50%{transform:translateY(3px) scale(1.03);}
+}
+
+.live-gallery-backdrop{
+  position:fixed;
+  inset:0;
+  background:rgba(2,6,23,.96);
+  z-index:9999999;
+  display:none;
+  align-items:center;
+  justify-content:center;
+  padding:14px;
+}
+
+.live-gallery-card{
+  width:100%;
+  max-width:980px;
+  height:92vh;
+  display:flex;
+  flex-direction:column;
+  color:#fff;
+}
+
+.live-gallery-top{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:10px;
+  padding:6px 2px 12px;
+}
+
+.live-gallery-title{
+  font-weight:900;
+  font-size:15px;
+  min-width:0;
+}
+
+.live-gallery-count{
+  font-size:12px;
+  color:#cbd5e1;
+}
+
+.live-gallery-close{
+  border:0;
+  background:#fff;
+  color:#111827;
+
+  position:fixed;
+  top:calc(env(safe-area-inset-top, 0px) + 58px);
+  right:18px;
+  z-index:10000050;
+
+  width:52px;
+  height:52px;
+  border-radius:999px;
+
+  display:flex;
+  align-items:center;
+  justify-content:center;
+
+  font-size:24px;
+  font-weight:900;
+  line-height:1;
+
+  box-shadow:0 12px 35px rgba(0,0,0,.45);
+  touch-action:manipulation;
+  -webkit-tap-highlight-color:transparent;
+}
+
+@media(max-width:576px){
+  .live-gallery-close{
+    top:calc(env(safe-area-inset-top, 0px) + 54px);
+    right:14px;
+    width:56px;
+    height:56px;
+    font-size:26px;
+  }
+}
+.live-gallery-stage{
+  position:relative;
+  flex:1;
+  min-height:0;
+  border-radius:18px;
+  background:#020617;
+  overflow:hidden;
+  border:1px solid rgba(255,255,255,.12);
+  display:flex;
+  align-items:center;
+  justify-content:center;
+}
+
+.live-gallery-stage img{
+  max-width:100%;
+  max-height:100%;
+  width:auto;
+  height:auto;
+  object-fit:contain;
+  display:block;
+}
+
+.live-gallery-stage iframe{
+  width:100%;
+  height:100%;
+  border:0;
+  display:block;
+  background:#020617;
+}
+
+.live-gallery-nav{
+  position:absolute;
+  top:50%;
+  transform:translateY(-50%);
+  width:44px;
+  height:56px;
+  border:0;
+  border-radius:999px;
+  background:rgba(255,255,255,.88);
+  color:#111827;
+  font-size:28px;
+  font-weight:900;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+}
+
+.live-gallery-prev{
+  left:10px;
+}
+
+.live-gallery-next{
+  right:10px;
+}
+
+.live-gallery-thumbs{
+  display:flex;
+  gap:8px;
+  overflow-x:auto;
+  padding:10px 2px 2px;
+}
+
+.live-gallery-thumb{
+  width:62px;
+  height:52px;
+  border-radius:10px;
+  border:2px solid transparent;
+  background:#111827;
+  overflow:hidden;
+  flex:0 0 auto;
+  position:relative;
+}
+
+.live-gallery-thumb.active{
+  border-color:#e11d48;
+}
+
+.live-gallery-thumb img{
+  width:100%;
+  height:100%;
+  object-fit:cover;
+  display:block;
+}
+
+.live-gallery-thumb-video{
+  width:100%;
+  height:100%;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  color:#fff;
+  font-size:22px;
+  background:#111827;
+}
+
+@media(max-width:576px){
+  .live-gallery-card{
+    height:94vh;
+  }
+
+  .live-gallery-nav{
+    width:40px;
+    height:50px;
+    font-size:24px;
+  }
+
+  .live-gallery-title{
+    font-size:13px;
+  }
+}
+.live-gallery-stage iframe{
+  pointer-events:none;
+}
+
   </style>
 </head>
 <body>
-  <div class="container container-narrow py-3 px-3">
-    <!-- Header -->
-    <div class="d-flex justify-content-between align-items-center mb-2">
-      <div>
-        <div class="pill mb-1">Komen Live • Emas Amir</div>
-        <small class="text-muted">Tonton video & suara di TikTok <b>@EmasAmir</b>. Komen & lock barang di sini.</small>
-      </div>
-      <a href="index.html" class="btn btn-outline-light btn-sm btn-chip">← Utama</a>
-    </div>
+<div class="page-shell">
 
+  <div class="wrap">
+    <!-- TOPBAR MINIMAL ikut Tabung -->
+    <div class="topbar mb-3">
+      <div class="top-left">
+        <a href="index.html" class="btn btn-outline-secondary icon-btn">🏠</a>
+        <div>
+          <div class="brand-title">💬 Komen Live</div>
+          <div class="top-sub">Tonton live • komen • lock barang</div>
+        </div>
+        <span id="loginStatus" class="pill">Memuatkan…</span>
+      </div>
+
+      <div class="d-flex gap-2">
+        <button class="btn btn-outline-secondary icon-btn" type="button" data-bs-toggle="offcanvas" data-bs-target="#menuCanvas" aria-controls="menuCanvas">
+          ☰ Menu
+        </button>
+        <button id="btnLogout" class="btn btn-outline-secondary icon-btn" type="button" style="display:none">Log keluar</button>
+      </div>
+    </div>
     <!-- HERO: info + bar LIVE + input komen -->
     <div class="hero-wrap">
       <div class="d-flex justify-content-between align-items-center mb-1">
@@ -187,13 +913,31 @@
         <span class="badge bg-dark rounded-pill">💬 Komen di sini</span>
       </div>
 
-      <div class="hero-title mb-1">Komen & Lock Barang Di Sini</div>
-      <div class="hero-sub mb-1">
-        Buka LIVE kami, dengar suara & tengok barang. Komen contoh: <b>"Nak lock"</b> atau <b>"Dah bayar, resit WhatsApp"</b>.
-      </div>
-      <div class="hero-note">
-        Nama & empat digit terakhir nombor telefon akan dipaparkan supaya host senang kenal.
-      </div>
+     <div id="liveStatusBadge" class="mb-2"></div>
+
+<div id="liveMainTitle" class="hero-title mb-1">Komen & Lock Barang Di Sini</div>
+
+<div id="liveMainText" class="hero-sub mb-1">
+  Buka LIVE kami, dengar suara & tengok barang. Komen contoh: <b>"Nak lock"</b> atau <b>"Dah bayar, resit WhatsApp"</b>.
+</div>
+
+<div id="liveExtraText" class="hero-note">
+  Nama & empat digit terakhir nombor telefon akan dipaparkan supaya host senang kenal.
+</div>
+
+<div class="d-flex flex-wrap gap-2 mt-3">
+  <button id="btnShareLive" type="button" class="btn btn-warning fw-bold rounded-pill">
+    📤 Share LIVE
+  </button>
+
+  <a href="chat.html" class="btn btn-outline-light fw-bold rounded-pill">
+    💬 Buka Chat Ai-Dan
+  </a>
+</div>
+
+<div id="shareCountText" class="hero-note mt-2" style="font-size:12px;">
+  Share LIVE: 0 kali
+</div>
       <!-- Active count untuk semua orang -->
       <div id="heroActive" class="hero-note" style="font-size:12px;">
         Memuatkan penonton aktif…
@@ -203,37 +947,60 @@
       <div class="yt-wrap">
         <div class="ratio ratio-16x9">
           <iframe
-            id="ytLiveFrame"
-            src="https://www.youtube-nocookie.com/embed/ekRtZMEz9fM?autoplay=1&playsinline=1"
-            frameborder="0"
-            allow="autoplay; encrypted-media; picture-in-picture"
-            referrerpolicy="strict-origin-when-cross-origin"
-            allowfullscreen
-          ></iframe>
+  id="ytLiveFrame"
+  src="https://www.youtube.com/embed/ekRtZMEz9fM?playsinline=1&rel=0&modestbranding=1&origin=https://emasamir.app"
+  frameborder="0"
+  allow="encrypted-media; picture-in-picture"
+  referrerpolicy="strict-origin-when-cross-origin"
+  allowfullscreen
+></iframe>
         </div>
         <div class="hero-note mt-1" style="font-size:12px;">
           Jika video tak keluar, <b>terutama jika buka dari TikTok di iPhone</b>,
           sila tekan butang di titik 3 atas kanan untuk buka halaman ini dalam Safari / Google Chrome.
           Lepas buka, terus boleh komen & lock barang macam biasa.
         </div>
-        
+      </div>
 
       <!-- Bar LIVE + gambar kecil -->
       <div id="overlayProduct" class="overlay-product" style="display:none"></div>
 
-      <!-- Input komen -->
-      <form id="chatFormOverlay" class="comment-wrap">
-        <input id="chatMsgOverlay"
-               type="text"
-               autocomplete="off"
-               placeholder="Tulis komen… (log masuk dulu)">
-        <button class="btn btn-danger" type="submit">Hantar</button>
-      </form>
+     <!-- Stream komen (ATAS) -->
+<div id="overlayChatList" aria-live="polite"></div>
 
-      <!-- Stream komen (pelanggan boleh scroll) -->
-      <div id="overlayChatList" aria-live="polite"></div>
+<!-- Input komen (BAWAH) -->
+<form id="chatFormOverlay" class="comment-wrap bg-white p-2 rounded-pill shadow-sm">
+  <input id="chatMsgOverlay"
+         type="text"
+         autocomplete="off"
+         placeholder="💬 Tulis komen di sini...">
+  <button class="btn btn-danger" type="submit">Hantar</button>
+</form>
     </div>
   </div>
+
+
+
+<!-- OFFCANVAS MENU -->
+<div class="offcanvas offcanvas-end" tabindex="-1" id="menuCanvas" aria-labelledby="menuCanvasLabel">
+  <div class="offcanvas-header">
+    <h5 class="offcanvas-title" id="menuCanvasLabel">Menu</h5>
+    <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Tutup"></button>
+  </div>
+  <div class="offcanvas-body">
+    <div class="d-grid gap-2">
+      <a href="index.html" class="btn btn-outline-secondary">🏠 Halaman Utama</a>
+      <a href="tabung.html" class="btn btn-outline-secondary">💰 Tabung Emas</a>
+      <a href="goldbar-coin.html" class="btn btn-outline-secondary">GoldBar/Coin Fizikal</a>
+      <a href="j916.html" class="btn btn-outline-secondary">Barang Kemas 916</a>
+      <a href="jual-emas.html" class="btn btn-outline-secondary">Jual Emas</a>
+      <a href="policy.html" class="btn btn-outline-secondary">Polisi</a>
+      <a href="account.html" class="btn btn-outline-secondary">Akaun</a>
+      <hr>
+      <div class="text-muted small">Tip: Komen “nak lock” atau tekan butang Lock pada barang live.</div>
+    </div>
+  </div>
+</div>
 
   <!-- Panel komen penuh (ADMIN sahaja – default disembunyikan) -->
   <div id="adminChatWrapper" class="container container-narrow px-3 mt-3 d-none">
@@ -257,7 +1024,7 @@
   <!-- Barang Live Sekarang -->
   <div class="container container-narrow px-3 mt-3">
     <div class="d-flex justify-content-between align-items-center mb-2">
-      <h5 class="m-0 live-section-title">🛒 Barang Live Sekarang</h5>
+      <h5 class="m-0 live-section-title">🛒 Barang Kemas Live Sekarang</h5>
       <button id="btnRefreshLive" class="btn btn-sm btn-outline-primary">Refresh Senarai</button>
     </div>
     <div id="liveGrid" class="row g-3 mb-5"></div>
@@ -266,9 +1033,60 @@
     </div>
   </div>
 
-  <!-- Supabase + Auth -->
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-  <script src="auth.js?v=13.1"></script>
+<!-- Barang J999 Live Sekarang — ASING dari 916 -->
+  <div class="container container-narrow px-3 mt-3">
+    <div class="d-flex justify-content-between align-items-center mb-2">
+      <h5 class="m-0 live-section-title">🟡 GoldBar/Coin Live Sekarang</h5>
+      <button id="btnRefreshLive999" class="btn btn-sm btn-outline-warning">Refresh GoldBar/Coin</button>
+    </div>
+    <div id="live999Grid" class="row g-3 mb-3"></div>
+    <div id="live999Empty" class="text-muted small" style="display:none">
+      Belum ada J999 ditanda LIVE.
+    </div>
+  </div>
+
+<!-- Tabung Live Sekarang -->
+<div class="container container-narrow px-3 mt-3">
+  <div id="tabungLiveWrap" class="tabung-live-box mb-4" style="display:none;">
+    <div class="d-flex justify-content-between align-items-start gap-2">
+      <div>
+        <div class="badge bg-success rounded-pill mb-2">🟢 TABUNG LIVE</div>
+        <div class="tabung-live-title">🛒 Beli Tabung Emas 999.9</div>
+        <div class="tabung-live-note">Min 1 unit. 1 unit = 0.1g</div>
+      </div>
+      <div class="text-end">
+        <div class="tabung-live-note">Harga 0.1g</div>
+        <div id="tabungLivePrice" class="tabung-live-price">RM 0.00</div>
+      </div>
+    </div>
+
+    <div class="mt-3">
+      <label class="form-label small">Unit (0.1g)</label>
+      <input id="tabungLiveUnit" class="form-control" type="number" min="1" step="1" value="1">
+    </div>
+
+    <div class="mt-3">
+      <div class="tabung-live-note">Jumlah</div>
+      <div id="tabungLiveTotal" class="fw-bold fs-5">RM 0.00</div>
+    </div>
+
+    <button id="btnTabungLiveBuy" class="btn btn-success fw-bold w-100 mt-3" type="button">
+      Beli Tabung Sekarang
+    </button>
+
+    <div id="tabungLiveMsg" class="small text-muted mt-2"></div>
+  </div>
+</div>
+</div>
+
+
+
+ <!-- Supabase + Bootstrap + Auth -->
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="auth.js?v=13.1"></script>
+<script src="https://assets.mediadelivery.net/playerjs/playerjs-latest.min.js"></script>
+<script src="https://cdn.socket.io/4.7.5/socket.io.min.js"></script>
 
   <script>
     // ==========================
@@ -279,6 +1097,114 @@
     const sb = window.supabase.createClient(SB_URL, SB_KEY);
 
     const CHAT_ROOM = "emasamir-live";
+const SOCKET_URL = "qr-emas-amir-production.up.railway.app";
+let liveSocket = null;
+
+async function loadLiveStatusControl(){
+  try{
+    const { data, error } = await sb
+      .from("live_config")
+      .select("live_status, live_message, share_count")
+      .eq("id", 1)
+      .maybeSingle();
+
+    if (error) throw error;
+
+    const status = String(data?.live_status || "LIVE").toUpperCase();
+    const msg = String(data?.live_message || "").trim();
+    const shareCount = Number(data?.share_count || 0);
+
+    const badge = document.getElementById("liveStatusBadge");
+    const title = document.getElementById("liveMainTitle");
+    const text = document.getElementById("liveMainText");
+    const extra = document.getElementById("liveExtraText");
+    const shareText = document.getElementById("shareCountText");
+
+    const endedOverlay = document.getElementById("liveEndedOverlay");
+    const endedText = document.getElementById("liveEndedText");
+
+    if (shareText) shareText.textContent = `Share LIVE: ${shareCount} kali`;
+
+    if (status === "ENDED"){
+      if (badge) badge.innerHTML = `<span class="badge bg-secondary rounded-pill">⚫ LIVE Tamat</span>`;
+      if (title) title.textContent = "LIVE Sudah Tamat";
+
+      const finalMsg = msg || "LIVE sudah tamat. Tunggu LIVE seterusnya ya. Sila daftar, buka Chat Ai-Dan dan aktifkan notifikasi untuk dapat alert LIVE berikutnya.";
+
+      if (text) text.innerHTML = finalMsg;
+      if (extra){
+        extra.innerHTML = `
+          Sila daftar akaun, buka Chat Ai-Dan dan aktifkan notifikasi supaya anda dapat alert untuk LIVE berikutnya.
+        `;
+      }
+
+      if (endedText) endedText.innerHTML = finalMsg;
+      if (endedOverlay) endedOverlay.style.display = "block";
+
+      document.body.style.overflow = "hidden";
+      document.getElementById("chatFormOverlay")?.classList.add("d-none");
+      document.getElementById("overlayProduct")?.classList.add("d-none");
+
+    } else {
+      if (badge) badge.innerHTML = `<span class="badge bg-danger rounded-pill">🔴 Sedang LIVE</span>`;
+      if (endedOverlay) endedOverlay.style.display = "none";
+
+      document.body.style.overflow = "";
+      document.getElementById("chatFormOverlay")?.classList.remove("d-none");
+      document.getElementById("overlayProduct")?.classList.remove("d-none");
+    }
+
+  }catch(e){
+    console.warn("loadLiveStatusControl error:", e);
+  }
+}
+async function addShareCount(){
+  try{
+    const { data } = await sb
+      .from("live_config")
+      .select("share_count")
+      .eq("id", 1)
+      .maybeSingle();
+
+    const next = Number(data?.share_count || 0) + 1;
+
+    await sb
+      .from("live_config")
+      .update({ share_count: next })
+      .eq("id", 1);
+
+    const shareText = document.getElementById("shareCountText");
+    if (shareText) shareText.textContent = `Share LIVE: ${next} kali`;
+
+  }catch(e){
+    console.warn("share count error:", e);
+  }
+}
+
+document.getElementById("btnShareLive")?.addEventListener("click", async () => {
+  const shareData = {
+    title: "LIVE Emas Amir",
+    text: "Jom tengok LIVE Emas Amir — boleh komen, lock barang, beli GoldBar/Coin dan Tabung terus di sini.",
+    url: "https://emasamir.app/comment"
+  };
+
+  try{
+    if (navigator.share){
+      await navigator.share(shareData);
+    }else{
+      await navigator.clipboard.writeText(shareData.url);
+      alert("Link LIVE telah disalin.");
+    }
+
+    await addShareCount();
+
+  }catch(e){
+    console.warn("Share dibatalkan:", e);
+  }
+});
+
+loadLiveStatusControl();
+setInterval(loadLiveStatusControl, 15000);
 
      // Buka semula page komen dalam domain asal (tanpa trik pelik)
   function openInRealBrowser(){
@@ -289,35 +1215,45 @@
     // ==========================
     // YouTube LIVE config (ambil videoId dari Supabase)
     // ==========================
-    async function loadYoutubeFrame(){
-      const frame = document.getElementById("ytLiveFrame");
-      if (!frame) return;
+   let __ytLoadedOnce = false;
 
-      // fallback kalau Supabase gagal
-      let videoId = "ekRtZMEz9fM";
+async function loadYoutubeFrame(){
+  if (__ytLoadedOnce) return;
 
-      try{
-        const { data, error } = await sb
-          .from("live_config")
-          .select("youtube_video_id")
-          .eq("id", 1)
-          .maybeSingle();
+  const frame = document.getElementById("ytLiveFrame");
+  if (!frame) return;
 
-        if (!error && data && data.youtube_video_id){
-          videoId = String(data.youtube_video_id).trim();
-        }
-      }catch(e){
-        console.warn("Gagal baca live_config:", e);
-      }
+  __ytLoadedOnce = true;
 
-      // Guna youtube-nocookie untuk kurangkan isu error 153 di iPhone / WebView
-      frame.src =
-        "https://www.youtube-nocookie.com/embed/" +
-        encodeURIComponent(videoId) +
-        "?autoplay=1&playsinline=1";
+  let videoId = "ekRtZMEz9fM";
+
+  try{
+    const { data, error } = await sb
+      .from("live_config")
+      .select("youtube_video_id")
+      .eq("id", 1)
+      .maybeSingle();
+
+    if (!error && data && data.youtube_video_id){
+      videoId = String(data.youtube_video_id).trim();
     }
+  }catch(e){
+    console.warn("Gagal baca live_config:", e);
+  }
 
-    window.addEventListener("load", loadYoutubeFrame);
+  const newSrc =
+  "https://www.youtube.com/embed/" +
+  encodeURIComponent(videoId) +
+  "?playsinline=1&rel=0&modestbranding=1&origin=https://emasamir.app";
+
+// ✅ set src sekali sahaja, jangan reload iframe YouTube
+if (frame.dataset.videoId !== videoId) {
+  frame.dataset.videoId = videoId;
+  frame.src = newSrc;
+}
+}
+
+window.addEventListener("load", loadYoutubeFrame);
 
     const liveGrid      = document.getElementById("liveGrid");
     const liveEmpty     = document.getElementById("liveEmpty");
@@ -337,6 +1273,16 @@
 
     const money = n => (Number(n||0)).toFixed(2);
 
+const BILLPLZ_FIXED_FEE = 1.10;
+const CREATE_BILL_URL = "https://dduizetstqqjrpsezbpi.functions.supabase.co/functions/v1/create-bill";
+const REDIRECT_URL = "https://emasamir.app/tabung";
+
+let tabungBuyPrice01 = 0;
+let tabungStockUnits = 0;
+
+function moneyRM(n){
+  return "RM " + Number(n || 0).toFixed(2);
+}
     // ===== Auth user untuk komen =====
     const auth = (window.auth_get && window.auth_get()) || null;
     const liveUser = auth ? {
@@ -344,6 +1290,37 @@
       name: auth.name || "",
       phone: auth.phone || auth.msisdn || ""
     } : null;
+
+// ===== Render login status + logout ikut UI Tabung =====
+    (function renderTopbarAuth(){
+      const loginStatus = document.getElementById("loginStatus");
+      const btnLogout = document.getElementById("btnLogout");
+
+      const ph = String(auth?.phone || auth?.msisdn || "").replace(/\D/g,"");
+
+      if (loginStatus){
+        loginStatus.textContent = auth
+          ? ("Log masuk sebagai " + (auth.name || ph || "pengguna"))
+          : "Tidak log masuk";
+      }
+
+      if (auth && btnLogout){
+        btnLogout.style.display = "";
+        btnLogout.onclick = async () => {
+          try { await sb.auth.signOut(); } catch(e) {}
+
+          Object.keys(localStorage).forEach(k => {
+            if (k.startsWith("sb-")) localStorage.removeItem(k);
+          });
+
+          sessionStorage.clear();
+
+          if (window.auth_clear) window.auth_clear();
+
+          location.href = "login.html#login";
+        };
+      }
+    })();
 
     // Normalise phone ke +60…
     function normalizePhone(msisdn){
@@ -355,28 +1332,1449 @@
       return msisdn;
     }
 
-    // ==========================
+    let LIVE916_BY_CODE = new Map();
+
+let lcState = {
+  code: "",
+  price: 0,
+  length_cm: 0,
+  ship: "POST",
+  cut: "NO",
+  pay: "TRANSFER",
+  row: null
+};
+function getLiveUserPhone(){
+  return normalizePhone(liveUser?.phone || liveUser?.msisdn || "");
+}
+
+function lcCleanPhone(){
+  return getLiveUserPhone();
+}
+
+async function lcFillCustomerAddress(){
+  try{
+    const phone = lcCleanPhone();
+    if (!phone) return;
+
+    const digits = String(phone || "").replace(/\D/g, "");
+    const local0 = digits.startsWith("60") ? ("0" + digits.slice(2)) : "";
+    const variants = [digits, "+" + digits, local0].filter(Boolean);
+
+    for (const ph of variants){
+      const { data, error } = await sb
+        .from("customers")
+        .select("alamat,postcode,city,state")
+        .eq("phone", ph)
+        .limit(1)
+        .maybeSingle();
+
+      if (!error && data){
+        const alamat = String(data.alamat || "").trim();
+        const postcode = String(data.postcode || "").trim();
+        const city = String(data.city || "").trim();
+        const state = String(data.state || "").trim();
+
+        let addr = alamat;
+
+        if (postcode && !addr.includes(postcode)) addr += (addr ? ", " : "") + postcode;
+        if (city && !addr.toLowerCase().includes(city.toLowerCase())) addr += (addr ? ", " : "") + city;
+        if (state && !addr.toLowerCase().includes(state.toLowerCase())) addr += (addr ? ", " : "") + state;
+
+        const el = document.getElementById("lcAddress");
+        if (el && addr) el.value = addr;
+        return;
+      }
+    }
+  }catch(e){
+    console.warn("lcFillCustomerAddress error:", e);
+  }
+}
+function lcMoney(n){
+  return "RM " + Number(n || 0).toFixed(2);
+}
+
+function setLcShip(mode){
+  lcState.ship = mode;
+
+  document.getElementById("lcShipPickup")?.classList.toggle("active", mode === "PICKUP");
+  document.getElementById("lcShipPost")?.classList.toggle("active", mode === "POST");
+
+  const addrBox = document.getElementById("lcAddressBox");
+  const pickupBox = document.getElementById("lcPickupBox");
+
+  if (addrBox) addrBox.style.display = mode === "POST" ? "" : "none";
+  if (pickupBox) pickupBox.style.display = mode === "PICKUP" ? "" : "none";
+
+  lcRenderTotal();
+}
+
+function setLcCut(mode){
+  lcState.cut = mode;
+
+  document.getElementById("lcCutNo")?.classList.toggle("active", mode === "NO");
+  document.getElementById("lcCutYes")?.classList.toggle("active", mode === "YES");
+
+  const box = document.getElementById("lcCutBox");
+  if (box) box.style.display = mode === "YES" ? "" : "none";
+
+  // ✅ TAMBAH SINI
+  if (mode === "YES") {
+    const currEl = document.getElementById("lcCurrentLen");
+
+    if (currEl && !currEl.value && lcState.length_cm) {
+      currEl.value = lcState.length_cm + "cm";
+    }
+  }
+}
+function setLcPay(method){
+  lcState.pay = method;
+
+  document.getElementById("lcPayQR")?.classList.toggle("active", method === "QR");
+  document.getElementById("lcPayTransfer")?.classList.toggle("active", method === "TRANSFER");
+  document.getElementById("lcPayAtome")?.classList.toggle("active", method === "ATOME");
+}
+
+function lcRenderTotal(){
+  const subtotal = Number(lcState.price || 0);
+  const shipFee = lcState.ship === "POST" ? 10 : 0;
+  const total = subtotal + shipFee;
+
+  const subEl = document.getElementById("lcSubtotal");
+  const shipEl = document.getElementById("lcShipFee");
+  const totalEl = document.getElementById("lcTotal");
+
+  if (subEl) subEl.textContent = lcMoney(subtotal);
+  if (shipEl) shipEl.textContent = lcMoney(shipFee);
+  if (totalEl) totalEl.textContent = lcMoney(total);
+}
+
+function closeLiveCheckout(){
+  const modal = document.getElementById("liveCheckoutModal");
+  if (modal) modal.style.display = "none";
+  document.body.style.overflow = "";
+}
+
+function openLiveCheckout(code, priceRm){
+  const c = String(code || "").toUpperCase().replace(/\s+/g,"").trim();
+  const p = Number(priceRm || 0);
+
+  if (!c){
+    alert("Code barang tak sah. Sila refresh senarai.");
+    return;
+  }
+
+  if (!liveUser){
+    showLoginPrompt();
+    return;
+  }
+
+  const phone = getLiveUserPhone();
+  if (!phone){
+    alert("Nombor telefon akaun tidak dijumpai. Sila log masuk semula.");
+    location.href = "login.html#login";
+    return;
+  }
+
+  const row = LIVE916_BY_CODE.get(c) || null;
+
+  const lengthCm = Number(
+  row?.length_cm ||
+  row?.panjang_cm ||
+  row?.current_length_cm ||
+  row?.size ||
+  0
+);
+
+lcState = {
+  code: c,
+  price: p,
+  length_cm: lengthCm,
+  ship: "POST",
+  cut: "NO",
+  pay: "TRANSFER",
+  row
+};
+
+  const img =
+    row?._img_from_items ||
+    row?._img_from_rpc ||
+    row?.img ||
+    row?.img1 ||
+    row?.product_img1 ||
+    row?.design_img1 ||
+    row?.design_img1_url ||
+    row?.image_url ||
+    row?.img_url ||
+    "";
+
+  const name = row?.name || row?.product_name || row?.design_name || c;
+  const detail = row ? liveDimText(row) : "";
+
+  const itemBox = document.getElementById("liveCheckoutItem");
+  if (itemBox){
+    itemBox.innerHTML = `
+      <img class="live-checkout-img" src="${img || "https://placehold.co/200x200?text=" + encodeURIComponent(c)}" alt="${c}"
+        onerror="if(!this.dataset.f){this.dataset.f=1;this.src='https://placehold.co/200x200?text=${c}'}">
+
+      <div style="min-width:0;flex:1;">
+        <div class="fw-bold">${name}</div>
+        <div class="small text-muted mono">${c}</div>
+        <div class="small text-muted">${detail || "-"}</div>
+        <div class="fw-black text-danger mt-1" style="font-weight:900;">${lcMoney(p)}</div>
+      </div>
+    `;
+  }
+
+  const msg = document.getElementById("lcMsg");
+  if (msg) msg.textContent = "";
+
+  const btn = document.getElementById("btnSubmitLiveCheckout");
+  if (btn) btn.disabled = false;
+
+ setLcShip("POST");
+setLcCut("NO");
+setLcPay("TRANSFER");
+lcRenderTotal();
+
+lcFillCustomerAddress();
+
+const modal = document.getElementById("liveCheckoutModal");
+  if (modal) modal.style.display = "flex";
+  document.body.style.overflow = "hidden";
+}
+
+function openLiveLock(code, priceRm){
+  openLiveCheckout(code, priceRm);
+}
+
+function kind999Label(kind){
+  const k = String(kind || "").toLowerCase();
+  if(k === "coin") return "Gold Coin";
+  if(k === "dinar") return "Koleksi Dinar";
+  if(k === "bar") return "Gold Bar";
+  return "Gold 999.9";
+}
+
+let lc999State = {
+  row: null,
+  qty: 1,
+  price: 0,
+  ship: "POST",
+  pay: "QR"
+};
+
+function closeLive999Checkout(){
+  const modal = document.getElementById("live999CheckoutModal");
+  if (modal) modal.style.display = "none";
+  document.body.style.overflow = "";
+}
+
+function setLc999Ship(mode){
+  lc999State.ship = mode;
+
+  document.getElementById("lc999ShipPickup")?.classList.toggle("active", mode === "PICKUP");
+  document.getElementById("lc999ShipPost")?.classList.toggle("active", mode === "POST");
+
+  const addrBox = document.getElementById("lc999AddressBox");
+  const pickupBox = document.getElementById("lc999PickupBox");
+
+  if (addrBox) addrBox.style.display = mode === "POST" ? "" : "none";
+  if (pickupBox) pickupBox.style.display = mode === "PICKUP" ? "" : "none";
+
+  lc999RenderTotal();
+}
+
+function setLc999Pay(method){
+  lc999State.pay = method;
+
+  document.getElementById("lc999PayQR")?.classList.toggle("active", method === "QR");
+  document.getElementById("lc999PayTransfer")?.classList.toggle("active", method === "TRANSFER");
+}
+
+function lc999RenderTotal(){
+  const row = lc999State.row || {};
+  const qty = Number(lc999State.qty || 1);
+
+  const subtotal = Number(lc999State.price || 0);
+  const shipFee = lc999State.ship === "POST" ? 10 : 0;
+
+  const payDisc = subtotal * 0.05;
+  const afterPay = Math.max(0, subtotal - payDisc);
+
+  const aiDanType = String(row.__ai_dan_discount_type || "").toUpperCase();
+  const aiDanValue = Number(row.__ai_dan_discount_value || 0);
+
+  let aiDanDisc = 0;
+
+  if (aiDanType === "PERCENT") {
+    aiDanDisc = afterPay * (aiDanValue / 100);
+  } else if (aiDanType === "AMOUNT" || aiDanType === "FIXED") {
+    aiDanDisc = Math.min(afterPay, aiDanValue * qty);
+  }
+
+  const total = Math.max(0, afterPay - aiDanDisc + shipFee);
+
+  const subEl = document.getElementById("lc999Subtotal");
+  const shipEl = document.getElementById("lc999ShipFee");
+  const totalEl = document.getElementById("lc999Total");
+
+  if (subEl) subEl.textContent = lcMoney(subtotal);
+  if (shipEl) shipEl.textContent = lcMoney(shipFee);
+
+  const box = shipEl?.closest(".rounded-4");
+  if (box) {
+    let discBox = document.getElementById("lc999DiscountBox");
+
+    if (!discBox) {
+      discBox = document.createElement("div");
+      discBox.id = "lc999DiscountBox";
+      shipEl.closest(".d-flex").insertAdjacentElement("afterend", discBox);
+    }
+
+    discBox.innerHTML = `
+      <div class="d-flex justify-content-between text-success">
+        <span>Diskaun bayaran</span>
+        <b>- ${lcMoney(payDisc)}</b>
+      </div>
+      ${
+        aiDanDisc > 0
+          ? `<div class="d-flex justify-content-between text-success">
+              <span>Diskaun Ai-Dan</span>
+              <b>- ${lcMoney(aiDanDisc)}</b>
+            </div>`
+          : ""
+      }
+    `;
+  }
+
+  if (totalEl) totalEl.textContent = lcMoney(total);
+}
+async function lc999FillCustomerAddress(){
+  try{
+    const phone = getLiveUserPhone();
+    if (!phone) return;
+
+    const digits = String(phone || "").replace(/\D/g, "");
+    const local0 = digits.startsWith("60") ? ("0" + digits.slice(2)) : "";
+    const variants = [digits, "+" + digits, local0].filter(Boolean);
+
+    for (const ph of variants){
+      const { data, error } = await sb
+        .from("customers")
+        .select("alamat,postcode,city,state")
+        .eq("phone", ph)
+        .limit(1)
+        .maybeSingle();
+
+      if (!error && data){
+        const alamat = String(data.alamat || "").trim();
+        const postcode = String(data.postcode || "").trim();
+        const city = String(data.city || "").trim();
+        const state = String(data.state || "").trim();
+
+        let addr = alamat;
+
+        if (postcode && !addr.includes(postcode)) addr += (addr ? ", " : "") + postcode;
+        if (city && !addr.toLowerCase().includes(city.toLowerCase())) addr += (addr ? ", " : "") + city;
+        if (state && !addr.toLowerCase().includes(state.toLowerCase())) addr += (addr ? ", " : "") + state;
+
+        const el = document.getElementById("lc999Address");
+        if (el && addr) el.value = addr;
+        return;
+      }
+    }
+  }catch(e){
+    console.warn("lc999FillCustomerAddress error:", e);
+  }
+}
+
+function openLive999Checkout(row, qty){
+  if(!liveUser){
+    showLoginPrompt();
+    return;
+  }
+
+  const phone = getLiveUserPhone();
+  if(!phone){
+    alert("Nombor telefon akaun tidak dijumpai. Sila log masuk semula.");
+    location.href = "login.html#login";
+    return;
+  }
+
+  const finalQty = Math.max(1, Math.min(99, Math.floor(Number(qty || row.qty || 1) || 1)));
+
+  const unitLive = Number(row.live_price_rm || 0);
+  const totalLive = unitLive * finalQty;
+
+  lc999State = {
+    row,
+    qty: finalQty,
+    price: totalLive,
+    ship: "POST",
+    pay: "QR"
+  };
+
+  const kindLabel = row.kind_label || kind999Label(row.kind);
+  const weightLabel = row.weight_label || (Number(row.weight_g || 0) + "g");
+  const name = `${kindLabel} ${weightLabel}`;
+  const design = row.design_name || "-";
+  const img = row.image_url || ("https://placehold.co/200x200?text=" + encodeURIComponent(name));
+
+  const itemBox = document.getElementById("live999CheckoutItem");
+  if (itemBox){
+    itemBox.innerHTML = `
+      <img class="live-checkout-img" src="${img}" alt="${name}"
+        onerror="if(!this.dataset.f){this.dataset.f=1;this.src='https://placehold.co/200x200?text=J999'}">
+
+      <div style="min-width:0;flex:1;">
+        <div class="fw-bold">${name}</div>
+        <div class="small text-muted">${design}</div>
+        <div class="small text-muted">Qty: ${finalQty}</div>
+        <div class="fw-black text-danger mt-1" style="font-weight:900;">
+          ${lcMoney(totalLive)}
+        </div>
+      </div>
+    `;
+  }
+
+  const msg = document.getElementById("lc999Msg");
+  if (msg) msg.textContent = "";
+
+  const btn = document.getElementById("btnSubmitLive999Checkout");
+  if (btn) btn.disabled = false;
+
+  setLc999Ship("POST");
+  setLc999Pay("QR");
+  lc999RenderTotal();
+  lc999FillCustomerAddress();
+
+  const modal = document.getElementById("live999CheckoutModal");
+  if (modal) modal.style.display = "flex";
+  document.body.style.overflow = "hidden";
+}
+
+function openLiveLock999(row, qty){
+  openLive999Checkout(row, qty);
+}
+
+async function submitLive999CheckoutToAiDan(){
+  const btn = document.getElementById("btnSubmitLive999Checkout");
+  const msg = document.getElementById("lc999Msg");
+
+  try{
+    if (!liveUser) return showLoginPrompt();
+
+    const phone = getLiveUserPhone();
+    if (!phone) throw new Error("Nombor telefon akaun tidak dijumpai.");
+
+    const row = lc999State.row;
+    if (!row) throw new Error("Item GoldBar/Coin tidak dijumpai.");
+
+    const ship = String(lc999State.ship || "POST").toUpperCase();
+    const payMethod = String(lc999State.pay || "QR").toUpperCase();
+
+    const address = String(document.getElementById("lc999Address")?.value || "").trim();
+    const pickupWhen = String(document.getElementById("lc999PickupWhen")?.value || "").trim();
+
+    if (ship === "POST" && address.length < 12){
+      throw new Error("Sila isi alamat penuh dahulu.");
+    }
+
+    if (ship === "PICKUP" && !pickupWhen){
+      throw new Error("Sila isi masa ambil kedai dahulu.");
+    }
+
+    btn.disabled = true;
+    msg.textContent = "Sedang submit GoldBar/Coin ke Ai-Dan…";
+
+    const live999Msg =
+  "LIVE999_CHECKOUT_SUBMIT" +
+  "|kind=" + encodeURIComponent(String(row.kind || "")) +
+  "|weight_g=" + encodeURIComponent(String(row.weight_g || 0)) +
+  "|design_id=" + encodeURIComponent(String(row.design_id || "")) +
+  "|design_name=" + encodeURIComponent(String(row.design_name || "")) +
+  "|card=" + encodeURIComponent(String(row.card_type || "READY")) +
+  "|qty=" + encodeURIComponent(String(lc999State.qty || 1)) +
+  "|price_rm=" + encodeURIComponent(String(lc999State.price || 0)) +
+  "|ship=" + encodeURIComponent(ship) +
+  "|address=" + encodeURIComponent(ship === "POST" ? address : "") +
+  "|pickup_when=" + encodeURIComponent(ship === "PICKUP" ? pickupWhen : "") +
+  "|pay_method=" + encodeURIComponent(payMethod);
+
+const res = await chatSendLive({
+  phone,
+  name: liveUser?.name || "Pelanggan", // ✅ TAMBAH NI
+  is_logged_in: true,
+  action: "live999_checkout_submit",
+  source: "comment_live_999",
+  message: live999Msg,
+
+  live_code: String(row.live_code || ""),
+  kind: String(row.kind || ""),
+  weight_g: Number(row.weight_g || 0),
+  design_id: String(row.design_id || ""),
+  design_name: String(row.design_name || ""),
+  card_type: String(row.card_type || "READY"),
+
+  qty: Number(lc999State.qty || 1),
+  price_rm: Number(lc999State.price || 0),
+
+  ship,
+  address: ship === "POST" ? address : "",
+  pickup_when: ship === "PICKUP" ? pickupWhen : "",
+
+  pay_method: payMethod
+});
+
+    const threadId = res.thread_id;
+    if (!threadId) throw new Error("Thread ID tidak diterima.");
+
+    msg.textContent = "Berjaya ✅ Buka Ai-Dan untuk detail bayaran.";
+
+   setTimeout(()=>{
+  closeLive999Checkout();
+
+  if (typeof openAidanPopup === "function"){
+    openAidanPopup(threadId);
+  }else{
+    location.href =
+      "chat.html?thread=" + encodeURIComponent(threadId) +
+      "&live999_checkout_done=1";
+  }
+}, 500);
+
+  }catch(e){
+    console.warn(e);
+    msg.textContent = "❌ " + (e?.message || e);
+    if (btn) btn.disabled = false;
+  }
+}
+
+function j999Card(row){
+  const kindLabel = row.kind_label || kind999Label(row.kind);
+  const weightLabel = row.weight_label || (Number(row.weight_g || 0) + "g");
+  const name = `${kindLabel} ${weightLabel}`;
+  const design = row.design_name || "-";
+  const cardType = row.card_type || "READY";
+  const img = row.image_url || ("https://placehold.co/640x480?text=" + encodeURIComponent(name));
+
+ const market = Number(row.market_price_rm || row.live_price_rm || 0);
+
+// ✅ Diskaun payment sama macam chat J999: CARD/EWALLET 5%
+const payDisc = market * 0.05;
+
+// ✅ Diskaun AI-DAN ikut gold999_discount_rules
+const aiDanType = String(row.__ai_dan_discount_type || "").toUpperCase();
+const aiDanValue = Number(row.__ai_dan_discount_value || 0);
+
+// kira selepas diskaun payment dulu
+const afterPay = Math.max(0, market - payDisc);
+
+let aiDanDisc = 0;
+
+if (aiDanType === "PERCENT") {
+  aiDanDisc = afterPay * (aiDanValue / 100);
+} else if (aiDanType === "AMOUNT" || aiDanType === "FIXED") {
+  aiDanDisc = Math.min(afterPay, aiDanValue);
+}
+
+const discountRm = payDisc + aiDanDisc;
+const live = Math.max(0, market - discountRm);
+const jimat = Math.max(0, market - live);
+
+  const uid = "j999_" + String(row.live_code || row.design_id || Math.random()).replace(/[^a-zA-Z0-9]/g, "_");
+  const qtyId = uid + "_qty";
+  const oldId = uid + "_old";
+  const newId = uid + "_new";
+  const saveId = uid + "_save";
+
+  const safeJson = JSON.stringify(row).replace(/'/g, "&apos;");
+
+  return `
+    <div class="col-12 col-sm-6 col-lg-4">
+      <div class="j999-live-card h-100">
+        <img class="j999-live-img" src="${img}" alt="${name}"
+          onerror="if(!this.dataset.f){this.dataset.f=1;this.src='https://placehold.co/640x480?text=J999'}">
+
+        <div class="p-3">
+          <div class="d-flex align-items-center justify-content-between">
+            <span class="badge-live-j999">LIVE J999</span>
+            <small class="text-muted mono">${cardType}</small>
+          </div>
+
+          <div class="mt-2 fw-bold">${name}</div>
+          <div class="small j999-live-spec">${design}</div>
+
+          <div class="mt-2 mb-2">
+            ${
+              market > live
+                ? `<div id="${oldId}" class="price-old">RM ${market.toFixed(2)}</div>
+                   <div id="${newId}" class="price-new h5 mb-0">RM ${live.toFixed(2)}</div>
+                   <div id="${saveId}" class="small text-warning">Jimat RM ${jimat.toFixed(2)}</div>`
+                : `<div id="${newId}" class="price-new h5 mb-0">RM ${live.toFixed(2)}</div>`
+            }
+          </div>
+
+          <div class="mb-2">
+            <label class="small text-muted mb-1">Kuantiti</label>
+            <select id="${qtyId}" class="form-select form-select-sm"
+              onchange="
+                var q = Number(this.value || 1);
+                var market = ${market};
+                var live = ${live};
+                var jimat = Math.max(0, market - live);
+
+                var oldEl = document.getElementById('${oldId}');
+                var newEl = document.getElementById('${newId}');
+                var saveEl = document.getElementById('${saveId}');
+
+                if(oldEl) oldEl.textContent = 'RM ' + (market * q).toFixed(2);
+                if(newEl) newEl.textContent = 'RM ' + (live * q).toFixed(2);
+                if(saveEl) saveEl.textContent = 'Jimat RM ' + (jimat * q).toFixed(2);
+              ">
+              <option value="1">1 unit</option>
+              <option value="2">2 unit</option>
+              <option value="3">3 unit</option>
+              <option value="4">4 unit</option>
+              <option value="5">5 unit</option>
+              <option value="10">10 unit</option>
+            </select>
+          </div>
+
+          <button type="button"
+                  class="btn btn-warning fw-bold w-100"
+                  onclick='openLiveLock999(${safeJson}, document.getElementById("${qtyId}")?.value || 1)'>
+            Beli GoldBar/Coin Sekarang
+          </button>
+        </div>
+      </div>
+    </div>
+  `;
+}
+async function loadLive999Cards(){
+  const grid = document.getElementById("live999Grid");
+  const empty = document.getElementById("live999Empty");
+  if(!grid || !empty) return;
+
+  try{
+    const { data, error } = await sb
+      .from("gold999_live_now")
+      .select("*")
+      .eq("is_active", true)
+      .order("updated_at", { ascending:false })
+      .limit(12);
+
+    if(error) throw error;
+
+    const rows = Array.isArray(data) ? data : [];
+
+    if(!rows.length){
+      grid.innerHTML = "";
+      empty.style.display = "";
+      return;
+    }
+
+    // ✅ Ambil rule AI-DAN dari table admin rules
+    for (const row of rows) {
+      try {
+        const { data: rule, error: ruleErr } = await sb
+          .from("gold999_discount_rules")
+          .select("discount_type,discount_value,label")
+          .eq("is_active", true)
+          .eq("source", "AI_DAN")
+          .eq("kind", String(row.kind || "").toLowerCase())
+          .eq("weight_g", Number(row.weight_g || 0))
+          .order("priority", { ascending: true })
+          .limit(1)
+          .maybeSingle();
+
+        if (!ruleErr && rule) {
+          row.__ai_dan_discount_type = String(rule.discount_type || "PERCENT").toUpperCase();
+          row.__ai_dan_discount_value = Number(rule.discount_value || 0);
+          row.__ai_dan_discount_label = String(rule.label || "Diskaun Ai-Dan");
+        } else {
+          row.__ai_dan_discount_type = "";
+          row.__ai_dan_discount_value = 0;
+          row.__ai_dan_discount_label = "";
+        }
+      } catch(e) {
+        row.__ai_dan_discount_type = "";
+        row.__ai_dan_discount_value = 0;
+        row.__ai_dan_discount_label = "";
+      }
+    }
+
+    empty.style.display = "none";
+    grid.innerHTML = rows.map(j999Card).join("");
+
+  }catch(e){
+    console.warn("J999 live card error:", e);
+    grid.innerHTML = "";
+    empty.style.display = "";
+  }
+}
+
+async function getAuthUidForTabungLive(){
+  try{
+    const r = await sb.auth.getUser();
+    return r?.data?.user?.id || null;
+  }catch(e){
+    return null;
+  }
+}
+
+async function getTabungLiveCustomer(){
+  const raw = liveUser?.phone || "";
+  const digits = String(raw || "").replace(/\D/g, "");
+  const phone = digits.startsWith("60") ? digits : (digits.startsWith("0") ? "6" + digits : "60" + digits);
+
+  if (!phone) return null;
+
+  const { data, error } = await sb
+    .from("customers")
+    .select("id,name,phone")
+    .eq("phone", phone)
+    .maybeSingle();
+
+  if (error) return null;
+  return data || null;
+}
+
+async function loadTabungLive(){
+  const wrap = document.getElementById("tabungLiveWrap");
+  const priceEl = document.getElementById("tabungLivePrice");
+  const unitEl = document.getElementById("tabungLiveUnit");
+  const totalEl = document.getElementById("tabungLiveTotal");
+
+  if (!wrap || !priceEl || !unitEl || !totalEl) return;
+
+  try{
+    const { data: cfg } = await sb
+      .from("live_config")
+      .select("show_tabung_live")
+      .eq("id", 1)
+      .maybeSingle();
+
+    if (cfg?.show_tabung_live !== true){
+      wrap.style.display = "none";
+      return;
+    }
+
+    const { data: gp, error: gpErr } = await sb
+      .from("gold_prices")
+      .select("price_9999")
+      .order("ddate", { ascending:false })
+      .limit(1)
+      .maybeSingle();
+
+    if (gpErr) throw gpErr;
+
+    const p1g = Number(gp?.price_9999 || 0);
+    tabungBuyPrice01 = p1g / 10;
+
+    try{
+      const { data: st } = await sb.rpc("tabung_stock_available");
+      tabungStockUnits = Number(st?.[0]?.units ?? st?.units ?? st ?? 0);
+    }catch(e){
+      tabungStockUnits = 999999;
+    }
+
+    priceEl.textContent = moneyRM(tabungBuyPrice01);
+    wrap.style.display = "";
+
+    recalcTabungLive();
+  }catch(e){
+    console.warn("loadTabungLive error:", e);
+    wrap.style.display = "none";
+  }
+}
+
+function recalcTabungLive(){
+  const unitEl = document.getElementById("tabungLiveUnit");
+  const totalEl = document.getElementById("tabungLiveTotal");
+  if (!unitEl || !totalEl) return;
+
+  let units = Math.max(1, Number(unitEl.value || 1) | 0);
+  unitEl.value = units;
+
+  const subtotal = units * tabungBuyPrice01;
+  const grand = subtotal + BILLPLZ_FIXED_FEE;
+
+  totalEl.innerHTML =
+    `${moneyRM(subtotal)} <span class="text-muted small">(+ caj Billplz ${moneyRM(BILLPLZ_FIXED_FEE)} = <b>${moneyRM(grand)}</b>)</span>`;
+}
+
+async function buyTabungLive(){
+  if (!liveUser){
+    showLoginPrompt();
+    return;
+  }
+
+  const msgEl = document.getElementById("tabungLiveMsg");
+  const btn = document.getElementById("btnTabungLiveBuy");
+  const unitEl = document.getElementById("tabungLiveUnit");
+
+  let units = Math.max(1, Number(unitEl?.value || 1) | 0);
+
+  if (tabungStockUnits > 0 && units > tabungStockUnits){
+    alert("Stok Tabung tidak mencukupi.");
+    return;
+  }
+
+  const subtotal = units * tabungBuyPrice01;
+  const grand = subtotal + BILLPLZ_FIXED_FEE;
+
+  const ok = confirm(
+    `Sahkan pembelian Tabung?\n\n` +
+    `Unit: ${units} (0.1g) = ${(units / 10).toFixed(1)}g\n` +
+    `Subtotal: ${moneyRM(subtotal)}\n` +
+    `Caj Billplz: ${moneyRM(BILLPLZ_FIXED_FEE)}\n` +
+    `Jumlah dibayar: ${moneyRM(grand)}`
+  );
+
+  if (!ok) return;
+
+  btn.disabled = true;
+  if (msgEl) msgEl.textContent = "Menyediakan bil Billplz…";
+
+  try{
+    const authId = await getAuthUidForTabungLive();
+if (!authId) throw new Error("Sesi tamat. Sila login semula.");
+
+const cust = await getTabungLiveCustomer(); // optional sahaja, jangan block
+
+const prep = await sb.rpc("tabung_buy_prepare_v3", {
+  p_user_id: authId,
+  p_units: units,
+  p_price_per_unit: tabungBuyPrice01
+});
+
+    if (prep.error) throw prep.error;
+
+    const raw = prep.data;
+    let reference = null;
+
+    if (typeof raw === "string") reference = raw;
+    else if (Array.isArray(raw)) {
+      const r0 = raw[0] || {};
+      reference = r0.reference || r0.reference_1 || r0.ref || r0.txn_id || r0.id || null;
+    } else if (raw && typeof raw === "object") {
+      reference = raw.reference || raw.reference_1 || raw.ref || raw.txn_id || raw.id || null;
+    }
+
+    if (!reference) throw new Error("Tiada reference dari server.");
+
+    const payload = {
+  txn_id: reference,
+  amount: Number(grand.toFixed(2)),
+  user_id: authId,
+  units: units,
+  name: cust?.name || liveUser?.name || "Pelanggan",
+  phone: cust?.phone || String(liveUser?.phone || liveUser?.msisdn || "").replace(/\D/g, ""),
+  email: liveUser?.email || "",
+  description: `Tabung emas ${units} unit (0.1g) — LIVE`,
+  redirect_url: REDIRECT_URL
+};
+
+    const res = await fetch(CREATE_BILL_URL, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": "Bearer " + SB_KEY
+      },
+      body: JSON.stringify(payload)
+    });
+
+    let j = {};
+    try{ j = await res.json(); }catch(e){}
+
+    if (!res.ok || !j?.ok){
+      throw new Error(j?.error || j?.message || "Billplz ralat.");
+    }
+
+    const billUrl = j.bill_url || j.url;
+    if (!billUrl) throw new Error("Tiada pautan Billplz.");
+
+    try{
+      await sb.rpc("tabung_attach_bill", {
+        p_reference: reference,
+        p_bill_id_text: j.bill_id || ""
+      });
+    }catch(e){}
+
+    window.location.href = billUrl;
+
+  }catch(e){
+    console.warn("buyTabungLive error:", e);
+    if (msgEl) msgEl.textContent = "❌ " + (e?.message || e);
+    btn.disabled = false;
+  }
+}
+
+document.getElementById("tabungLiveUnit")?.addEventListener("input", recalcTabungLive);
+document.getElementById("btnTabungLiveBuy")?.addEventListener("click", buyTabungLive);
+
+loadTabungLive();
+setInterval(loadTabungLive, 60000);
+
+async function chatSendLive(payload){
+  const res = await fetch("/.netlify/functions/chat-send", {
+    method:"POST",
+    headers:{ "Content-Type":"application/json" },
+    body: JSON.stringify(payload)
+  });
+
+  const raw = await res.text();
+  console.log("CHAT-SEND STATUS:", res.status);
+  console.log("CHAT-SEND RAW:", raw);
+
+  let j = {};
+  try{ j = JSON.parse(raw); }catch(e){}
+
+  if (!res.ok || !j.ok){
+    throw new Error(j.error || j.message || raw || "Chat-send gagal.");
+  }
+
+  return j;
+}
+async function submitLiveCheckoutToAiDan(){
+  const btn = document.getElementById("btnSubmitLiveCheckout");
+  const msg = document.getElementById("lcMsg");
+
+  try{
+    if (!liveUser) return showLoginPrompt();
+
+    const phone = lcCleanPhone();
+    if (!phone) throw new Error("Nombor telefon akaun tidak dijumpai.");
+
+    const ship = String(lcState.ship || "POST").toUpperCase();
+    const cut = String(lcState.cut || "NO").toUpperCase();
+    const payMethod = String(lcState.pay || "TRANSFER").toUpperCase();
+
+    const address = String(document.getElementById("lcAddress")?.value || "").trim();
+    const pickupWhen = String(document.getElementById("lcPickupWhen")?.value || "").trim();
+    const currentLength = String(document.getElementById("lcCurrentLen")?.value || "").trim();
+    const cutTo = String(document.getElementById("lcCutTo")?.value || "").trim();
+
+    if (ship === "POST" && address.length < 12){
+      throw new Error("Sila isi alamat penuh dahulu.");
+    }
+
+    if (ship === "PICKUP" && !pickupWhen){
+      throw new Error("Sila isi masa ambil kedai dahulu.");
+    }
+
+    if (cut === "YES"){
+      if (!currentLength || !cutTo){
+        throw new Error("Sila isi panjang asal dan potong jadi berapa cm.");
+      }
+
+      const currNum = Number(String(currentLength).replace(/[^0-9.]/g, ""));
+      const cutNum = Number(String(cutTo).replace(/[^0-9.]/g, ""));
+
+      if (!currNum || !cutNum){
+        throw new Error("Panjang asal / potong jadi mesti nombor cm yang sah.");
+      }
+
+      if (cutNum >= currNum){
+        throw new Error("Potong jadi mesti lebih pendek dari panjang asal.");
+      }
+    }
+
+    btn.disabled = true;
+    msg.textContent = "Sedang submit lock ke Ai-Dan…";
+
+   const res = await chatSendLive({
+  phone,
+  is_logged_in: true,
+
+  action: "live_checkout_submit",
+  source: "comment_live_916",
+
+  // ✅ BETUL — flow LIVE 916
+  message:
+    "LIVE_CHECKOUT_SUBMIT" +
+    "|code=" + encodeURIComponent(String(lcState.code || "")) +
+    "|price_rm=" + encodeURIComponent(String(lcState.price || 0)) +
+    "|ship=" + encodeURIComponent(ship) +
+    "|address=" + encodeURIComponent(ship === "POST" ? address : "") +
+    "|pickup_when=" + encodeURIComponent(ship === "PICKUP" ? pickupWhen : "") +
+    "|cut=" + encodeURIComponent(cut) +
+    "|cut_to=" + encodeURIComponent(cutTo) +
+    "|pay_method=" + encodeURIComponent(payMethod),
+
+  code: String(lcState.code || ""),
+  price_rm: Number(lcState.price || 0),
+
+  ship,
+  address: ship === "POST" ? address : "",
+  pickup_when: ship === "PICKUP" ? pickupWhen : "",
+
+  cut,
+  cut_to: cut === "YES" ? cutTo : "",
+
+  pay_method: payMethod
+});
+
+    const threadId = res.thread_id;
+    if (!threadId) throw new Error("Thread ID tidak diterima.");
+
+    msg.textContent = "Berjaya ✅ Buka Ai-Dan untuk detail bayaran.";
+
+   setTimeout(()=>{
+  closeLiveCheckout();
+
+  if (typeof openAidanPopup === "function"){
+    openAidanPopup(threadId);
+  }else{
+    location.href =
+      "chat.html?thread=" + encodeURIComponent(threadId) +
+      "&live_checkout_done=1";
+  }
+}, 500);
+
+  }catch(e){
+    console.warn(e);
+    msg.textContent = "❌ " + (e?.message || e);
+    if (btn) btn.disabled = false;
+  }
+}
+function fixMediaUrl(url){
+  if(!url) return "";
+  url = String(url).trim();
+  if(url.startsWith("http")) return url;
+  return "";
+}
+
+function convertBunnyEmbedUrl(url){
+  if(!url) return "";
+
+  let u = String(url || "").trim();
+
+  if (u.includes("player.mediadelivery.net/play/")){
+    const clean = u.split("?")[0];
+    const parts = clean.split("/").filter(Boolean);
+    const libraryId = parts[parts.length - 2];
+    const videoId = parts[parts.length - 1];
+
+    if (libraryId && videoId){
+      return `https://iframe.mediadelivery.net/embed/${libraryId}/${videoId}?autoplay=true&muted=true&volume=0&loop=true&preload=true&responsive=true&controls=false`;
+    }
+  }
+
+  if (u.includes("iframe.mediadelivery.net/embed/")){
+    u = u.split("?")[0];
+    return u + "?autoplay=true&muted=true&volume=0&loop=true&preload=true&responsive=true&controls=false";
+  }
+
+  return fixMediaUrl(u);
+}
+
+function getLiveMediaList(row){
+  const videos = [
+    row?._video_from_items,
+    row?._video_from_rpc,
+    row?.video_url,
+    row?.video1_url,
+    row?.video,
+    row?.product_video,
+    row?.design_video
+  ].filter(u => u && String(u).trim().length > 5)
+   .map(url => ({ type:"video", url:convertBunnyEmbedUrl(url) }))
+   .filter(x => x.url);
+
+  const imgs = [
+    row?._img1_from_items,
+    row?._img2_from_items,
+    row?._img3_from_items,
+
+    row?._img_from_items,
+    row?._img_from_rpc,
+
+    row?.img1,
+    row?.img2,
+    row?.img3,
+
+    row?.product_img1,
+    row?.product_img2,
+    row?.product_img3,
+
+    row?.design_img1,
+    row?.design_img2,
+    row?.design_img3,
+
+    row?.design_img1_url,
+    row?.design_img2_url,
+    row?.design_img3_url,
+
+    row?.image_url,
+    row?.img_url,
+    row?.image1,
+    row?.photo_url,
+    row?.img
+  ].filter(u => u && String(u).trim().length > 5)
+   .map(url => ({ type:"img", url:fixMediaUrl(url) }))
+   .filter(x => x.url);
+
+  const seen = new Set();
+  return [...videos, ...imgs].filter(x=>{
+    const key = x.type + "|" + x.url;
+    if (seen.has(key)) return false;
+    seen.add(key);
+    return true;
+  });
+}
+let LIVE_GALLERY_ITEMS = [];
+let LIVE_GALLERY_INDEX = 0;
+let LIVE_GALLERY_TITLE = "";
+
+function liveGalleryHintSeen(){
+  return localStorage.getItem("ea_live_gallery_hint_seen") === "1";
+}
+
+function markLiveGalleryHintSeen(){
+  localStorage.setItem("ea_live_gallery_hint_seen", "1");
+  document.querySelectorAll(".live-zoom-hint").forEach(el => el.remove());
+}
+
+function safeGalleryJson(items){
+  return encodeURIComponent(JSON.stringify(items || []));
+}
+
+function openLiveGallery(encodedItems, startIndex, title){
+  try{
+    const items = JSON.parse(decodeURIComponent(encodedItems || "%5B%5D"));
+    LIVE_GALLERY_ITEMS = Array.isArray(items) ? items : [];
+  }catch(e){
+    LIVE_GALLERY_ITEMS = [];
+  }
+
+  LIVE_GALLERY_INDEX = Math.max(0, Number(startIndex || 0) | 0);
+  LIVE_GALLERY_TITLE = String(title || "Media LIVE");
+
+  if (!LIVE_GALLERY_ITEMS.length) return;
+
+  markLiveGalleryHintSeen();
+
+  const modal = document.getElementById("liveGalleryModal");
+  const titleEl = document.getElementById("liveGalleryTitle");
+
+  if (titleEl) titleEl.textContent = LIVE_GALLERY_TITLE;
+
+  if (modal) modal.style.display = "flex";
+  document.body.style.overflow = "hidden";
+
+  renderLiveGallery();
+}
+
+function closeLiveGallery(){
+  const modal = document.getElementById("liveGalleryModal");
+  const stage = document.getElementById("liveGalleryStage");
+
+  if (stage){
+    stage.querySelectorAll("img, iframe").forEach(el => el.remove());
+  }
+
+  if (modal) modal.style.display = "none";
+  document.body.style.overflow = "";
+}
+
+function renderLiveGallery(){
+  const stage = document.getElementById("liveGalleryStage");
+  const thumbs = document.getElementById("liveGalleryThumbs");
+  const count = document.getElementById("liveGalleryCount");
+
+  if (!stage || !thumbs) return;
+
+  if (LIVE_GALLERY_INDEX < 0) LIVE_GALLERY_INDEX = LIVE_GALLERY_ITEMS.length - 1;
+  if (LIVE_GALLERY_INDEX >= LIVE_GALLERY_ITEMS.length) LIVE_GALLERY_INDEX = 0;
+
+  const item = LIVE_GALLERY_ITEMS[LIVE_GALLERY_INDEX];
+
+  stage.querySelectorAll("img, iframe").forEach(el => el.remove());
+
+  if (item?.type === "video"){
+    const iframe = document.createElement("iframe");
+   iframe.src = withBunnyParams(item.url) || convertBunnyEmbedUrl(item.url) || item.url;
+iframe.setAttribute("sandbox", "allow-scripts allow-same-origin allow-presentation");
+iframe.style.pointerEvents = "none";
+    iframe.allow = "autoplay; fullscreen; picture-in-picture; encrypted-media";
+    iframe.setAttribute("allowfullscreen", "allowfullscreen");
+    stage.appendChild(iframe);
+  }else{
+    const img = document.createElement("img");
+    img.src = item?.url || "";
+    img.alt = LIVE_GALLERY_TITLE;
+    stage.appendChild(img);
+  }
+
+  if (count){
+    count.textContent = (LIVE_GALLERY_INDEX + 1) + " / " + LIVE_GALLERY_ITEMS.length;
+  }
+
+  thumbs.innerHTML = LIVE_GALLERY_ITEMS.map((x, i)=>{
+    const active = i === LIVE_GALLERY_INDEX ? " active" : "";
+
+    if (x.type === "video"){
+      return `
+        <button type="button" class="live-gallery-thumb${active}" onclick="liveGalleryGo(${i})">
+          <div class="live-gallery-thumb-video">▶</div>
+        </button>
+      `;
+    }
+
+    return `
+      <button type="button" class="live-gallery-thumb${active}" onclick="liveGalleryGo(${i})">
+        <img src="${x.url}" alt="">
+      </button>
+    `;
+  }).join("");
+
+  const prev = stage.querySelector(".live-gallery-prev");
+  const next = stage.querySelector(".live-gallery-next");
+
+  if (prev) prev.style.display = LIVE_GALLERY_ITEMS.length > 1 ? "flex" : "none";
+  if (next) next.style.display = LIVE_GALLERY_ITEMS.length > 1 ? "flex" : "none";
+}
+
+function liveGalleryPrev(){
+  LIVE_GALLERY_INDEX--;
+  renderLiveGallery();
+}
+
+function liveGalleryNext(){
+  LIVE_GALLERY_INDEX++;
+  renderLiveGallery();
+}
+
+function liveGalleryGo(i){
+  LIVE_GALLERY_INDEX = Number(i || 0) | 0;
+  renderLiveGallery();
+}
+
+document.getElementById("liveGalleryModal")?.addEventListener("click", function(ev){
+  if (ev.target === this){
+    closeLiveGallery();
+  }
+});
+
+function withBunnyParams(url){
+  if (!url) return "";
+
+  let u = String(url || "").trim();
+
+  if (!u.includes("iframe.mediadelivery.net/embed/")) return "";
+
+  u = u.split("?")[0];
+
+  return u + "?autoplay=true&muted=true&volume=0&loop=true&preload=true&responsive=true&controls=false";
+}
+
+function buildLiveMedia916(row, code){
+  const slides = getLiveMediaList(row);
+  const title = String(code || "EMAS 916").toUpperCase();
+
+  const gallerySlides = slides.length
+    ? slides
+    : [{ type:"img", url:"https://placehold.co/640x480?text=" + encodeURIComponent(title) }];
+
+  const galleryJson = safeGalleryJson(gallerySlides);
+  const hintHTML = liveGalleryHintSeen()
+    ? ""
+    : `<div class="live-zoom-hint">👆 Klik gambar untuk besarkan</div>`;
+
+  if (!slides.length){
+    return `
+      <div class="live-media" onclick="openLiveGallery('${galleryJson}', 0, '${title}')">
+        ${hintHTML}
+        <img class="live-media-img" src="https://placehold.co/640x480?text=${encodeURIComponent(title)}" alt="${title}">
+      </div>
+    `;
+  }
+
+  const firstVideo = slides.find(x => x.type === "video");
+  const firstImg = slides.find(x => x.type === "img");
+
+  if (firstVideo && withBunnyParams(firstVideo.url)){
+    const videoUrl = withBunnyParams(firstVideo.url);
+    const imgUrl = firstImg?.url || "";
+
+    return `
+      <div class="live-media j916-auto-video"
+           data-live-media-wrap
+           data-img="${imgUrl}"
+           onclick="openLiveGallery('${galleryJson}', 0, '${title}')">
+        ${hintHTML}
+        <iframe
+          class="live916-video-frame"
+          src="${videoUrl}"
+          data-video-src="${videoUrl}"
+          allow="autoplay; fullscreen; picture-in-picture; encrypted-media">
+        </iframe>
+      </div>
+    `;
+  }
+
+  const img = firstImg?.url || "";
+
+  return `
+    <div class="live-media" onclick="openLiveGallery('${galleryJson}', 0, '${title}')">
+      ${hintHTML}
+      <img class="live-media-img" src="${img || 'https://placehold.co/640x480?text=' + encodeURIComponent(title)}" alt="${title}"
+        onerror="if(!this.dataset.f){this.dataset.f=1;this.src='https://placehold.co/640x480?text=${encodeURIComponent(title)}'}">
+    </div>
+  `;
+}
+ 
+let live916VideoObserver = null;
+let currentPlayingLive916 = null;
+
+function forceLive916Videos(){
+  if (live916VideoObserver){
+    live916VideoObserver.disconnect();
+  }
+
+  const frames = document.querySelectorAll(".live916-video-frame");
+  if (!frames.length) return;
+
+  live916VideoObserver = new IntersectionObserver((entries)=>{
+    entries.forEach(entry=>{
+      const iframe = entry.target;
+      const videoSrc = iframe.dataset.videoSrc || iframe.src || "";
+
+      if (entry.isIntersecting){
+        if (currentPlayingLive916 && currentPlayingLive916 !== iframe){
+          currentPlayingLive916.removeAttribute("src");
+        }
+
+        if (!iframe.getAttribute("src") && videoSrc){
+          iframe.setAttribute("src", videoSrc);
+        }
+
+        currentPlayingLive916 = iframe;
+      }else{
+        if (currentPlayingLive916 === iframe){
+          currentPlayingLive916 = null;
+        }
+
+        iframe.removeAttribute("src");
+      }
+    });
+  }, {
+    threshold: 0.45,
+    rootMargin: "120px 0px"
+  });
+
+  frames.forEach(f => live916VideoObserver.observe(f));
+
+  setTimeout(forceMuteBunnyLive916, 300);
+  setTimeout(setupAutoSwapLive916VideoToImage, 500);
+}
+
+function forceMuteBunnyLive916(){
+  document.querySelectorAll(".live916-video-frame").forEach(f=>{
+    try{
+      const current = f.getAttribute("src") || f.dataset.videoSrc || "";
+      if (!current) return;
+
+      const url = new URL(current);
+      url.searchParams.set("muted", "true");
+      url.searchParams.set("volume", "0");
+      url.searchParams.set("autoplay", "true");
+      url.searchParams.set("loop", "true");
+      url.searchParams.set("controls", "false");
+
+      const next = url.toString();
+      f.dataset.videoSrc = next;
+
+      if (f.getAttribute("src") !== next){
+        f.setAttribute("src", next);
+      }
+    }catch(e){}
+  });
+}
+
+function setupAutoSwapLive916VideoToImage(){
+  document.querySelectorAll(".j916-auto-video").forEach(wrap=>{
+    if (wrap.dataset.swapBound === "1") return;
+    wrap.dataset.swapBound = "1";
+
+    const iframe = wrap.querySelector("iframe");
+    if (!iframe) return;
+
+    const img = wrap.dataset.img || "";
+
+    function swapToImage(){
+      if (wrap.dataset.swapped === "1") return;
+      wrap.dataset.swapped = "1";
+
+      try{
+        if (iframe && iframe.parentNode){
+          iframe.remove();
+        }
+      }catch(_){}
+
+      if (img){
+        const el = document.createElement("img");
+        el.src = img;
+        el.className = "live-media-img";
+        el.alt = "";
+        wrap.innerHTML = "";
+        wrap.appendChild(el);
+      }else{
+        wrap.innerHTML = "";
+      }
+    }
+
+    const maxTimer = setTimeout(swapToImage, 30000);
+
+    try{
+      if (!window.playerjs || !window.playerjs.Player) return;
+
+      const player = new playerjs.Player(iframe);
+
+      player.on("ready", ()=>{
+        try{
+          if (player.supports && player.supports("method", "mute")){
+            player.mute();
+          }
+          if (player.setVolume){
+            player.setVolume(0);
+          }
+        }catch(_){}
+
+        player.on("ended", ()=>{
+          clearTimeout(maxTimer);
+          setTimeout(swapToImage, 200);
+        });
+
+        player.on("timeupdate", (data)=>{
+          try{
+            const seconds = Number(data?.seconds || 0);
+            const duration = Number(data?.duration || 0);
+
+            if (duration > 0 && seconds >= (duration - 0.15)){
+              clearTimeout(maxTimer);
+              setTimeout(swapToImage, 150);
+            }
+          }catch(_){}
+        });
+      });
+    }catch(e){
+      console.warn("[comment live916 video swap] PlayerJS gagal, fallback 30s:", e);
+    }
+  });
+}
+// ==========================
     // 1) Barang LIVE (sama macam index + gambar RPC)
     // ==========================
     function toCard(row){
       const code  = String(row?.code || "").toUpperCase();
       const name  = row?.name || row?.product_name || row?.design_name || code || "Barang 916";
       const berat = Number(row?.weight_g || 0);
+const detailText = liveDimText(row);
 
-      const candidates = [
-        row?._img_from_rpc,
-        row?.img,
-        row?.img1,
-        row?.product_img1,
-        row?.design_img1,
-        row?.design_img1_url,
-        row?.image_url,
-        row?.img_url,
-        row?.image1,
-        row?.photo_url
-      ];
-      const firstImg = candidates.find(u => u && String(u).trim().length > 5);
-      const img = firstImg || ("https://placehold.co/640x480?text=" + encodeURIComponent(code || "EMAS 916"));
+     const mediaHTML = buildLiveMedia916(row, code);
 
       const basePerG = Number(
         row?.base_price_per_g ??
@@ -402,11 +2800,54 @@
       const upah_eff = (ovUpah_raw != null) ? Number(ovUpah_raw) : baseUpah;
 
       const liveRM = (
-        row?.live_price_rm != null
-          ? Number(row.live_price_rm)
-          : calc(perG_eff,g,upah_eff)
-      );
+  row?.live_price_rm != null
+    ? Number(row.live_price_rm)
+    : calc(perG_eff, g, upah_eff)
+);
 
+// ✅ Kiraan ansuran 3 bulan
+const monthly3 = liveRM / 3;
+
+// ✅ UI Ansuran — compact, tak pecahkan card
+const ansuranHTML = `
+  <div style="
+    margin-top:6px;
+    line-height:1.2;
+    max-width:100%;
+    overflow:hidden;
+  ">
+    <div style="
+      background:#ecfdf5;
+      color:#065f46;
+      border:1px solid #bbf7d0;
+      border-radius:10px;
+      padding:6px 8px;
+      font-size:11px;
+      font-weight:800;
+      max-width:100%;
+      white-space:normal;
+      overflow-wrap:anywhere;
+    ">
+      💳 Atome RM ${monthly3.toFixed(2)}/bulan
+    </div>
+
+    <div style="
+      background:rgba(255,255,255,0.08);
+      border-radius:8px;
+      padding:5px 7px;
+      margin-top:4px;
+      max-width:100%;
+      overflow:hidden;
+    ">
+      <div style="font-size:10.5px;color:#facc15;font-weight:700;">
+        Bayar pertama RM ${monthly3.toFixed(2)}
+      </div>
+      <div style="font-size:9.5px;color:#cbd5e1;">
+        Anggaran ansuran 3 bulan
+      </div>
+    </div>
+  </div>
+`;
       const hasDrop = (liveRM > 0 && normalRM > 0 && (normalRM - liveRM) > 0.005);
       const hargaHTML = hasDrop
         ? `<div class="price-wrap h6 mt-1 mb-2">
@@ -418,19 +2859,21 @@
       return `
         <div class="col-12 col-sm-6 col-lg-4">
           <div class="live-card h-100">
-            <img class="live-img" src="${img}" alt="${name}"
-              onerror="if(!this.dataset.f){this.dataset.f=1;this.src='https://placehold.co/640x480?text=${code}'}">
+           ${mediaHTML}
             <div class="p-3">
               <div class="d-flex align-items-center justify-content-between">
                 <span class="badge-live">LIVE</span>
                 <small class="text-muted mono">${code}</small>
               </div>
               <div class="mt-1">${name}</div>
-              <div class="text-muted small">Berat: ${berat.toFixed(2)} g</div>
+              <div class="small live-spec">${detailText || ("Berat " + berat.toFixed(2) + "g")}</div>
               ${hargaHTML}
-              <a href="j916.html#checkout?code=${encodeURIComponent(code)}&checkout=1" class="btn btn-danger w-100">
+${ansuranHTML}
+              <button type="button"
+                      class="btn btn-danger w-100"
+                      onclick="openLiveLock('${code}', ${liveRM.toFixed(2)})">
                 Lock Sekarang
-              </a>
+              </button>
             </div>
           </div>
         </div>
@@ -447,6 +2890,7 @@
 
       const code  = String(row?.code || "").toUpperCase();
       const berat = Number(row?.weight_g || 0);
+const detailText = liveDimText(row);
 
       const candidates = [
         row?._img_from_rpc,
@@ -485,73 +2929,136 @@
           ? Number(row.live_price_rm)
           : calc(perG_eff,g,upah_eff)
       );
+const normalRM = (
+  row?.normal_price_rm != null
+    ? Number(row.normal_price_rm)
+    : calc(basePerG, g, baseUpah)
+);
 
       overlayProduct.style.display = "flex";
-      overlayProduct.innerHTML = `
-        <img src="${img}" alt="${code}" onerror="if(!this.dataset.f){this.dataset.f=1;this.src='https://placehold.co/200x200?text=${code}'}">
-        <div>
-          <div class="badge-live">LIVE</div>
-          <div class="code">${code}</div>
-          <div class="weight">${berat.toFixed(2)} g</div>
-        </div>
-        <div class="ms-auto d-flex align-items-center gap-2">
-          <span class="price">RM ${liveRM.toFixed(2)}</span>
-          <a href="j916.html#checkout?code=${encodeURIComponent(code)}&checkout=1"
-             class="btn btn-danger btn-sm">
-            Lock
-          </a>
-        </div>
-      `;
+     overlayProduct.innerHTML = `
+  <img src="${img}" alt="${code}" onerror="if(!this.dataset.f){this.dataset.f=1;this.src='https://placehold.co/200x200?text=${code}'}">
+
+  <div style="min-width:0">
+    <div class="badge-live">LIVE</div>
+    <div class="code">${code}</div>
+    <div class="spec">${detailText || (berat.toFixed(2) + "g")}</div>
+  </div>
+
+  <div class="ms-auto d-flex align-items-center gap-2">
+    <div class="text-end">
+      ${
+        normalRM > liveRM
+          ? `<div class="price-old">RM ${normalRM.toFixed(2)}</div>
+             <div class="price-new">RM ${liveRM.toFixed(2)}</div>`
+          : `<div class="price-new">RM ${liveRM.toFixed(2)}</div>`
+      }
+    </div>
+
+    <button type="button"
+            class="btn btn-danger btn-sm"
+            onclick="openLiveLock('${code}', ${liveRM.toFixed(2)})">
+      Lock
+    </button>
+  </div>
+`;
     }
 
-    async function loadLiveCards(){
-      try{
-        const { data: viewRows, error } = await sb
-          .from("j916_live_cards_pricing_v1")
-          .select("*")
-          .order("ts",{ascending:false})
-          .limit(24);
-        if(error) throw error;
-        const rows = Array.isArray(viewRows) ? viewRows : [];
+   async function loadLiveCards(){
+  try{
+    const { data: viewRows, error } = await sb
+      .from("j916_live_cards_pricing_v1")
+      .select("*")
+      .order("ts",{ascending:false})
+      .limit(24);
 
-        const { data: rpcRows } = await sb.rpc("j916_live_spotlight_feed_v1");
-        const imgMap = new Map(
-          (Array.isArray(rpcRows) ? rpcRows : []).map(r => {
-            const c = String(r?.code || "").toUpperCase();
-            const img = r?.img1 || r?.img || r?.product_img1 || r?.design_img1 ||
-                        r?.image_url || r?.img_url || r?.photo_url || r?.image1 || "";
-            return [c, img];
-          })
-        );
+    if(error) throw error;
 
-        for(const r of rows){
-          const c = String(r?.code || "").toUpperCase();
-          const fromRpc = imgMap.get(c);
-          if(fromRpc && String(fromRpc).trim().length > 5){
-            r._img_from_rpc = fromRpc;
-          }
-        }
+    const rows = Array.isArray(viewRows) ? viewRows : [];
 
-        if(!rows.length){
-          liveGrid.innerHTML = "";
-          liveEmpty.style.display = "";
-          renderOverlayProduct(null);
-          return;
-        }
-        liveEmpty.style.display = "none";
-        liveGrid.innerHTML = rows.map(toCard).join("");
-        renderOverlayProduct(rows[0]);
-      }catch(e){
-        console.warn("Live cards error:", e);
-        liveGrid.innerHTML = "";
-        liveEmpty.style.display = "";
-        renderOverlayProduct(null);
+    const codes = rows
+      .map(r => String(r?.code || "").toUpperCase().trim())
+      .filter(Boolean);
+
+    if (codes.length){
+      const { data: itemRows, error: itemErr } = await sb
+        .from("j916_items")
+        .select(`
+  code,
+  design:j916_designs (
+    img1_url,
+    img2_url,
+    img3_url,
+    img1,
+    img2,
+    img3,
+    video_url
+  )
+`)
+        .in("code", codes);
+
+      if (!itemErr && Array.isArray(itemRows)){
+        const mediaMap = new Map();
+
+        itemRows.forEach(r=>{
+          const c = String(r?.code || "").toUpperCase().trim();
+          const d = r?.design || {};
+
+          const img1 = d?.img1_url || d?.img1 || "";
+const img2 = d?.img2_url || d?.img2 || "";
+const img3 = d?.img3_url || d?.img3 || "";
+const video = d?.video_url || "";
+
+mediaMap.set(c, { img1, img2, img3, video });
+        });
+
+        rows.forEach(r=>{
+          const c = String(r?.code || "").toUpperCase().trim();
+          const m = mediaMap.get(c);
+
+         if (m?.img1) r._img1_from_items = fixMediaUrl(m.img1);
+if (m?.img2) r._img2_from_items = fixMediaUrl(m.img2);
+if (m?.img3) r._img3_from_items = fixMediaUrl(m.img3);
+
+if (m?.img1) r._img_from_items = fixMediaUrl(m.img1);
+if (m?.video) r._video_from_items = fixMediaUrl(m.video);
+        });
+      }else{
+        console.warn("j916_items media error:", itemErr);
       }
     }
 
+    if(!rows.length){
+      liveGrid.innerHTML = "";
+      liveEmpty.style.display = "";
+      renderOverlayProduct(null);
+      return;
+    }
+
+    LIVE916_BY_CODE = new Map(
+  rows.map(r => [String(r?.code || "").toUpperCase().trim(), r])
+);
+
+liveEmpty.style.display = "none";
+liveGrid.innerHTML = rows.map(toCard).join("");
+renderOverlayProduct(rows[0]);
+    setTimeout(forceLive916Videos, 250);
+
+  }catch(e){
+    console.warn("Live cards error:", e);
+    liveGrid.innerHTML = "";
+    liveEmpty.style.display = "";
+    renderOverlayProduct(null);
+  }
+}
+
     btnRefreshLive?.addEventListener("click", loadLiveCards);
     loadLiveCards();
-    setInterval(loadLiveCards, 20000);
+    setInterval(loadLiveCards, 60000);
+
+    document.getElementById("btnRefreshLive999")?.addEventListener("click", loadLive999Cards);
+    loadLive999Cards();
+    setInterval(loadLive999Cards, 60000);
   </script>
 
   <script>
@@ -583,45 +3090,86 @@
       }
     }
 
+function shortDisplayName(name){
+  let n = String(name || "Tetamu").trim().replace(/\s+/g, " ");
+  if (!n) return "Tetamu";
+
+  n = n.replace(/\b(bin|binti|bt|bte)\b.*$/i, "").trim();
+
+  if (n.length > 22) {
+    n = n.slice(0, 22).trim() + "…";
+  }
+
+  return n || "Tetamu";
+}
+
+function fmtCm(v){
+  const n = Number(v || 0);
+  if (!Number.isFinite(n) || n <= 0) return "";
+  return n.toFixed(1).replace(/\.0$/, "") + "cm";
+}
+
+function liveDimText(row){
+  const berat = Number(row?.weight_g || 0);
+  const panjang = fmtCm(row?.length_cm ?? row?.panjang_cm ?? row?.current_length_cm);
+  const lebar = fmtCm(row?.width_cm ?? row?.lebar_cm);
+
+  const arr = [];
+  if (berat > 0) arr.push("Berat " + berat.toFixed(2) + "g");
+  if (panjang) arr.push("Panjang " + panjang);
+  if (lebar) arr.push("Lebar " + lebar);
+
+  return arr.join(" • ");
+}
+
    function renderOverlayMessage(row){
   if(!overlayChatList || !row) return;
 
-  const name   = row.name || "Tetamu";
+  const msgTime = new Date(row.created_at).getTime();
+  const now = Date.now();
+
+  // ✅ Skip kalau lebih 30 minit
+  if (!msgTime || (now - msgTime > 30 * 60 * 1000)) return;
+
+  const name   = shortDisplayName(row.name || "Tetamu");
   const phone4 = (row.phone4 || "").trim();
   const msg    = row.message || "";
   const head   = phone4 ? `${name} (${phone4})` : name;
 
   const div = document.createElement("div");
   div.className = "overlay-msg";
+  div.dataset.time = String(msgTime);
+
   div.innerHTML = `
     <div class="overlay-msg-name">${escapeHtml(head)}</div>
     <div class="overlay-msg-text">${escapeHtml(msg)}</div>
   `;
 
-  // Masuk komen baru
+  // ✅ Masuk komen baru
   overlayChatList.appendChild(div);
 
-  // 🔥 Auto-scroll ke komen paling bawah (tak perlu scroll sendiri)
+  // ✅ Auto scroll bawah
   overlayChatList.scrollTop = overlayChatList.scrollHeight;
 
-  // 🔢 Limit maksimum 50 komen pada skrin
-  while (overlayChatList.children.length > 50){
-    overlayChatList.removeChild(overlayChatList.firstChild);
-  }
-
-  // ⏱ Auto-hilang selepas 60 saat (macam versi lama, cuma boleh kumpul sampai 50)
+  // ✅ Auto buang bila cukup 30 minit
+  const msLeft = (30 * 60 * 1000) - (now - msgTime);
   setTimeout(()=>{
     if (div.parentNode === overlayChatList){
-      overlayChatList.removeChild(div);
+      div.remove();
     }
-  }, 60000);
+  }, Math.max(1000, msLeft));
+
+  // ✅ Limit max 100 komen
+  while (overlayChatList.children.length > 100){
+    overlayChatList.removeChild(overlayChatList.firstChild);
+  }
 }
 
     function renderPanelMessage(row){
       if(!chatListPanel || !row) return;
       const div = document.createElement("div");
 
-      const name   = row.name || "Tetamu";
+      const name   = shortDisplayName(row.name || "Tetamu");
       const phone4 = (row.phone4 || "").trim();
       const time   = formatTime(row.created_at);
       const msg    = row.message || "";
@@ -654,7 +3202,7 @@
       try{
         setChatStatus("Muat naik komen…");
 
-        const since = new Date(Date.now() - 3*60*60*1000).toISOString();
+        const since = new Date(Date.now() - 30*60*1000).toISOString();
         const { data, error } = await sb
           .from("live_chat_messages")
           .select("*")
@@ -733,45 +3281,34 @@
       }
     }
 
-    async function sendChatMessage(msg){
-      if(!liveUser){
-        showLoginPrompt();
-        return;
-      }
+   async function sendChatMessage(msg){
+  if(!liveUser){
+    showLoginPrompt();
+    return;
+  }
 
-      const dispName =
-        (liveUser.name && liveUser.name.trim()) ||
-        liveUser.phone ||
-        "Pelanggan";
+  if(!liveSocket || !liveSocket.connected){
+    alert("Socket belum bersambung. Cuba refresh page.");
+    return;
+  }
 
-      let phone4 = null;
-      const digits = (liveUser.phone || "").replace(/\D/g,"");
-      if(digits.length >= 4){
-        phone4 = digits.slice(-4);
-      }
+  const dispName =
+    (liveUser.name && liveUser.name.trim()) ||
+    liveUser.phone ||
+    "Pelanggan";
 
-      try{
-        const { data, error } = await sb
-          .from("live_chat_messages")
-          .insert({
-            room: CHAT_ROOM,
-            name: dispName,
-            phone4,
-            message: msg
-          })
-          .select()
-          .single();
-        if(error) throw error;
+  let phone4 = null;
+  const digits = (liveUser.phone || "").replace(/\D/g,"");
+  if(digits.length >= 4){
+    phone4 = digits.slice(-4);
+  }
 
-        registerSeen(data);
-        renderPanelMessage(data);
-        renderOverlayMessage(data);
-        updateChatCount();
-      }catch(e){
-        console.warn("chat insert error", e);
-        alert("Gagal hantar komen, cuba lagi.");
-      }
-    }
+  liveSocket.emit("live_comment", {
+    name: dispName,
+    phone4,
+    message: msg
+  });
+}
 
     overlayForm?.addEventListener("submit", async (ev)=>{
       ev.preventDefault();
@@ -789,33 +3326,43 @@
       });
     });
 
-    try{
-      sb.channel("live-chat-room-comment")
-        .on(
-          "postgres_changes",
-          {
-            event: "INSERT",
-            schema: "public",
-            table: "live_chat_messages",
-            filter: "room=eq."+CHAT_ROOM
-          },
-          (payload)=>{
-            const row = payload.new;
-            if(row.id && shownIds.has(row.id)) return;
-            registerSeen(row);
-            renderPanelMessage(row);
-            renderOverlayMessage(row);
-            updateChatCount();
-          }
-        )
-        .subscribe((status)=>{
-          if(status === "SUBSCRIBED"){
-            setChatStatus("Chat live aktif.");
-          }
-        });
-    }catch(e){
-      console.warn("chat realtime error", e);
-    }
+    function connectLiveSocket(){
+  try{
+    liveSocket = io(SOCKET_URL, {
+      transports: ["websocket", "polling"]
+    });
+
+    liveSocket.on("connect", ()=>{
+      console.log("LIVE SOCKET CONNECTED:", liveSocket.id);
+      setChatStatus("Socket live aktif.");
+      liveSocket.emit("join_live");
+    });
+
+    liveSocket.on("live_comment_new", (row)=>{
+      if(row.id && shownIds.has(row.id)) return;
+
+      registerSeen(row);
+      renderPanelMessage(row);
+      renderOverlayMessage(row);
+      updateChatCount();
+    });
+
+    liveSocket.on("live_comment_error", (err)=>{
+      console.warn("live_comment_error:", err);
+      alert(err?.message || "Gagal hantar komen.");
+    });
+
+    liveSocket.on("disconnect", ()=>{
+      setChatStatus("Socket terputus. Menyambung semula…");
+    });
+
+  }catch(e){
+    console.warn("connectLiveSocket error:", e);
+    setChatStatus("Socket gagal sambung.");
+  }
+}
+
+connectLiveSocket();
 
     async function detectAdmin(){
       try{
@@ -842,14 +3389,262 @@
     }
 
     (async ()=>{
-      await detectAdmin();
-      await loadChatInitial();
-      await updateChatCount();
+  await detectAdmin();
+  await loadChatInitial();
+  await updateChatCount();
 
-      setInterval(pollNewChats, 2000);
-      setInterval(updateChatCount, 15000);
-    })();
+  // ✅ Auto ambil chat baru setiap 2 saat
+  // Chat lama kekal sebab pollNewChats hanya append mesej baru
+  // setInterval(pollNewChats, 2000);
+
+  setInterval(updateChatCount, 60000);
+})();
   </script>
+
+<!-- LIVE MEDIA FULLSCREEN GALLERY -->
+<div id="liveGalleryModal" class="live-gallery-backdrop">
+  <div class="live-gallery-card">
+    <div class="live-gallery-top">
+      <div style="min-width:0;">
+        <div id="liveGalleryTitle" class="live-gallery-title">Media LIVE</div>
+        <div id="liveGalleryCount" class="live-gallery-count">1 / 1</div>
+      </div>
+
+      <button type="button" class="live-gallery-close" onclick="closeLiveGallery()">✕</button>
+    </div>
+
+    <div id="liveGalleryStage" class="live-gallery-stage">
+      <button type="button" class="live-gallery-nav live-gallery-prev" onclick="liveGalleryPrev()">‹</button>
+      <button type="button" class="live-gallery-nav live-gallery-next" onclick="liveGalleryNext()">›</button>
+    </div>
+
+    <div id="liveGalleryThumbs" class="live-gallery-thumbs"></div>
+  </div>
+</div>
+
+<!-- FLOATING AI-DAN CHAT -->
+<div id="aidanFloatWrap" class="aidan-float-wrap">
+  <button id="aidanFloatBtn" type="button" class="aidan-float-btn">
+    💬
+    <span class="aidan-float-label">Chat Ai-Dan</span>
+  </button>
+</div>
+
+<div id="aidanPopup" class="aidan-popup">
+  <div class="aidan-popup-head">
+    <div>💬 Chat dengan Ai-Dan</div>
+    <button type="button" class="aidan-popup-close" onclick="closeAidanPopup()">✕</button>
+  </div>
+
+  <iframe id="aidanPopupFrame" src=""></iframe>
+</div>
+
+<!-- LIVE CHECKOUT GOLD999 / GOLD BAR COIN -->
+<div id="live999CheckoutModal" class="live-checkout-backdrop">
+  <div class="live-checkout-sheet">
+    <div class="live-checkout-handle"></div>
+
+    <div class="d-flex justify-content-between align-items-center mb-2">
+      <div>
+        <div class="fw-black" style="font-weight:900;font-size:20px;">
+          Checkout GoldBar/Coin
+        </div>
+        <div class="text-muted small">
+          Semak item & terus submit ke Ai-Dan
+        </div>
+      </div>
+
+      <button type="button"
+              class="btn btn-light rounded-pill"
+              onclick="closeLive999Checkout()">
+        ✕
+      </button>
+    </div>
+
+    <div id="live999CheckoutItem" class="live-checkout-item mb-3"></div>
+
+    <div class="mb-3">
+      <div class="fw-bold mb-2">Penghantaran</div>
+      <div class="d-flex gap-2">
+        <button id="lc999ShipPickup"
+                type="button"
+                class="live-choice flex-fill"
+                onclick="setLc999Ship('PICKUP')">
+          Ambil Kedai
+        </button>
+
+        <button id="lc999ShipPost"
+                type="button"
+                class="live-choice flex-fill active"
+                onclick="setLc999Ship('POST')">
+          Pos
+        </button>
+      </div>
+    </div>
+
+    <div id="lc999AddressBox" class="mb-3">
+      <div class="fw-bold mb-1">Alamat</div>
+      <textarea id="lc999Address"
+                class="form-control"
+                rows="3"
+                placeholder="Alamat penuh + poskod + bandar + negeri"></textarea>
+      <div class="small text-muted mt-1">
+        Kalau alamat kosong, isi sini sebelum submit.
+      </div>
+    </div>
+
+    <div id="lc999PickupBox" class="mb-3" style="display:none;">
+      <div class="fw-bold mb-1">Masa ambil kedai</div>
+      <input id="lc999PickupWhen"
+             class="form-control"
+             placeholder="Contoh: hari ni / esok petang / 3pm">
+    </div>
+
+    <div class="mb-3">
+      <div class="fw-bold mb-2">Cara Bayar</div>
+      <div class="d-flex gap-2">
+        <button id="lc999PayQR"
+                type="button"
+                class="live-choice flex-fill active"
+                onclick="setLc999Pay('QR')">
+          QR
+        </button>
+
+        <button id="lc999PayTransfer"
+                type="button"
+                class="live-choice flex-fill"
+                onclick="setLc999Pay('TRANSFER')">
+          Transfer
+        </button>
+      </div>
+    </div>
+
+    <div class="rounded-4 p-3 mb-3" style="background:#f9fafb;border:1px solid #e5e7eb;">
+      <div class="d-flex justify-content-between">
+        <span>Subtotal</span>
+        <b id="lc999Subtotal">RM 0.00</b>
+      </div>
+
+      <div class="d-flex justify-content-between">
+        <span>Caj pos</span>
+        <b id="lc999ShipFee">RM 10.00</b>
+      </div>
+
+      <hr>
+
+      <div class="d-flex justify-content-between fs-5">
+        <b>Jumlah perlu dibayar</b>
+        <b id="lc999Total" class="text-danger">RM 0.00</b>
+      </div>
+
+         </div>
+
+    <div id="lc999Msg" class="small text-muted mb-2"></div>
+
+    <div class="live-submit-bar">
+      <button id="btnSubmitLive999Checkout"
+              type="button"
+              class="btn btn-warning fw-bold w-100 rounded-pill py-3"
+              onclick="submitLive999CheckoutToAiDan()">
+        Submit GoldBar/Coin & Dapat Detail Bayaran
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- LIVE CHECKOUT CARD -->
+<div id="liveCheckoutModal" class="live-checkout-backdrop">
+  <div class="live-checkout-sheet">
+    <div class="live-checkout-handle"></div>
+
+    <div class="d-flex justify-content-between align-items-center mb-2">
+      <div>
+        <div class="fw-black" style="font-weight:900;font-size:20px;">Checkout LIVE</div>
+        <div class="text-muted small">Semak item & terus submit ke Ai-Dan</div>
+      </div>
+      <button type="button" class="btn btn-light rounded-pill" onclick="closeLiveCheckout()">✕</button>
+    </div>
+
+    <div id="liveCheckoutItem" class="live-checkout-item mb-3"></div>
+
+    <div class="mb-3">
+      <div class="fw-bold mb-2">Penghantaran</div>
+      <div class="d-flex gap-2">
+        <button id="lcShipPickup" type="button" class="live-choice flex-fill" onclick="setLcShip('PICKUP')">Ambil Kedai</button>
+        <button id="lcShipPost" type="button" class="live-choice flex-fill active" onclick="setLcShip('POST')">Pos</button>
+      </div>
+    </div>
+
+    <div id="lcAddressBox" class="mb-3">
+      <div class="fw-bold mb-1">Alamat</div>
+      <textarea id="lcAddress" class="form-control" rows="3" placeholder="Alamat penuh + poskod + bandar + negeri"></textarea>
+      <div class="small text-muted mt-1">Kalau alamat kosong, isi sini sebelum submit.</div>
+    </div>
+
+    <div id="lcPickupBox" class="mb-3" style="display:none;">
+      <div class="fw-bold mb-1">Masa ambil kedai</div>
+      <input id="lcPickupWhen" class="form-control" placeholder="Contoh: hari ni / esok petang / 3pm">
+    </div>
+
+    <div class="mb-3">
+      <div class="fw-bold mb-2">Potong panjang?</div>
+      <div class="d-flex gap-2">
+        <button id="lcCutNo" type="button" class="live-choice flex-fill active" onclick="setLcCut('NO')">Tak Potong</button>
+        <button id="lcCutYes" type="button" class="live-choice flex-fill" onclick="setLcCut('YES')">Potong</button>
+      </div>
+    </div>
+
+    <div id="lcCutBox" class="mb-3" style="display:none;">
+      <div class="row g-2">
+        <div class="col-6">
+          <label class="small text-muted">Panjang asal</label>
+          <input id="lcCurrentLen"
+       class="form-control bg-light text-dark fw-bold"
+       readonly>
+        </div>
+        <div class="col-6">
+          <label class="small text-muted">Potong jadi</label>
+          <input id="lcCutTo" class="form-control" placeholder="55cm">
+        </div>
+      </div>
+    </div>
+
+    <div class="mb-3">
+      <div class="fw-bold mb-2">Cara Bayar</div>
+      <div class="d-flex gap-2">
+        <button id="lcPayQR" type="button" class="live-choice flex-fill" onclick="setLcPay('QR')">QR</button>
+        <button id="lcPayTransfer" type="button" class="live-choice flex-fill active" onclick="setLcPay('TRANSFER')">Transfer</button>
+        <button id="lcPayAtome" type="button" class="live-choice flex-fill" onclick="setLcPay('ATOME')">Atome</button>
+      </div>
+    </div>
+
+    <div class="rounded-4 p-3 mb-3" style="background:#f9fafb;border:1px solid #e5e7eb;">
+      <div class="d-flex justify-content-between">
+        <span>Subtotal</span>
+        <b id="lcSubtotal">RM 0.00</b>
+      </div>
+      <div class="d-flex justify-content-between">
+        <span>Caj pos</span>
+        <b id="lcShipFee">RM 10.00</b>
+      </div>
+      <hr>
+      <div class="d-flex justify-content-between fs-5">
+        <b>Total anggaran</b>
+        <b id="lcTotal" class="text-danger">RM 0.00</b>
+      </div>
+      <div class="small text-muted mt-1">Diskaun/cashback sebenar akan dikira oleh Ai-Dan masa submit.</div>
+    </div>
+
+    <div id="lcMsg" class="small text-muted mb-2"></div>
+
+    <div class="live-submit-bar">
+      <button id="btnSubmitLiveCheckout" type="button" class="btn btn-danger fw-bold w-100 rounded-pill py-3" onclick="submitLiveCheckoutToAiDan()">
+        Submit Lock & Dapat Detail Bayaran
+      </button>
+    </div>
+  </div>
+</div>
+
 
   <!-- Modal login/daftar ringkas -->
   <div id="loginModal" class="ea-modal-backdrop" style="display:none;">
@@ -875,5 +3670,308 @@
       </button>
     </div>
   </div>
+
+<div id="liveEndedOverlay" style="display:none;">
+  <div class="live-ended-backdrop">
+    <div class="live-ended-card text-center">
+      <div class="fs-1 mb-2">⚫</div>
+      <h4 class="fw-black mb-2" style="font-weight:900;color:#fbbf24;">
+        LIVE Sudah Tamat
+      </h4>
+
+      <div id="liveEndedText" class="small mb-3">
+        LIVE sudah tamat. Tunggu LIVE seterusnya ya.
+      </div>
+
+      <div class="d-grid gap-2">
+        <a href="chat.html" class="btn btn-warning fw-bold rounded-pill">
+          💬 Buka Chat Ai-Dan dan 🔔 Aktifkan Notifikasi
+        </a>
+
+        <a href="account.html" class="btn btn-outline-light fw-bold rounded-pill">
+          🔔 Daftar atau Ke Akaun Anda 
+        </a>
+
+        <button type="button" onclick="location.href='index.html'" class="btn btn-light fw-bold rounded-pill">
+          🏠 Kembali ke Laman Utama
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+/* =========================
+   iPhone-style swipe back (Tabung) with drag animation
+   - swipe dari tepi kiri
+   - page ikut jari
+   - modal tutup dulu
+   - offcanvas tutup dulu
+   - wheel picker tak trigger swipe
+   ========================= */
+(function(){
+  const page = document.querySelector('.page-shell');
+  if (!page) return;
+
+  let startX = 0;
+  let startY = 0;
+  let currentX = 0;
+  let tracking = false;
+  let dragging = false;
+
+  const EDGE_ZONE = 24;
+  const MAX_DY = 70;
+  const TRIGGER_RATIO = 0.33;
+
+  function getOpenModalEl(){
+    const modals = Array.from(document.querySelectorAll('.modal.show'));
+    return modals.length ? modals[modals.length - 1] : null;
+  }
+
+  function getOpenOffcanvasEl(){
+    const panels = Array.from(document.querySelectorAll('.offcanvas.show'));
+    return panels.length ? panels[panels.length - 1] : null;
+  }
+
+  function isWheelPickerOpen(){
+    const picker = document.getElementById('numberPickerModal');
+    return !!(picker && picker.classList.contains('show'));
+  }
+
+  function closeTopModal(){
+    const el = getOpenModalEl();
+    if (!el) return false;
+
+    try{
+      const inst = bootstrap.Modal.getInstance(el) || bootstrap.Modal.getOrCreateInstance(el);
+      inst.hide();
+      return true;
+    }catch(_){
+      el.classList.remove('show');
+      el.style.display = 'none';
+      document.body.classList.remove('modal-open');
+      document.querySelectorAll('.modal-backdrop').forEach(x => x.remove());
+      return true;
+    }
+  }
+
+  function closeOffcanvas(){
+    const el = getOpenOffcanvasEl();
+    if (!el) return false;
+
+    try{
+      const inst = bootstrap.Offcanvas.getInstance(el) || bootstrap.Offcanvas.getOrCreateInstance(el);
+      inst.hide();
+      return true;
+    }catch(_){
+      el.classList.remove('show');
+      el.style.visibility = 'hidden';
+      document.body.classList.remove('offcanvas-open');
+      document.querySelectorAll('.offcanvas-backdrop').forEach(x => x.remove());
+      return true;
+    }
+  }
+
+  function goBackPage(){
+    if (window.history.length > 1){
+      history.back();
+    }else{
+      location.href = 'index.html';
+    }
+  }
+
+  function resetPage(){
+    page.classList.remove('dragging');
+    page.style.transform = 'translateX(0)';
+    setTimeout(()=>{
+      document.body.classList.remove('swipe-peek');
+    }, 220);
+  }
+
+  document.addEventListener('touchstart', function(e){
+    if (!e.touches || !e.touches.length) return;
+    if (isWheelPickerOpen()) return;
+
+    const t = e.touches[0];
+    startX = t.clientX;
+    startY = t.clientY;
+    currentX = 0;
+    dragging = false;
+
+    tracking = startX <= EDGE_ZONE;
+  }, { passive:true });
+
+  document.addEventListener('touchmove', function(e){
+    if (!tracking || !e.touches || !e.touches.length) return;
+    if (isWheelPickerOpen()) return;
+
+    const t = e.touches[0];
+    const dx = t.clientX - startX;
+    const dy = Math.abs(t.clientY - startY);
+
+    if (dy > MAX_DY) return;
+    if (dx <= 0) return;
+
+    currentX = dx;
+    dragging = true;
+
+    document.body.classList.add('swipe-peek');
+    page.classList.add('dragging');
+    page.style.transform = `translateX(${dx}px)`;
+  }, { passive:true });
+
+  document.addEventListener('touchend', function(){
+    if (!tracking) return;
+
+    tracking = false;
+    page.classList.remove('dragging');
+
+    if (!dragging){
+      document.body.classList.remove('swipe-peek');
+      return;
+    }
+
+    const threshold = window.innerWidth * TRIGGER_RATIO;
+
+    if (currentX >= threshold){
+      page.style.transform = `translateX(${window.innerWidth}px)`;
+
+      setTimeout(()=>{
+        if (closeTopModal()) {
+          page.style.transition = 'none';
+          page.style.transform = 'translateX(0)';
+          void page.offsetHeight;
+          page.style.transition = '';
+          document.body.classList.remove('swipe-peek');
+          return;
+        }
+
+        if (closeOffcanvas()) {
+          page.style.transition = 'none';
+          page.style.transform = 'translateX(0)';
+          void page.offsetHeight;
+          page.style.transition = '';
+          document.body.classList.remove('swipe-peek');
+          return;
+        }
+
+        goBackPage();
+      }, 180);
+    } else {
+      resetPage();
+    }
+
+    dragging = false;
+    currentX = 0;
+  }, { passive:true });
+})();
+</script>
+<script>
+/* =========================
+   Floating Ai-Dan Chat Bubble
+   - drag bebas
+   - tekan buka popup
+   - live tetap jalan
+   ========================= */
+(function(){
+  const wrap = document.getElementById("aidanFloatWrap");
+  const btn = document.getElementById("aidanFloatBtn");
+  const popup = document.getElementById("aidanPopup");
+  const frame = document.getElementById("aidanPopupFrame");
+
+  if (!wrap || !btn || !popup || !frame) return;
+
+  let startX = 0;
+  let startY = 0;
+  let baseX = 0;
+  let baseY = 0;
+  let dragging = false;
+  let moved = false;
+
+  function clamp(n, min, max){
+    return Math.max(min, Math.min(max, n));
+  }
+
+  function applyPos(x, y){
+    const w = wrap.offsetWidth || 74;
+    const h = wrap.offsetHeight || 74;
+
+    x = clamp(x, 8, window.innerWidth - w - 8);
+    y = clamp(y, 70, window.innerHeight - h - 12);
+
+    wrap.style.left = x + "px";
+    wrap.style.top = y + "px";
+    wrap.style.right = "auto";
+    wrap.style.bottom = "auto";
+
+    localStorage.setItem("ea_aidan_bubble_x", String(x));
+    localStorage.setItem("ea_aidan_bubble_y", String(y));
+  }
+
+  function restorePos(){
+    const x = Number(localStorage.getItem("ea_aidan_bubble_x"));
+    const y = Number(localStorage.getItem("ea_aidan_bubble_y"));
+
+    if (Number.isFinite(x) && Number.isFinite(y) && x > 0 && y > 0){
+      applyPos(x, y);
+    }
+  }
+
+  restorePos();
+
+  btn.addEventListener("pointerdown", function(ev){
+    dragging = true;
+    moved = false;
+    startX = ev.clientX;
+    startY = ev.clientY;
+
+    const rect = wrap.getBoundingClientRect();
+    baseX = rect.left;
+    baseY = rect.top;
+
+    try{ btn.setPointerCapture(ev.pointerId); }catch(e){}
+  });
+
+  btn.addEventListener("pointermove", function(ev){
+    if (!dragging) return;
+
+    const dx = ev.clientX - startX;
+    const dy = ev.clientY - startY;
+
+    if (Math.abs(dx) > 4 || Math.abs(dy) > 4) moved = true;
+
+    applyPos(baseX + dx, baseY + dy);
+  });
+
+  btn.addEventListener("pointerup", function(){
+    if (!dragging) return;
+    dragging = false;
+
+    if (!moved){
+      openAidanPopup();
+    }
+  });
+
+  window.openAidanPopup = function(threadId){
+    let url = "chat.html";
+
+    if (threadId){
+      url += "?thread=" + encodeURIComponent(threadId);
+    }
+
+    if (!frame.src || !frame.src.includes(url)){
+      frame.src = url;
+    }
+
+    popup.style.display = "block";
+  };
+
+  window.closeAidanPopup = function(){
+    popup.style.display = "none";
+  };
+
+  window.addEventListener("resize", restorePos);
+})();
+</script>
 </body>
 </html>

@@ -1,0 +1,710 @@
+<!doctype html>
+<html lang="ms">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<link rel="stylesheet" href="/global.css">
+  <title>Admin • Gold Stock Out (Lebur) — Emas Amir</title>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="auth.js?v=13.1"></script>
+  <script src="admin-guard.js?v=1"></script>
+
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+
+  <style>
+    body{background:#fff}
+    .container-narrow{max-width:1200px}
+    .auth-pill{border:1px solid #e5e7eb;border-radius:999px;padding:.2rem .6rem;background:#fafafa;color:#555}
+    .btn-chip{border:1px solid #e5e7eb;background:#f8fafc;padding:6px 10px;border-radius:999px;font-size:.9rem}
+    .btn-chip.btn-primary{background:#0d6efd;color:#fff;border-color:#0d6efd}
+    .table-sticky thead th{position:sticky;top:0;background:#fff;z-index:5}
+    .mono{font-family:ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace}
+    .small-muted{font-size:12px;color:#6b7280}
+    @media print{
+      @page{ size: A4; margin: 10mm; }
+      body{margin:0}
+      .no-print{display:none!important}
+      .print-wrap{font-family:ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace; font-size:12px; line-height:1.35}
+      .p-title{font-weight:900;font-size:16px;text-align:center}
+      .p-sub{font-size:12px;text-align:center}
+      .p-hr{border-top:1px dashed #000;margin:10px 0}
+      table{width:100%;border-collapse:collapse}
+      th,td{border-bottom:1px solid #eee;padding:6px 4px;vertical-align:top;text-align:left}
+      th{font-weight:900}
+      .t-right{text-align:right}
+    }
+  </style>
+</head>
+<body>
+<div class="container container-narrow py-3">
+
+  <!-- TOP BAR -->
+  <div class="d-flex justify-content-between align-items-center mb-2">
+    <div class="small auth-pill" id="authStatus">Memuatkan…</div>
+    <div class="d-flex flex-wrap gap-2 no-print">
+      <a class="btn btn-outline-secondary btn-chip" href="index.html">Halaman Utama</a>
+      <a class="btn btn-outline-secondary btn-chip" href="admin.html">Admin</a>
+      <a class="btn btn-outline-secondary btn-chip" href="admin-report.html">Admin Report</a>
+      <button id="btnLogin"  class="btn btn-outline-secondary btn-chip" type="button">Log masuk</button>
+      <button id="btnLogout" class="btn btn-outline-secondary btn-chip" type="button" style="display:none">Log keluar</button>
+    </div>
+  </div>
+  <hr class="mb-3">
+
+  <div class="d-flex align-items-center justify-content-between gap-2 flex-wrap">
+    <div>
+      <h1 class="h4 m-0">Gold Stock Out (Lebur)</h1>
+      <div class="small text-muted">Pilih item lebihan/trade-in → buat stok out → boleh Print A4 detail.</div>
+    </div>
+    <div class="d-flex gap-2 flex-wrap no-print">
+      <button class="btn btn-outline-secondary" id="btnLoad" type="button">Load Stok Semasa</button>
+      <button class="btn btn-outline-secondary" id="btnPrint" type="button" disabled>Print A4 (Detail)</button>
+      <button class="btn btn-primary" id="btnCreate" type="button" disabled>Buat Stok Out</button>
+    </div>
+  </div>
+
+  <!-- Controls -->
+  <div class="card mt-3 no-print">
+    <div class="card-body">
+      <div class="row g-2 align-items-end">
+        <div class="col-md-3">
+          <label class="form-label">Reason</label>
+          <select id="reasonPick" class="form-select">
+            <option value="LEBUR" selected>LEBUR</option>
+            <option value="JUAL_SUPPLIER">JUAL_SUPPLIER</option>
+            <option value="HANTAR_KILANG">HANTAR_KILANG</option>
+          </select>
+        </div>
+        <div class="col-md-6">
+          <label class="form-label">Nota (optional)</label>
+          <input id="noteBox" class="form-control" placeholder="Contoh: Hantar kilang Kulim, batch #12">
+        </div>
+        <div class="col-md-3 text-md-end">
+          <div class="small-muted">Dipilih:</div>
+          <div class="fw-bold"><span id="selCount">0</span> item • <span id="selWeight">0.0000</span> g</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Summary -->
+  <div class="row g-3 mt-1">
+    <div class="col-lg-4">
+      <div class="card">
+        <div class="card-body">
+          <div class="text-muted small">Stok Semasa (Scrap/Lebur)</div>
+          <div class="display-6 fw-bold"><span id="balWeight">0.0000</span> g</div>
+          <div class="small text-muted mt-2">
+            Total item tersedia: <span class="fw-semibold" id="balCount">0</span>
+          </div>
+          <div class="small-muted mt-2">
+            Formula: (Masuk dari Split/Walkin/Trade-in) − (Total Stok Out).
+          </div>
+        </div>
+      </div>
+
+      <div class="card mt-3">
+        <div class="card-body">
+          <div class="fw-semibold mb-2">Pecahan sumber (tersedia)</div>
+          <div class="d-flex justify-content-between"><div>Split Potong</div><div class="fw-semibold"><span id="cSplit">0</span> item • <span id="gSplit">0.0000</span> g</div></div>
+          <div class="d-flex justify-content-between"><div>Split Walk-In</div><div class="fw-semibold"><span id="cWalkin">0</span> item • <span id="gWalkin">0.0000</span> g</div></div>
+          <div class="d-flex justify-content-between"><div>Trade-In</div><div class="fw-semibold"><span id="cTrade">0</span> item • <span id="gTrade">0.0000</span> g</div></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-lg-8">
+      <div class="card">
+        <div class="card-body no-print">
+          <div class="d-flex justify-content-between align-items-center flex-wrap gap-2">
+            <div>
+              <div class="fw-semibold">Senarai Item Tersedia</div>
+              <div class="small text-muted">Tick item yang nak keluar (stok out).</div>
+            </div>
+
+            <!-- ✅ Search + Quick Select -->
+            <div class="d-flex gap-2 align-items-center flex-wrap" style="max-width:700px; width:100%; justify-content:flex-end;">
+              <div class="input-group" style="max-width:520px; flex: 1 1 380px;">
+                <span class="input-group-text">Cari</span>
+                <input id="searchBox" class="form-control" placeholder="order_code / split_code / trade_kind / item_name">
+              </div>
+
+              <div class="btn-group" role="group" aria-label="Quick Select">
+                <button class="btn btn-outline-secondary btn-sm" id="btnSelectAll" type="button" disabled>Pilih Semua</button>
+                <button class="btn btn-outline-secondary btn-sm" id="btnClearAll" type="button" disabled>Kosongkan</button>
+                <button class="btn btn-outline-secondary btn-sm" id="btnInvertAll" type="button" disabled>Songsang</button>
+              </div>
+            </div>
+          </div>
+
+          <div class="small-muted mt-2">
+            Nota: Butang <b>Pilih Semua</b> ikut senarai yang sedang dipaparkan (selepas cari/filter).
+          </div>
+        </div>
+
+        <div class="table-responsive mt-3" style="max-height:560px">
+          <table class="table table-sm align-middle table-sticky">
+            <thead>
+              <tr class="no-print">
+                <th style="width:40px"></th>
+                <th style="width:140px">Source</th>
+                <th style="width:180px">Ref</th>
+                <th>Detail</th>
+                <th class="text-end" style="width:110px">Weight (g)</th>
+              </tr>
+              <tr class="d-none print-only">
+                <th>Source</th><th>Ref</th><th>Detail</th><th class="t-right">Weight (g)</th>
+              </tr>
+            </thead>
+            <tbody id="tbody">
+              <tr><td colspan="5" class="text-center text-muted py-4">Belum load…</td></tr>
+            </tbody>
+          </table>
+        </div>
+
+        <div class="small text-muted mt-2 no-print" id="info">0 item</div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<script>
+/* ========================== Config ========================== */
+const SB_URL = "https://dduizetstqqjrpsezbpi.supabase.co";
+const SB_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRkdWl6ZXRzdHFxanJwc2V6YnBpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTg3MzI0ODQsImV4cCI6MjA3NDMwODQ4NH0.CrlHXrmHtKgR9qc2192U6quRb5lpFEeOSgwG0Lb8KRM";
+window.sb = window.sb || window.supabase.createClient(SB_URL, SB_KEY);
+const sb = window.sb;
+
+const $ = (id)=>document.getElementById(id);
+const safeStr = (x)=> (x==null?'':String(x));
+const safeNum = (x)=> { const n=Number(x); return Number.isFinite(n)?n:0; };
+const fmt4 = (n)=> safeNum(n).toFixed(4);
+
+function fmtDate(d){
+  try{ return new Date(d).toLocaleString('ms-MY',{hour12:false}); }catch(_){ return safeStr(d); }
+}
+
+/* ========================== Topbar auth ========================== */
+(function(){
+  const pill=$('authStatus'),login=$('btnLogin'),logout=$('btnLogout');
+  try{
+    const a=(window.auth_get&&window.auth_get())||null;
+    if(a){
+      pill.textContent='Log masuk (admin) — '+(a.phone||a.msisdn||'');
+      login.style.display='none'; logout.style.display='';
+      logout.onclick=()=>{window.auth_clear&&window.auth_clear();location.reload();};
+    }else{
+      pill.textContent='Tidak log masuk';
+      login.style.display=''; logout.style.display='none';
+      login.onclick=()=>location.href='login.html#login';
+    }
+  }catch(_){}
+})();
+
+/* ========================== Admin guard ========================== */
+async function requireAdmin(){
+  if(window.adminGuard && typeof adminGuard.require==='function'){
+    return await adminGuard.require({
+      onChecking:()=> $('authStatus').textContent="Mengesahkan akses…",
+      onDenied:()=> $('authStatus').textContent="Akses ditolak",
+      onAllowed:(p)=> $('authStatus').textContent="Log masuk (admin) — "+p
+    });
+  }
+  const a=(window.auth_get&&window.auth_get())||null;
+  if(!a){ location.href="login.html#login"; return false; }
+  return true;
+}
+
+/* ==========================
+   Load available items
+========================== */
+let ALL = [];      // full list
+let VIEW = [];     // filtered
+let SELECTED = {}; // key -> row
+
+// Build key unique per source
+function rowKey(r){ return r.source_type + "::" + r.source_pk; }
+
+async function loadAlreadyOutKeys(){
+  // keys that already used in gold_stock_out_lines
+  const { data, error } = await sb
+    .from('gold_stock_out_lines')
+    .select('source_type,source_pk');
+
+  if(error) throw error;
+  const set = new Set();
+  for(const x of (data||[])){
+    const k = safeStr(x.source_type)+"::"+safeStr(x.source_pk);
+    set.add(k);
+  }
+  return set;
+}
+
+async function loadSplitPotongAvailable(outSet){
+  // from j916_split_txn: lebihan = original_weight_g - new_weight_g
+  const { data, error } = await sb
+    .from('j916_split_txn')
+    .select('id,created_at,sale_order_code,split_code,customer_name,customer_phone,original_weight_g,new_weight_g,split_status')
+    .order('created_at', { ascending:false })
+    .limit(2000);
+
+  if(error) throw error;
+
+  const rows = [];
+  for(const s of (data||[])){
+    const ow = safeNum(s.original_weight_g);
+    const nw = safeNum(s.new_weight_g);
+    const ex = ow - nw;
+    if(ex <= 0) continue;
+
+    // optional: only those still in stock (kalau Paksu guna split_status)
+    // if(String(s.split_status||'').toUpperCase() !== 'IN_STOCK') continue;
+
+    const r = {
+      source_type: 'SPLIT_POTONG',
+      source_pk: safeStr(s.id),
+      ref: safeStr(s.split_code || '') || safeStr(s.sale_order_code||''),
+      detail: `Order: ${safeStr(s.sale_order_code||'-')} • ${safeStr(s.customer_name||'-')} (${safeStr(s.customer_phone||'-')}) • ${fmtDate(s.created_at)}`,
+      weight_g: Number(ex.toFixed(4))
+    };
+    if(outSet.has(rowKey(r))) continue;
+    rows.push(r);
+  }
+  return rows;
+}
+
+function isWalkinBill(b){
+  const x = safeStr(b).trim().toUpperCase();
+  if(x === 'WALKIN' || x === 'WALK-IN') return true;
+  if(x.startsWith('WALKIN')) return true;
+  if(x.startsWith('WALK-IN')) return true;
+  return false;
+}
+
+async function loadSplitWalkinAvailable(outSet){
+  // from j916_orders where bill_id = WALKIN*, lebihan = weight_orig_g - weight_new_g
+  const { data, error } = await sb
+    .from('j916_orders')
+    .select('order_code,paid_at,created_at,status,bill_id,bill_id_text,customer_name,phone,pay_method,weight_orig_g,weight_new_g')
+    .order('created_at', { ascending:false })
+    .limit(2000);
+
+  if(error) throw error;
+
+  const rows = [];
+  for(const o of (data||[])){
+    const b = o.bill_id_text || o.bill_id || '';
+    if(!isWalkinBill(b)) continue;
+    // optional: only PAID
+    // if(String(o.status||'').toUpperCase() !== 'PAID') continue;
+
+    const ow = safeNum(o.weight_orig_g);
+    const nw = safeNum(o.weight_new_g);
+    const ex = ow - nw;
+    if(ex <= 0) continue;
+
+    const r = {
+      source_type: 'SPLIT_WALKIN',
+      source_pk: safeStr(o.order_code), // order_code jadi key
+      ref: safeStr(o.order_code||'-'),
+      detail: `WALKIN • ${safeStr(o.customer_name||'-')} (${safeStr(o.phone||'-')}) • Pay: ${safeStr(o.pay_method||'-')} • ${fmtDate(o.paid_at||o.created_at)}`,
+      weight_g: Number(ex.toFixed(4))
+    };
+    if(outSet.has(rowKey(r))) continue;
+    rows.push(r);
+  }
+  return rows;
+}
+
+async function loadTradeInAvailable(outSet){
+  // tradein_txn + tradein_items
+  const { data: txns, error: e1 } = await sb
+    .from('tradein_txn')
+    .select('id,created_at,status,customer_name,customer_phone,pay_method')
+    .order('created_at', { ascending:false })
+    .limit(2000);
+
+  if(e1) throw e1;
+
+  const paidIds = (txns||[])
+    .filter(t => String(t.status||'').toUpperCase() === 'PAID')
+    .map(t => t.id);
+
+  if(!paidIds.length) return [];
+
+  const { data: items, error: e2 } = await sb
+    .from('tradein_items')
+    .select('id,created_at,tradein_id,trade_kind,gold_type,item_name,weight_g,price_rm_g,amount_rm')
+    .in('tradein_id', paidIds)
+    .order('created_at', { ascending:false })
+    .limit(4000);
+
+  if(e2) throw e2;
+
+  const mapTxn = {};
+  for(const t of (txns||[])) mapTxn[t.id] = t;
+
+  const rows = [];
+  for(const it of (items||[])){
+    const wt = safeNum(it.weight_g);
+    if(wt <= 0) continue;
+
+    const t = mapTxn[it.tradein_id] || {};
+    const r = {
+      source_type: 'TRADE_IN',
+      source_pk: safeStr(it.id),
+      ref: (safeStr(it.trade_kind||'').toUpperCase() || 'TRADEIN') + ` • ${safeStr(it.gold_type||'')}`,
+      detail: `${safeStr(it.item_name||'-')} • ${safeStr(t.customer_name||'-')} (${safeStr(t.customer_phone||'-')}) • ${fmtDate(t.created_at||it.created_at)}`,
+      weight_g: Number(wt.toFixed(4))
+    };
+    if(outSet.has(rowKey(r))) continue;
+    rows.push(r);
+  }
+  return rows;
+}
+
+function applySearch(){
+  const q = safeStr($('searchBox').value).trim().toLowerCase();
+  if(!q){ VIEW = ALL.slice(); return; }
+  VIEW = ALL.filter(r=>{
+    const hay = [r.source_type,r.source_pk,r.ref,r.detail].map(safeStr).join(' ').toLowerCase();
+    return hay.includes(q);
+  });
+}
+
+function render(){
+  const tb = $('tbody');
+  if(!VIEW.length){
+    tb.innerHTML = `<tr><td colspan="5" class="text-center text-muted py-4">Tiada item tersedia.</td></tr>`;
+    $('info').textContent = '0 item';
+
+    $('btnSelectAll').disabled = true;
+    $('btnClearAll').disabled = true;
+    $('btnInvertAll').disabled = true;
+    return;
+  }
+
+  tb.innerHTML = VIEW.map(r=>{
+    const k = rowKey(r);
+    const checked = !!SELECTED[k];
+    return `
+      <tr>
+        <td class="no-print">
+          <input type="checkbox" class="form-check-input" data-key="${k}" ${checked?'checked':''}>
+        </td>
+        <td class="mono">${r.source_type}</td>
+        <td class="mono">${safeStr(r.ref||'-')}</td>
+        <td>${safeStr(r.detail||'-')}</td>
+        <td class="text-end fw-bold">${fmt4(r.weight_g)}</td>
+      </tr>
+    `;
+  }).join('');
+
+  $('info').textContent = `${VIEW.length} item (paparan)`;
+
+  // ✅ enable quick-select bila ada paparan
+  $('btnSelectAll').disabled = false;
+  $('btnClearAll').disabled = false;
+  $('btnInvertAll').disabled = false;
+}
+
+function recalcSelected(){
+  const keys = Object.keys(SELECTED);
+  const sum = keys.reduce((s,k)=> s + safeNum(SELECTED[k].weight_g), 0);
+  $('selCount').textContent = String(keys.length);
+  $('selWeight').textContent = fmt4(sum);
+
+  $('btnCreate').disabled = (keys.length === 0);
+  $('btnPrint').disabled = (keys.length === 0);
+}
+
+function renderSummaryCards(){
+  const sumAll = ALL.reduce((s,r)=> s + safeNum(r.weight_g), 0);
+  $('balWeight').textContent = fmt4(sumAll);
+  $('balCount').textContent = String(ALL.length);
+
+  function sumBy(type){
+    const list = ALL.filter(r=>r.source_type===type);
+    return { c:list.length, g:list.reduce((s,r)=>s+safeNum(r.weight_g),0) };
+  }
+  const a = sumBy('SPLIT_POTONG');
+  const b = sumBy('SPLIT_WALKIN');
+  const c = sumBy('TRADE_IN');
+
+  $('cSplit').textContent = String(a.c);
+  $('gSplit').textContent = fmt4(a.g);
+  $('cWalkin').textContent = String(b.c);
+  $('gWalkin').textContent = fmt4(b.g);
+  $('cTrade').textContent = String(c.c);
+  $('gTrade').textContent = fmt4(c.g);
+}
+
+async function doLoad(){
+  $('btnLoad').disabled = true;
+  $('btnLoad').textContent = 'Loading…';
+  try{
+    SELECTED = {};
+    recalcSelected();
+
+    $('btnSelectAll').disabled = true;
+    $('btnClearAll').disabled = true;
+    $('btnInvertAll').disabled = true;
+
+    const outSet = await loadAlreadyOutKeys();
+    const [sp, sw, tr] = await Promise.all([
+      loadSplitPotongAvailable(outSet),
+      loadSplitWalkinAvailable(outSet),
+      loadTradeInAvailable(outSet),
+    ]);
+
+    ALL = [...sp, ...sw, ...tr];
+
+    // sort latest-ish by ref/detail (simple)
+    ALL.sort((x,y)=> (y.weight_g - x.weight_g));
+
+    applySearch();
+    render();
+    renderSummaryCards();
+  }catch(e){
+    console.error(e);
+    alert('Ralat load stok: ' + (e?.message || e));
+  }finally{
+    $('btnLoad').disabled = false;
+    $('btnLoad').textContent = 'Load Stok Semasa';
+  }
+}
+
+/* ==========================
+   ✅ Quick Select (ikut VIEW / paparan)
+========================== */
+function doSelectAllView(){
+  if(!VIEW.length) return;
+  for(const r of VIEW){
+    const k = rowKey(r);
+    SELECTED[k] = r;
+  }
+  render();
+  recalcSelected();
+}
+
+function doClearAllView(){
+  if(!VIEW.length) return;
+  for(const r of VIEW){
+    const k = rowKey(r);
+    if(SELECTED[k]) delete SELECTED[k];
+  }
+  render();
+  recalcSelected();
+}
+
+function doInvertAllView(){
+  if(!VIEW.length) return;
+  for(const r of VIEW){
+    const k = rowKey(r);
+    if(SELECTED[k]) delete SELECTED[k];
+    else SELECTED[k] = r;
+  }
+  render();
+  recalcSelected();
+}
+
+/* ==========================
+   Create Stock Out
+========================== */
+function getAdminPhone(){
+  try{
+    const a=(window.auth_get&&window.auth_get())||null;
+    return a?.phone || a?.msisdn || '';
+  }catch(_){ return ''; }
+}
+
+async function doCreate(){
+  const keys = Object.keys(SELECTED);
+  if(!keys.length){ alert('Tiada item dipilih.'); return; }
+
+  const reason = $('reasonPick').value || 'LEBUR';
+  const note = safeStr($('noteBox').value || '').trim() || null;
+
+  const lines = keys.map(k=>{
+    const r = SELECTED[k];
+    return {
+      source_type: r.source_type,
+      source_pk: r.source_pk,
+      source_ref: safeStr(r.ref||''),
+      weight_g: Number(safeNum(r.weight_g).toFixed(4)),
+    };
+  });
+
+  $('btnCreate').disabled = true;
+  $('btnCreate').textContent = 'Menyimpan…';
+
+  try{
+    const resp = await fetch('/.netlify/functions/gold-stockout-create', {
+      method:'POST',
+      headers:{ 'content-type':'application/json' },
+      body: JSON.stringify({
+        reason,
+        note,
+        created_by_phone: getAdminPhone(),
+        lines
+      })
+    });
+    const j = await resp.json().catch(()=>null);
+    if(!j || !j.ok){
+      throw new Error(j?.error || 'Gagal create stok out');
+    }
+
+    alert(`✅ Stok Out berjaya!\nID: ${j.stock_out.id}\nTotal: ${j.stock_out.total_weight_g} g`);
+
+    // lepas berjaya: reload stok semasa (item yang sudah keluar akan hilang)
+    await doLoad();
+  }catch(e){
+    console.error(e);
+    alert('Ralat stok out: ' + (e?.message || e));
+  }finally{
+    $('btnCreate').disabled = false;
+    $('btnCreate').textContent = 'Buat Stok Out';
+  }
+}
+
+/* ==========================
+   Print A4 (detail selected)
+========================== */
+function escapeHtml(s){
+  const x = safeStr(s);
+  return x.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');
+}
+
+function buildPrintHtml(){
+  const keys = Object.keys(SELECTED);
+  const rows = keys.map(k=>SELECTED[k]);
+  const total = rows.reduce((s,r)=>s+safeNum(r.weight_g),0);
+
+  const nowStr = new Date().toLocaleString('ms-MY',{hour12:false});
+  const reason = escapeHtml($('reasonPick').value || 'LEBUR');
+  const note = escapeHtml($('noteBox').value || '');
+  const admin = escapeHtml(getAdminPhone() || '');
+
+  const head = `
+    <div class="print-wrap">
+      <div class="p-title">EMAS AMIR SDN BHD (202301019252)</div>
+      <div class="p-sub">GOLD STOCK OUT (DETAIL)</div>
+      <div class="p-sub">Reason: <b>${reason}</b></div>
+      <div class="p-sub">Printed: ${escapeHtml(nowStr)} ${admin?(' • Admin: '+admin):''}</div>
+      ${note?(`<div class="p-sub">Nota: ${note}</div>`):''}
+      <div class="p-hr"></div>
+
+      <table>
+        <thead>
+          <tr>
+            <th>Source</th>
+            <th>Ref</th>
+            <th>Detail</th>
+            <th class="t-right">Weight (g)</th>
+          </tr>
+        </thead>
+        <tbody>
+          ${rows.map(r=>`
+            <tr>
+              <td class="mono">${escapeHtml(r.source_type)}</td>
+              <td class="mono">${escapeHtml(r.ref||'-')}</td>
+              <td>${escapeHtml(r.detail||'-')}</td>
+              <td class="t-right"><b>${escapeHtml(fmt4(r.weight_g))}</b></td>
+            </tr>
+          `).join('')}
+        </tbody>
+      </table>
+
+      <div class="p-hr"></div>
+      <div style="display:flex;justify-content:space-between">
+        <div><b>TOTAL ITEM</b>: ${rows.length}</div>
+        <div><b>TOTAL GRAM</b>: ${fmt4(total)} g</div>
+      </div>
+      <div class="p-hr"></div>
+      <div class="p-sub">— END —</div>
+    </div>
+  `;
+  return head;
+}
+
+function doPrint(){
+  const keys = Object.keys(SELECTED);
+  if(!keys.length){ alert('Tiada item dipilih.'); return; }
+
+  const html = buildPrintHtml();
+  const w = window.open('', '_blank', 'width=980,height=720');
+  if(!w){ alert('Popup block. Sila allow popup untuk print.'); return; }
+
+  w.document.open();
+  w.document.write(`<!doctype html>
+<html lang="ms">
+<head>
+<meta charset="utf-8">
+<title>Print</title>
+<style>
+@page{ size:A4; margin:10mm; }
+body{margin:0}
+.print-wrap{font-family:ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace; font-size:12px; line-height:1.35}
+.p-title{font-weight:900;font-size:16px;text-align:center}
+.p-sub{font-size:12px;text-align:center}
+.p-hr{border-top:1px dashed #000;margin:10px 0}
+table{width:100%;border-collapse:collapse}
+th,td{border-bottom:1px solid #eee;padding:6px 4px;vertical-align:top;text-align:left}
+th{font-weight:900}
+.t-right{text-align:right}
+.mono{font-family:ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace}
+</style>
+</head>
+<body>${html}
+<script>window.onload=function(){setTimeout(function(){window.print();},150);};<\/script>
+</body></html>`);
+  w.document.close();
+}
+
+/* ==========================
+   Wire
+========================== */
+$('btnLoad').addEventListener('click', doLoad);
+$('btnCreate').addEventListener('click', doCreate);
+$('btnPrint').addEventListener('click', doPrint);
+
+// ✅ quick select buttons
+$('btnSelectAll').addEventListener('click', doSelectAllView);
+$('btnClearAll').addEventListener('click', doClearAllView);
+$('btnInvertAll').addEventListener('click', doInvertAllView);
+
+$('searchBox').addEventListener('input', ()=>{
+  applySearch();
+  render();
+});
+
+document.addEventListener('change', (ev)=>{
+  const el = ev.target;
+  if(!el || el.tagName !== 'INPUT') return;
+  if(el.type !== 'checkbox') return;
+  const k = el.getAttribute('data-key');
+  if(!k) return;
+
+  const r = VIEW.find(x=>rowKey(x)===k) || ALL.find(x=>rowKey(x)===k);
+  if(!r) return;
+
+  if(el.checked) SELECTED[k] = r;
+  else delete SELECTED[k];
+
+  recalcSelected();
+});
+
+(async ()=>{
+  const ok = await requireAdmin();
+  if(!ok) return;
+
+  // auto load sekali
+  await doLoad();
+})();
+</script>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

@@ -127,9 +127,8 @@ const sb = window.sb;
 const $ = id => document.getElementById(id);
 const qs = new URLSearchParams(location.search);
 const Q_ID   = qs.get('id') || '';
-const Q_TYPE = (qs.get('type') || '').toUpperCase(); // BUY|SELL|WITHDRAW
-const money  = n => 'RM ' + Number(n||0).toFixed(2);
-const grams  = u => (Number(u||0)*0.1).toFixed(1);
+const Q_TYPE = (qs.get('type') || '').toUpperCase(); // BUY|SELL|WITHDRAW|CONVERT_916
+const money  = n => 'RM ' + Number(n||0).toFixed(2);const grams  = u => (Number(u||0)*0.1).toFixed(1);
 const fmtMY  = s => { try{ return new Date(s).toLocaleString('ms-MY',{hour12:false}); }catch{ return '-'; } };
 const normMsisdn = p => {
   if(!p) return null;
@@ -250,8 +249,8 @@ async function loadTxn(){
     }
 
     const isPending = String(row.status || '').toUpperCase() === 'PENDING';
-    // Hanya boleh sahkan jika PENDING dan jenisnya SELL/WITHDRAW
-    $('btnApprove').disabled = !(isPending && (kind === 'SELL' || kind === 'WITHDRAW'));
+    // Hanya boleh sahkan jika PENDING dan jenisnya SELL/WITHDRAW/CONVERT_916
+$('btnApprove').disabled = !(isPending && (kind === 'SELL' || kind === 'WITHDRAW' || kind === 'CONVERT_916'));
 
     // Panel hanya dipaparkan jika transaksi wujud
     document.getElementById('panel').style.display = '';
@@ -288,12 +287,21 @@ $('btnApprove').addEventListener('click', async ()=>{
     }
   }
 
+  let ok = false;
+
+if (kind === 'CONVERT_916'){
+  ok = await tryCall('tabung_admin_approve_convert916_v1', {
+    p_tabung_txn_id: TXN.id,
+    p_paid_at: new Date().toISOString()
+  });
+}else{
   // Hanya SATU fungsi: mark_paid (server akan set status yang betul utk SELL/WITHDRAW)
-  const ok = await tryCall('tabung_admin_mark_paid', {
+  ok = await tryCall('tabung_admin_mark_paid', {
     p_id: TXN.id,
     p_kind: kind,
     p_paid_at: new Date().toISOString()
   });
+}
 
   if (!ok) {
     $('actMsg').textContent = '❌ ' + (errMsg || 'Gagal sahkan.');
@@ -311,24 +319,32 @@ $('btnApprove').addEventListener('click', async ()=>{
     let msg = '';
 
     if (kind === 'WITHDRAW'){
-      msg = [
-        '✅ Admin telah mengesahkan keluar fizikal tabung anda.',
-        `Nama: ${TXN.user_name||'-'}`,
-        `Keluar: ${grams(TXN.units)} g (${TXN.units} unit)`,
-        `Upah kad: ${money(TXN.fee||0)}`,
-        `Jumlah: ${money(TXN.total||0)}`,
-        `Tarikh: ${tarikh}`,
-        'Terima kasih.'
-      ].join('\n');
-    } else if (kind === 'SELL'){
-      msg = [
-        '✅ Admin telah mengesahkan jual balik tabung anda.',
-        `Unit: ${TXN.units} (0.1g) = ${grams(TXN.units)} g`,
-        `Jumlah: ${money(TXN.total||0)}`,
-        `Tarikh: ${tarikh}`,
-        'Bayaran akan dibuat ikut maklumat akaun yang diberi.'
-      ].join('\n');
-    }
+  msg = [
+    '✅ Admin telah mengesahkan keluar fizikal tabung anda.',
+    `Nama: ${TXN.user_name||'-'}`,
+    `Keluar: ${grams(TXN.units)} g (${TXN.units} unit)`,
+    `Upah kad: ${money(TXN.fee||0)}`,
+    `Jumlah: ${money(TXN.total||0)}`,
+    `Tarikh: ${tarikh}`,
+    'Terima kasih.'
+  ].join('\n');
+} else if (kind === 'SELL'){
+  msg = [
+    '✅ Admin telah mengesahkan jual balik tabung anda.',
+    `Unit: ${TXN.units} (0.1g) = ${grams(TXN.units)} g`,
+    `Jumlah: ${money(TXN.total||0)}`,
+    `Tarikh: ${tarikh}`,
+    'Bayaran akan dibuat ikut maklumat akaun yang diberi.'
+  ].join('\n');
+} else if (kind === 'CONVERT_916'){
+  msg = [
+    '✅ Admin telah mengesahkan tukar Tabung ke Emas 916 anda.',
+    `Unit digunakan: ${TXN.units} unit = ${grams(TXN.units)} g`,
+    `Nilai Tabung: ${money(TXN.total||0)}`,
+    `Tarikh: ${tarikh}`,
+    'Order barang kemas 916 anda telah disahkan.'
+  ].join('\n');
+}
 
     if (msg) {
       const to = TXN.user_phone || TXN.customer_phone || '';

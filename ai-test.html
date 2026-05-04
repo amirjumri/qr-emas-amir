@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html>
+<body>
+<h3>Test AI-Dan</h3>
+
+<input id="msg" placeholder="Taip soalan">
+<button onclick="send()">Test</button>
+
+<pre id="out"></pre>
+
+<script>
+async function send(){
+  const msg = document.getElementById("msg").value;
+  const r = await fetch("/.netlify/functions/ai-dan-j916",{
+    method:"POST",
+    headers:{"Content-Type":"application/json"},
+    body: JSON.stringify({message:msg})
+  });
+  const j = await r.json();
+  document.getElementById("out").textContent = JSON.stringify(j,null,2);
+}
+</script>
+
+</body>
+</html>

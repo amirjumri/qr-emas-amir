@@ -66,6 +66,23 @@ function routeIntent({ msg, fileUrl, isLoggedIn, threadStatus }) {
   const payCash =
     t.includes("tunai") || t.includes("cash");
 
+// ---------- PAYMENT PROOF (SLIP) ----------
+  const payProofText =
+    t.includes("dah buat bayaran") || t.includes("dah bayar") || t.includes("saya dah bayar") ||
+    t.includes("sudah bayar") || t.includes("sudah buat bayaran") ||
+    t.includes("done payment") || t.includes("paid") ||
+    t.includes("resit") || t.includes("receipt") || t.includes("slip") ||
+    t.includes("bukti bayaran") || t.includes("bukti pembayaran") ||
+    t.includes("saya transfer") || t.includes("saya dah transfer") ||
+    t.includes("saya dah buat transfer") || t.includes("saya dah bank in") || t.includes("bank in") ||
+    t.includes("saya dah scan") || t.includes("saya dah qr") || t.includes("dah qr");
+
+  // ✅ trigger bila:
+  // - customer upload file (slip) ATAU
+  // - customer taip ayat berkait bayaran
+  const paymentProof = hasFile || payProofText;
+
+
   const cancelLock =
     t.includes("cancel") || t.includes("cansel") || t.includes("batalkan") || t.includes("batal") ||
     t.includes("tak jadi") || t.includes("x jadi") || t.includes("tak jadi beli") || t.includes("x jadi beli") ||
@@ -88,8 +105,9 @@ function routeIntent({ msg, fileUrl, isLoggedIn, threadStatus }) {
 
   const looksLikePaymentChoice = payAtome || payFPX || payTransfer || payCash;
 
-  const looksLikeLockOps =
-    isLock || isSemakTag || moreItem || forgotPrice || cut || pickup || pos || looksLikePaymentChoice || cancelLock;
+const looksLikeLockOps =
+    isLock || isSemakTag || moreItem || forgotPrice || cut || pickup || pos ||
+    looksLikePaymentChoice || cancelLock || paymentProof;
 
   const isOtherQuestion =
     inLockFlow &&
@@ -115,6 +133,8 @@ function routeIntent({ msg, fileUrl, isLoggedIn, threadStatus }) {
     payFPX,
     payTransfer,
     payCash,
+    paymentProof,
+    isPayProof: paymentProof,
     cancelLock,
     stillInterestedYes,
     isShopHours,

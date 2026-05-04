@@ -266,24 +266,24 @@ function resitNo(splitCode, createdAt){
     setText('methodText', (splitRow.cashout_method || method || '-').toUpperCase());
 
     // fetch sale row (for customer data if missing)
-    const s = await sb.from('j916_orders')
+let saleRow = null;
+
+const s = await sb.from('j916_orders')
   .select('order_code,created_at,status,pay_method,customer_name,phone,checkout_group')
   .eq('order_code', splitRow.sale_order_code)
   .in('status', ['PAID','COMPLETED'])
   .maybeSingle();
-if(s.error) throw s.error;
+if (s.error) throw s.error;
 
-const saleRow = s.data || null;;
-
-let saleRow = s.data || null;
+saleRow = s.data || null;
 
 // fallback: kalau tak jumpa walaupun order_code betul, cuba tanpa filter status
-if(!saleRow){
+if (!saleRow) {
   const s2 = await sb.from('j916_orders')
     .select('order_code,created_at,status,pay_method,customer_name,phone,checkout_group')
     .eq('order_code', splitRow.sale_order_code)
     .maybeSingle();
-  if(!s2.error) saleRow = s2.data || null;
+  if (!s2.error) saleRow = s2.data || null;
 }
 
     const custName = splitRow.customer_name || saleRow?.customer_name || '-';

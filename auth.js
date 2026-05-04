@@ -57,6 +57,44 @@
   const auth_clear  = () => localStorage.removeItem(LS_USER);
   const is_logged_in= () => !!auth_get();
 
+function normalizePhone(raw) {
+  let d = onlyDigits(raw);
+  if (!d) return "";
+
+  if (d.startsWith("00")) d = d.slice(2);
+
+  // paksa semua jadi format LOCAL (013)
+  if (d.startsWith("60")) d = "0" + d.slice(2);
+
+  // kalau tak start 0, tambah 0
+  if (!d.startsWith("0")) d = "0" + d;
+
+  return d;
+}
+function localPhone(raw) {
+  let d = onlyDigits(raw);
+  if (!d) return "";
+
+  if (d.startsWith("00")) d = d.slice(2);
+  if (d.startsWith("60")) d = "0" + d.slice(2);
+
+  return d;
+}
+
+function phoneVariants(raw) {
+  const set = new Set();
+
+  const a = onlyDigits(raw);
+  const b = normalizePhone(raw);
+  const c = localPhone(raw);
+
+  if (a) set.add(a);
+  if (b) set.add(b);
+  if (c) set.add(c);
+
+  return [...set];
+}
+
   /* ===== 4D) ➕ PASTIKAN ADA SESI JWT SUPABASE ===== */
   async function ensureSupabaseSession(phone, password, allowSignup){
     try{
@@ -178,67 +216,91 @@
   }
 
   // ===== 4E) ⭐ BARU: Sync agent_slug selepas login/daftar TERUS ke jadual customers =====
-  async function syncAgentAfterAuth(phone){
-    try{
-      if (!window.sb) return;
+ async function syncAgentAfterAuth(phone){
+  try{
+    if (!window.sb) return;
 
-      // Ambil slug agen daripada agent-ref.js (localStorage)
-      const slug = (window.EmasAmirAgent && typeof window.EmasAmirAgent.getRef === "function")
-        ? window.EmasAmirAgent.getRef()
-        : null;
+    const slug = (window.EmasAmirAgent && typeof window.EmasAmirAgent.getRef === "function")
+      ? window.EmasAmirAgent.getRef()
+      : null;
 
-      if (!slug) return; // tiada ref agen → abaikan
+    if (!slug) return;
 
-      const cleanPhone = onlyDigits(phone);
-      if (!cleanPhone) return;
+    const variants = phoneVariants(phone);
+    if (!variants.length) return;
 
-      console.log("[auth_js] syncAgentAfterAuth =>", { phone: cleanPhone, slug });
+    console.log("[auth_js] syncAgentAfterAuth =>", { phone: variants, slug });
 
-      // Update TERUS ke jadual customers
-      // Hanya set kalau agent_slug masih NULL (lock bawah agen pertama sahaja)
-      const { error } = await window.sb
-        .from("customers")
-        .update({ agent_slug: slug })
-        .eq("phone", cleanPhone)
-        .is("agent_slug", null);  // jangan override kalau dah ada
+    const { error } = await window.sb
+      .from("customers")
+      .update({ agent_slug: slug })
+      .in("phone", variants)
+      .is("agent_slug", null);
 
-      if (error){
-        console.warn("[auth_js] syncAgentAfterAuth error:", error.message || error);
-      } else {
-        console.log("[auth_js] syncAgentAfterAuth OK (customers.agent_slug dikemas kini)");
-      }
-    }catch(e){
-      console.warn("[auth_js] syncAgentAfterAuth exception:", e);
+    if (error){
+      console.warn("[auth_js] syncAgentAfterAuth error:", error.message || error);
+    } else {
+      console.log("[auth_js] syncAgentAfterAuth OK (customers.agent_slug dikemas kini)");
     }
+  }catch(e){
+    console.warn("[auth_js] syncAgentAfterAuth exception:", e);
   }
+}
 
   /* ===== 4) RPC helpers ===== */
 
   // 4A) Login menggunakan password
-  async function login_password(phone, password) {
-    if (!window.sb) return { ok:false, error:"Supabase tidak dikonfigurasi" };
-    try {
+ async function login_password(phone, password) {
+  if (!window.sb) return { ok:false, error:"Supabase tidak dikonfigurasi" };
+
+  try {
+    const variants = phoneVariants(phone);
+    let lastError = null;
+
+    console.log("[auth_js] login_password variants =", variants);
+
+    for (const p of variants) {
       const { data, error } = await window.sb.rpc("login_password", {
-        in_phone: phone,
+        in_phone: p,
         in_password: password
       });
-      if (error) return { ok:false, error:error.message };
+
+      if (error) {
+        lastError = error;
+        console.warn("[auth_js] login_password RPC fail for", p, error.message || error);
+        continue;
+      }
 
       const row = Array.isArray(data) ? data[0] : data;
-      if (!row) return { ok:false, error:"Login gagal" };
+      if (!row) {
+        continue;
+      }
 
-      auth_set({ id:row.id, name:row.name, phone:row.phone, ic:row.ic, alamat:row.alamat });
+      auth_set({
+        id: row.id,
+        name: row.name,
+        phone: row.phone,
+        ic: row.ic,
+        alamat: row.alamat
+      });
+
       try { sessionStorage.setItem("ea_pw", password); } catch {}
 
-      // ➕ pastikan Supabase Auth ada sesi JWT (elak redirect bila tekan Beli)
-      await ensureSupabaseSession(phone, password, false);
-      await syncAgentAfterAuth(phone);
+      await ensureSupabaseSession(row.phone || p, password, false);
+      await syncAgentAfterAuth(row.phone || p);
 
       return { ok:true, data:row };
-    } catch (e) {
-      return { ok:false, error:String(e) };
     }
+
+    if (lastError) {
+      return { ok:false, error:lastError.message || "Login gagal" };
+    }
+
+    return { ok:false, error:"Login gagal" };
+  } catch (e) {
+    return { ok:false, error:String(e) };
   }
+}
 
   // 4B) Daftar baharu + set password (OTP sebagai TEXT)
   async function register_finish({ phone, name, ic, alamat, otp, password }) {
@@ -320,9 +382,12 @@
 
   /* ===== 5) Expose ke window ===== */
   window.onlyDigits      = onlyDigits;
-  window.wa_open         = wa_open;
-  window.used_refs_has   = used_refs_has;
-  window.used_refs_add   = used_refs_add;
+window.normalizePhone  = normalizePhone;
+window.localPhone      = localPhone;
+window.phoneVariants   = phoneVariants;
+window.wa_open         = wa_open;
+window.used_refs_has   = used_refs_has;
+window.used_refs_add   = used_refs_add;
 
   window.auth_get        = auth_get;
   window.auth_set        = auth_set;

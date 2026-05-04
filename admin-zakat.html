@@ -1,0 +1,758 @@
+<!doctype html>
+<html lang="ms">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<link rel="stylesheet" href="/global.css">
+<title>Admin Zakat — Emas Amir</title>
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+<style>
+  body{background:#fff}
+  .container-narrow{max-width:1180px}
+  .badge-soft{background:#eef7ff;color:#0d6efd;border:1px solid #d7ebff}
+  .badge-soft-success{background:#eef9ee;color:#0b7a0b;border:1px solid #cfe8cf}
+  input[type=number]{text-align:right}
+  .card+.card{margin-top:14px}
+  details>summary{cursor:pointer}
+  .top-btns .btn{border-radius:12px}
+  .table-xs td,.table-xs th{padding:.45rem .55rem}
+  .pill{
+    display:inline-flex;align-items:center;gap:8px;
+    padding:6px 10px;border-radius:999px;
+    background:#eef1f4;font-size:12px;color:#495057
+  }
+  .section-note{
+    font-size:13px;color:#6c757d
+  }
+  .mono{
+    font-family:ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,"Liberation Mono","Courier New",monospace;
+  }
+</style>
+</head>
+<body>
+<div class="container container-narrow py-3">
+
+  <!-- Top bar -->
+  <div class="d-flex justify-content-between align-items-center flex-wrap gap-2">
+    <div>
+      <h3 class="m-0">Admin Zakat</h3>
+      <div class="text-muted small">Tetapan nisab negeri, harga emas rujukan zakat & semakan history</div>
+    </div>
+
+    <div class="top-btns btn-group flex-wrap">
+      <a class="btn btn-outline-secondary" href="index.html">Laman Utama</a>
+      <a class="btn btn-outline-secondary" href="account.html">Akaun</a>
+      <a class="btn btn-outline-secondary" href="admin.html">Admin</a>
+      <a class="btn btn-outline-secondary" href="admin-chat.html">Admin Chat</a>
+    </div>
+  </div>
+
+  <hr>
+
+  <!-- Status -->
+  <div class="d-flex justify-content-between align-items-center flex-wrap gap-2 mb-3">
+    <span id="authStatus" class="pill">Mengesahkan akses admin…</span>
+    <span class="pill">14 entiti zakat: 13 negeri + Wilayah Persekutuan</span>
+  </div>
+
+  <!-- Tetapan ringkas -->
+  <div class="card">
+    <div class="card-body">
+      <div class="d-flex justify-content-between align-items-start flex-wrap gap-2 mb-3">
+        <div>
+          <h5 class="card-title mb-1">🕌 Tetapan Nisab & Harga Emas Rujukan</h5>
+          <div class="section-note">
+            Admin boleh tetapkan nilai nisab rasmi negeri, harga emas rujukan per gram, tarikh kuat kuasa dan sumber rujukan.
+          </div>
+        </div>
+        <span id="saveNote" class="badge badge-soft-success" style="display:none">✓ Disimpan</span>
+      </div>
+
+      <div class="row g-3">
+        <div class="col-md-4">
+          <label class="form-label">Negeri / Pusat Zakat</label>
+          <select id="stateCode" class="form-select">
+            <option value="JOHOR">Johor</option>
+            <option value="KEDAH">Kedah</option>
+            <option value="KELANTAN">Kelantan</option>
+            <option value="MELAKA">Melaka</option>
+            <option value="NEGERI_SEMBILAN">Negeri Sembilan</option>
+            <option value="PAHANG">Pahang</option>
+            <option value="PERAK">Perak</option>
+            <option value="PERLIS">Perlis</option>
+            <option value="PULAU_PINANG">Pulau Pinang</option>
+            <option value="SABAH">Sabah</option>
+            <option value="SARAWAK">Sarawak</option>
+            <option value="SELANGOR" selected>Selangor</option>
+            <option value="TERENGGANU">Terengganu</option>
+            <option value="WILAYAH_PERSEKUTUAN">Wilayah Persekutuan</option>
+          </select>
+        </div>
+
+        <div class="col-md-4">
+          <label class="form-label">Nama Paparan</label>
+          <input id="stateName" class="form-control" placeholder="cth Selangor">
+        </div>
+
+        <div class="col-md-4">
+          <label class="form-label">Tarikh Kuat Kuasa</label>
+          <input id="effectiveDate" type="date" class="form-control">
+        </div>
+
+        <div class="col-md-3">
+          <label class="form-label">Nisab Asas (gram)</label>
+          <input id="nisabGram" type="number" step="0.001" min="0" class="form-control" value="85">
+          <div class="form-text">Default standard emas simpan.</div>
+        </div>
+
+        <div class="col-md-3">
+          <label class="form-label">Harga Emas Rujukan / g (RM)</label>
+          <input id="goldPricePerGram" type="number" step="0.01" min="0" class="form-control" placeholder="cth 440.00">
+        </div>
+
+        <div class="col-md-3">
+          <label class="form-label">Nisab Rasmi Negeri (RM)</label>
+          <input id="nisabRm" type="number" step="0.01" min="0" class="form-control" placeholder="cth 37401.00">
+        </div>
+
+       <div class="col-md-3">
+  <label class="form-label">Kadar Zakat (%)</label>
+  <input id="zakatRate" type="number" step="0.01" min="0" class="form-control" value="2.5">
+</div>
+
+<div class="col-md-3">
+  <label class="form-label">Uruf Perhiasan (gram)</label>
+  <input id="urufGram" type="number" step="0.001" min="0" class="form-control" placeholder="cth 200">
+  <div class="form-text">Isi 0 jika negeri tiada uruf khusus.</div>
+</div>
+
+<div class="col-md-3">
+  <label class="form-label">Status Uruf</label>
+  <select id="urufStatus" class="form-select">
+    <option value="SAH_RASMI">Sah rasmi</option>
+    <option value="PERLU_SEMAKAN">Perlu semakan</option>
+    <option value="TIADA_URUF">Tiada uruf</option>
+  </select>
+</div>
+
+<div class="col-md-3">
+  <label class="form-label">Asas Fallback (gram)</label>
+  <input id="urufFallbackGram" type="number" step="0.001" min="0" class="form-control" value="85">
+  <div class="form-text">Untuk rujukan sementara jika perlu semakan.</div>
+</div>
+
+<div class="col-md-6">
+  <label class="form-label">Nama Sumber Rujukan</label>
+  <input id="sourceName" class="form-control" placeholder="cth Lembaga Zakat Kedah / Zakat Selangor / MAIK">
+</div>
+
+<div class="col-md-6">
+  <label class="form-label">URL Sumber Rujukan</label>
+  <div class="input-group">
+    <input id="sourceUrl" class="form-control" placeholder="cth https://...">
+    <button id="btnOpenSource" type="button" class="btn btn-outline-secondary">Buka Rujukan</button>
+  </div>
+</div>
+
+<div class="col-12">
+  <label class="form-label">Nota Uruf / Semakan</label>
+  <textarea id="urufNote" class="form-control" rows="2" placeholder="Contoh: Nilai uruf ini masih perlu disahkan dengan laman rasmi / pusat zakat negeri."></textarea>
+</div>
+
+<div class="col-12">
+  <label class="form-label">Nota Admin</label>
+  <textarea id="adminNote" class="form-control" rows="2" placeholder="Contoh: Kadar rasmi 2026 berdasarkan 85g emas."></textarea>
+</div>
+
+        <div class="col-12 d-flex align-items-center gap-3 flex-wrap">
+          <button id="btnCalcNisab" class="btn btn-outline-secondary">Kira Nisab dari Harga/g</button>
+          <button id="btnSaveSetting" class="btn btn-primary">Simpan Tetapan Zakat</button>
+          <span id="saveStatus" class="text-muted"></span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Preview -->
+  <div class="card">
+    <div class="card-body">
+      <h5 class="card-title">📊 Preview Tetapan Semasa</h5>
+      <div class="row g-3">
+        <div class="col-md-3">
+          <div class="border rounded p-3 h-100">
+            <div class="text-muted small">Negeri</div>
+            <div class="fw-bold fs-5" id="pvState">-</div>
+          </div>
+        </div>
+        <div class="col-md-3">
+          <div class="border rounded p-3 h-100">
+            <div class="text-muted small">Nisab Rasmi</div>
+            <div class="fw-bold fs-5" id="pvNisab">-</div>
+          </div>
+        </div>
+        <div class="col-md-3">
+          <div class="border rounded p-3 h-100">
+            <div class="text-muted small">Harga Emas / g</div>
+            <div class="fw-bold fs-5" id="pvPrice">-</div>
+          </div>
+        </div>
+        <div class="col-md-3">
+  <div class="border rounded p-3 h-100">
+    <div class="text-muted small">Kadar Zakat</div>
+    <div class="fw-bold fs-5" id="pvRate">-</div>
+  </div>
+</div>
+
+<div class="col-md-3">
+  <div class="border rounded p-3 h-100">
+    <div class="text-muted small">Uruf Perhiasan</div>
+    <div class="fw-bold fs-5" id="pvUruf">-</div>
+    <div class="small text-muted mt-1" id="pvUrufStatus">-</div>
+  </div>
+</div>
+      </div>
+
+      <div class="mt-3 p-3 border rounded bg-light">
+        <div class="small text-muted mb-1">Formula rujukan sistem</div>
+        <div class="mono" id="pvFormula">Nilai emas layak zakat × 2.5%</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Senarai tetapan terkini -->
+  <div class="card">
+    <div class="card-body">
+      <div class="d-flex justify-content-between align-items-center flex-wrap gap-2 mb-3">
+        <h5 class="card-title m-0">📋 Senarai Tetapan Terkini Semua Negeri</h5>
+        <button id="btnReloadList" class="btn btn-outline-secondary btn-sm">Refresh Senarai</button>
+      </div>
+
+      <div class="table-responsive">
+        <table class="table table-sm align-middle">
+          <thead>
+  <tr>
+    <th>Negeri</th>
+    <th>Tarikh Kuat Kuasa</th>
+    <th class="text-end">Nisab (RM)</th>
+    <th class="text-end">Harga / g</th>
+    <th class="text-end">Gram Asas</th>
+    <th class="text-end">Uruf</th>
+    <th>Status Uruf</th>
+    <th class="text-end">Kadar</th>
+    <th>Sumber</th>
+    <th class="text-end">Tindakan</th>
+  </tr>
+</thead>
+          <tbody id="currentList">
+            <tr><td colspan="8">Memuatkan…</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- History -->
+  <div class="card">
+    <div class="card-body">
+      <h5 class="card-title">🕘 History Tetapan Zakat</h5>
+      <div class="section-note mb-3">
+        Semua perubahan setting disimpan untuk rujukan audit dan semakan semula.
+      </div>
+
+      <details open>
+        <summary>History penuh</summary>
+        <div class="table-responsive mt-3">
+          <table class="table table-sm table-xs align-middle">
+            <thead>
+             <tr>
+  <th>Negeri</th>
+  <th>Tarikh Kuat Kuasa</th>
+  <th class="text-end">Nisab (RM)</th>
+  <th class="text-end">Harga / g</th>
+  <th class="text-end">Uruf</th>
+  <th>Status Uruf</th>
+  <th class="text-end">Kadar</th>
+  <th>Sumber</th>
+  <th>Nota</th>
+  <th>Dikemas kini</th>
+</tr>
+            </thead>
+           <tbody id="histList">
+  <tr><td colspan="10">Memuatkan…</td></tr>
+</tbody>
+          </table>
+        </div>
+      </details>
+    </div>
+  </div>
+
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="auth.js?v=13.1"></script>
+<script src="admin-guard.js?v=1"></script>
+
+<script>
+/* --- Supabase --- */
+const SB_URL = "https://dduizetstqqjrpsezbpi.supabase.co";
+const SB_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRkdWl6ZXRzdHFxanJwc2V6YnBpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTg3MzI0ODQsImV4cCI6MjA3NDMwODQ4NH0.CrlHXrmHtKgR9qc2192U6quRb5lpFEeOSgwG0Lb8KRM";
+
+window.sb = window.sb || window.supabase.createClient(SB_URL, SB_KEY);
+const sb = window.sb;
+
+/* --- Util --- */
+const $ = id => document.getElementById(id);
+const MY = "ms-MY";
+
+function money(n){ return "RM " + Number(n||0).toFixed(2); }
+function num(n){ return Number(n||0); }
+function fmtDate(x){
+  if(!x) return "-";
+  try{ return new Date(x).toLocaleDateString(MY); }catch{ return x; }
+}
+function fmtDateTime(x){
+  if(!x) return "-";
+  try{ return new Date(x).toLocaleString(MY,{ hour12:false }); }catch{ return x; }
+}
+function todayStr(){
+  const d = new Date();
+  const yyyy = d.getFullYear();
+  const mm = String(d.getMonth()+1).padStart(2,"0");
+  const dd = String(d.getDate()).padStart(2,"0");
+  return `${yyyy}-${mm}-${dd}`;
+}
+function titleizeState(code){
+  const map = {
+    JOHOR:"Johor",
+    KEDAH:"Kedah",
+    KELANTAN:"Kelantan",
+    MELAKA:"Melaka",
+    NEGERI_SEMBILAN:"Negeri Sembilan",
+    PAHANG:"Pahang",
+    PERAK:"Perak",
+    PERLIS:"Perlis",
+    PULAU_PINANG:"Pulau Pinang",
+    SABAH:"Sabah",
+    SARAWAK:"Sarawak",
+    SELANGOR:"Selangor",
+    TERENGGANU:"Terengganu",
+    WILAYAH_PERSEKUTUAN:"Wilayah Persekutuan"
+  };
+  return map[String(code||"").toUpperCase()] || code || "-";
+}
+
+function getZakatSourceMap(){
+  return {
+    JOHOR: {
+      source_name: "Majlis Agama Islam Negeri Johor (MAIJ)",
+      source_url: "https://www.maij.gov.my/"
+    },
+    KEDAH: {
+      source_name: "Lembaga Zakat Negeri Kedah (LZNK)",
+      source_url: "https://www.zakatkedah.com.my/"
+    },
+    KELANTAN: {
+      source_name: "Majlis Agama Islam & Adat Istiadat Melayu Kelantan (MAIK)",
+      source_url: "https://www.e-maik.my/"
+    },
+    MELAKA: {
+      source_name: "Zakat Melaka",
+      source_url: "https://www.izakat.com/"
+    },
+    NEGERI_SEMBILAN: {
+      source_name: "Majlis Agama Islam Negeri Sembilan (MAINS)",
+      source_url: "https://www.mains.gov.my/online/"
+    },
+    PAHANG: {
+      source_name: "Pusat Kutipan Zakat Pahang / MUIP",
+      source_url: "https://zakatpahang.my/"
+    },
+    PERAK: {
+      source_name: "Zakat Perak / MAIPk",
+      source_url: "https://zakatperak.maiamp.gov.my/"
+    },
+    PERLIS: {
+      source_name: "Zakat Perlis / MAIPs",
+      source_url: "https://zakatperlis.com/"
+    },
+    PULAU_PINANG: {
+      source_name: "Zakat MAINPP",
+      source_url: "https://zakat.mainpp.gov.my/"
+    },
+    SABAH: {
+      source_name: "Bahagian Zakat & Fitrah (MUIS) Sabah",
+      source_url: "https://appszakat.sabah.gov.my/"
+    },
+    SARAWAK: {
+      source_name: "Tabung Baitulmal Sarawak (TBS)",
+      source_url: "https://www.tbs.org.my/www/"
+    },
+    SELANGOR: {
+      source_name: "Lembaga Zakat Selangor (LZS)",
+      source_url: "https://www.zakatselangor.com.my/"
+    },
+    TERENGGANU: {
+      source_name: "MAIDAM Terengganu",
+      source_url: "https://www.maidam.gov.my/"
+    },
+    WILAYAH_PERSEKUTUAN: {
+      source_name: "Majlis Agama Islam Wilayah Persekutuan / PPZ-MAIWP",
+      source_url: "https://www.maiwp.gov.my/"
+    }
+  };
+}
+
+function fillDefaultSourceByState(stateCode){
+  const map = getZakatSourceMap();
+  const row = map[String(stateCode || "").toUpperCase()];
+  if (!row) return;
+
+  if (!$("sourceName").value.trim()) $("sourceName").value = row.source_name;
+  if (!$("sourceUrl").value.trim()) $("sourceUrl").value = row.source_url;
+}
+
+function effectiveDateISO(){
+  return $("effectiveDate").value || todayStr();
+}
+async function actorPhone(){
+  try{
+    const a = (window.auth_get && window.auth_get()) || null;
+    const p = a && (a.phone || a.msisdn || a.username);
+    if(p) return String(p);
+  }catch{}
+  return "";
+}
+
+/* --- Preview --- */
+function refreshPreview(){
+  const stateCode = $("stateCode").value;
+  const stateName = $("stateName").value || titleizeState(stateCode);
+  const nisabGram = num($("nisabGram").value || 85);
+  const pricePerGram = num($("goldPricePerGram").value);
+  const nisabRm = num($("nisabRm").value);
+  const zakatRate = num($("zakatRate").value || 2.5);
+
+  $("pvState").textContent = stateName;
+  $("pvNisab").textContent = nisabRm > 0 ? money(nisabRm) : "-";
+  $("pvPrice").textContent = pricePerGram > 0 ? money(pricePerGram) : "-";
+  $("pvRate").textContent = zakatRate > 0 ? `${zakatRate}%` : "-";
+
+ const urufGram = num($("urufGram")?.value || 0);
+const urufStatus = String($("urufStatus")?.value || "");
+
+$("pvUruf").textContent = urufGram > 0 ? `${urufGram.toFixed(3)} g` : "Tiada / belum isi";
+$("pvUrufStatus").textContent =
+  urufStatus === "SAH_RASMI" ? "Status: Sah rasmi" :
+  urufStatus === "PERLU_SEMAKAN" ? "Status: Perlu semakan" :
+  urufStatus === "TIADA_URUF" ? "Status: Tiada uruf" :
+  "-";
+
+$("pvFormula").textContent =
+  `Simpanan: ${nisabGram}g × harga emas rujukan. Perhiasan: ikut uruf negeri. Zakat = nilai emas layak × ${zakatRate}%`;
+}
+
+/* --- Default values --- */
+function syncStateName(){
+  $("stateName").value = titleizeState($("stateCode").value);
+  fillDefaultSourceByState($("stateCode").value);
+  refreshPreview();
+}
+/* --- Load single state latest --- */
+async function loadStateSetting(stateCode){
+  const { data, error } = await sb
+    .from("zakat_state_settings")
+    .select("*")
+    .eq("state_code", stateCode)
+    .order("effective_date", { ascending:false })
+    .order("updated_at", { ascending:false })
+    .limit(1);
+
+  if(error){
+    console.warn("[admin-zakat] loadStateSetting:", error);
+    return null;
+  }
+
+  return data?.[0] || null;
+}
+
+async function fillFormByState(stateCode){
+  const row = await loadStateSetting(stateCode);
+
+ if(!row){
+   $("stateName").value = titleizeState(stateCode);
+$("effectiveDate").value = todayStr();
+$("nisabGram").value = 85;
+$("goldPricePerGram").value = "";
+$("nisabRm").value = "";
+$("zakatRate").value = 2.5;
+
+$("urufGram").value = "";
+$("urufStatus").value = "PERLU_SEMAKAN";
+$("urufFallbackGram").value = 85;
+$("urufNote").value = "Nilai uruf belum disahkan. Sila rujuk pusat zakat negeri / laman rasmi negeri untuk semakan akhir.";
+
+$("sourceName").value = "";
+$("sourceUrl").value = "";
+$("adminNote").value = "";
+fillDefaultSourceByState(stateCode);
+refreshPreview();
+return;
+  }
+
+  $("stateName").value = row.state_name || titleizeState(stateCode);
+$("effectiveDate").value = row.effective_date || todayStr();
+$("nisabGram").value = num(row.nisab_gram || 85);
+$("goldPricePerGram").value = num(row.gold_price_per_gram || 0) || "";
+$("nisabRm").value = num(row.nisab_rm || 0) || "";
+$("zakatRate").value = num(row.zakat_rate || 2.5);
+
+$("urufGram").value = num(row.uruf_gram || 0) || "";
+$("urufStatus").value = row.uruf_status || "PERLU_SEMAKAN";
+$("urufFallbackGram").value = num(row.uruf_fallback_gram || 85);
+$("urufNote").value = row.uruf_note || "";
+
+$("sourceName").value = row.source_name || "";
+$("sourceUrl").value = row.source_url || "";
+$("adminNote").value = row.admin_note || row.note || "";
+
+refreshPreview();
+}
+
+/* --- Save setting --- */
+async function saveSetting(){
+  const statusEl = $("saveStatus");
+  statusEl.textContent = "Menyimpan…";
+
+  try{
+    const actor = await actorPhone();
+
+    const payload = {
+  state_code: String($("stateCode").value || "").toUpperCase(),
+  state_name: $("stateName").value.trim() || titleizeState($("stateCode").value),
+  effective_date: effectiveDateISO(),
+
+  nisab_gram: num($("nisabGram").value || 85),
+  gold_price_per_gram: num($("goldPricePerGram").value || 0),
+  nisab_rm: num($("nisabRm").value || 0),
+  zakat_rate: num($("zakatRate").value || 2.5),
+
+  uruf_gram: num($("urufGram").value || 0),
+  uruf_status: String($("urufStatus").value || "PERLU_SEMAKAN").toUpperCase(),
+  uruf_fallback_gram: num($("urufFallbackGram").value || 85),
+  uruf_note: $("urufNote").value.trim() || null,
+
+  source_name: $("sourceName").value.trim() || null,
+  source_url: $("sourceUrl").value.trim() || null,
+  admin_note: $("adminNote").value.trim() || null
+};
+
+    if(!payload.state_code) throw new Error("Negeri diperlukan.");
+if(!payload.effective_date) throw new Error("Tarikh kuat kuasa diperlukan.");
+if(payload.nisab_gram <= 0) throw new Error("Nisab asas gram mesti > 0.");
+if(payload.zakat_rate <= 0) throw new Error("Kadar zakat mesti > 0.");
+if(payload.uruf_status !== "TIADA_URUF" && payload.uruf_fallback_gram <= 0){
+  throw new Error("Asas fallback uruf mesti > 0.");
+}
+
+    const { error } = await sb
+      .from("zakat_state_settings")
+      .upsert(payload, { onConflict: "state_code,effective_date" });
+
+    if(error) throw error;
+
+    statusEl.textContent = "✔ Tetapan zakat disimpan!";
+    $("saveNote").style.display = "inline-block";
+    setTimeout(()=> $("saveNote").style.display = "none", 1800);
+
+    refreshPreview();
+    await fillFormByState(payload.state_code);
+    await loadCurrentList();
+    await loadHistory();
+  }catch(e){
+    console.warn("[admin-zakat] saveSetting:", e);
+    statusEl.textContent = "Gagal: " + (e.message || e);
+  }
+}
+
+/* --- Calculate nisab from gram x price --- */
+function calcNisab(){
+  const gram = num($("nisabGram").value || 85);
+  const price = num($("goldPricePerGram").value || 0);
+  if(gram > 0 && price > 0){
+    $("nisabRm").value = (gram * price).toFixed(2);
+  }
+  refreshPreview();
+}
+
+/* --- Current list: latest per state --- */
+async function loadCurrentList(){
+  const tbody = $("currentList");
+
+  try{
+    const { data, error } = await sb
+      .from("zakat_state_settings")
+      .select("*")
+      .order("state_code", { ascending:true })
+      .order("effective_date", { ascending:false })
+      .order("updated_at", { ascending:false });
+
+    if(error) throw error;
+
+    if(!data || !data.length){
+      tbody.innerHTML = `<tr><td colspan="10">Tiada tetapan zakat lagi.</td></tr>`;
+      return;
+    }
+
+    const latestMap = new Map();
+    for(const row of data){
+      if(!latestMap.has(row.state_code)){
+        latestMap.set(row.state_code, row);
+      }
+    }
+
+    const rows = [...latestMap.values()].sort((a,b)=>
+      titleizeState(a.state_code).localeCompare(titleizeState(b.state_code), "ms")
+    );
+
+   tbody.innerHTML = rows.map(r => {
+  const urufStatus =
+    r.uruf_status === "SAH_RASMI" ? "Sah rasmi" :
+    r.uruf_status === "TIADA_URUF" ? "Tiada uruf" :
+    "Perlu semakan";
+
+  return `
+    <tr>
+      <td><strong>${r.state_name || titleizeState(r.state_code)}</strong></td>
+      <td>${fmtDate(r.effective_date)}</td>
+      <td class="text-end">${money(r.nisab_rm)}</td>
+      <td class="text-end">${money(r.gold_price_per_gram)}</td>
+      <td class="text-end">${num(r.nisab_gram).toFixed(3)} g</td>
+      <td class="text-end">${num(r.uruf_gram || 0).toFixed(3)} g</td>
+      <td>${urufStatus}</td>
+      <td class="text-end">${num(r.zakat_rate).toFixed(2)}%</td>
+      <td>
+        <div>${r.source_name || "-"}</div>
+        ${r.source_url ? `<div class="small text-muted mono">${r.source_url}</div>` : ""}
+      </td>
+      <td class="text-end">
+        <button class="btn btn-sm btn-outline-primary" data-edit="${r.state_code}">Isi ke atas</button>
+      </td>
+    </tr>
+  `;
+}).join("");
+
+    [...tbody.querySelectorAll("[data-edit]")].forEach(btn => {
+      btn.onclick = async () => {
+        const code = btn.getAttribute("data-edit");
+        $("stateCode").value = code;
+        await fillFormByState(code);
+        window.scrollTo({ top: 0, behavior: "smooth" });
+      };
+    });
+
+  }catch(e){
+    tbody.innerHTML = `<tr><td colspan="10">Ralat: ${e.message || e}</td></tr>`;
+  }
+}
+
+/* --- History --- */
+async function loadHistory(){
+  const tbody = $("histList");
+
+  try{
+    const { data, error } = await sb
+      .from("zakat_state_settings")
+      .select("*")
+      .order("updated_at", { ascending:false })
+      .order("effective_date", { ascending:false });
+
+    if(error) throw error;
+
+    if(!data || !data.length){
+      tbody.innerHTML = `<tr><td colspan="10">Tiada history lagi.</td></tr>`;
+      return;
+    }
+
+    tbody.innerHTML = data.map(r => {
+      const urufStatus =
+        r.uruf_status === "SAH_RASMI" ? "Sah rasmi" :
+        r.uruf_status === "TIADA_URUF" ? "Tiada uruf" :
+        "Perlu semakan";
+
+      return `
+        <tr>
+          <td><strong>${r.state_name || titleizeState(r.state_code)}</strong></td>
+          <td>${fmtDate(r.effective_date)}</td>
+          <td class="text-end">${money(r.nisab_rm)}</td>
+          <td class="text-end">${money(r.gold_price_per_gram)}</td>
+          <td class="text-end">${num(r.uruf_gram || 0).toFixed(3)} g</td>
+          <td>${urufStatus}</td>
+          <td class="text-end">${num(r.zakat_rate).toFixed(2)}%</td>
+          <td>
+            <div>${r.source_name || "-"}</div>
+            ${r.source_url ? `<div class="small text-muted mono">${r.source_url}</div>` : ""}
+          </td>
+          <td>
+            <div>${r.uruf_note || "-"}</div>
+            ${r.admin_note ? `<div class="small text-muted mt-1">${r.admin_note}</div>` : ""}
+          </td>
+          <td>
+            <div>${fmtDateTime(r.updated_at)}</div>
+            <div class="small text-muted">${r.actor_phone || "-"}</div>
+          </td>
+        </tr>
+      `;
+    }).join("");
+
+  }catch(e){
+    tbody.innerHTML = `<tr><td colspan="10">Ralat: ${e.message || e}</td></tr>`;
+  }
+}
+/* --- Events --- */
+$("stateCode").addEventListener("change", async ()=>{
+  syncStateName();
+  await fillFormByState($("stateCode").value);
+});
+["stateName","nisabGram","goldPricePerGram","nisabRm","zakatRate","urufGram","urufFallbackGram"].forEach(id=>{
+  $(id).addEventListener("input", refreshPreview);
+});
+$("urufStatus").addEventListener("change", refreshPreview);
+$("btnCalcNisab").addEventListener("click", calcNisab);
+$("btnSaveSetting").addEventListener("click", saveSetting);
+$("btnReloadList").addEventListener("click", async ()=>{
+  await loadCurrentList();
+  await loadHistory();
+});
+
+$("btnOpenSource").addEventListener("click", ()=>{
+  const url = $("sourceUrl").value.trim();
+  if (!url) return alert("URL rujukan belum diisi.");
+  window.open(url, "_blank", "noopener,noreferrer");
+});
+/* --- Init --- */
+(async ()=>{
+  $("effectiveDate").value = todayStr();
+  syncStateName();
+  await fillFormByState($("stateCode").value);
+  await loadCurrentList();
+  await loadHistory();
+  refreshPreview();
+})();
+
+/* --- Guard --- */
+(async () => {
+  const pill = document.getElementById('authStatus');
+  const set = (t)=> pill && (pill.textContent = t);
+
+  const ok = await adminGuard.require({
+    onChecking: ()=> set?.("Mengesahkan akses admin…"),
+    onDenied:   ()=> set?.("Akses ditolak"),
+    onAllowed:  (phone)=> set?.("Log masuk (admin) — " + phone)
+  });
+
+  if (!ok) return;
+})();
+</script>
+</body>
+</html>

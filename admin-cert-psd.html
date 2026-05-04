@@ -1,188 +1,2190 @@
 <!doctype html>
 <html lang="ms">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Admin • Cert PSD 36 (300dpi)</title>
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css">
+  <meta charset="utf-8">
+ <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<link rel="stylesheet" href="/global.css">
+  <title>Admin • Cert PSD (36 Slot) — Emas Amir</title>
+
+  <!-- Libs -->
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="auth.js?v=13.1"></script>
   <script src="admin-guard.js?v=1"></script>
+
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+
   <style>
-    body{background:#f6f7f9}
-    .wrap{max-width:980px;margin:18px auto;padding:12px}
-    .box{background:#fff;border:1px solid #e9ecef;border-radius:14px;padding:14px}
-    .mono{font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;}
-    .small{font-size:12px}
+    html, body{height:100%}
+    body{background:#fff}
+
+    /* ✅ compact + tak perlu scroll page */
+    .app-shell{
+      min-height:100vh;
+      display:flex;
+      flex-direction:column;
+    }
+    .container-narrow{max-width:1200px}
+    .auth-pill{border:1px solid #e5e7eb;border-radius:999px;padding:.2rem .6rem;background:#fafafa;color:#555}
+    .btn-chip{border:1px solid #e5e7eb;background:#f8fafc;padding:6px 10px;border-radius:999px;font-size:.9rem}
+    .btn-chip.btn-primary{background:#0d6efd;color:#fff;border-color:#0d6efd}
+    .mono{font-family:ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,"Liberation Mono","Courier New",monospace}
+    .small-note{font-size:12px;color:#6b7280}
+    .card{border-radius:14px}
+
+    /* ✅ reduce padding overall */
+    .py-3{padding-top:10px!important;padding-bottom:10px!important}
+    .mt-3{margin-top:10px!important}
+    .mt-2{margin-top:8px!important}
+    .mb-2{margin-bottom:8px!important}
+
+    /* Slots grid (simple) */
+    .slot-grid{
+      display:grid;
+      grid-template-columns:repeat(6, minmax(0, 1fr));
+      gap:12px; /* ✅ sikit besar */
+    }
+    @media (max-width: 1200px){
+      .slot-grid{ grid-template-columns:repeat(4, minmax(0, 1fr)); }
+    }
+    @media (max-width: 992px){
+      .slot-grid{ grid-template-columns:repeat(2, minmax(0, 1fr)); }
+    }
+    @media (max-width: 520px){
+      .slot-grid{ grid-template-columns:repeat(1, minmax(0, 1fr)); }
+    }
+
+    .slot-card{
+      border:1px solid #e5e7eb;
+      border-radius:14px;
+      background:#fff;
+      overflow:hidden;
+      cursor:pointer;
+      transition:.08s ease;
+      min-height:140px; /* ✅ besar balik senang tengok */
+    }
+    .slot-card:hover{ transform: translateY(-1px); box-shadow:0 6px 18px rgba(0,0,0,.06); }
+    .slot-card.active{ outline:3px solid rgba(13,110,253,.35); border-color:#b6d4fe; }
+
+    .slot-head{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:10px;
+      padding:10px 12px; /* ✅ besar balik */
+      border-bottom:1px solid #eef2f7;
+    }
+    .slot-no{ font-weight:900; letter-spacing:.5px; font-size:13px; }
+    .badge-soft{
+      font-size:11px;
+      padding:3px 8px;
+      border-radius:999px;
+      border:1px solid #e5e7eb;
+      background:#f8fafc;
+      color:#334155;
+      white-space:nowrap;
+    }
+    .badge-ready{ background:#fff7ed; border-color:#fed7aa; color:#9a3412; }
+    .badge-empty{ background:#f8fafc; border-color:#e5e7eb; color:#64748b; }
+    .badge-up{ background:#ecfdf5; border-color:#a7f3d0; color:#065f46; }
+    .badge-lib{ background:#eff6ff; border-color:#bfdbfe; color:#1d4ed8; }
+
+    .slot-body{ padding:10px 12px; } /* ✅ besar balik */
+    .slot-mini{
+      display:flex;
+      gap:12px;
+      align-items:center;
+      justify-content:space-between;
+    }
+    .mini-thumb{
+      width:90px;   /* ✅ besar balik */
+      height:90px;  /* ✅ besar balik */
+      border:1px dashed #e5e7eb;
+      border-radius:12px;
+      background:#fafafa;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      overflow:hidden;
+      flex:0 0 auto;
+    }
+    .mini-thumb img{
+      width:100%;
+      height:100%;
+      object-fit:contain;
+      background:#fff;
+      transform-origin:center center;
+    }
+    .mini-info{
+      flex:1 1 auto;
+      min-width:0;
+    }
+    .mini-info .t1{ font-size:12px; color:#0f172a; font-weight:700; }
+    .mini-info .t2{ font-size:12px; color:#64748b; }
+    .mini-row{
+      display:flex;
+      flex-wrap:wrap;
+      gap:6px;
+      margin-top:8px;
+    }
+
+    /* Modal side blocks */
+    .side-wrap{
+      border:1px solid #eef2f7;
+      border-radius:12px;
+      padding:10px;
+      background:#fff;
+      margin-bottom:10px;
+    }
+    .side-title{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:10px;
+      margin-bottom:8px;
+    }
+    .side-title .label{ font-weight:900; letter-spacing:.3px; }
+    .side-title .right{ display:flex; gap:6px; align-items:center; flex-wrap:wrap; }
+
+    /* ✅ POPUP: muat 1 skrin (tak scroll) + lebih kemas */
+   #slotModal .modal-dialog.cert-modal{
+  margin:12px auto;
+  width: min(98vw, 1400px);
+  max-width: min(98vw, 1400px);
+  height: calc(100vh - 24px);
+  max-height: calc(100vh - 24px);
+}
+    #slotModal .modal-content{
+  height: 100%;
+  overflow: hidden;
+}
+
+#slotModal .modal-header{
+  padding: 10px 12px;
+  flex: 0 0 auto;
+}
+
+#slotModal .modal-footer{
+  padding: 8px 12px;
+  flex: 0 0 auto;
+}
+
+#slotModal .modal-body{
+  padding: 10px 12px;
+  display:flex;
+  flex-direction:column;
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow-y: auto;   /* ✅ popup boleh scroll */
+  overflow-x: hidden;
+}
+
+#slotModal .modal-body > .row{
+  flex: 1 1 auto;
+  min-height: fit-content;
+  overflow: visible;
+}
+
+#slotModal .col-lg-6{
+  min-height: 0;
+}
+
+#slotModal .side-wrap{
+  height: auto;
+  display:flex;
+  flex-direction:column;
+  padding: 10px;
+  min-height: fit-content;
+  margin-bottom: 0;
+}
+
+    #slotModal .lib-box{
+      padding: 8px 10px;
+      margin-bottom: 8px;
+      background:#fafafa;
+      border:1px solid #e5e7eb;
+      border-radius:12px;
+    }
+    #slotModal .lib-box .form-label{
+      margin-bottom: 4px !important;
+    }
+    #slotModal .lib-box .small{
+      line-height: 1.15;
+    }
+
+    #slotModal .thumb{
+      width:100%;
+      flex: 1 1 auto;
+      min-height: 200px;
+      border:1px dashed #e5e7eb;
+      border-radius:12px;
+      background:#fafafa;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      overflow:hidden;
+      position:relative;
+    }
+    #slotModal .thumb img{
+      width:100%;
+      height:100%;
+      object-fit:contain;
+      background:#fff;
+      transform-origin:center center;
+    }
+
+    #slotModal .meta{
+      margin-top: 8px;
+      font-size: 11px;
+      gap: 4px;
+      display:flex;
+      flex-direction:column;
+      color:#64748b;
+    }
+    #slotModal .meta .line{
+      display:grid;
+      grid-template-columns: 70px 1fr;
+      gap: 8px;
+      align-items: start;
+    }
+    #slotModal .meta .k{ min-width: 0; color:#475569; }
+    #slotModal .meta .v{ color:#0f172a; }
+
+    #slotModal .warn{
+      color:#b45309;
+      background:#fffbeb;
+      border:1px solid #fde68a;
+      border-radius:10px;
+      padding:6px 8px;
+      font-size:11px;
+      line-height:1.15;
+      margin-top:6px;
+      display:none;
+      white-space:pre-wrap;
+    }
+
+    #slotModal .side-wrap .btn.btn-sm{
+      padding: 4px 8px;
+    }
+
+    @media (max-width: 992px){
+      #slotModal .modal-dialog.cert-modal{
+        width: 98vw;
+        max-width: 98vw;
+        height: calc(100vh - 16px);
+        margin: 8px auto;
+      }
+      #slotModal .thumb{
+        min-height: 180px;
+      }
+    }
+
+    .thumb .emptytext{
+      color:#94a3b8;
+      font-size:13px;
+      text-align:center;
+      padding:14px;
+      line-height:1.2;
+    }
+
+    .toolbar-sticky{
+      position:sticky; top:0; z-index:20;
+      background:#fff;
+      border-bottom:1px solid #eef2f7;
+      padding:8px 0;
+    }
+    .pill-info{
+      display:inline-flex; align-items:center; gap:8px;
+      border:1px solid #e5e7eb; border-radius:999px;
+      padding:6px 10px; background:#fafafa; color:#475569;
+      font-size:12px;
+    }
+    .hr-soft{ border-top:1px solid #eef2f7 }
+
+    textarea{ min-height:190px }
+
+    /* ✅ Slot area: bagi lebih ruang (kurang scroll) */
+    .slot-card-wrap{
+      display:flex;
+      flex-direction:column;
+    }
+    .slot-scroll{
+      overflow:auto;
+      max-height: calc(100vh - 320px); /* ✅ dulu 420px → sekarang lebih tinggi */
+      padding-right:6px;
+    }
+    @media (max-width: 992px){
+      .slot-scroll{ max-height: calc(100vh - 390px); }
+    }
+
+    /* ✅ Output collapsible (kurangkan scroll) */
+    .collapse-soft{
+      border-top:1px solid #eef2f7;
+      margin-top:10px;
+      padding-top:10px;
+    }
+
+    /* ✅ PSD link bar (sentiasa nampak) */
+    .psd-bar{
+      display:none;
+      border:1px solid #e5e7eb;
+      border-radius:12px;
+      background:#fafafa;
+      padding:8px 10px;
+      font-size:12px;
+    }
+    .psd-bar .rowx{
+      display:flex;
+      flex-wrap:wrap;
+      gap:10px;
+      align-items:center;
+      justify-content:space-between;
+    }
+    .psd-bar a{ font-weight:800; }
+    .psd-bar .right{
+      display:flex;
+      gap:8px;
+      flex-wrap:wrap;
+      align-items:center;
+    }
   </style>
 </head>
+
 <body>
-<div class="wrap">
-  <div class="d-flex align-items-center justify-content-between mb-2">
-    <h4 class="m-0">Cert PSD 36 (Front) • 300dpi</h4>
-    <div class="small text-muted">Sistem susun + save PSD. Staff buat W1 manual dalam Photoshop.</div>
-  </div>
+<div class="app-shell">
+<div class="container container-narrow py-3">
 
-  <div class="box mb-3">
-    <div class="row g-2 align-items-end">
-      <div class="col-md-6">
-        <label class="form-label">Upload gambar (1–36)</label>
-        <input id="file" type="file" class="form-control" accept="image/*" multiple />
-        <div class="small text-muted mt-1">Tip: pilih banyak terus (Ctrl/Shift).</div>
-      </div>
-
-      <div class="col-md-3">
-        <label class="form-label">Bucket Upload</label>
-        <input id="bucket" class="form-control" value="cert_uploads">
-        <div class="small text-muted mt-1">Contoh: cert_uploads</div>
-      </div>
-
-      <div class="col-md-3">
-        <button id="btnUpload" class="btn btn-primary w-100">1) Upload ke Supabase</button>
-      </div>
+  <!-- TOP BAR -->
+  <div class="d-flex justify-content-between align-items-center mb-2">
+    <div class="small auth-pill" id="authStatus">Memuatkan…</div>
+    <div class="d-flex flex-wrap gap-2">
+      <a class="btn btn-outline-secondary btn-chip" href="index.html">Halaman Utama</a>
+      <a class="btn btn-outline-secondary btn-chip" href="admin.html">Admin</a>
+      <a class="btn btn-outline-secondary btn-chip" href="admin-report.html">Admin Report</a>
+      <a class="btn btn-outline-secondary btn-chip" href="admin-j916.html">Admin 916</a>
+      <a class="btn btn-outline-secondary btn-chip" href="admin-j999.html">Admin 999</a>
+      <a class="btn btn-outline-secondary btn-chip" href="admintabung-simpan.html">Admin Tabung</a>
+      <a class="btn btn-outline-secondary btn-chip" href="account.html">Akaun</a>
+      <button id="btnLogin"  class="btn btn-outline-secondary btn-chip" type="button">Log masuk</button>
+      <button id="btnLogout" class="btn btn-outline-secondary btn-chip" type="button" style="display:none">Log keluar</button>
     </div>
   </div>
 
-  <div class="box mb-3">
-    <div class="d-flex justify-content-between align-items-center mb-2">
+  <div class="toolbar-sticky">
+    <div class="d-flex align-items-center justify-content-between gap-2 flex-wrap">
       <div>
-        <b>Senarai (akan ikut susunan upload)</b>
-        <div class="small text-muted">Slot_01 sampai Slot_36</div>
+        <h1 class="h5 m-0">Admin • Cert PSD (36 Slot)</h1>
+        <div class="small text-muted">
+          Klik slot → popup isi DEPAN & BELAKANG → Upload → Generate Manifest → Generate PSD.
+        </div>
+        <div class="small-note mt-1">
+          Bucket: <span class="mono" id="uiBucket"></span>
+          • Folder: <span class="mono" id="uiFolder"></span>
+          • Target ratio preview: <span class="mono" id="uiRatio"></span>
+        </div>
       </div>
-      <button id="btnGenerate" class="btn btn-success" disabled>2) Generate PSD</button>
+
+      <div class="d-flex gap-2 flex-wrap">
+        <button class="btn btn-outline-secondary btn-sm" id="btnReload" type="button">Reload bucket</button>
+        <button class="btn btn-primary btn-sm" id="btnUploadAll" type="button">1) Upload</button>
+        <button class="btn btn-success btn-sm" id="btnGen" type="button">2) Manifest</button>
+        <button class="btn btn-dark btn-sm" id="btnGenPSDFront" type="button">3) PSD DEPAN</button>
+        <button class="btn btn-dark btn-sm" id="btnGenPSDBack"  type="button">4) PSD BELAKANG</button>
+      </div>
     </div>
 
-    <div id="list" class="mono small"></div>
-    <div id="status" class="mt-2 small text-muted"></div>
+    <div class="d-flex gap-2 flex-wrap mt-2">
+      <span class="pill-info">Auto-rotate: MELINTANG → rotate 90°.</span>
+      <span class="pill-info">BELAKANG boleh pilih library (tak perlu upload semula).</span>
+      <span class="pill-info">Manifest = JSON slot→URL (front/back).</span>
+      <button class="btn btn-outline-secondary btn-sm" id="btnToggleOutput" type="button">Tunjuk/Sorok Output</button>
+    </div>
+
+    <!-- ✅ PSD BAR -->
+    <div class="psd-bar mt-2" id="psdBar">
+      <div class="rowx">
+        <div>
+          <b>PSD siap</b>:
+          <span class="ms-2">Depan:</span>
+          <a id="psdBarFront" href="#" target="_blank" rel="noopener">Download</a>
+          <span class="ms-2">Belakang:</span>
+          <a id="psdBarBack" href="#" target="_blank" rel="noopener">Download</a>
+        </div>
+        <div class="right">
+          <button class="btn btn-outline-secondary btn-sm" id="btnCopyFrontLink" type="button">Copy link Depan</button>
+          <button class="btn btn-outline-secondary btn-sm" id="btnCopyBackLink" type="button">Copy link Belakang</button>
+        </div>
+      </div>
+    </div>
+
+    <hr class="hr-soft my-2">
   </div>
 
-  <div class="box">
-    <b>Output</b>
-    <div id="out" class="small mt-2"></div>
+  <!-- CONFIG -->
+  <div class="card mt-2">
+    <div class="card-body">
+      <div class="fw-semibold">Tetapan</div>
+      <div class="small text-muted">Tukar bucket/folder atau ratio preview.</div>
+
+      <div class="row g-2 mt-2 align-items-end">
+        <div class="col-md-4">
+          <label class="form-label">Bucket</label>
+          <input id="cfgBucket" class="form-control mono" />
+          <div class="small-note">Contoh: <span class="mono">cert_uploads</span></div>
+        </div>
+
+        <div class="col-md-4">
+          <label class="form-label">Folder (prefix)</label>
+          <input id="cfgFolder" class="form-control mono" />
+          <div class="small-note">Contoh: <span class="mono">cert_psd/22.2.24</span></div>
+        </div>
+
+        <div class="col-md-4">
+          <label class="form-label">Target ratio (W/H)</label>
+          <input id="cfgRatio" class="form-control mono" />
+          <div class="small-note">A4 portrait ≈ <span class="mono">0.707</span> (210/297)</div>
+        </div>
+
+        <div class="col-12 mt-1 d-flex gap-2 flex-wrap align-items-center">
+          <button class="btn btn-outline-secondary btn-sm" id="btnSaveCfg" type="button">Simpan tetapan</button>
+          <span class="small text-muted">Disimpan dalam localStorage browser.</span>
+        </div>
+      </div>
+    </div>
   </div>
+
+  <!-- PICKER (hidden) -->
+  <input id="filePick" type="file" accept="image/*" style="display:none" />
+
+  <!-- SLOTS -->
+  <div class="card mt-3 slot-card-wrap">
+    <div class="card-body">
+      <div class="d-flex align-items-center justify-content-between gap-2 flex-wrap">
+        <div>
+          <div class="fw-semibold">Slot 01 sampai Slot 36</div>
+          <div class="small text-muted">Klik slot untuk buka popup isi DEPAN & BELAKANG.</div>
+        </div>
+
+        <div class="d-flex gap-2 flex-wrap">
+          <button class="btn btn-outline-secondary btn-sm" id="btnClearLocal" type="button">Reset semua (local)</button>
+          <button class="btn btn-outline-danger btn-sm" id="btnClearActive" type="button">Clear slot aktif</button>
+          <button class="btn btn-danger btn-sm" id="btnClearAllRemote" type="button">Padam semua fail folder ini (Supabase)</button>
+        </div>
+      </div>
+
+      <div class="slot-scroll mt-3">
+        <div class="slot-grid" id="slotGrid"></div>
+      </div>
+
+      <div class="small text-muted mt-2" id="statusLine">—</div>
+      <div class="small text-muted mt-1">
+        Nota: “Reset semua (local)” kosongkan paparan & pilihan dalam browser sahaja. Untuk buang fail dalam bucket, guna “Padam semua fail folder ini”.
+      </div>
+    </div>
+  </div>
+
+  <!-- OUTPUT (collapsible) -->
+  <div class="card mt-3" id="outCard">
+    <div class="card-body">
+      <div class="fw-semibold">Output</div>
+      <div class="small text-muted">Manifest JSON (front/back). Link PSD akan keluar lepas generate.</div>
+
+      <div class="collapse-soft" id="outWrap">
+        <div class="d-flex gap-2 flex-wrap mt-2">
+          <button class="btn btn-outline-secondary btn-sm" id="btnCopy" type="button">Copy JSON</button>
+          <button class="btn btn-outline-secondary btn-sm" id="btnDownload" type="button">Download JSON</button>
+          <button class="btn btn-outline-secondary btn-sm" id="btnUploadManifest" type="button">Upload manifest.json</button>
+        </div>
+
+        <textarea class="form-control mono mt-2" id="outBox" placeholder="Manifest akan keluar di sini…"></textarea>
+
+        <div class="small-note mt-2">
+          Fail:
+          <span class="mono">{bucket}/{folder}/front/slot_01.jpg</span> &nbsp;dan&nbsp;
+          <span class="mono">{bucket}/{folder}/back/slot_01.jpg</span>
+          • Manifest: <span class="mono">{bucket}/{folder}/manifest.json</span>
+        </div>
+
+        <div class="small-note mt-2" id="psdInfo" style="display:none">
+          PSD siap:
+          <div class="mt-1">
+            Depan:
+            <a id="psdLinkFront" href="#" target="_blank" rel="noopener">Download PSD Depan</a>
+            <button class="btn btn-outline-secondary btn-sm ms-2" id="btnCopyFront2" type="button">Copy link</button>
+            <span class="mono ms-2" id="psdPathFront"></span>
+          </div>
+          <div class="mt-1">
+            Belakang:
+            <a id="psdLinkBack" href="#" target="_blank" rel="noopener">Download PSD Belakang</a>
+            <button class="btn btn-outline-secondary btn-sm ms-2" id="btnCopyBack2" type="button">Copy link</button>
+            <span class="mono ms-2" id="psdPathBack"></span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL: Slot Editor -->
+  <div class="modal fade" id="slotModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-xl cert-modal">
+      <div class="modal-content">
+          <div class="modal-header">
+            <div>
+              <div class="fw-bold" id="mTitle">SLOT —</div>
+              <div class="small text-muted">
+                Isi DEPAN & BELAKANG dalam popup ini.
+                BELAKANG boleh guna cert sedia ada (library) tanpa upload semula.
+              </div>
+            </div>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Tutup"></button>
+          </div>
+
+          <div class="modal-body">
+            <div class="row g-3">
+              <!-- LEFT: FRONT -->
+              <div class="col-lg-6">
+                <div class="side-wrap">
+                  <div class="side-title">
+                    <div class="label">DEPAN</div>
+                    <div class="right">
+                      <span class="badge-soft" id="mFrontOri">—</span>
+                      <span class="badge-soft" id="mFrontUp">—</span>
+                      <span class="badge-soft" id="mFrontRot">ROT 0°</span>
+                    </div>
+                  </div>
+
+                  <div class="thumb" id="mFrontThumb"></div>
+                  <div class="meta" id="mFrontMeta"></div>
+                  <div class="warn" id="mFrontWarn" style="display:none"></div>
+
+                  <div class="d-flex gap-2 mt-2 flex-wrap">
+                    <button class="btn btn-outline-secondary btn-sm" id="mPickFront" type="button">Pilih DEPAN</button>
+                    <button class="btn btn-outline-primary btn-sm" id="mUploadFront" type="button">Upload DEPAN</button>
+                    <button class="btn btn-outline-secondary btn-sm" id="mRotFront" type="button">Rotate 90°</button>
+                    <button class="btn btn-outline-danger btn-sm" id="mClearFront" type="button">Clear</button>
+                  </div>
+                </div>
+              </div>
+
+              <!-- RIGHT: BACK -->
+              <div class="col-lg-6">
+                <div class="side-wrap">
+                  <div class="side-title">
+                    <div class="label">BELAKANG</div>
+                    <div class="right">
+                      <span class="badge-soft badge-lib" id="mBackSrc">SRC: —</span>
+                      <span class="badge-soft" id="mBackOri">—</span>
+                      <span class="badge-soft" id="mBackUp">—</span>
+                      <span class="badge-soft" id="mBackRot">ROT 0°</span>
+                    </div>
+                  </div>
+
+                  <div class="thumb" id="mBackThumb"></div>
+<div class="meta" id="mBackMeta"></div>
+<div class="warn" id="mBackWarn" style="display:none"></div>
+
+<div class="d-flex gap-2 mt-2 flex-wrap">
+  <button class="btn btn-outline-secondary btn-sm" id="mPickBack" type="button">Pilih BELAKANG (fail baru)</button>
+  <button class="btn btn-outline-primary btn-sm" id="mUploadBack" type="button">Upload BELAKANG</button>
+  <button class="btn btn-outline-secondary btn-sm" id="mRotBack" type="button">Rotate 90°</button>
+  <button class="btn btn-outline-danger btn-sm" id="mClearBack" type="button">Clear</button>
 </div>
 
-<script>
-  // Supabase init (guna pattern projek Amir)
-  const SUPABASE_URL = window.SUPABASE_URL || localStorage.getItem("SUPABASE_URL");
-  const SUPABASE_ANON = window.SUPABASE_ANON_KEY || localStorage.getItem("SUPABASE_ANON_KEY");
+<div class="small text-muted mt-2" id="mBackNote">
+  Nota: Kalau Amir pilih dari library, butang Upload BELAKANG akan auto disable.
+</div>
 
-  const sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON);
+<div class="lib-box mt-3">
+  <div class="small fw-semibold">Pilih cert belakang sedia ada (library)</div>
+  <div class="small text-muted">
+    Contoh: <span class="mono">0.1g 9mm kanan</span> / <span class="mono">1 dinar 21mm</span> / <span class="mono">cert seget kiri</span>.
+  </div>
 
-  const elFile = document.getElementById("file");
-  const elBucket = document.getElementById("bucket");
-  const elList = document.getElementById("list");
-  const elStatus = document.getElementById("status");
-  const elOut = document.getElementById("out");
-  const btnUpload = document.getElementById("btnUpload");
-  const btnGenerate = document.getElementById("btnGenerate");
+  <div class="row g-2 mt-1 align-items-end">
+    <div class="col-12 col-md-8">
+      <label class="form-label mb-1 small">Carian (optional)</label>
+      <input id="mLibSearch" class="form-control form-control-sm" placeholder="Taip: 0.1g 9mm kanan / 1 dinar 21mm ..." />
+    </div>
+    <div class="col-12 col-md-4 d-grid">
+      <button id="mLibReload" class="btn btn-outline-secondary btn-sm" type="button">Reload library</button>
+    </div>
 
-  let uploadedPaths = []; // ["bucket/path/file.jpg", ...]
+    <div class="col-12">
+      <label class="form-label mb-1 small">Senarai cert belakang</label>
+      <select id="mLibSelect" class="form-select form-select-sm">
+        <option value="">— pilih cert —</option>
+      </select>
+      <div class="small text-muted mt-1">
+        Bila pilih dari library: <b>tak perlu upload belakang</b> (elak upload 2 kali).
+      </div>
+    </div>
+  </div>
+</div>
+                </div>
+              </div>
+            </div>
 
-  function setStatus(msg){ elStatus.textContent = msg || ""; }
-  function renderList(){
-    if (!uploadedPaths.length){
-      elList.textContent = "(belum ada)";
-      btnGenerate.disabled = true;
-      return;
+            <div class="small text-muted mt-2" id="mFooterStatus">—</div>
+          </div>
+
+          <div class="modal-footer">
+            <div class="me-auto small text-muted">Tip: klik slot lain (grid) untuk terus tukar slot aktif.</div>
+            <button class="btn btn-secondary" type="button" data-bs-dismiss="modal">Tutup</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- Bootstrap JS (needed for modal) -->
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+
+  <script>
+/* ========================== Config ========================== */
+const SB_URL = "https://dduizetstqqjrpsezbpi.supabase.co";
+const SB_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRkdWl6ZXRzdHFxanJwc2V6YnBpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTg3MzI0ODQsImV4cCI6MjA3NDMwODQ4NH0.CrlHXrmHtKgR9qc2192U6quRb5lpFEeOSgwG0Lb8KRM";
+window.sb = window.sb || window.supabase.createClient(SB_URL, SB_KEY);
+const sb = window.sb;
+
+/* ✅ Library cert belakang (sedia ada) */
+const LS_KEY = "cert_psd36_cfg_v3";
+const LS_SEL = "cert_psd36_sel_v3";
+
+const DEFAULT_CFG = {
+  bucket: "cert_uploads",
+  folder: "cert_psd/22.2.24",
+  ratio: 210/297,
+  ratioWarnPct: 18,
+  autoRotateLandscape: true,
+  backLibPrefix: "cert_back_2026/belakang"
+};
+
+const $ = (id)=>document.getElementById(id);
+function safeStr(x){ return (x==null?'':String(x)); }
+function pad2(n){ return String(n).padStart(2,'0'); }
+
+function loadCfg(){
+  try{
+    const raw = localStorage.getItem(LS_KEY);
+    if(!raw) return {...DEFAULT_CFG};
+    const obj = JSON.parse(raw);
+    return {...DEFAULT_CFG, ...(obj||{})};
+  }catch(e){
+    return {...DEFAULT_CFG};
+  }
+}
+function saveCfg(cfg){
+  localStorage.setItem(LS_KEY, JSON.stringify(cfg));
+}
+
+/* IMPORTANT:
+   - Jangan simpan localUrl (blob:) & fileObj dalam localStorage
+*/
+function loadSel(){
+  try{
+    const raw = localStorage.getItem(LS_SEL);
+    if(!raw) return {};
+    const obj = JSON.parse(raw) || {};
+    for(const k in obj){
+      if(obj[k] && obj[k].front){
+        if(obj[k].front.localUrl) delete obj[k].front.localUrl;
+        if(obj[k].front.fileObj)  delete obj[k].front.fileObj;
+      }
+      if(obj[k] && obj[k].back){
+        if(obj[k].back.localUrl) delete obj[k].back.localUrl;
+        if(obj[k].back.fileObj)  delete obj[k].back.fileObj;
+      }
     }
-    btnGenerate.disabled = false;
-    elList.innerHTML = uploadedPaths.map((p, i)=>`${String(i+1).padStart(2,"0")}. ${p}`).join("<br>");
+    return obj;
+  }catch(e){
+    return {};
+  }
+}
+function saveSel(sel){
+  const clean = {};
+  for(const k in (sel||{})){
+    const slot = sel[k] || {};
+    const out = { front: {}, back: {} };
+    if(slot.front){
+      out.front = {...slot.front};
+      delete out.front.fileObj;
+      delete out.front.localUrl;
+    }
+    if(slot.back){
+      out.back = {...slot.back};
+      delete out.back.fileObj;
+      delete out.back.localUrl;
+    }
+    clean[k] = out;
+  }
+  localStorage.setItem(LS_SEL, JSON.stringify(clean));
+}
+
+/* ========================== Topbar auth ========================== */
+(function(){
+  const pill=$('authStatus'),login=$('btnLogin'),logout=$('btnLogout');
+  try{
+    const a=(window.auth_get&&window.auth_get())||null;
+    if(a){
+      pill.textContent='Log masuk (admin) — '+(a.phone||a.msisdn||'');
+      login.style.display='none'; logout.style.display='';
+      logout.onclick=()=>{window.auth_clear&&window.auth_clear();location.reload();};
+    }else{
+      pill.textContent='Tidak log masuk';
+      login.style.display=''; logout.style.display='none';
+      login.onclick=()=>location.href='login.html#login';
+    }
+  }catch(_){}
+})();
+
+/* ========================== Admin guard ========================== */
+async function requireAdmin(){
+  if(window.adminGuard && typeof adminGuard.require==='function'){
+    return await adminGuard.require({
+      onChecking:()=> $('authStatus').textContent="Mengesahkan akses…",
+      onDenied:()=> $('authStatus').textContent="Akses ditolak",
+      onAllowed:(p)=> $('authStatus').textContent="Log masuk (admin) — "+p
+    });
+  }
+  const a=(window.auth_get&&window.auth_get())||null;
+  if(!a){ location.href="login.html#login"; return false; }
+  return true;
+}
+
+/* ========================== State ========================== */
+let CFG = loadCfg();
+let SEL = loadSel();
+let ACTIVE_SLOT = null;
+let ACTIVE_SIDE = "front";
+
+let slotModal = null;
+
+/* ========================== UI ========================== */
+function uiRefreshCfg(){
+  $('cfgBucket').value = CFG.bucket;
+  $('cfgFolder').value = CFG.folder;
+  $('cfgRatio').value = String(CFG.ratio);
+
+  $('uiBucket').textContent = CFG.bucket;
+  $('uiFolder').textContent = CFG.folder;
+  $('uiRatio').textContent = Number(CFG.ratio).toFixed(3);
+}
+function setStatus(msg){
+  $('statusLine').textContent = msg || "—";
+}
+
+function ensureSlot(k){
+  SEL[k] = SEL[k] || {};
+  SEL[k].front = SEL[k].front || {};
+  SEL[k].back  = SEL[k].back  || {};
+  return SEL[k];
+}
+function getSideObj(k, side){
+  const slot = ensureSlot(k);
+  return (side === "back") ? slot.back : slot.front;
+}
+function setSideObj(k, side, obj){
+  const slot = ensureSlot(k);
+  if(side === "back") slot.back = obj;
+  else slot.front = obj;
+}
+
+/* ========================== Helpers for paths ========================== */
+function slotKey(n){ return pad2(n); }
+function slotFileBase(n){ return `slot_${pad2(n)}`; }
+function folderNorm(s){
+  let t = safeStr(s).trim().replace(/\\/g,'/').replace(/^\/+|\/+$/g,'');
+  return t;
+}
+function joinPath(a,b){
+  a = safeStr(a).replace(/\/+$/,'');
+  b = safeStr(b).replace(/^\/+/,'');
+  if(!a) return b;
+  if(!b) return a;
+  return a + "/" + b;
+}
+function sideFolder(side){
+  return side === "back" ? "back" : "front";
+}
+
+/* ========================== Ratio warn ========================== */
+function computeRatioWarn(w,h){
+  const target = Number(CFG.ratio) || (210/297);
+  const actual = (w && h) ? (w/h) : null;
+  if(!actual) return {show:false, text:""};
+  const diffPct = Math.abs(actual - target) / target * 100;
+  const lim = Number(CFG.ratioWarnPct) || 18;
+  if(diffPct <= lim) return {show:false, text:""};
+  const txt =
+`Ratio lari besar:
+- Target W/H: ${target.toFixed(3)}
+- Gambar W/H: ${actual.toFixed(3)}
+- Beza: ${diffPct.toFixed(1)}%
+
+Tip:
+• Kalau slot PSD portrait, gambar melintang akan ada “padding” kalau preview 'contain'.
+• Kalau guna 'cover' (server), gambar boleh dipotong ikut petak.
+• Untuk cantik, guna Rotate 90° bila gambar melintang.`;
+  return {show:true, text:txt};
+}
+
+/* ========================== Render grid ========================== */
+function renderSlots(){
+  const grid = $('slotGrid');
+  grid.innerHTML = "";
+
+  for(let i=1;i<=36;i++){
+    const k = slotKey(i);
+    const slot = ensureSlot(k);
+    const f = slot.front || {};
+    const b = slot.back || {};
+
+    const card = document.createElement('div');
+    card.className = "slot-card";
+    card.setAttribute("data-slot", k);
+
+    const fState = f.publicUrl ? "UP" : (f.localUrl ? "READY" : "EMPTY");
+    const bState = b.publicUrl ? (b.source === "LIB" ? "LIB" : "UP") : (b.localUrl ? "READY" : "EMPTY");
+
+    let badge = `<span class="badge-soft badge-empty">EMPTY</span>`;
+    if(fState==="UP" || bState==="UP" || bState==="LIB") badge = `<span class="badge-soft badge-up">READY PSD</span>`;
+    else if(fState==="READY" || bState==="READY") badge = `<span class="badge-soft badge-ready">READY</span>`;
+
+    const previewSrc = f.publicUrl ? f.publicUrl : (f.localUrl ? f.localUrl : null);
+    const rot = Number(f.rotateDeg||0)||0;
+    const miniThumb = previewSrc
+      ? `<img alt="slot ${k}" src="${escapeHtml(previewSrc)}" style="transform: rotate(${rot}deg);">`
+      : `<div class="small text-muted" style="font-size:12px">No preview</div>`;
+
+    const backBadge = (bState==="LIB")
+      ? `<span class="badge-soft badge-lib">BACK: LIB</span>`
+      : (bState==="UP")
+        ? `<span class="badge-soft badge-up">BACK: UP</span>`
+        : (bState==="READY")
+          ? `<span class="badge-soft badge-ready">BACK: READY</span>`
+          : `<span class="badge-soft badge-empty">BACK: EMPTY</span>`;
+
+    const frontBadge = (fState==="UP")
+      ? `<span class="badge-soft badge-up">FRONT: UP</span>`
+      : (fState==="READY")
+        ? `<span class="badge-soft badge-ready">FRONT: READY</span>`
+        : `<span class="badge-soft badge-empty">FRONT: EMPTY</span>`;
+
+    card.innerHTML = `
+      <div class="slot-head">
+        <div class="slot-no">SLOT ${k}</div>
+        <div class="d-flex gap-2 align-items-center">
+          ${badge}
+        </div>
+      </div>
+      <div class="slot-body">
+        <div class="slot-mini">
+          <div class="mini-thumb">${miniThumb}</div>
+          <div class="mini-info">
+            <div class="t1">Klik untuk edit DEPAN/BELAKANG</div>
+            <div class="t2">Front preview + status ringkas</div>
+            <div class="mini-row">
+              ${frontBadge}
+              ${backBadge}
+            </div>
+          </div>
+        </div>
+      </div>
+    `;
+
+    if(ACTIVE_SLOT === k) card.classList.add("active");
+    grid.appendChild(card);
   }
 
-  async function ensureAuth(){
-    // ikut auth.js Amir - biasanya token sudah ada
-    const { data } = await sb.auth.getSession();
-    if (!data.session) throw new Error("Belum login / session tiada");
+  grid.querySelectorAll('.slot-card').forEach(el=>{
+    el.addEventListener('click', ()=>{
+      const k = el.getAttribute('data-slot');
+      setActive(k);
+      openSlotModal(k);
+    });
+  });
+
+  setStatus(summaryText());
+}
+
+function setActive(k){
+  ACTIVE_SLOT = k;
+  renderSlots();
+}
+
+function summaryText(){
+  let fUp=0,fReady=0,fEmpty=0;
+  let bUp=0,bReady=0,bEmpty=0,bLib=0;
+
+  for(let i=1;i<=36;i++){
+    const k = slotKey(i);
+    const slot = ensureSlot(k);
+    const f = slot.front || {};
+    const b = slot.back  || {};
+
+    if(f.publicUrl) fUp++; else if(f.localUrl) fReady++; else fEmpty++;
+
+    if(b.publicUrl && b.source === "LIB") bLib++;
+    else if(b.publicUrl) bUp++;
+    else if(b.localUrl) bReady++;
+    else bEmpty++;
+  }
+  return `DEPAN: UPLOADED=${fUp}, READY=${fReady}, EMPTY=${fEmpty}. • BELAKANG: LIB=${bLib}, UPLOADED=${bUp}, READY=${bReady}, EMPTY=${bEmpty}.`;
+}
+
+/* ========================== Modal ========================== */
+function openSlotModal(k){
+  if(!slotModal){
+    slotModal = new bootstrap.Modal(document.getElementById('slotModal'));
+  }
+  renderModalForSlot(k);
+  slotModal.show();
+}
+
+function renderModalForSlot(k){
+  if(!k) return;
+  ensureSlot(k);
+
+  $('mTitle').textContent = `SLOT ${k}`;
+  renderModalSide(k, "front");
+  renderModalSide(k, "back");
+
+  $('mFooterStatus').textContent = "Loading library...";
+
+  populateLibSelect()
+    .then(()=>{
+      $('mFooterStatus').textContent = `Library siap: ${LIB_CACHE.length} fail`;
+    })
+    .catch((e)=>{
+      console.error("populateLibSelect error:", e);
+      $('mFooterStatus').textContent = "Gagal load library: " + (e?.message || e);
+    });
+}
+
+function renderModalSide(k, side){
+  const s = getSideObj(k, side);
+  const label = (side==="back") ? "BELAKANG" : "DEPAN";
+  const ratio = Number(CFG.ratio) || (210/297);
+
+  const previewSrc = s.publicUrl ? s.publicUrl : (s.localUrl ? s.localUrl : null);
+  const rotateDeg = Number((s.rotateDeg)!=null ? s.rotateDeg : 0) || 0;
+
+  const thumbEl = (side==="back") ? $('mBackThumb') : $('mFrontThumb');
+  const metaEl  = (side==="back") ? $('mBackMeta')  : $('mFrontMeta');
+  const warnEl  = (side==="back") ? $('mBackWarn')  : $('mFrontWarn');
+
+  thumbEl.style.aspectRatio = `${ratio} / 1`;
+  if(previewSrc){
+    thumbEl.innerHTML = `<img alt="${label} ${k}" src="${escapeHtml(previewSrc)}" style="transform: rotate(${rotateDeg}deg);">`;
+  }else{
+    thumbEl.innerHTML = `<div class="emptytext">${label}<br>Klik “Pilih”</div>`;
   }
 
-  btnUpload.addEventListener("click", async () => {
-    try {
-      await ensureAuth();
-      const files = Array.from(elFile.files || []);
-      if (!files.length) return alert("Pilih gambar dulu");
-      if (files.length > 36) return alert("Max 36 gambar");
+  const fileName = s ? (s.name || (s.uploadedPath ? s.uploadedPath.split('/').pop() : "")) : "";
+  const dim = (s && s.w && s.h) ? `${s.w}×${s.h}` : "—";
+  const size = (s && s.size) ? humanBytes(s.size) : "—";
+  const ori = (s && s.ori) ? s.ori : "—";
+  const urlOk = (s && s.publicUrl) ? "OK" : "—";
 
-      const bucket = (elBucket.value || "").trim();
-      if (!bucket) return alert("Bucket kosong");
+  metaEl.innerHTML = `
+    <div class="line"><span class="k">Fail</span><span class="v mono">${escapeHtml(fileName) || "-"}</span></div>
+    <div class="line"><span class="k">Dim</span><span class="v mono">${escapeHtml(dim)}</span></div>
+    <div class="line"><span class="k">Ori</span><span class="v mono">${escapeHtml(ori)}</span></div>
+    <div class="line"><span class="k">Saiz</span><span class="v mono">${escapeHtml(size)}</span></div>
+    <div class="line"><span class="k">URL</span><span class="v mono">${escapeHtml(urlOk)}</span></div>
+  `;
 
-      setStatus("Uploading...");
-      uploadedPaths = [];
+  const warn = (s && s.w && s.h) ? computeRatioWarn(s.w, s.h) : {show:false, text:""};
+  warnEl.style.display = warn.show ? "block" : "none";
+  warnEl.textContent = warn.text || "";
 
-      const jobId = `job_${Date.now()}`;
-      for (let i=0;i<files.length;i++){
-        const f = files[i];
-        const ext = (f.name.split(".").pop() || "jpg").toLowerCase();
-        const safeExt = ["jpg","jpeg","png","webp"].includes(ext) ? ext : "jpg";
-        const path = `front/${jobId}/${String(i+1).padStart(2,"0")}.${safeExt}`;
+  if(side==="front"){
+    $('mFrontOri').textContent = s.ori ? s.ori : "—";
+    $('mFrontRot').textContent = `ROT ${rotateDeg}°`;
+    $('mFrontUp').textContent = s.publicUrl ? "UPLOADED" : (s.localUrl ? "READY" : "EMPTY");
+  }else{
+    const src = (s.publicUrl && s.source==="LIB") ? "LIB" : "UPLOAD";
+    $('mBackSrc').textContent = `SRC: ${src}`;
+    $('mBackOri').textContent = s.ori ? s.ori : "—";
+    $('mBackRot').textContent = `ROT ${rotateDeg}°`;
+    $('mBackUp').textContent = s.publicUrl ? (s.source==="LIB" ? "LIB OK" : "UPLOADED") : (s.localUrl ? "READY" : "EMPTY");
 
-        const { error } = await sb.storage.from(bucket).upload(path, f, { upsert: true });
-        if (error) throw error;
+    const isLib = (s.publicUrl && s.source==="LIB");
+    $('mUploadBack').disabled = isLib;
+    $('mPickBack').disabled = false;
+    $('mRotBack').disabled = false;
+    $('mClearBack').disabled = false;
+  }
+}
 
-        uploadedPaths.push(`${bucket}/${path}`);
-        setStatus(`Uploaded ${i+1}/${files.length}`);
+/* ========================== Modal wiring ========================== */
+$('mPickFront').addEventListener('click', ()=>{
+  if(!ACTIVE_SLOT){ alert("Klik slot dulu."); return; }
+  pickFileFor(ACTIVE_SLOT, "front");
+});
+$('mPickBack').addEventListener('click', ()=>{
+  if(!ACTIVE_SLOT){ alert("Klik slot dulu."); return; }
+  const b = getSideObj(ACTIVE_SLOT,"back");
+  b.source = "UPLOAD";
+  setSideObj(ACTIVE_SLOT,"back",b);
+  $('mLibSelect').value = "";
+  pickFileFor(ACTIVE_SLOT, "back");
+});
+
+$('mUploadFront').addEventListener('click', async ()=>{
+  if(!ACTIVE_SLOT){ alert("Klik slot dulu."); return; }
+  await uploadOne(ACTIVE_SLOT,"front");
+  renderModalForSlot(ACTIVE_SLOT);
+});
+$('mUploadBack').addEventListener('click', async ()=>{
+  if(!ACTIVE_SLOT){ alert("Klik slot dulu."); return; }
+  await uploadOne(ACTIVE_SLOT,"back");
+  renderModalForSlot(ACTIVE_SLOT);
+});
+
+$('mRotFront').addEventListener('click', ()=>{
+  if(!ACTIVE_SLOT){ alert("Klik slot dulu."); return; }
+  toggleRotate(ACTIVE_SLOT,"front");
+  renderModalForSlot(ACTIVE_SLOT);
+});
+$('mRotBack').addEventListener('click', ()=>{
+  if(!ACTIVE_SLOT){ alert("Klik slot dulu."); return; }
+  toggleRotate(ACTIVE_SLOT,"back");
+  renderModalForSlot(ACTIVE_SLOT);
+});
+
+$('mClearFront').addEventListener('click', ()=>{
+  if(!ACTIVE_SLOT){ alert("Klik slot dulu."); return; }
+  clearSide(ACTIVE_SLOT,"front", false);
+  renderModalForSlot(ACTIVE_SLOT);
+});
+$('mClearBack').addEventListener('click', ()=>{
+  if(!ACTIVE_SLOT){ alert("Klik slot dulu."); return; }
+  clearSide(ACTIVE_SLOT,"back", false);
+  $('mLibSelect').value = "";
+  renderModalForSlot(ACTIVE_SLOT);
+});
+
+/* ========================== Library back (Supabase list) ========================== */
+let LIB_CACHE = [];
+let LIB_LOADING_PROMISE = null;
+async function loadBackLibrary(){
+  const bucket = CFG.bucket;
+const root = folderNorm(CFG.backLibPrefix);
+const files = [];
+
+console.log("BACK LIB BUCKET =", bucket);
+console.log("BACK LIB ROOT =", root);
+console.log("CFG =", CFG);
+
+  async function listDir(prefix){
+    let offset = 0;
+    const out = [];
+    while(true){
+      const res = await sb.storage.from(bucket).list(prefix, {
+        limit: 200,
+        offset,
+        sortBy: { column:'name', order:'asc' }
+      });
+      if(res.error) throw res.error;
+      const data = res.data || [];
+      out.push(...data);
+      if(data.length < 200) break;
+      offset += 200;
+      if(offset > 2000) break;
+    }
+    return out;
+  }
+
+  function isImageName(nm){
+    return /\.(png|jpe?g|webp)$/i.test(nm || "");
+  }
+  function isFolder(item){
+    const name = String(item?.name || "");
+    if(!name) return false;
+    if(isImageName(name)) return false;
+    if(item?.metadata && item.metadata.mimetype) return false;
+    return true;
+  }
+
+  const lv1 = await listDir(root);
+console.log("LV1 =", lv1);
+
+  for(const it of lv1){
+    const nm = String(it?.name || "");
+    if(!nm) continue;
+    if(isImageName(nm)){
+      const fullPath = joinPath(root, nm);
+      const pub = sb.storage.from(bucket).getPublicUrl(fullPath);
+      const url = pub?.data?.publicUrl || null;
+      files.push({ name: nm, path: fullPath, publicUrl: url });
+    }
+  }
+
+  const folders1 = lv1.filter(isFolder).map(x => String(x.name));
+  for(const f1 of folders1){
+    const p1 = joinPath(root, f1);
+    const lv2 = await listDir(p1);
+
+    for(const it of lv2){
+      const nm = String(it?.name || "");
+      if(!nm) continue;
+      if(isImageName(nm)){
+        const fullPath = joinPath(p1, nm);
+        const pub = sb.storage.from(bucket).getPublicUrl(fullPath);
+        const url = pub?.data?.publicUrl || null;
+        files.push({ name: `${f1}/${nm}`, path: fullPath, publicUrl: url });
+      }
+    }
+
+    const folders2 = lv2.filter(isFolder).map(x => String(x.name));
+    for(const f2 of folders2){
+      const p2 = joinPath(p1, f2);
+      const lv3 = await listDir(p2);
+
+      for(const it of lv3){
+        const nm = String(it?.name || "");
+        if(!nm) continue;
+        if(isImageName(nm)){
+          const fullPath = joinPath(p2, nm);
+          const pub = sb.storage.from(bucket).getPublicUrl(fullPath);
+          const url = pub?.data?.publicUrl || null;
+          files.push({ name: `${f1}/${f2}/${nm}`, path: fullPath, publicUrl: url });
+        }
+      }
+    }
+  }
+
+  files.sort((a,b)=> String(a.name).localeCompare(String(b.name)));
+  LIB_CACHE = files;
+
+  console.log("BACK LIB ROOT =", root);
+  console.log("LIB FILES COUNT =", files.length);
+  console.log("LIB FILES =", files);
+
+  return files;
+}
+function applyLibSearchOptions(searchText){
+  const q = safeStr(searchText).trim().toLowerCase();
+  const sel = $('mLibSelect');
+  const cur = sel.value;
+
+  sel.innerHTML = `<option value="">— pilih cert —</option>`;
+
+  const list = (LIB_CACHE || []).filter(x=>{
+    if(!q) return true;
+    const n = safeStr(x.name).toLowerCase();
+    return n.includes(q);
+  });
+
+  for(const x of list){
+    const label = x.name.replace(/\.(png|jpe?g|webp)$/i,'');
+    const opt = document.createElement('option');
+    opt.value = x.path;
+    opt.textContent = label;
+    sel.appendChild(opt);
+  }
+
+  if(cur && [...sel.options].some(o=>o.value===cur)){
+    sel.value = cur;
+  }
+}
+
+async function populateLibSelect(){
+  if(!LIB_CACHE || !LIB_CACHE.length){
+    if(!LIB_LOADING_PROMISE){
+      LIB_LOADING_PROMISE = loadBackLibrary().finally(()=>{
+        LIB_LOADING_PROMISE = null;
+      });
+    }
+    await LIB_LOADING_PROMISE;
+  }
+
+  applyLibSearchOptions($('mLibSearch').value);
+}
+
+$('mLibReload').addEventListener('click', async ()=>{
+  try{
+    $('mLibReload').disabled = true;
+    $('mLibReload').textContent = "Loading…";
+    $('mFooterStatus').textContent = "Loading library...";
+
+    LIB_LOADING_PROMISE = loadBackLibrary().finally(()=>{
+      LIB_LOADING_PROMISE = null;
+    });
+
+    await LIB_LOADING_PROMISE;
+    applyLibSearchOptions($('mLibSearch').value);
+
+    $('mFooterStatus').textContent = `Library siap: ${LIB_CACHE.length} fail`;
+  }catch(e){
+    console.error("mLibReload error:", e);
+    alert("Ralat reload library: " + (e?.message || e));
+    $('mFooterStatus').textContent = "Gagal reload library: " + (e?.message || e);
+  }finally{
+    $('mLibReload').disabled = false;
+    $('mLibReload').textContent = "Reload library";
+  }
+});
+
+$('mLibSearch').addEventListener('input', ()=>{
+  applyLibSearchOptions($('mLibSearch').value);
+});
+
+$('mLibSelect').addEventListener('change', async ()=>{
+  const path = $('mLibSelect').value;
+  if(!ACTIVE_SLOT) return;
+
+  if(!path){
+    const b = getSideObj(ACTIVE_SLOT,"back");
+    if(b && b.source==="LIB"){
+      setSideObj(ACTIVE_SLOT,"back", {});
+      saveSel(SEL);
+      renderSlots();
+      renderModalForSlot(ACTIVE_SLOT);
+    }
+    return;
+  }
+
+  const item = (LIB_CACHE || []).find(x=>x.path===path) || null;
+  if(!item || !item.publicUrl){
+    alert("File library tak jumpa / tiada public URL.");
+    return;
+  }
+
+  const info = await readImageInfo(item.publicUrl).catch(()=>null);
+  const w = info?.w || null;
+  const h = info?.h || null;
+  const ori = (w && h) ? (w>=h ? "MELINTANG" : "TEGAK") : null;
+
+  let rotateDeg = 0;
+  if(CFG.autoRotateLandscape && ori === "MELINTANG") rotateDeg = 90;
+
+  const b = getSideObj(ACTIVE_SLOT,"back");
+  if(b && b.localUrl){
+    try{ URL.revokeObjectURL(b.localUrl); }catch(_){}
+  }
+
+  const next = {
+    fileObj: null,
+    localUrl: null,
+    name: item.name,
+    size: null,
+    type: null,
+    w: w,
+    h: h,
+    ori: ori,
+    fileExt: guessExtFromName(item.name),
+    rotateDeg: rotateDeg,
+
+    uploadedPath: item.path,
+    publicUrl: item.publicUrl,
+    uploadedAt: new Date().toISOString(),
+
+    source: "LIB"
+  };
+
+  setSideObj(ACTIVE_SLOT,"back", next);
+  saveSel(SEL);
+  renderSlots();
+  renderModalForSlot(ACTIVE_SLOT);
+});
+
+/* ========================== Rotate + clear ========================== */
+function toggleRotate(k, side){
+  const s = getSideObj(k, side);
+  const cur = Number(s.rotateDeg || 0) || 0;
+  const next = (cur + 90) % 360;
+  s.rotateDeg = next;
+  setSideObj(k, side, s);
+  saveSel(SEL);
+  renderSlots();
+}
+
+function clearSide(k, side, silent){
+  const label = side === "back" ? "BELAKANG" : "DEPAN";
+  if(!silent){
+    if(!confirm(`Clear SLOT ${k} - ${label}? (buang pilihan local sahaja)`)) return;
+  }
+
+  const s = getSideObj(k, side);
+  if(s && s.localUrl){
+    try{ URL.revokeObjectURL(s.localUrl); }catch(_){}
+  }
+
+  setSideObj(k, side, {});
+  saveSel(SEL);
+  renderSlots();
+}
+
+
+/* ========================== File picking ========================== */
+$('filePick').addEventListener('change', async ()=>{
+  const f = $('filePick').files && $('filePick').files[0];
+  $('filePick').value = "";
+  if(!f) return;
+  if(!ACTIVE_SLOT){
+    alert("Sila klik satu slot dulu.");
+    return;
+  }
+  await setFileToSlot(ACTIVE_SLOT, ACTIVE_SIDE, f);
+  renderModalForSlot(ACTIVE_SLOT);
+});
+
+function pickFileFor(k, side){
+  ACTIVE_SLOT = k;
+  ACTIVE_SIDE = side || "front";
+  renderSlots();
+  $('filePick').click();
+}
+
+async function setFileToSlot(k, side, file){
+  if(!file || !k) return;
+
+  const old = getSideObj(k, side);
+  if(old && old.localUrl){
+    try{ URL.revokeObjectURL(old.localUrl); }catch(_){}
+  }
+
+  const localUrl = URL.createObjectURL(file);
+  const ext = guessExt(file);
+
+  const info = await readImageInfo(localUrl).catch(()=>null);
+  const w = info ? info.w : null;
+  const h = info ? info.h : null;
+  const ori = (w && h) ? (w>=h ? "MELINTANG" : "TEGAK") : "";
+
+  let rotateDeg = Number(old && old.rotateDeg) || 0;
+  if(CFG.autoRotateLandscape){
+    if(ori === "MELINTANG") rotateDeg = 90;
+    else rotateDeg = 0;
+  }
+
+  const next = {
+    fileObj: file,
+    name: file.name,
+    size: file.size,
+    type: file.type,
+    fileExt: ext,
+    w: w,
+    h: h,
+    ori: ori,
+    rotateDeg: rotateDeg,
+    localUrl: localUrl,
+
+    publicUrl: (old && old.publicUrl && old.source!=="LIB") ? old.publicUrl : null,
+    uploadedPath: (old && old.uploadedPath && old.source!=="LIB") ? old.uploadedPath : null,
+    uploadedAt: (old && old.uploadedAt && old.source!=="LIB") ? old.uploadedAt : null,
+
+    source: "UPLOAD"
+  };
+
+  if(side==="back"){
+    $('mLibSelect').value = "";
+  }
+
+  setSideObj(k, side, next);
+  saveSel(SEL);
+  renderSlots();
+}
+
+function guessExt(file){
+  const t = safeStr(file.type).toLowerCase();
+  if(t.includes("png")) return "png";
+  if(t.includes("jpeg") || t.includes("jpg")) return "jpg";
+  if(t.includes("webp")) return "webp";
+  if(t.includes("gif")) return "gif";
+  const n = safeStr(file.name);
+  const m = n.match(/\.([a-z0-9]+)$/i);
+  if(m) return m[1].toLowerCase();
+  return "jpg";
+}
+function guessExtFromName(name){
+  const n = safeStr(name);
+  const m = n.match(/\.([a-z0-9]+)$/i);
+  return m ? m[1].toLowerCase() : "png";
+}
+
+function readImageInfo(url){
+  return new Promise((resolve,reject)=>{
+    const img = new Image();
+    img.onload = ()=> resolve({w:img.naturalWidth, h:img.naturalHeight});
+    img.onerror = reject;
+    img.src = url;
+  });
+}
+
+/* ========================== Supabase storage ========================== */
+function getPublicUrl(bucket, path){
+  const r = sb.storage.from(bucket).getPublicUrl(path);
+  return r && r.data ? r.data.publicUrl : null;
+}
+
+async function listExisting(){
+  const bucket = CFG.bucket;
+  const folder = folderNorm(CFG.folder);
+  setStatus("Loading status bucket…");
+
+  try{
+    const frontFolder = joinPath(folder, "front");
+    const backFolder  = joinPath(folder, "back");
+
+    const resF = await sb.storage.from(bucket).list(frontFolder, {
+      limit: 200,
+      offset: 0,
+      sortBy: { column: 'name', order: 'asc' }
+    });
+    if(resF.error) throw resF.error;
+
+    const resB = await sb.storage.from(bucket).list(backFolder, {
+      limit: 200,
+      offset: 0,
+      sortBy: { column: 'name', order: 'asc' }
+    });
+    if(resB.error) throw resB.error;
+
+    const filesF = resF.data || [];
+    const filesB = resB.data || [];
+
+    for(const f of filesF){
+      const nm = safeStr(f.name);
+      const m = nm.match(/^slot_(\d{2})\.(\w+)$/i);
+      if(!m) continue;
+      const slot = m[1];
+      const ext = m[2].toLowerCase();
+      const fullPath = joinPath(frontFolder, nm);
+      const pub = getPublicUrl(bucket, fullPath);
+
+      const s = getSideObj(slot, "front");
+      s.uploadedPath = fullPath;
+      s.publicUrl = pub;
+      s.fileExt = s.fileExt || ext;
+      s.uploadedAt = s.uploadedAt || (f.created_at || null);
+      s.source = "UPLOAD";
+
+      if(s.localUrl) delete s.localUrl;
+      if(s.fileObj)  delete s.fileObj;
+
+      setSideObj(slot, "front", s);
+    }
+
+    for(const f of filesB){
+      const nm = safeStr(f.name);
+      const m = nm.match(/^slot_(\d{2})\.(\w+)$/i);
+      if(!m) continue;
+      const slot = m[1];
+      const ext = m[2].toLowerCase();
+      const fullPath = joinPath(backFolder, nm);
+      const pub = getPublicUrl(bucket, fullPath);
+
+      const s = getSideObj(slot, "back");
+      if(!(s && s.publicUrl && s.source==="LIB")){
+        s.uploadedPath = fullPath;
+        s.publicUrl = pub;
+        s.fileExt = s.fileExt || ext;
+        s.uploadedAt = s.uploadedAt || (f.created_at || null);
+        s.source = "UPLOAD";
+
+        if(s.localUrl) delete s.localUrl;
+        if(s.fileObj)  delete s.fileObj;
+
+        setSideObj(slot, "back", s);
+      }
+    }
+
+    saveSel(SEL);
+    renderSlots();
+    setStatus(summaryText());
+  }catch(e){
+    console.error(e);
+    alert("Ralat list bucket: " + (e?.message || e));
+    setStatus("Gagal load status bucket.");
+  }
+}
+
+/* ========================== Rotate pixels before upload ========================== */
+async function rotateFileToBlob(file, rotateDeg, outExt){
+  const deg = ((Number(rotateDeg)||0)%360+360)%360;
+  if(!deg) return { blob: file, contentType: file.type || mimeFromExt(outExt), ext: outExt || guessExt(file) };
+
+  const ext = (outExt || guessExt(file) || "jpg").toLowerCase();
+  const mime = mimeFromExt(ext);
+
+  let bmp = null;
+  try{
+    if('createImageBitmap' in window){
+      bmp = await createImageBitmap(file);
+    }
+  }catch(_){ bmp = null; }
+
+  let imgW, imgH, drawImg;
+  if(bmp){
+    imgW = bmp.width; imgH = bmp.height;
+    drawImg = bmp;
+  }else{
+    const url = URL.createObjectURL(file);
+    try{
+      const img = await new Promise((resolve,reject)=>{
+        const im = new Image();
+        im.onload = ()=> resolve(im);
+        im.onerror = reject;
+        im.src = url;
+      });
+      imgW = img.naturalWidth; imgH = img.naturalHeight;
+      drawImg = img;
+    }finally{
+      try{ URL.revokeObjectURL(url); }catch(_){}
+    }
+  }
+
+  const rad = deg * Math.PI / 180;
+
+  let outW = imgW, outH = imgH;
+  if(deg === 90 || deg === 270){
+    outW = imgH;
+    outH = imgW;
+  }
+
+  const canvas = document.createElement('canvas');
+  canvas.width = outW;
+  canvas.height = outH;
+  const ctx = canvas.getContext('2d', {alpha: true});
+
+  ctx.translate(outW/2, outH/2);
+  ctx.rotate(rad);
+  ctx.drawImage(drawImg, -imgW/2, -imgH/2);
+
+  if(bmp && bmp.close) try{ bmp.close(); }catch(_){}
+
+  const blob = await new Promise((resolve)=>{
+    if(ext === "jpg" || ext === "jpeg"){
+      canvas.toBlob((b)=> resolve(b), mime, 0.92);
+    }else{
+      canvas.toBlob((b)=> resolve(b), mime);
+    }
+  });
+
+  return { blob, contentType: mime, ext };
+}
+
+function mimeFromExt(ext){
+  ext = safeStr(ext).toLowerCase();
+  if(ext === "png") return "image/png";
+  if(ext === "webp") return "image/webp";
+  if(ext === "gif") return "image/gif";
+  return "image/jpeg";
+}
+
+/* ========================== Upload one ========================== */
+async function uploadOne(k, side){
+  const s = getSideObj(k, side);
+  const label = side === "back" ? "BELAKANG" : "DEPAN";
+
+  if(side==="back" && s && s.publicUrl && s.source==="LIB"){
+    alert(`BELAKANG slot ${k} guna cert library. Tak perlu upload (elak upload 2 kali).`);
+    return;
+  }
+
+  if(!s || (!s.fileObj && !s.localUrl && !s.publicUrl)){
+    alert(`Slot ${k} (${label}) kosong.`);
+    return;
+  }
+
+  if(!s.fileObj){
+    alert(`Fail tempatan hilang (page refresh). Sila pilih gambar semula untuk slot ${k} (${label}).`);
+    return;
+  }
+
+  const bucket = CFG.bucket;
+  const folder = folderNorm(CFG.folder);
+
+  const ext = s.fileExt || "jpg";
+  const path = joinPath(joinPath(folder, sideFolder(side)), `${slotFileBase(Number(k))}.${ext}`);
+
+  try{
+    setStatus(`Uploading slot ${k} (${label})…`);
+
+    const rot = Number(s.rotateDeg || 0) || 0;
+    const { blob, contentType } = await rotateFileToBlob(s.fileObj, rot, ext);
+
+    const up = await sb.storage
+      .from(bucket)
+      .upload(path, blob, {
+        cacheControl: "3600",
+        upsert: true,
+        contentType: contentType || s.type || undefined
+      });
+
+    if(up.error) throw up.error;
+
+    const pub = sb.storage.from(bucket).getPublicUrl(path);
+
+    s.uploadedPath = path;
+    s.publicUrl = pub.data.publicUrl;
+    s.uploadedAt = new Date().toISOString();
+    s.source = "UPLOAD";
+
+    setSideObj(k, side, s);
+
+    saveSel(SEL);
+    renderSlots();
+
+    setStatus(`Slot ${k} (${label}) uploaded ✅`);
+  }catch(e){
+    console.error(e);
+    alert(`Ralat upload slot ${k} (${label}): ` + (e?.message || e));
+    setStatus(`Upload slot ${k} (${label}) gagal.`);
+  }
+}
+
+async function uploadAllReady(){
+  const todo = [];
+  for(let i=1;i<=36;i++){
+    const k = slotKey(i);
+    const slot = ensureSlot(k);
+
+    if(slot.front && slot.front.localUrl) todo.push({k, side:"front"});
+    if(slot.back && slot.back.localUrl) todo.push({k, side:"back"});
+  }
+  if(!todo.length){
+    alert("Tiada slot READY untuk upload.");
+    return;
+  }
+  if(!confirm(`Upload ${todo.length} item ke Supabase? (BACK library akan auto skip)`)) return;
+
+  $('btnUploadAll').disabled = true;
+  $('btnUploadAll').textContent = "Uploading…";
+
+  try{
+    for(let idx=0; idx<todo.length; idx++){
+      const t = todo[idx];
+      setStatus(`Uploading ${idx+1}/${todo.length}… (slot ${t.k} ${t.side})`);
+      await uploadOne(t.k, t.side);
+    }
+    setStatus("Upload semua siap ✅");
+  }finally{
+    $('btnUploadAll').disabled = false;
+    $('btnUploadAll').textContent = "1) Upload";
+  }
+}
+
+/* ========================== Manifest ========================== */
+function buildManifest(){
+  const bucket = CFG.bucket;
+  const folder = folderNorm(CFG.folder);
+
+  const out = {
+    bucket,
+    folder,
+    generated_at: (new Date()).toISOString(),
+    back_library_prefix: folderNorm(CFG.backLibPrefix),
+    front_slots: {},
+    back_slots: {}
+  };
+
+  for(let i=1;i<=36;i++){
+    const k = slotKey(i);
+    const slot = ensureSlot(k);
+
+    {
+      const s = slot.front || {};
+      const ext = s.fileExt ? s.fileExt : "jpg";
+      const plannedPath = joinPath(joinPath(folder, "front"), `${slotFileBase(i)}.${ext}`);
+      const publicUrl = s.publicUrl ? s.publicUrl : getPublicUrl(bucket, plannedPath);
+
+      out.front_slots[k] = {
+        slot: k,
+        path: s.uploadedPath ? s.uploadedPath : plannedPath,
+        public_url: publicUrl || null,
+        file_name: s.name || null,
+        width: s.w || null,
+        height: s.h || null,
+        orientation: s.ori || null,
+        rotate_deg: Number(s.rotateDeg||0)||0,
+        status: s.publicUrl ? "UPLOADED" : (s.localUrl ? "READY" : "EMPTY"),
+        source: "UPLOAD"
+      };
+    }
+
+    {
+      const s = slot.back || {};
+      const isLib = !!(s.publicUrl && s.source==="LIB");
+
+      let plannedPath = null;
+      if(isLib){
+        plannedPath = s.uploadedPath || null;
+      }else{
+        const ext = s.fileExt ? s.fileExt : "jpg";
+        plannedPath = joinPath(joinPath(folder, "back"), `${slotFileBase(i)}.${ext}`);
       }
 
-      renderList();
-      setStatus(`Siap upload: ${files.length} gambar. Tekan "Generate PSD".`);
-    } catch (e) {
-      console.error(e);
-      alert(e.message || String(e));
-      setStatus("");
-    }
-  });
+      const publicUrl = s.publicUrl ? s.publicUrl : (plannedPath ? getPublicUrl(bucket, plannedPath) : null);
 
-  btnGenerate.addEventListener("click", async () => {
-    try {
-      await ensureAuth();
-      if (!uploadedPaths.length) return alert("Tiada gambar");
-
-      setStatus("Generating PSD...");
-      elOut.innerHTML = "";
-
-      const payload = {
-        job_id: `psd_${Date.now()}`,
-        images: uploadedPaths.map(p => ({ path: p })),
-        config: {
-          canvasW: 4724,
-          canvasH: 6850,
-          cols: 6,
-          rows: 6,
-          slotW: 650,
-          slotH: 1028,
-          marginX: 180,
-          marginY: 180,
-          gapX: 24,
-          gapY: 24,
-          includeGrid: true,
-          outputBucket: "cert_outputs"
-        }
+      out.back_slots[k] = {
+        slot: k,
+        path: s.uploadedPath ? s.uploadedPath : plannedPath,
+        public_url: publicUrl || null,
+        file_name: s.name || null,
+        width: s.w || null,
+        height: s.h || null,
+        orientation: s.ori || null,
+        rotate_deg: Number(s.rotateDeg||0)||0,
+        status: s.publicUrl ? (isLib ? "LIB" : "UPLOADED") : (s.localUrl ? "READY" : "EMPTY"),
+        source: isLib ? "LIB" : "UPLOAD"
       };
-
-      const res = await fetch("/.netlify/functions/cert-psd-generate", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload),
-      });
-      const data = await res.json();
-      if (!data.ok) throw new Error(data.error || "Generate failed");
-
-      setStatus("Siap. Download PSD & buka dalam Photoshop (buat W1 manual).");
-
-      elOut.innerHTML = `
-        <div>✅ <b>PSD siap</b></div>
-        <div class="mono small mt-1">${data.output.bucket}/${data.output.path}</div>
-        <div class="mt-2"><a class="btn btn-outline-primary btn-sm" href="${data.output.signed_url}" target="_blank" rel="noopener">Download PSD</a></div>
-        <div class="small text-muted mt-2">Lepas buka PSD: merge kalau perlu → Ctrl+klik layer → Channels → New Spot Channel (W1) → Save as TIFF.</div>
-      `;
-    } catch (e) {
-      console.error(e);
-      alert(e.message || String(e));
-      setStatus("");
     }
-  });
+  }
 
-  renderList();
-</script>
+  return out;
+}
+
+function renderManifest(){
+  const obj = buildManifest();
+  $('outBox').value = JSON.stringify(obj, null, 2);
+  return obj;
+}
+
+async function uploadManifest(){
+  const obj = renderManifest();
+  const bucket = CFG.bucket;
+  const folder = folderNorm(CFG.folder);
+  const path = joinPath(folder, "manifest.json");
+
+  const blob = new Blob([JSON.stringify(obj, null, 2)], {type:"application/json;charset=utf-8"});
+
+  try{
+    setStatus("Uploading manifest.json…");
+    const up = await sb.storage.from(bucket).upload(path, blob, {
+      cacheControl: "60",
+      upsert: true,
+      contentType: "application/json"
+    });
+    if(up.error) throw up.error;
+    setStatus("manifest.json uploaded ✅");
+    alert("manifest.json uploaded ✅");
+  }catch(e){
+    console.error(e);
+    alert("Ralat upload manifest.json: " + (e?.message || e));
+    setStatus("Upload manifest gagal.");
+  }
+}
+
+/* ========================== Generate PSD ========================== */
+function showPsdLinks(frontUrl, frontPath, backUrl, backPath){
+  $('psdInfo').style.display = "";
+  $('psdBar').style.display = "";
+
+  if(frontUrl){
+    $('psdLinkFront').href = frontUrl;
+    $('psdPathFront').textContent = frontPath ? ("(" + frontPath + ")") : "";
+    $('psdBarFront').href = frontUrl;
+  }else{
+    $('psdLinkFront').href = "#";
+    $('psdPathFront').textContent = "(tiada signed_url)";
+    $('psdBarFront').href = "#";
+  }
+
+  if(backUrl){
+    $('psdLinkBack').href = backUrl;
+    $('psdPathBack').textContent = backPath ? ("(" + backPath + ")") : "";
+    $('psdBarBack').href = backUrl;
+  }else{
+    $('psdLinkBack').href = "#";
+    $('psdPathBack').textContent = "(tiada signed_url)";
+    $('psdBarBack').href = "#";
+  }
+}
+
+async function generatePSDFront(){
+  const folder = folderNorm(CFG.folder);
+  const bucket = CFG.bucket;
+
+  function buildImages(side){
+    const images = [];
+    let uploadedCount = 0;
+
+    for(let i=1;i<=36;i++){
+      const k = slotKey(i);
+      const s = getSideObj(k, side);
+
+      if(s && s.uploadedPath){
+        images.push({ path: `${bucket}/${s.uploadedPath}` });
+        uploadedCount++;
+      }else{
+        images.push({ path: null });
+      }
+    }
+    return { images, uploadedCount };
+  }
+
+  const front = buildImages("front");
+  if(front.uploadedCount < 1){
+    alert("DEPAN: Tiada gambar tersedia. Sila upload dulu.");
+    return;
+  }
+
+  const jobId = (folder.replace(/\//g,'_') || ("job_" + Date.now())) + "_front";
+
+  $('btnGenPSDFront').disabled = true;
+  $('btnGenPSDFront').textContent = "Generating…";
+  setStatus("Generating PSD DEPAN…");
+
+  try{
+    const payloadFront = {
+      job_id: jobId,
+      images: front.images,
+      config: {
+        dpi: 300,
+        canvasW: 4724,
+        canvasH: 6850,
+        cols: 6,
+        rows: 6,
+        slotW: 650,
+        slotH: 1028,
+        gapXcm: 1.2,
+        gapYcm: 0.6,
+        marginXcm: 0,
+        marginYcm: 0,
+        lockMargins: true,
+        includeGrid: true,
+        outputBucket: bucket,
+        outputPath: `${folder}/front_36.psd`
+      }
+    };
+
+    const resF = await fetch("/.netlify/functions/cert-psd-generate", {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify(payloadFront)
+    });
+
+    const out = await resF.json().catch(()=>null);
+    if(!resF.ok || !out || !out.ok){
+      throw new Error(out?.error || ("HTTP " + resF.status));
+    }
+
+    const signedF = out.output?.signed_url || null;
+    const pathF = out.output?.path || null;
+
+    const curBack = $('psdLinkBack').href && $('psdLinkBack').href !== "#" ? $('psdLinkBack').href : null;
+    const curBackPath = safeStr($('psdPathBack').textContent || "").replace(/^\(|\)$/g,"") || null;
+
+    showPsdLinks(signedF, pathF, curBack, curBackPath);
+
+    setStatus("PSD DEPAN generated ✅");
+    alert("PSD DEPAN generated ✅");
+  }catch(e){
+    console.error(e);
+    alert("Ralat generate PSD DEPAN: " + (e?.message || e));
+    setStatus("Generate PSD DEPAN gagal.");
+  }finally{
+    $('btnGenPSDFront').disabled = false;
+    $('btnGenPSDFront').textContent = "3) PSD DEPAN";
+  }
+}
+
+async function generatePSDBack(){
+  const folder = folderNorm(CFG.folder);
+  const bucket = CFG.bucket;
+
+  function buildImages(side){
+    const images = [];
+    let uploadedCount = 0;
+
+    for(let i=1;i<=36;i++){
+      const k = slotKey(i);
+      const s = getSideObj(k, side);
+
+      if(s && s.uploadedPath){
+        images.push({ path: `${bucket}/${s.uploadedPath}` });
+        uploadedCount++;
+      }else{
+        images.push({ path: null });
+      }
+    }
+    return { images, uploadedCount };
+  }
+
+  const back = buildImages("back");
+  if(back.uploadedCount < 1){
+    alert("BELAKANG: Tiada gambar tersedia. Sila upload / pilih library dulu.");
+    return;
+  }
+
+  const jobId = (folder.replace(/\//g,'_') || ("job_" + Date.now())) + "_back";
+
+  $('btnGenPSDBack').disabled = true;
+  $('btnGenPSDBack').textContent = "Generating…";
+  setStatus("Generating PSD BELAKANG…");
+
+  try{
+    const payloadBack = {
+      job_id: jobId,
+      images: back.images,
+      config: {
+        dpi: 300,
+        canvasW: 4724,
+        canvasH: 6850,
+        cols: 6,
+        rows: 6,
+        slotW: 650,
+        slotH: 1028,
+        gapXcm: 1.2,
+        gapYcm: 0.6,
+        marginXcm: 0,
+        marginYcm: 0,
+        lockMargins: true,
+        includeGrid: true,
+        outputBucket: bucket,
+        outputPath: `${folder}/back_36.psd`
+      }
+    };
+
+    const resB = await fetch("/.netlify/functions/cert-psd-generate", {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify(payloadBack)
+    });
+
+    const out = await resB.json().catch(()=>null);
+    if(!resB.ok || !out || !out.ok){
+      throw new Error(out?.error || ("HTTP " + resB.status));
+    }
+
+    const signedB = out.output?.signed_url || null;
+    const pathB = out.output?.path || null;
+
+    const curFront = $('psdLinkFront').href && $('psdLinkFront').href !== "#" ? $('psdLinkFront').href : null;
+    const curFrontPath = safeStr($('psdPathFront').textContent || "").replace(/^\(|\)$/g,"") || null;
+
+    showPsdLinks(curFront, curFrontPath, signedB, pathB);
+
+    setStatus("PSD BELAKANG generated ✅");
+    alert("PSD BELAKANG generated ✅");
+  }catch(e){
+    console.error(e);
+    alert("Ralat generate PSD BELAKANG: " + (e?.message || e));
+    setStatus("Generate PSD BELAKANG gagal.");
+  }finally{
+    $('btnGenPSDBack').disabled = false;
+    $('btnGenPSDBack').textContent = "4) PSD BELAKANG";
+  }
+}
+
+/* ========================== NEW: Padam semua fail folder ini (Supabase) ========================== */
+async function deleteAllFolderFiles(){
+  const bucket = CFG.bucket;
+  const folder = folderNorm(CFG.folder);
+
+  const paths = [];
+  const exts = ["jpg","jpeg","png","webp"];
+
+  for(let i=1;i<=36;i++){
+    const base = slotFileBase(i);
+    for(const ext of exts){
+      paths.push(joinPath(joinPath(folder,"front"), `${base}.${ext}`));
+      paths.push(joinPath(joinPath(folder,"back"),  `${base}.${ext}`));
+    }
+  }
+
+  paths.push(joinPath(folder, "manifest.json"));
+  paths.push(joinPath(folder, "front_36.psd"));
+  paths.push(joinPath(folder, "back_36.psd"));
+
+  try{
+    setStatus("Padam semua fail (Supabase)...");
+    const res = await sb.storage.from(bucket).remove(paths);
+    if(res.error) throw res.error;
+
+    // kosongkan local juga
+    await resetAllLocal(true);
+
+    setStatus("Semua fail folder ini dipadam ✅");
+    alert("Semua fail folder ini dipadam ✅");
+  }catch(e){
+    console.error(e);
+    alert("Gagal padam fail (Supabase). Kemungkinan policy storage tak allow delete.\n\nDetail: " + (e?.message || e));
+    setStatus("Gagal padam fail (Supabase).");
+  }
+}
+
+/* ========================== NEW: Reset semua (local) - clear gambar pun hilang ========================== */
+async function resetAllLocal(silent){
+  if(!silent){
+    if(!confirm("Reset semua (local) untuk DEPAN+BELAKANG? Ini akan kosongkan paparan (termasuk gambar) dalam browser. File dalam Supabase TIDAK dipadam.")) return;
+  }
+
+  // revoke blob
+  for(let i=1;i<=36;i++){
+    const k = slotKey(i);
+    const slot = ensureSlot(k);
+
+    for(const side of ["front","back"]){
+      const s = getSideObj(k, side);
+      if(s && s.localUrl){
+        try{ URL.revokeObjectURL(s.localUrl); }catch(_){}
+      }
+      // ✅ buang semua data termasuk uploaded refs supaya gambar hilang terus
+      setSideObj(k, side, {});
+    }
+  }
+
+  saveSel(SEL);
+  renderSlots();
+  if(ACTIVE_SLOT) renderModalForSlot(ACTIVE_SLOT);
+
+  // clear PSD links UI
+  $('psdInfo').style.display = "none";
+  $('psdBar').style.display = "none";
+  $('psdLinkFront').href = "#";
+  $('psdLinkBack').href = "#";
+  $('psdPathFront').textContent = "";
+  $('psdPathBack').textContent = "";
+}
+
+/* ========================== Helpers ========================== */
+function escapeHtml(str){
+  str = safeStr(str);
+  return str.replace(/[&<>"']/g, (m)=>({
+    "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;"
+  }[m]));
+}
+function humanBytes(bytes){
+  const b = Number(bytes||0);
+  if(!b) return "0 B";
+  const u = ["B","KB","MB","GB"];
+  let i=0, n=b;
+  while(n>=1024 && i<u.length-1){ n/=1024; i++; }
+  return `${n.toFixed(n>=10||i===0?0:1)} ${u[i]}`;
+}
+function downloadText(filename, text){
+  const blob = new Blob([text], {type:'application/json;charset=utf-8'});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = filename;
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+  setTimeout(()=>URL.revokeObjectURL(url), 5000);
+}
+async function copyText(text){
+  try{
+    await navigator.clipboard.writeText(text);
+    return true;
+  }catch(e){
+    return false;
+  }
+}
+
+/* ========================== Wire UI ========================== */
+$('btnSaveCfg').addEventListener('click', ()=>{
+  const b = safeStr($('cfgBucket').value).trim() || DEFAULT_CFG.bucket;
+  const f = folderNorm($('cfgFolder').value) || DEFAULT_CFG.folder;
+  let r = Number($('cfgRatio').value);
+  if(!isFinite(r) || r<=0) r = DEFAULT_CFG.ratio;
+
+  CFG = {...CFG, bucket:b, folder:f, ratio:r};
+  saveCfg(CFG);
+  uiRefreshCfg();
+  renderSlots();
+  alert("Tetapan disimpan.");
+});
+
+$('btnReload').addEventListener('click', listExisting);
+$('btnUploadAll').addEventListener('click', uploadAllReady);
+
+$('btnGen').addEventListener('click', ()=>{
+  renderManifest();
+  setStatus("Manifest generated ✅");
+});
+
+$('btnGenPSDFront').addEventListener('click', generatePSDFront);
+$('btnGenPSDBack').addEventListener('click', generatePSDBack);
+
+$('btnCopy').addEventListener('click', async ()=>{
+  try{
+    const t = $('outBox').value || JSON.stringify(buildManifest(), null, 2);
+    await navigator.clipboard.writeText(t);
+    alert("JSON copied ✅");
+  }catch(e){
+    alert("Tak boleh copy (browser block).");
+  }
+});
+
+$('btnDownload').addEventListener('click', ()=>{
+  const obj = renderManifest();
+  downloadText("cert_psd_36_manifest.json", JSON.stringify(obj, null, 2));
+});
+
+$('btnUploadManifest').addEventListener('click', uploadManifest);
+
+/* ✅ Reset semua (local) - clear gambar pun hilang */
+$('btnClearLocal').addEventListener('click', ()=> resetAllLocal(false));
+
+$('btnClearActive').addEventListener('click', ()=>{
+  if(!ACTIVE_SLOT){ alert("Tak ada slot aktif. Klik slot dulu."); return; }
+  if(!confirm(`Clear SLOT ${ACTIVE_SLOT} (DEPAN+BELAKANG)?`)) return;
+
+  clearSide(ACTIVE_SLOT, "front", true);
+  clearSide(ACTIVE_SLOT, "back", true);
+  saveSel(SEL);
+  renderSlots();
+  if(slotModal) renderModalForSlot(ACTIVE_SLOT);
+});
+
+/* ✅ Padam semua fail folder ini (Supabase) */
+$('btnClearAllRemote').addEventListener('click', async ()=>{
+  if(!confirm("Padam SEMUA fail dalam folder ini di Supabase?\n\nIni termasuk: front/back slot_01..36 + manifest.json + front_36.psd + back_36.psd\n\nTeruskan?")) return;
+  await deleteAllFolderFiles();
+});
+
+/* ✅ Toggle output (kurangkan scroll) */
+let OUT_SHOWN = true;
+$('btnToggleOutput').addEventListener('click', ()=>{
+  OUT_SHOWN = !OUT_SHOWN;
+  $('outWrap').style.display = OUT_SHOWN ? "" : "none";
+});
+
+/* ✅ Copy link PSD */
+$('btnCopyFront2').addEventListener('click', async ()=>{
+  const u = $('psdLinkFront').href;
+  if(!u || u === "#"){ alert("Link depan belum ada."); return; }
+  const ok = await copyText(u);
+  alert(ok ? "Link depan copied ✅" : "Tak boleh copy (browser block).");
+});
+$('btnCopyBack2').addEventListener('click', async ()=>{
+  const u = $('psdLinkBack').href;
+  if(!u || u === "#"){ alert("Link belakang belum ada."); return; }
+  const ok = await copyText(u);
+  alert(ok ? "Link belakang copied ✅" : "Tak boleh copy (browser block).");
+});
+$('btnCopyFrontLink').addEventListener('click', async ()=>{
+  const u = $('psdBarFront').href;
+  if(!u || u === "#"){ alert("Link depan belum ada."); return; }
+  const ok = await copyText(u);
+  alert(ok ? "Link depan copied ✅" : "Tak boleh copy (browser block).");
+});
+$('btnCopyBackLink').addEventListener('click', async ()=>{
+  const u = $('psdBarBack').href;
+  if(!u || u === "#"){ alert("Link belakang belum ada."); return; }
+  const ok = await copyText(u);
+  alert(ok ? "Link belakang copied ✅" : "Tak boleh copy (browser block).");
+});
+
+/* ========================== Boot ========================== */
+(async ()=>{
+  const ok = await requireAdmin();
+  if(!ok) return;
+
+  uiRefreshCfg();
+  renderSlots();
+  await listExisting();
+
+  loadBackLibrary().catch(()=>{});
+})();
+  </script>
+</div>
+</div>
 </body>
 </html>

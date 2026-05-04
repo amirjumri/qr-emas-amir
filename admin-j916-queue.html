@@ -1,0 +1,1642 @@
+<!doctype html>
+<html lang="ms">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<link rel="stylesheet" href="/global.css">
+  <title>Admin-J916 • Queue — Emas Amir</title>
+
+  <!-- Libs -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="auth.js?v=13.1"></script>
+  <script src="admin-guard.js?v=1"></script>
+
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+ <style>
+  body{background:#fff}
+  .container-narrow{max-width:1200px}
+  .auth-pill{border:1px solid #e5e7eb;border-radius:999px;padding:.2rem .6rem;background:#fafafa;color:#555}
+  .btn-chip{border:1px solid #e5e7eb;background:#f8fafc;padding:6px 10px;border-radius:999px;font-size:.9rem}
+  .btn-chip.btn-primary{background:#0d6efd;color:#fff;border-color:#0d6efd}
+  .card-soft{border:1px solid #e5e7eb;border-radius:14px}
+  .kpi{
+    display:flex;align-items:center;justify-content:space-between;gap:8px;
+    padding:10px 12px;border:1px solid #e5e7eb;border-radius:14px;background:#fff;
+    cursor:pointer; user-select:none;
+  }
+  .kpi:hover{background:#f8fafc}
+  .kpi.active{border-color:#0d6efd; box-shadow:0 0 0 3px rgba(13,110,253,.12)}
+  .kpi .title{font-weight:700}
+  .kpi .sub{font-size:12px;color:#6b7280}
+  .kpi .count{font-size:22px;font-weight:900}
+  .table-sticky thead th{position:sticky;top:0;background:#fff;z-index:5}
+  .mono{font-family:ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,"Liberation Mono","Courier New",monospace}
+  .badge-soft{border:1px solid #e5e7eb;background:#fafafa;color:#333}
+  .toast-wrap{position:fixed;right:16px;bottom:16px;z-index:1080}
+  .small-muted{font-size:12px;color:#6b7280}
+
+  .statement-preview{
+    border:1px solid #dbe7ff;
+    background:#f8fbff;
+    border-radius:14px;
+    padding:12px 14px;
+  }
+  .statement-preview .label{
+    font-size:12px;
+    color:#6b7280;
+    margin-bottom:2px;
+  }
+  .statement-preview .value{
+    font-weight:700;
+    color:#111827;
+    word-break:break-word;
+  }
+  .statement-preview .amount{
+    font-size:22px;
+    font-weight:900;
+    color:#0d6efd;
+  }
+</style>
+</head>
+<body>
+<div class="container container-narrow py-3">
+
+  <!-- TOP BAR -->
+  <div class="d-flex justify-content-between align-items-center mb-2">
+    <div class="small auth-pill" id="authStatus">Memuatkan…</div>
+    <div class="d-flex flex-wrap gap-2">
+      <a class="btn btn-outline-secondary btn-chip" href="index.html">Halaman Utama</a>
+      <a class="btn btn-outline-secondary btn-chip" href="admin.html">Admin</a>
+      <a class="btn btn-outline-secondary btn-chip" href="admin-j916.html">Admin J916</a>
+      <a class="btn btn-outline-secondary btn-chip" href="admin-j999.html">Admin 999</a>
+      <a class="btn btn-outline-secondary btn-chip" href="adminstok-j916.html">Admin Stok 916</a>
+      <a class="btn btn-outline-secondary btn-chip" href="admintabung-simpan.html">Admin Tabung</a>
+      <a class="btn btn-outline-secondary btn-chip" href="account.html">Akaun</a>
+      <button id="btnLogin"  class="btn btn-outline-secondary btn-chip" type="button">Log masuk</button>
+      <button id="btnLogout" class="btn btn-outline-secondary btn-chip" type="button" style="display:none">Log keluar</button>
+    </div>
+  </div>
+  <hr class="mb-3">
+
+  <div class="d-flex align-items-center justify-content-between gap-2 flex-wrap">
+    <div>
+      <h1 class="h4 m-0">Admin-J916 — Dashboard Queue</h1>
+      <div class="small text-muted">
+        Queue ini baca data dari <span class="mono">j916_orders</span> + gabung flags dari <span class="mono">chat_threads.meta</span> & <span class="mono">chat_messages (AI latest)</span>.
+      </div>
+    </div>
+    <div class="d-flex gap-2">
+      <button id="btnRefresh" class="btn btn-outline-secondary">Refresh</button>
+      <input id="fileStatement" type="file" class="form-control" style="max-width:260px"
+             accept="image/*,application/pdf">
+
+      <button id="btnUploadStatement" class="btn btn-primary">Upload Statement</button>
+      <button id="btnRunMatch" class="btn btn-outline-primary">Run Match</button>
+
+      <select id="selRange" class="form-select" style="max-width:220px">
+        <option value="3">Tapis: 3 hari</option>
+        <option value="7" selected>Tapis: 7 hari</option>
+        <option value="14">Tapis: 14 hari</option>
+        <option value="30">Tapis: 30 hari</option>
+      </select>
+    </div>
+  </div>
+
+  <div id="statementPreviewWrap" class="mt-3" style="display:none">
+    <div class="statement-preview">
+      <div class="d-flex justify-content-between align-items-start gap-3 flex-wrap">
+        <div>
+          <div class="fw-semibold">Statement terakhir</div>
+          <div class="small text-muted">Ringkasan baris pertama / latest upload untuk semakan cepat.</div>
+        </div>
+        <div class="small text-muted" id="statementPreviewUpdatedAt">-</div>
+      </div>
+
+      <div class="row g-3 mt-1">
+        <div class="col-md-3">
+          <div class="label">Tarikh</div>
+          <div class="value" id="statementPreviewDate">-</div>
+        </div>
+        <div class="col-md-6">
+          <div class="label">Description</div>
+          <div class="value mono" id="statementPreviewDesc">-</div>
+        </div>
+        <div class="col-md-3">
+          <div class="label">Jumlah</div>
+          <div class="amount" id="statementPreviewAmount">RM 0.00</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="mt-3 card-soft p-3">
+    <div class="row g-2">
+
+      <!-- PENDING buckets (utama) -->
+      <div class="col-12"><div class="small text-muted fw-semibold">PENDING (utama)</div></div>
+
+      <div class="col-md-3">
+        <div class="kpi" id="kpi_pending_all" data-bucket="pending_all">
+          <div>
+            <div class="title">PENDING • Semua</div>
+            <div class="sub">Semua order status PENDING (tak kira flags)</div>
+          </div>
+          <div class="count" id="cnt_pending_all">0</div>
+        </div>
+      </div>
+
+      <div class="col-md-3">
+        <div class="kpi" id="kpi_pending_need_flags" data-bucket="pending_need_flags">
+          <div>
+            <div class="title">PENDING • Flags belum ada</div>
+            <div class="sub">PENDING tapi meta thread/AI belum jumpa</div>
+          </div>
+          <div class="count" id="cnt_pending_need_flags">0</div>
+        </div>
+      </div>
+
+      <div class="col-md-3">
+        <div class="kpi" id="kpi_pending_post_qr" data-bucket="pending_post_qr">
+          <div>
+            <div class="title">PENDING • POS • QR/Transfer</div>
+            <div class="sub">POST • QR/TRANSFER • has_cut=0 • alamat=betul • (tiada tukar alamat)</div>
+          </div>
+          <div class="count" id="cnt_pending_post_qr">0</div>
+        </div>
+      </div>
+
+      <div class="col-md-3">
+        <div class="kpi" id="kpi_pending_post_atome" data-bucket="pending_post_atome">
+          <div>
+            <div class="title">PENDING • POS • Atome</div>
+            <div class="sub">POST • ATOME • has_cut=0 • alamat=betul • (tiada tukar alamat)</div>
+          </div>
+          <div class="count" id="cnt_pending_post_atome">0</div>
+        </div>
+      </div>
+
+      <div class="col-md-3">
+        <div class="kpi" id="kpi_pending_pickup_qr" data-bucket="pending_pickup_qr">
+          <div>
+            <div class="title">PENDING • Ambil Kedai • QR/Transfer</div>
+            <div class="sub">PICKUP • QR/TRANSFER • has_cut=0</div>
+          </div>
+          <div class="count" id="cnt_pending_pickup_qr">0</div>
+        </div>
+      </div>
+
+      <div class="col-md-3">
+        <div class="kpi" id="kpi_pending_pickup_atome" data-bucket="pending_pickup_atome">
+          <div>
+            <div class="title">PENDING • Ambil Kedai • Atome</div>
+            <div class="sub">PICKUP • ATOME • has_cut=0</div>
+          </div>
+          <div class="count" id="cnt_pending_pickup_atome">0</div>
+        </div>
+      </div>
+
+      <!-- HOLD buckets -->
+      <div class="col-12 mt-2"><div class="small text-muted fw-semibold">HOLD (perlukan semakan admin)</div></div>
+
+      <div class="col-md-4">
+        <div class="kpi" id="kpi_hold_cut" data-bucket="hold_cut">
+          <div>
+            <div class="title">HOLD • Ada Potong</div>
+            <div class="sub">has_cut=1 (detect dari AI text/meta)</div>
+          </div>
+          <div class="count" id="cnt_hold_cut">0</div>
+        </div>
+      </div>
+
+      <div class="col-md-4">
+        <div class="kpi" id="kpi_hold_addr" data-bucket="hold_addr">
+          <div>
+            <div class="title">HOLD • Tukar alamat</div>
+            <div class="sub">POST & customer tekan ALAMAT SALAH / alamat berubah (bahaya untuk print pos)</div>
+          </div>
+          <div class="count" id="cnt_hold_addr">0</div>
+        </div>
+      </div>
+
+      <div class="col-md-4">
+        <div class="kpi" id="kpi_hold_unknown" data-bucket="hold_unknown">
+          <div>
+            <div class="title">HOLD • Data flags belum ada</div>
+            <div class="sub">tiada meta thread/AI untuk classify</div>
+          </div>
+          <div class="count" id="cnt_hold_unknown">0</div>
+        </div>
+      </div>
+
+      <!-- PAID / COMPLETED -->
+      <div class="col-12 mt-2"><div class="small text-muted fw-semibold">Status lain</div></div>
+
+      <div class="col-md-6">
+        <div class="kpi" id="kpi_paid" data-bucket="paid_all">
+          <div>
+            <div class="title">PAID (Dah Bayar)</div>
+            <div class="sub">Semua status PAID</div>
+          </div>
+          <div class="count" id="cnt_paid">0</div>
+        </div>
+      </div>
+
+      <div class="col-md-6">
+        <div class="kpi" id="kpi_completed" data-bucket="completed_all">
+          <div>
+            <div class="title">COMPLETED (Selesai)</div>
+            <div class="sub">Semua status COMPLETED</div>
+          </div>
+          <div class="count" id="cnt_completed">0</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- LIST -->
+  <div class="mt-3 d-flex justify-content-between align-items-center flex-wrap gap-2">
+    <div>
+      <div class="fw-semibold" id="listTitle">Senarai</div>
+      <div class="small text-muted" id="listSub">Klik kotak queue di atas untuk papar list.</div>
+    </div>
+    <div class="d-flex gap-2">
+      <input id="txtFind" class="form-control" style="max-width:320px" placeholder="Cari (order_code / phone / nama)">
+      <button id="btnClearFind" class="btn btn-outline-secondary">Clear</button>
+    </div>
+  </div>
+
+  <div class="table-responsive mt-2">
+    <table class="table table-sm align-middle table-sticky">
+      <thead>
+        <tr>
+          <th style="width:110px">Tarikh</th>
+          <th>Order</th>
+          <th>Pelanggan</th>
+          <th>Jumlah</th>
+          <th>Ship</th>
+          <th>Pay</th>
+          <th>Flags</th>
+          <th style="width:140px">Tindakan</th>
+        </tr>
+      </thead>
+      <tbody id="tbList">
+        <tr><td colspan="8" class="text-center text-muted py-4">Memuatkan…</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="d-flex justify-content-between align-items-center">
+    <small class="text-muted" id="infoFoot">0 rekod</small>
+    <div class="small-muted" id="infoDebug"></div>
+  </div>
+</div>
+
+<!-- TOAST -->
+<div class="toast-wrap">
+  <div class="toast align-items-center text-bg-dark border-0" id="mainToast" role="status" aria-live="polite" aria-atomic="true">
+    <div class="d-flex">
+      <div class="toast-body" id="toastMsg">OK</div>
+      <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Tutup"></button>
+    </div>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+/* ===== Config ===== */
+const SB_URL = "https://dduizetstqqjrpsezbpi.supabase.co";
+const SB_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRkdWl6ZXRzdHFxanJwc2V6YnBpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTg3MzI0ODQsImV4cCI6MjA3NDMwODQ4NH0.CrlHXrmHtKgR9qc2192U6quRb5lpFEeOSgwG0Lb8KRM";
+
+window.sb = window.sb || window.supabase.createClient(SB_URL, SB_KEY);
+const sb = window.sb;
+
+const $ = (id)=>document.getElementById(id);
+const showToast=(m)=>{ const el=$('mainToast'); $('toastMsg').textContent=m||'OK'; new bootstrap.Toast(el,{delay:1800}).show(); };
+const fmtMY=(s)=> new Date(s).toLocaleString('ms-MY',{hour12:false});
+const money=(rmOrCents)=>{
+  const n = Number(rmOrCents||0);
+  if(!Number.isFinite(n)) return 'RM 0.00';
+  if (n > 9999) return 'RM ' + (n/100).toFixed(2);
+  return 'RM ' + n.toFixed(2);
+};
+const upper=(s)=>String(s||'').trim().toUpperCase();
+
+function isUUID(v){
+  const s = String(v || '').trim();
+  return /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(s);
+}
+
+function fmtDateOnlyMY(s){
+  if(!s) return '-';
+  const d = new Date(s);
+  if(Number.isNaN(d.getTime())) return String(s);
+  const day = String(d.getDate()).padStart(2,'0');
+  const months = ['jan','feb','mac','apr','mei','jun','jul','ogo','sep','okt','nov','dis'];
+  const mon = months[d.getMonth()] || '';
+  const year = d.getFullYear();
+  return `${day}.${mon}.${year}`;
+}
+
+function moneyFromStatementRow(r){
+  if(!r) return 'RM 0.00';
+
+  const credit = Number(r.credit_rm);
+  const debit  = Number(r.debit_rm);
+  const amount = Number(r.amount_rm);
+
+  if(Number.isFinite(credit) && credit > 0) return 'RM ' + credit.toFixed(2) + ' Cr';
+  if(Number.isFinite(debit)  && debit  > 0) return 'RM ' + debit.toFixed(2) + ' Dr';
+  if(Number.isFinite(amount) && amount > 0){
+    const dc = upper(r.dc || '');
+    if(dc === 'D') return 'RM ' + amount.toFixed(2) + ' Dr';
+    if(dc === 'C') return 'RM ' + amount.toFixed(2) + ' Cr';
+    return 'RM ' + amount.toFixed(2);
+  }
+
+  return 'RM 0.00';
+}
+
+function setStatementPreview(row){
+  const wrap = $('statementPreviewWrap');
+  if(!wrap) return;
+
+  if(!row){
+    wrap.style.display = 'none';
+    return;
+  }
+
+  $('statementPreviewDate').textContent = fmtDateOnlyMY(row.transaction_date || row.created_at || '');
+  $('statementPreviewDesc').textContent = String(row.description || row.reference_text || '-');
+  $('statementPreviewAmount').textContent = moneyFromStatementRow(row);
+
+  const updatedAt = row.created_at ? fmtMY(row.created_at) : '-';
+  $('statementPreviewUpdatedAt').textContent = `Last update: ${updatedAt}`;
+
+  wrap.style.display = '';
+}
+
+function pickPreviewRowFromUploadResponse(upJson){
+  if(!upJson || typeof upJson !== 'object') return null;
+
+  if(Array.isArray(upJson.rows) && upJson.rows.length) return upJson.rows[0];
+  if(Array.isArray(upJson.inserted) && upJson.inserted.length) return upJson.inserted[0];
+  if(Array.isArray(upJson.data) && upJson.data.length) return upJson.data[0];
+  if(upJson.first_row && typeof upJson.first_row === 'object') return upJson.first_row;
+  if(upJson.preview_row && typeof upJson.preview_row === 'object') return upJson.preview_row;
+
+  return null;
+}
+
+async function fetchLatestStatementPreview(uploadId = null){
+  try{
+    let q = sb
+      .from('bank_statement_rows')
+      .select('id,transaction_date,amount_rm,description,created_at,upload_id,row_no,debit_rm,credit_rm,dc')
+      .order('transaction_date', { ascending: false })
+      .order('row_no', { ascending: true })
+      .limit(1);
+
+    if(uploadId){
+      q = q.eq('upload_id', uploadId);
+    }
+
+    const { data, error } = await q;
+    if(error){
+      console.warn('fetchLatestStatementPreview error:', error);
+      return null;
+    }
+
+    return Array.isArray(data) && data.length ? data[0] : null;
+  }catch(e){
+    console.warn('fetchLatestStatementPreview catch:', e);
+    return null;
+  }
+}
+
+/* ===== Topbar auth ===== */
+(function(){
+  const pill=$('authStatus'),login=$('btnLogin'),logout=$('btnLogout');
+  try{
+    const a=(window.auth_get&&window.auth_get())||null;
+    if(a){
+      pill.textContent='Log masuk (admin) — '+(a.phone||a.msisdn||'');
+      login.style.display='none';
+      logout.style.display='';
+      logout.onclick=()=>{window.auth_clear&&window.auth_clear();location.reload();};
+    }else{
+      pill.textContent='Tidak log masuk';
+      login.style.display='';
+      logout.style.display='none';
+      login.onclick=()=>location.href='login.html#login';
+    }
+  }catch(_){}
+})();
+
+/* ===== Admin guard fallback ===== */
+function normalize60(msisdn){
+  if(!msisdn) return null;
+  let x=(''+msisdn).replace(/\D/g,'');
+  if(x.startsWith('60'))return x;
+  if(x.startsWith('0'))return '6'+x;
+  return '60'+x;
+}
+async function fallbackRequireAdmin(){
+  const a=(window.auth_get&&window.auth_get())||null;
+  if(!a){ location.href="login.html#login"; return false; }
+  const phone=normalize60(a.phone||a.msisdn||a.username||"");
+  if(!phone){ alert("Akses terhad (tiada nombor)."); location.href="index.html"; return false; }
+  const {data,error}=await sb
+    .from("admin_users").select("phone,is_active")
+    .eq("phone",phone).eq("is_active",true).maybeSingle();
+  if(error||!data){ alert("Akses terhad (bukan admin)."); location.href="index.html"; return false; }
+  return true;
+}
+
+/* ===== Data cache ===== */
+let RAW_ORDERS = [];        // j916_orders
+let THREADS_MAP = {};       // thread_id -> chat_threads row {meta,...}
+let AI_BY_ORDER = {};       // order_code -> {created_at, meta, text, lock_id}
+let AI_LATEST = {};         // thread_id -> last ai (debug)
+let FLAGS_MAP  = {};        // order_code -> derived flags (lock)
+let SLIP_BY_ORDER_ID = {};  // order_id(uuid) -> latest customer_slips row
+let ACTIVE_BUCKET = null;
+let ACTIVE_LIST = [];
+
+/* ===== Helpers ===== */
+function safeParseMeta(m){
+  if(!m) return null;
+  if(typeof m === 'object') return m;
+  try{
+    const s = String(m||'').trim();
+    if(!s) return null;
+    return JSON.parse(s);
+  }catch(_){
+    return null;
+  }
+}
+function getOrderCode(o){
+  return (o?.order_code && String(o.order_code).trim()) ? String(o.order_code).trim() : '';
+}
+function getOrderId(o){
+  const id = (o?.id && String(o.id).trim()) ? String(o.id).trim() : '';
+  return isUUID(id) ? id : '';
+}
+function getStatus(o){
+  return upper(o?.status || '');
+}
+function getThreadId(o){
+  const t = o?.checkout_group ? String(o.checkout_group).trim() : '';
+  return isUUID(t) ? t : '';
+}
+
+function normalizePayMethod(metaThread, metaAi){
+  const t = metaThread || {};
+  const a = metaAi || {};
+  const v =
+    a.method || a.pay_method || a.last_pay_method ||
+    t.method || t.pay_method || t.last_pay_method || '';
+  return upper(v);
+}
+
+function normalizeShipMode(metaThread, metaAi){
+  const t = metaThread || {};
+  const a = metaAi || {};
+  const v =
+    a.ship_mode || a.ship_method ||
+    t.ship_mode || t.ship_method || '';
+  return upper(v);
+}
+function detectHasCut(metaThread, metaAi, aiText){
+  const t = metaThread || {};
+  const a = metaAi || {};
+  const txt = String(aiText || '').toUpperCase();
+
+  if (typeof a.has_cut === 'boolean') return a.has_cut;
+  if (typeof t.has_cut === 'boolean') return t.has_cut;
+
+  if (a.cut_mode || t.cut_mode) return true;
+  if (a.awaiting_cut_to || t.awaiting_cut_to) return true;
+  if (upper(a.step||'') === 'LOCK_WAIT_CUT_LEN' || upper(t.step||'') === 'LOCK_WAIT_CUT_LEN') return true;
+  if (Number.isFinite(Number(a.cut_length_cm)) || Number.isFinite(Number(t.cut_length_cm))) return true;
+
+  const lines = []
+    .concat(Array.isArray(a.lock_summary_lines) ? a.lock_summary_lines : [])
+    .concat(Array.isArray(t.lock_summary_lines) ? t.lock_summary_lines : []);
+  if (lines.some(x => String(x||'').toUpperCase().includes('POTONG'))) return true;
+
+  if (txt.includes('POTONG')) return true;
+
+  return false;
+}
+
+function detectCutLength(metaThread, metaAi, aiText){
+  const t = metaThread || {};
+  const a = metaAi || {};
+  const n1 = Number(a.cut_length_cm);
+  if (Number.isFinite(n1) && n1 > 0) return n1;
+
+  const n2 = Number(t.cut_length_cm);
+  if (Number.isFinite(n2) && n2 > 0) return n2;
+
+  const lines = []
+    .concat(Array.isArray(a.lock_summary_lines) ? a.lock_summary_lines : [])
+    .concat(Array.isArray(t.lock_summary_lines) ? t.lock_summary_lines : []);
+
+  for(const s of lines){
+    const m = String(s||'').match(/POTONG\s*[→\-]*\s*(\d+(?:\.\d+)?)\s*cm/i);
+    if(m) return Number(m[1]);
+  }
+
+  const mt = String(aiText||'').match(/POTONG\s*[→\-]*\s*(\d+(?:\.\d+)?)\s*cm/i);
+  if(mt) return Number(mt[1]);
+
+  return null;
+}
+
+function deriveFlags(metaThreadRaw, metaAiRaw, aiText){
+  const metaThread = safeParseMeta(metaThreadRaw) || {};
+  const metaAi = safeParseMeta(metaAiRaw) || {};
+
+  const step = metaAi.step || metaThread.step || null;
+
+  const ship_mode = normalizeShipMode(metaThread, metaAi);
+  const pay_method = normalizePayMethod(metaThread, metaAi);
+
+  const ship_fee_rm = (metaAi.ship_fee_rm ?? metaThread.ship_fee_rm);
+  const shipFee = Number(ship_fee_rm);
+
+  const addr_text = (metaAi.addr_text || metaAi.address_text || metaThread.addr_text || metaThread.address_text || '').toString();
+  const awaiting_addr_confirm = !!(metaThread.awaiting_addr_confirm || metaAi.awaiting_addr_confirm);
+  const addr_need_new = !!(metaThread.addr_need_new || metaAi.addr_need_new);
+
+  const addr_changed = (metaAi.addr_changed === true);
+
+  let address_locked = null;
+  if (typeof metaAi.address_locked === 'boolean') {
+    address_locked = metaAi.address_locked;
+  } else if (typeof metaThread.address_locked === 'boolean') {
+    address_locked = metaThread.address_locked;
+  } else if (awaiting_addr_confirm || addr_need_new) {
+    address_locked = false;
+  } else {
+    address_locked = null;
+  }
+
+  const has_cut = detectHasCut(metaThread, metaAi, aiText);
+  const cut_length_cm = detectCutLength(metaThread, metaAi, aiText);
+
+  const final_pay_rm = (metaAi.final_pay ?? metaAi.final_pay_rm ?? metaThread.final_pay ?? metaThread.final_pay_rm);
+  const finalPay = Number(final_pay_rm);
+
+  return {
+    _src: 'threads+ai',
+    step: step,
+    ship_mode: ship_mode || null,
+    pay_method: pay_method || null,
+    ship_fee_rm: Number.isFinite(shipFee) ? shipFee : null,
+
+    address_locked: (typeof address_locked === 'boolean') ? address_locked : null,
+    addr_need_new: addr_need_new || null,
+    addr_text: addr_text || null,
+    addr_changed: (typeof addr_changed === 'boolean') ? addr_changed : null,
+
+    has_cut: (typeof has_cut === 'boolean') ? has_cut : null,
+    cut_length_cm: Number.isFinite(Number(cut_length_cm)) ? Number(cut_length_cm) : null,
+
+    final_pay_rm: Number.isFinite(finalPay) ? finalPay : null
+  };
+}
+
+function buildFlagsMapFromOrders(){
+  const out = {};
+  (RAW_ORDERS || []).forEach(o=>{
+    const oc = getOrderCode(o);
+    if(!oc) return;
+
+    const tid = getThreadId(o);
+    if(!tid) return;
+
+    const th = THREADS_MAP[tid] || null;
+    const ai = AI_BY_ORDER[oc] || null; // ✅ ikat ikut order_code
+
+    // ✅ lock flags hanya valid bila ada lock_id (untuk ship/pay/potong lock)
+    const lockId = (ai && ai.lock_id && isUUID(ai.lock_id)) ? ai.lock_id : null;
+    if (!lockId) return;
+
+    const flags = deriveFlags(th?.meta, ai?.meta, ai?.text);
+    flags.lock_id = lockId;
+
+    const meaningful =
+      !!flags.ship_mode || !!flags.pay_method ||
+      typeof flags.address_locked === 'boolean' ||
+      typeof flags.has_cut === 'boolean' ||
+      !!flags.addr_text ||
+      (flags.addr_changed === true);
+
+    if(meaningful) out[oc] = flags;
+  });
+  return out;
+}
+
+/* ===== Payment slip flags (customer_slips) ===== */
+function getSlip(o){
+  const oid = getOrderId(o);
+  if(!oid) return null;
+  return SLIP_BY_ORDER_ID[oid] || null;
+}
+function slipBadgeHtml(o){
+  const slip = getSlip(o);
+  if(!slip){
+    return `<span class="badge bg-danger me-1">resit❌</span>`;
+  }
+  const st = upper(slip.status || '');
+  if(st === 'PENDING_MATCH'){
+    return `<span class="badge bg-warning text-dark me-1">resit✅</span>`;
+  }
+  if(st === 'MATCHED'){
+    return `<span class="badge bg-success me-1">match✅</span>`;
+  }
+  // fallback status lain
+  return `<span class="badge bg-secondary me-1">${(st||'RESIT')}</span>`;
+}
+
+/* ===== Bucket logic ===== */
+function getPayMethod(o){
+  const oc = getOrderCode(o);
+  const f = FLAGS_MAP[oc] || null;
+  const m = upper(f?.pay_method || o?.pay_method || '');
+  return m;
+}
+function getShipMode(o){
+  const oc = getOrderCode(o);
+  const f = FLAGS_MAP[oc] || null;
+  const m = upper(f?.ship_mode || '');
+  return m;
+}
+function getHasCut(o){
+  const oc = getOrderCode(o);
+  const f = FLAGS_MAP[oc] || null;
+  if (typeof f?.has_cut === 'boolean') return f.has_cut;
+  return null;
+}
+function getAddrLocked(o){
+  const oc = getOrderCode(o);
+  const f = FLAGS_MAP[oc] || null;
+  if (typeof f?.address_locked === 'boolean') return f.address_locked;
+  return null;
+}
+function getAddrChanged(o){
+  const oc = getOrderCode(o);
+  const f = FLAGS_MAP[oc] || null;
+  return (f?.addr_changed === true);
+}
+function hasFlags(o){
+  const oc = getOrderCode(o);
+  const f = FLAGS_MAP[oc] || null;
+  return !!(f && f.lock_id && isUUID(f.lock_id));
+}
+
+function getThreadMetaForOrder(o){
+  const tid = getThreadId(o);
+  if(!tid) return null;
+  const th = THREADS_MAP[tid] || null;
+  return safeParseMeta(th?.meta) || null;
+}
+
+function getPaidChat(o){
+  const meta = getThreadMetaForOrder(o);
+  if(!meta) return false;
+
+  const refs = Array.isArray(meta.paid_chat_order_refs)
+    ? meta.paid_chat_order_refs.map(x => String(x || '').trim()).filter(Boolean)
+    : [];
+
+  const oc = getOrderCode(o);
+  if(!oc) return false;
+
+  return refs.includes(oc);
+}
+function isAtome(method){
+  const m = upper(method);
+  if(!m) return false;
+  if(m === 'ATOME') return true;
+  if(m.includes('ATOME')) return true;
+  return false;
+}
+function isQrTransfer(method){
+  const m = upper(method);
+  if(!m) return false;
+  if(m === 'QR') return true;
+  if(m === 'TRANSFER') return true;
+  if(m === 'BANK') return true;
+  if(m.includes('QR')) return true;
+  if(m.includes('TRANSFER')) return true;
+  return false;
+}
+function isPickup(shipMode){
+  const m = upper(shipMode);
+  return (m === 'PICKUP' || m === 'AMBIL_KEDAI' || m === 'WALKIN' || m === 'WALK-IN');
+}
+function isPost(shipMode){
+  const m = upper(shipMode);
+  return (m === 'POST' || m === 'POS' || m === 'DELIVERY');
+}
+
+function bucketFilter(bucket, o){
+  const st = getStatus(o);
+  const ship = getShipMode(o);
+  const pay  = getPayMethod(o);
+  const cut  = getHasCut(o);
+  const addr = getAddrLocked(o);
+  const changed = getAddrChanged(o);
+  const flagOk = hasFlags(o);
+
+  if (bucket === 'paid_all') return st === 'PAID';
+  if (bucket === 'completed_all') return st === 'COMPLETED';
+
+  if (bucket === 'pending_all') return st === 'PENDING';
+  if (bucket === 'pending_need_flags') return st === 'PENDING' && !flagOk;
+
+  if (bucket.startsWith('pending_') || bucket.startsWith('hold_')){
+    if (st !== 'PENDING') return false;
+  }
+
+  if (bucket === 'pending_post_qr'){
+    return flagOk && isPost(ship) && isQrTransfer(pay) && (cut === false) && (addr === true) && (changed !== true);
+  }
+  if (bucket === 'pending_post_atome'){
+    return flagOk && isPost(ship) && isAtome(pay) && (cut === false) && (addr === true) && (changed !== true);
+  }
+  if (bucket === 'pending_pickup_qr'){
+    return flagOk && isPickup(ship) && isQrTransfer(pay) && (cut === false);
+  }
+  if (bucket === 'pending_pickup_atome'){
+    return flagOk && isPickup(ship) && isAtome(pay) && (cut === false);
+  }
+
+  if (bucket === 'hold_cut'){
+    return flagOk && (cut === true);
+  }
+  if (bucket === 'hold_addr'){
+    return flagOk && isPost(ship) && (changed === true);
+  }
+  if (bucket === 'hold_unknown'){
+    return !flagOk;
+  }
+
+  return false;
+}
+
+/* ===== Render KPI ===== */
+function setKpi(id, n){
+  const el = document.getElementById(id);
+  if(el) el.textContent = String(n||0);
+}
+function setActiveKpi(bucket){
+  document.querySelectorAll('.kpi').forEach(k=>{
+    k.classList.toggle('active', k.dataset.bucket === bucket);
+  });
+}
+function bucketTitle(bucket){
+  const map = {
+    pending_all: 'PENDING • Semua',
+    pending_need_flags: 'PENDING • Flags belum ada',
+    pending_post_qr: 'PENDING • POS • QR/Transfer',
+    pending_post_atome: 'PENDING • POS • Atome',
+    pending_pickup_qr: 'PENDING • Ambil Kedai • QR/Transfer',
+    pending_pickup_atome: 'PENDING • Ambil Kedai • Atome',
+    hold_cut: 'HOLD • Ada Potong',
+    hold_addr: 'HOLD • Tukar alamat',
+    hold_unknown: 'HOLD • Flags belum ada',
+    paid_all: 'PAID (Dah Bayar)',
+    completed_all: 'COMPLETED (Selesai)'
+  };
+  return map[bucket] || 'Senarai';
+}
+function bucketSub(bucket){
+  const map = {
+    pending_all: 'Semua order status PENDING (ini fokus utama dashboard).',
+    pending_need_flags: 'Order PENDING tetapi sistem belum jumpa meta thread/AI untuk classify (ship/pay/potong).',
+    pending_post_qr: 'Order PENDING yang siap untuk “pos” (alamat confirm, tak potong) dan bayar QR/Transfer. (Jika “tukar alamat”, masuk HOLD).',
+    pending_post_atome: 'Order PENDING yang siap untuk “pos” (alamat confirm, tak potong) dan bayar Atome. (Jika “tukar alamat”, masuk HOLD).',
+    pending_pickup_qr: 'Order PENDING untuk ambil kedai (tak potong) dan bayar QR/Transfer.',
+    pending_pickup_atome: 'Order PENDING untuk ambil kedai (tak potong) dan bayar Atome.',
+    hold_cut: 'Order ada potong → admin kena semak dulu.',
+    hold_addr: 'Order pos & customer tekan ALAMAT SALAH / alamat berubah (jangan print pos alamat lama).',
+    hold_unknown: 'Order PENDING tapi meta thread/AI belum ada.',
+    paid_all: 'Semua order status PAID.',
+    completed_all: 'Semua order status COMPLETED.'
+  };
+  return map[bucket] || '';
+}
+
+/* ===== Render list ===== */
+function flagsText(o){
+  const oc = getOrderCode(o);
+  const f = FLAGS_MAP[oc] || null;
+
+  const parts = [];
+
+  // ✅ Payment slip badge sentiasa keluar (walaupun tak lock)
+  parts.push(slipBadgeHtml(o));
+
+  // ✅ Note dari chat: customer claim dah bayar / admin tekan "Dah Bayar" dalam chat
+  if (getPaidChat(o)){
+    parts.push('<span class="badge bg-info text-dark me-1">paid(chat)</span>');
+  }
+
+  if(!f){
+    parts.push('<span class="badge badge-soft">no-lock-flags</span>');
+    return parts.join('');
+  }
+
+  const shipNow = upper(f.ship_mode || '');
+  const isPickupNow = (shipNow === 'PICKUP' || shipNow === 'AMBIL_KEDAI' || shipNow === 'WALKIN' || shipNow === 'WALK-IN');
+
+  if (!isPickupNow){
+    if (typeof f.address_locked === 'boolean'){
+      parts.push(`<span class="badge badge-soft me-1">${f.address_locked ? 'alamat✅' : 'alamat❌'}</span>`);
+    } else {
+      parts.push(`<span class="badge badge-soft me-1">alamat?</span>`);
+    }
+  } else {
+    parts.push(`<span class="badge badge-soft me-1">walk-in</span>`);
+  }
+
+  if (f.addr_changed === true){
+    if (typeof f.address_locked === 'boolean'){
+      parts.push(`<span class="badge badge-soft me-1">${f.address_locked ? 'alamatBaru✅' : 'alamatBaru⏳'}</span>`);
+    } else {
+      parts.push(`<span class="badge badge-soft me-1">alamatBaru?</span>`);
+    }
+  }
+
+  if (typeof f.has_cut === 'boolean'){
+    parts.push(`<span class="badge badge-soft me-1">${f.has_cut ? ('potong✅' + (f.cut_length_cm ? ('→' + f.cut_length_cm + 'cm') : '')) : 'potong❌'}</span>`);
+  } else {
+    parts.push(`<span class="badge badge-soft me-1">potong?</span>`);
+  }
+
+  if (f.ship_mode){
+    parts.push(`<span class="badge badge-soft me-1">Ship:${upper(f.ship_mode)}</span>`);
+  }
+  if (f.pay_method){
+    parts.push(`<span class="badge badge-soft me-1">Pay:${upper(f.pay_method)}</span>`);
+  }
+
+  parts.push(`<span class="badge badge-soft me-1">dbgChanged=${String(f.addr_changed)}</span>`);
+
+  return parts.join('');
+}
+
+function renderList(list){
+  const tb = $('tbList');
+  if(!Array.isArray(list) || !list.length){
+    tb.innerHTML = `<tr><td colspan="8" class="text-center text-muted py-4">Tiada rekod.</td></tr>`;
+    $('infoFoot').textContent = '0 rekod';
+    return;
+  }
+
+  tb.innerHTML = list.map(o=>{
+    const oc = getOrderCode(o);
+    const f = FLAGS_MAP[oc] || null;
+
+    const ship = upper(f?.ship_mode || '-');
+    const pay  = upper(f?.pay_method || o?.pay_method || '-');
+    const st   = getStatus(o);
+
+    const amt = (() => {
+      const cents = Number(o?.amount_cents || 0);
+      if(Number.isFinite(cents) && cents > 0) return money(cents);
+      const g = Number(o?.grand_total_rm || 0);
+      if(Number.isFinite(g) && g > 0) return money(g);
+      return 'RM 0.00';
+    })();
+
+    const phone = o?.phone || '';
+    const name  = o?.customer_name || '-';
+
+    const btnOpen = `<button class="btn btn-outline-primary btn-sm" type="button" onclick="openOrder('${oc}')">Buka</button>`;
+
+    return `
+<tr>
+  <td>${fmtMY(o.created_at)}</td>
+  <td>
+    <div class="fw-semibold mono">${oc}</div>
+    <div class="small text-muted">Status: <span class="badge ${st==='PAID'?'bg-success':(st==='PENDING'?'bg-warning text-dark':(st==='COMPLETED'?'bg-primary':'bg-secondary'))}">${st||'-'}</span></div>
+  </td>
+  <td>
+    <div>${name}</div>
+    <div class="small text-muted">${phone || '-'}</div>
+  </td>
+  <td class="fw-semibold">${amt}</td>
+  <td><span class="badge badge-soft">${ship}</span></td>
+  <td><span class="badge badge-soft">${pay}</span></td>
+  <td>${flagsText(o)}</td>
+  <td>${btnOpen}</td>
+</tr>`;
+  }).join('');
+
+  $('infoFoot').textContent = `${list.length} rekod`;
+}
+
+window.openOrder = function(orderCode){
+  if(!orderCode) return;
+  const url = `${location.origin}/admin-j916.html?order=${encodeURIComponent(orderCode)}`;
+  window.open(url, '_blank');
+};
+
+/* ===== Fetch data ===== */
+function daysAgoISO(days){
+  const d = new Date();
+  d.setDate(d.getDate() - Number(days||7));
+  return d.toISOString();
+}
+
+async function fetchOrders(days){
+  const since = daysAgoISO(days);
+  const { data, error } = await sb
+    .from('j916_orders')
+    .select('id,order_code,created_at,status,phone,customer_name,amount_cents,grand_total_rm,pay_method,checkout_group,tracking_no')
+    .gte('created_at', since)
+    .order('created_at', { ascending: false })
+    .limit(800);
+
+  if(error) throw error;
+  return Array.isArray(data) ? data : [];
+}
+
+async function fetchLatestSlipByOrderIds(orderIds){
+  const ids = (orderIds || []).map(x=>String(x||'').trim()).filter(Boolean).filter(isUUID);
+  if(!ids.length) return {};
+
+  const CHUNK = 250;
+  const out = {};
+
+  for(let i=0;i<ids.length;i+=CHUNK){
+    const part = ids.slice(i, i+CHUNK);
+
+    const { data, error } = await sb
+      .from('customer_slips')
+      .select('id,order_code,status,created_at,matched_statement_row_id,matched_at,amount_rm,transfer_date,reference_text,extracted_name,file_url')
+      .in('order_code', part)
+      .order('created_at', { ascending: false })
+      .limit(2000);
+
+    if(error) throw error;
+
+    (data || []).forEach(r=>{
+      const oid = String(r.order_code||'').trim();
+      if(!oid || !isUUID(oid)) return;
+      // keep latest only
+      if(!out[oid] || String(out[oid].created_at||'') < String(r.created_at||'')){
+        out[oid] = r;
+      }
+    });
+  }
+
+  return out;
+}
+
+async function fetchThreadsByIds(threadIds){
+  const ids = (threadIds || []).map(x=>String(x||'').trim()).filter(Boolean).filter(isUUID);
+  if(!ids.length) return {};
+
+  const CHUNK = 250;
+  const out = {};
+
+  for(let i=0;i<ids.length;i+=CHUNK){
+    const part = ids.slice(i, i+CHUNK);
+
+    const { data, error } = await sb
+      .from('chat_threads')
+      .select('id,meta,created_at,last_message_at,status,customer_phone')
+      .in('id', part);
+
+    if(error) throw error;
+    (data || []).forEach(r=>{
+      const tid = String(r.id||'').trim();
+      if(!tid) return;
+      out[tid] = r;
+    });
+  }
+
+  return out;
+}
+
+async function fetchLatestAiByThreadIds(threadIds){
+  const ids = (threadIds || [])
+    .map(x => String(x||'').trim())
+    .filter(Boolean)
+    .filter(isUUID);
+
+  if(!ids.length) return {};
+
+  function extractOrderCodeFromRow(row){
+    const m = safeParseMeta(row.meta) || {};
+    const ocMeta = String(m.orderCode || m.order_code || "").trim();
+    if (isUUID(ocMeta)) return ocMeta;
+
+    const t = String(row.text || "");
+    const mm = t.match(/Order code:\s*\*?([0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12})\*?/i);
+    if (mm && isUUID(mm[1])) return mm[1];
+
+    return null;
+  }
+
+  function extractAddrFromAiText(text){
+    const s = String(text||"").trim();
+    if(!s) return null;
+    const m = s.match(/(?:rekod\s+alamat\s+baru|tukar\s+alamat)\s*:\s*([\s\S]+?)(?:\n\s*\n|📦|Alamat ni betul\?|$)/i);
+    if(!m) return null;
+    const addr = String(m[1]||"").replace(/\s+/g," ").trim();
+    return addr.length >= 10 ? addr : null;
+  }
+
+  function isAddrCmd(U){
+    return (U === 'ALAMAT BETUL' || U === 'ALAMAT SALAH');
+  }
+
+  function isAiAskAddr(text){
+    const t = String(text||"");
+    return /alamat baru/i.test(t) && ( /sila\s+taip/i.test(t) || /taip\s+\*?alamat/i.test(t) || /alamat baru penuh/i.test(t) );
+  }
+
+  function putBestByOrder(map, ocFull, snap){
+    if(!ocFull) return;
+    map[ocFull] = snap;
+
+    const short8 = String(ocFull).split("-")[0] || "";
+    const short7 = short8 ? short8.slice(0,7) : "";
+
+    if(short8) map[short8] = snap;
+    if(short7) map[short7] = snap;
+  }
+
+  const CHUNK = 250;
+  const rowsByTid = {};
+
+  for(let i=0;i<ids.length;i+=CHUNK){
+    const part = ids.slice(i, i+CHUNK);
+
+    const { data, error } = await sb
+      .from('chat_messages')
+      .select('thread_id,role,meta,text,created_at,lock_id')
+      .in('thread_id', part)
+      .order('created_at', { ascending: false })
+      .limit(4000);
+
+    if(error) throw error;
+
+    (data || []).forEach(row=>{
+      const tid = String(row.thread_id||'').trim();
+      if(!tid) return;
+      if(!rowsByTid[tid]) rowsByTid[tid] = [];
+      rowsByTid[tid].push(row);
+    });
+  }
+
+  const bestByOrder = {};
+  const bestAiThread = {};
+
+  Object.keys(rowsByTid).forEach(tid=>{
+    const rows = (rowsByTid[tid] || [])
+      .slice()
+      .sort((a,b)=>{
+        const ta = String(a.created_at||'');
+        const tb = String(b.created_at||'');
+        return ta.localeCompare(tb);
+      });
+
+    let lastAi = null;
+
+    const lockState = {};
+    function ensureLock(lock_id){
+      const k = String(lock_id||"").trim();
+      if(!k) return null;
+      if(!lockState[k]){
+        lockState[k] = {
+          ship_mode_latest: null,
+          pay_method_latest: null,
+          lastAddr: null,
+          lastConfirm: null,
+          expectingAddrText: false
+        };
+      }
+      return lockState[k];
+    }
+
+    let lastSeenLockId = null;
+
+    rows.forEach(row=>{
+      const ts = String(row.created_at||'');
+      const role = String(row.role||'').toLowerCase();
+      const text = String(row.text||'').trim();
+      const U = text.toUpperCase();
+
+      const rawLock = (row.lock_id && isUUID(row.lock_id)) ? row.lock_id : null;
+      if(rawLock) lastSeenLockId = rawLock;
+
+      const effectiveLockId = rawLock || lastSeenLockId;
+
+      const m = safeParseMeta(row.meta) || {};
+
+      if(role === 'ai'){
+        lastAi = { created_at: ts, meta: row.meta, text: row.text };
+      }
+
+      if(!effectiveLockId || !isUUID(effectiveLockId)) return;
+      const st = ensureLock(effectiveLockId);
+      if(!st) return;
+
+      const ship = upper(m.ship_mode || m.ship_method || '');
+      const stepNow = upper(m.step || '');
+
+      if (ship) {
+        const fromCustomerChoice =
+          (role === 'customer' && (
+            U === 'AMBIL KEDAI' || U === 'AMBILKEDAI' || U === 'PICKUP' || U === 'WALK IN' || U === 'WALK-IN' ||
+            U === 'POS' || U === 'POST'
+          ));
+
+        const fromShipStep = (stepNow === 'LOCK_WAIT_SHIP');
+
+        if (!st.ship_mode_latest || fromCustomerChoice || fromShipStep) {
+          if (st.ship_mode_latest === 'PICKUP' && ship === 'POST' && !fromCustomerChoice && !fromShipStep) {
+          } else {
+            st.ship_mode_latest = ship;
+          }
+        }
+      }
+
+      const pay = upper(m.method || m.pay_method || m.last_pay_method || '');
+      if (pay) {
+        const fromPayStep = (stepNow === 'LOCK_WAIT_PAY');
+        if (!st.pay_method_latest || fromPayStep) {
+          st.pay_method_latest = pay;
+        }
+      }
+
+      const isBetul =
+        (role === 'customer' && U === 'ALAMAT BETUL') ||
+        (role === 'ai' && (U.includes('ALAMAT DISAHKAN') || U.includes('ALAMAT NI BETUL')));
+
+      const isSalah =
+        (role === 'customer' && U === 'ALAMAT SALAH');
+
+      if(isBetul || isSalah){
+        st.lastConfirm = { ts: ts || '1', locked: !!isBetul };
+        st.expectingAddrText = false;
+      }
+
+      if (isSalah){
+        st.lastAddr = {
+          created_at: ts || '1',
+          addr_text: null,
+          marker_only: true,
+          addr_changed_event: true
+        };
+      }
+
+      if(role === 'ai' && isAiAskAddr(text)){
+        st.expectingAddrText = true;
+      }
+
+      let addrCandidate = '';
+      const metaAddr = (m.addr_text || m.address_text || '').toString().trim();
+      if(metaAddr) addrCandidate = metaAddr;
+
+      if(!addrCandidate && role === 'ai'){
+        const fromAi = extractAddrFromAiText(text);
+        if(fromAi) addrCandidate = fromAi;
+      }
+
+      if(!addrCandidate && role === 'customer' && st.expectingAddrText){
+        const maybe = String(text||'').replace(/\s+/g,' ').trim();
+        if(maybe.length >= 10 && !isAddrCmd(U)){
+          addrCandidate = maybe;
+          st.expectingAddrText = false;
+        }
+      }
+
+      let isAddrChangeEvent = false;
+
+      if(role === 'ai' && (/rekod\s+alamat\s+baru/i.test(text) || /tukar\s+alamat/i.test(text))){
+        isAddrChangeEvent = true;
+      }
+
+      if(role === 'customer' && addrCandidate && !isAddrCmd(U)){
+        isAddrChangeEvent = true;
+      }
+
+      const hasRekodBaruMarker =
+        (role === 'ai' && /rekod\s+alamat\s+baru/i.test(text)) ||
+        (role === 'ai' && /tukar\s+alamat/i.test(text));
+
+      if(addrCandidate){
+        st.lastAddr = {
+          created_at: ts || '1',
+          addr_text: addrCandidate,
+          marker_only: false,
+          addr_changed_event: isAddrChangeEvent
+        };
+      } else if(hasRekodBaruMarker){
+        st.lastAddr = {
+          created_at: ts || '1',
+          addr_text: null,
+          marker_only: true,
+          addr_changed_event: true
+        };
+      }
+    });
+
+    if(lastAi) bestAiThread[tid] = lastAi;
+
+    lastSeenLockId = null;
+
+    rows.forEach(row=>{
+      const role = String(row.role||'').toLowerCase();
+
+      const rawLockAny = (row.lock_id && isUUID(row.lock_id)) ? row.lock_id : null;
+      if(rawLockAny) lastSeenLockId = rawLockAny;
+
+      if(role !== 'ai') return;
+
+      const ocFull = extractOrderCodeFromRow(row);
+      if(!ocFull) return;
+
+      const rawLockAi = (row.lock_id && isUUID(row.lock_id)) ? row.lock_id : null;
+      const effectiveLockId = rawLockAi || lastSeenLockId;
+      if(!effectiveLockId || !isUUID(effectiveLockId)) return;
+
+      const st = ensureLock(effectiveLockId);
+      if(!st) return;
+
+      const ts = String(row.created_at||'');
+      const metaSnap = safeParseMeta(row.meta) || {};
+
+      if(st.ship_mode_latest) metaSnap.ship_mode = st.ship_mode_latest;
+      if(st.pay_method_latest) metaSnap.method = st.pay_method_latest;
+
+      if(st.lastAddr && st.lastAddr.addr_text){
+        metaSnap.addr_text = st.lastAddr.addr_text;
+      }
+
+      if (st.lastAddr && st.lastAddr.created_at && st.lastAddr.addr_changed_event === true){
+        metaSnap.addr_changed = true;
+        metaSnap.addr_changed_at = st.lastAddr.created_at;
+        metaSnap.addr_marker_only = !!st.lastAddr.marker_only;
+      } else {
+        delete metaSnap.addr_changed;
+        delete metaSnap.addr_changed_at;
+        delete metaSnap.addr_marker_only;
+      }
+
+      let lockedFinal = null;
+
+      if(st.lastAddr && st.lastAddr.created_at){
+        lockedFinal = false;
+        if(st.lastConfirm && st.lastConfirm.ts){
+          if(st.lastConfirm.locked === false){
+            lockedFinal = false;
+          } else {
+            lockedFinal = (String(st.lastConfirm.ts) >= String(st.lastAddr.created_at)) ? true : false;
+          }
+        }
+      } else {
+        if(st.lastConfirm && st.lastConfirm.ts){
+          lockedFinal = !!st.lastConfirm.locked;
+        }
+      }
+
+      if(typeof lockedFinal === 'boolean'){
+        metaSnap.address_locked = lockedFinal;
+        metaSnap.awaiting_addr_confirm = (lockedFinal === false);
+        metaSnap.addr_need_new = false;
+      }
+
+      if (typeof metaSnap.address_locked !== 'boolean') {
+        const aw = (metaSnap.awaiting_addr_confirm === true);
+        if (aw) {
+          metaSnap.address_locked = false;
+        }
+      }
+
+      const prev = bestByOrder[ocFull];
+      if(!prev || String(prev.created_at||'') < ts){
+        const snap = {
+          created_at: ts,
+          meta: metaSnap,
+          text: row.text,
+          lock_id: effectiveLockId
+        };
+        putBestByOrder(bestByOrder, ocFull, snap);
+      }
+    });
+  });
+
+  return {
+    ai_by_order: bestByOrder,
+    ai_latest_by_thread: bestAiThread
+  };
+}
+
+function computeCounts(){
+  const all = RAW_ORDERS || [];
+  const count = (bucket)=> all.filter(o=>bucketFilter(bucket,o)).length;
+
+  setKpi('cnt_pending_all', count('pending_all'));
+  setKpi('cnt_pending_need_flags', count('pending_need_flags'));
+
+  setKpi('cnt_pending_post_qr', count('pending_post_qr'));
+  setKpi('cnt_pending_post_atome', count('pending_post_atome'));
+  setKpi('cnt_pending_pickup_qr', count('pending_pickup_qr'));
+  setKpi('cnt_pending_pickup_atome', count('pending_pickup_atome'));
+
+  setKpi('cnt_hold_cut', count('hold_cut'));
+  setKpi('cnt_hold_addr', count('hold_addr'));
+  setKpi('cnt_hold_unknown', count('hold_unknown'));
+
+  setKpi('cnt_paid', count('paid_all'));
+  setKpi('cnt_completed', count('completed_all'));
+}
+
+function applyBucket(bucket){
+  ACTIVE_BUCKET = bucket;
+  setActiveKpi(bucket);
+
+  const title = bucketTitle(bucket);
+  const sub   = bucketSub(bucket);
+  $('listTitle').textContent = title;
+  $('listSub').textContent   = sub || '';
+
+  const list = (RAW_ORDERS||[]).filter(o=>bucketFilter(bucket,o));
+  ACTIVE_LIST = list;
+
+  applyFindFilter();
+}
+
+function applyFindFilter(){
+  const q = String($('txtFind').value || '').trim().toLowerCase();
+  let list = ACTIVE_LIST || [];
+
+  if(q){
+    list = list.filter(o=>{
+      const oc = getOrderCode(o).toLowerCase();
+      const ph = String(o?.phone||'').toLowerCase();
+      const nm = String(o?.customer_name||'').toLowerCase();
+      return oc.includes(q) || ph.includes(q) || nm.includes(q);
+    });
+  }
+
+  renderList(list);
+}
+
+async function refreshAll(){
+  try{
+    $('tbList').innerHTML = `<tr><td colspan="8" class="text-center text-muted py-4">Memuatkan…</td></tr>`;
+    $('infoFoot').textContent = 'Memuatkan…';
+
+    const days = Number($('selRange').value || 7);
+    RAW_ORDERS = await fetchOrders(days);
+
+    const tids = RAW_ORDERS.map(o=>getThreadId(o)).filter(Boolean);
+    const orderIds = RAW_ORDERS.map(o=>getOrderId(o)).filter(Boolean);
+
+    THREADS_MAP = await fetchThreadsByIds(tids);
+    const r = await fetchLatestAiByThreadIds(tids);
+    AI_BY_ORDER = r.ai_by_order || {};
+    AI_LATEST   = r.ai_latest_by_thread || {};
+
+    // ✅ slip status (payment flags)
+    SLIP_BY_ORDER_ID = await fetchLatestSlipByOrderIds(orderIds);
+
+    FLAGS_MAP = buildFlagsMapFromOrders();
+
+    computeCounts();
+
+    if(!ACTIVE_BUCKET){
+      const prefer = ['pending_all','hold_cut','hold_addr','pending_post_qr','pending_post_atome','pending_pickup_qr','pending_pickup_atome','pending_need_flags','hold_unknown','paid_all','completed_all'];
+      let picked = prefer[0];
+      for(const b of prefer){
+        const c = (RAW_ORDERS||[]).filter(o=>bucketFilter(b,o)).length;
+        if(c > 0){ picked = b; break; }
+      }
+      applyBucket(picked);
+    } else {
+      applyBucket(ACTIVE_BUCKET);
+    }
+
+   $('infoDebug').textContent =
+      `Orders: ${RAW_ORDERS.length} • Threads: ${Object.keys(THREADS_MAP||{}).length} • AI(latest): ${Object.keys(AI_LATEST||{}).length} • LockFlags: ${Object.keys(FLAGS_MAP||{}).length} • Slips: ${Object.keys(SLIP_BY_ORDER_ID||{}).length}`;
+
+    const latestStatementRow = await fetchLatestStatementPreview();
+    setStatementPreview(latestStatementRow);
+
+    showToast('Queue dikemas kini.');
+  }catch(e){
+    console.warn(e);
+    $('tbList').innerHTML = `<tr><td colspan="8" class="text-center text-danger py-4">Ralat: ${(e?.message||e)}</td></tr>`;
+    $('infoFoot').textContent = 'Ralat';
+  }
+}
+
+/* ===== Bank Statement Upload + Match (No.2) ===== */
+function readFileAsDataURL(file){
+  return new Promise((resolve, reject)=>{
+    const fr = new FileReader();
+    fr.onload = ()=> resolve(String(fr.result||""));
+    fr.onerror = (e)=> reject(e);
+    fr.readAsDataURL(file);
+  });
+}
+
+function todayYYYYMMDD(){
+  const d = new Date();
+  const y = d.getFullYear();
+  const m = String(d.getMonth()+1).padStart(2,'0');
+  const dd= String(d.getDate()).padStart(2,'0');
+  return `${y}-${m}-${dd}`;
+}
+
+async function uploadStatementAndMatch(){
+  const fileEl = $('fileStatement');
+  const f = fileEl && fileEl.files && fileEl.files[0] ? fileEl.files[0] : null;
+  if(!f){
+    showToast("Pilih fail statement dulu (gambar/PDF).");
+    return;
+  }
+
+  const a = (window.auth_get && window.auth_get()) || null;
+  const adminPhoneRaw = (a && (a.phone || a.msisdn || a.username)) ? (a.phone || a.msisdn || a.username) : null;
+  const admin_phone = normalize60(adminPhoneRaw);
+
+  if(!admin_phone){
+    alert("Tiada info admin phone (auth).");
+    return;
+  }
+
+  const btnU = $('btnUploadStatement');
+  const btnM = $('btnRunMatch');
+  if(btnU) btnU.disabled = true;
+  if(btnM) btnM.disabled = true;
+
+  try{
+    const dataUrl = await readFileAsDataURL(f);
+
+    showToast("Upload statement…");
+
+    const upRes = await fetch("/.netlify/functions/admin-bank-upload", {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({
+        admin_phone,
+        source_bank: "MAYBANK",
+        statement_date: todayYYYYMMDD(),
+        attachments: [{ base64: dataUrl, mime: f.type || "application/octet-stream", name: f.name || "statement" }]
+      })
+    });
+
+    const upRaw = await upRes.text().catch(()=> "");
+    let upJson = null;
+    try{ upJson = JSON.parse(upRaw); }catch(_){}
+
+    if(!upRes.ok || !upJson || upJson.ok !== true){
+      console.warn("upload failed:", upRes.status, upRaw);
+      alert("Upload/extract gagal:\n" + (upJson?.error || upRaw || ("HTTP " + upRes.status)));
+      return;
+    }
+
+    let previewRow = pickPreviewRowFromUploadResponse(upJson);
+
+    if(!previewRow){
+      const uploadId =
+        upJson.upload_id ||
+        upJson.statement_upload_id ||
+        upJson.data?.upload_id ||
+        null;
+
+      previewRow = await fetchLatestStatementPreview(uploadId);
+    }
+
+    if(previewRow){
+      setStatementPreview(previewRow);
+    }
+
+    showToast(`Extract ok: ${upJson.inserted_rows||0} rows. Run match…`);
+
+    const mRes = await fetch("/.netlify/functions/match-engine", {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({
+        admin_phone,
+        days: Number($('selRange')?.value || 7),
+        limit: 200
+      })
+    });
+
+    const mRaw = await mRes.text().catch(()=> "");
+    let mJson = null;
+    try{ mJson = JSON.parse(mRaw); }catch(_){}
+
+    if(!mRes.ok || !mJson || mJson.ok !== true){
+      console.warn("match failed:", mRes.status, mRaw);
+      alert("Match engine gagal:\n" + (mJson?.error || mRaw || ("HTTP " + mRes.status)));
+      return;
+    }
+
+    showToast(`Matched: ${mJson.matched||0}`);
+    await refreshAll();
+  }catch(e){
+    console.warn(e);
+    alert("Upload/match error:\n" + (e?.message || e));
+  }finally{
+    if(btnU) btnU.disabled = false;
+    if(btnM) btnM.disabled = false;
+  }
+}
+async function runMatchOnly(){
+  const a = (window.auth_get && window.auth_get()) || null;
+  const adminPhoneRaw = (a && (a.phone || a.msisdn || a.username)) ? (a.phone || a.msisdn || a.username) : null;
+  const admin_phone = normalize60(adminPhoneRaw);
+
+  if(!admin_phone){
+    alert("Tiada info admin phone (auth).");
+    return;
+  }
+
+  const btn = $('btnRunMatch');
+  if(btn) btn.disabled = true;
+
+  try{
+    showToast("Run match…");
+
+    const mRes = await fetch("/.netlify/functions/match-engine", {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({
+        admin_phone,
+        days: Number($('selRange')?.value || 7),
+        limit: 200
+      })
+    });
+
+    const raw = await mRes.text().catch(()=> "");
+    let mJson = null;
+    try{ mJson = JSON.parse(raw); }catch(_){}
+
+    if(!mRes.ok || !mJson || mJson.ok !== true){
+      console.warn("match failed:", mRes.status, raw);
+      alert("Match engine gagal:\n" + (mJson?.error || raw || ("HTTP " + mRes.status)));
+      return;
+    }
+
+    showToast(`Matched: ${mJson.matched||0}`);
+    await refreshAll();
+  }catch(e){
+    console.warn(e);
+    alert("Run match error:\n" + (e?.message || e));
+  }finally{
+    if(btn) btn.disabled = false;
+  }
+}
+/* ===== Wire ===== */
+document.querySelectorAll('.kpi').forEach(el=>{
+  el.addEventListener('click', ()=>{
+    const b = el.dataset.bucket;
+    applyBucket(b);
+  });
+});
+
+$('btnRefresh').addEventListener('click', refreshAll);
+$('btnUploadStatement').addEventListener('click', uploadStatementAndMatch);
+$('btnRunMatch').addEventListener('click', runMatchOnly);
+$('txtFind').addEventListener('input', applyFindFilter);
+$('btnClearFind').addEventListener('click', ()=>{
+  $('txtFind').value = '';
+  applyFindFilter();
+});
+$('selRange').addEventListener('change', ()=>{ ACTIVE_BUCKET=null; refreshAll(); });
+
+(async ()=>{
+  const pill=$('authStatus'); const set=(t)=> pill&&(pill.textContent=t);
+  let ok=false;
+
+  if(window.adminGuard && typeof adminGuard.require === 'function'){
+    ok = await adminGuard.require({
+      onChecking:()=>set("Mengesahkan akses…"),
+      onDenied:()=>set("Akses ditolak"),
+      onAllowed:(p)=>set("Log masuk (admin) — "+p)
+    });
+  } else {
+    ok = await fallbackRequireAdmin();
+    if(ok) set("Log masuk (admin)");
+  }
+
+  if(!ok) return;
+
+  await refreshAll();
+})();
+</script>
+</body>
+</html>

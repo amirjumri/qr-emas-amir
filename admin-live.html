@@ -1,0 +1,3321 @@
+<!doctype html>
+<html lang="ms">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <link rel="stylesheet" href="/global.css">
+
+  <title>Admin Live • Emas Amir</title>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="auth.js?v=13.1"></script>
+  <script src="admin-guard.js?v=1"></script>
+  <script src="https://cdn.socket.io/4.7.5/socket.io.min.js"></script>
+
+
+
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+
+  <style>
+    :root{
+      --bg:#f3f4f6;
+      --card:#ffffff;
+      --text:#111827;
+      --muted:#6b7280;
+      --border:#e5e7eb;
+      --dark:#020617;
+      --red:#dc2626;
+      --green:#16a34a;
+      --yellow:#f59e0b;
+      --blue:#2563eb;
+      --purple:#7c3aed;
+    }
+
+    *{box-sizing:border-box}
+
+    html,body{
+      margin:0;
+      padding:0;
+      background:var(--bg);
+      color:var(--text);
+      font-family:system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+    }
+
+    body{
+      padding-top:env(safe-area-inset-top,0px);
+      padding-bottom:env(safe-area-inset-bottom,0px);
+    }
+
+    .admin-live-shell{
+      min-height:100vh;
+      padding:12px;
+    }
+
+    .topbar{
+      background:#fff;
+      border:1px solid var(--border);
+      border-radius:18px;
+      padding:12px;
+      box-shadow:0 10px 24px rgba(15,23,42,.06);
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:10px;
+      flex-wrap:wrap;
+      margin-bottom:12px;
+    }
+
+    .top-title{
+      font-weight:900;
+      font-size:20px;
+      line-height:1.1;
+    }
+
+    .top-sub{
+      font-size:12px;
+      color:var(--muted);
+      margin-top:2px;
+    }
+
+    .auth-pill{
+      display:inline-flex;
+      align-items:center;
+      gap:6px;
+      border:1px solid var(--border);
+      background:#f9fafb;
+      color:#374151;
+      padding:5px 10px;
+      border-radius:999px;
+      font-size:12px;
+      font-weight:700;
+    }
+
+    .btn-chip{
+      border-radius:999px;
+      font-weight:800;
+      font-size:13px;
+      padding:7px 12px;
+    }
+
+    .live-layout{
+      display:grid;
+      grid-template-columns:330px minmax(0,1fr) 430px;
+      gap:12px;
+      align-items:start;
+    }
+
+    @media(max-width:1200px){
+      .live-layout{
+        grid-template-columns:300px minmax(0,1fr);
+      }
+      .stock-zone{
+        grid-column:1 / -1;
+      }
+    }
+
+    @media(max-width:768px){
+      .admin-live-shell{
+        padding:8px;
+      }
+
+      .live-layout{
+        display:block;
+      }
+
+      .video-zone,
+      .chat-zone,
+      .stock-zone{
+        margin-bottom:12px;
+      }
+    }
+
+    .panel{
+      background:var(--card);
+      border:1px solid var(--border);
+      border-radius:20px;
+      box-shadow:0 12px 30px rgba(15,23,42,.07);
+      overflow:hidden;
+    }
+
+    .panel-head{
+      padding:12px 14px;
+      border-bottom:1px solid var(--border);
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:10px;
+      background:#fff;
+    }
+
+    .panel-title{
+      font-weight:900;
+      font-size:15px;
+      margin:0;
+    }
+
+    .panel-sub{
+      font-size:12px;
+      color:var(--muted);
+      margin-top:2px;
+    }
+
+    .panel-body{
+      padding:12px;
+    }
+
+    .video-card{
+      background:linear-gradient(180deg,#111827,#020617);
+      color:#fff;
+    }
+
+    .video-card .panel-head{
+      background:#020617;
+      border-bottom:1px solid rgba(255,255,255,.1);
+      color:#fff;
+    }
+
+    .yt-mini{
+      border-radius:16px;
+      overflow:hidden;
+      background:#000;
+      border:1px solid rgba(255,255,255,.12);
+    }
+
+    .live-status-row{
+      display:flex;
+      gap:8px;
+      flex-wrap:wrap;
+      margin-top:10px;
+    }
+
+    .mini-stat{
+      flex:1;
+      min-width:120px;
+      border:1px solid rgba(255,255,255,.12);
+      background:rgba(255,255,255,.06);
+      border-radius:14px;
+      padding:10px;
+    }
+
+    .mini-stat-label{
+      font-size:11px;
+      color:#cbd5e1;
+    }
+
+    .mini-stat-value{
+      font-weight:900;
+      font-size:18px;
+      margin-top:2px;
+    }
+
+    .active-live-item{
+      margin-top:12px;
+      background:rgba(255,255,255,.06);
+      border:1px solid rgba(255,255,255,.12);
+      border-radius:16px;
+      padding:10px;
+    }
+
+    .active-live-item img{
+      width:64px;
+      height:64px;
+      object-fit:cover;
+      border-radius:14px;
+      background:#111827;
+    }
+
+    .active-code{
+      font-family:ui-monospace,Menlo,Consolas,monospace;
+      font-weight:900;
+      color:#facc15;
+    }
+
+    .chat-zone .panel{
+      height:calc(100vh - 110px);
+      min-height:650px;
+      display:flex;
+      flex-direction:column;
+    }
+
+    @media(max-width:768px){
+      .chat-zone .panel{
+        height:620px;
+        min-height:620px;
+      }
+    }
+
+    .chat-toolbar{
+      display:flex;
+      gap:8px;
+      flex-wrap:wrap;
+      align-items:center;
+    }
+
+    .chat-list-big{
+      flex:1;
+      overflow-y:auto;
+      padding:12px;
+      background:
+        radial-gradient(circle at top left,rgba(250,204,21,.09),transparent 28%),
+        linear-gradient(180deg,#020617,#0f172a);
+    }
+
+    .chat-msg{
+      background:rgba(255,255,255,.08);
+      border:1px solid rgba(255,255,255,.1);
+      border-radius:16px;
+      padding:10px 12px;
+      margin-bottom:10px;
+      color:#fff;
+      box-shadow:0 12px 28px rgba(0,0,0,.18);
+    }
+
+    .chat-msg.ai-hit{
+      border-color:rgba(250,204,21,.75);
+      background:rgba(120,53,15,.45);
+      box-shadow:0 0 0 2px rgba(250,204,21,.14);
+    }
+
+    .chat-name{
+      font-weight:900;
+      color:#facc15;
+      font-size:13px;
+    }
+
+    .chat-time{
+      font-size:11px;
+      color:#94a3b8;
+    }
+
+    .chat-text{
+      font-size:20px;
+      line-height:1.25;
+      font-weight:800;
+      margin-top:5px;
+      word-break:break-word;
+    }
+
+    @media(max-width:576px){
+      .chat-text{
+        font-size:17px;
+      }
+    }
+
+    .ai-box{
+      border-top:1px solid var(--border);
+      background:#fff;
+      padding:12px;
+    }
+
+    .ai-current{
+      border:1px solid #fde68a;
+      background:#fffbeb;
+      border-radius:16px;
+      padding:10px;
+    }
+
+    .ai-title{
+      font-weight:900;
+      color:#92400e;
+      font-size:14px;
+    }
+
+    .ai-detail{
+      font-size:13px;
+      color:#78350f;
+      margin-top:2px;
+    }
+
+    .stock-zone .panel{
+      height:calc(100vh - 110px);
+      min-height:650px;
+      display:flex;
+      flex-direction:column;
+    }
+
+    @media(max-width:1200px){
+      .stock-zone .panel{
+        height:auto;
+        min-height:auto;
+      }
+    }
+
+    .filter-grid{
+      display:grid;
+      grid-template-columns:1fr 1fr;
+      gap:8px;
+    }
+
+    .filter-grid .full{
+      grid-column:1 / -1;
+    }
+
+    .stock-list{
+      flex:1;
+      overflow-y:auto;
+      padding:12px;
+      background:#f9fafb;
+      border-top:1px solid var(--border);
+    }
+
+    .stock-card{
+      background:#fff;
+      border:1px solid var(--border);
+      border-radius:16px;
+      padding:10px;
+      margin-bottom:10px;
+      cursor:pointer;
+      transition:.15s ease;
+    }
+
+    .stock-card:hover{
+      transform:translateY(-1px);
+      box-shadow:0 10px 24px rgba(15,23,42,.08);
+    }
+
+    .stock-card.suggested{
+      border-color:#f59e0b;
+      box-shadow:0 0 0 3px rgba(245,158,11,.14);
+      background:#fffbeb;
+    }
+
+    .stock-card.live-selected{
+      border-color:#7c3aed;
+      box-shadow:0 0 0 3px rgba(124,58,237,.16);
+    }
+
+    .stock-img{
+      width:70px;
+      height:70px;
+      border-radius:14px;
+      object-fit:cover;
+      background:#e5e7eb;
+      flex:0 0 auto;
+    }
+
+    .stock-code{
+      font-family:ui-monospace,Menlo,Consolas,monospace;
+      font-weight:900;
+      font-size:14px;
+    }
+
+    .stock-name{
+      font-weight:800;
+      font-size:13px;
+      line-height:1.2;
+      margin-top:2px;
+    }
+
+    .stock-spec{
+      color:#6b7280;
+      font-size:12px;
+      margin-top:2px;
+    }
+
+    .stock-price{
+      font-weight:900;
+      color:#dc2626;
+      font-size:15px;
+    }
+
+    .status-pill{
+      display:inline-flex;
+      align-items:center;
+      border-radius:999px;
+      border:1px solid var(--border);
+      padding:2px 8px;
+      font-size:11px;
+      font-weight:900;
+      background:#f9fafb;
+    }
+
+    .status-AVAILABLE{
+      color:#166534;
+      background:#ecfdf5;
+      border-color:#bbf7d0;
+    }
+
+    .status-PENDING{
+      color:#92400e;
+      background:#fffbeb;
+      border-color:#fde68a;
+    }
+
+    .status-PAID{
+      color:#991b1b;
+      background:#fef2f2;
+      border-color:#fecaca;
+    }
+
+    .category-chip-row{
+      display:flex;
+      gap:6px;
+      flex-wrap:wrap;
+    }
+
+    .cat-chip{
+      border:1px solid var(--border);
+      background:#fff;
+      border-radius:999px;
+      padding:5px 9px;
+      font-size:12px;
+      font-weight:900;
+      cursor:pointer;
+    }
+
+    .cat-chip.active{
+      background:#111827;
+      color:#fff;
+      border-color:#111827;
+    }
+
+
+
+    .live-small-list{
+      display:flex;
+      flex-direction:column;
+      gap:8px;
+    }
+
+    .live-small-card{
+      border:1px solid #e9d5ff;
+      background:#faf5ff;
+      border-radius:14px;
+      padding:9px;
+    }
+
+    .live-small-code{
+      font-weight:900;
+      font-family:ui-monospace,Menlo,Consolas,monospace;
+      color:#581c87;
+    }
+
+    .suggestion-strip{
+      display:flex;
+      gap:8px;
+      overflow-x:auto;
+      padding-top:8px;
+    }
+
+    .suggestion-mini{
+      min-width:170px;
+      border:1px solid #fcd34d;
+      background:#fffbeb;
+      border-radius:14px;
+      padding:8px;
+    }
+
+    .suggestion-mini-code{
+      font-family:ui-monospace,Menlo,Consolas,monospace;
+      font-weight:900;
+    }
+
+    .empty-box{
+      color:#6b7280;
+      font-size:13px;
+      padding:18px;
+      text-align:center;
+    }
+
+    .mono{
+      font-family:ui-monospace,Menlo,Consolas,monospace;
+    }
+
+    .right{
+      text-align:right;
+    }
+
+    .modal-live-item{
+      display:flex;
+      gap:12px;
+      align-items:center;
+      background:#f9fafb;
+      border:1px solid var(--border);
+      border-radius:16px;
+      padding:10px;
+    }
+
+    .modal-live-item img{
+      width:78px;
+      height:78px;
+      object-fit:cover;
+      border-radius:14px;
+      background:#e5e7eb;
+    }
+
+.ai-queue-card{
+  min-width:190px;
+  border:1px solid #bfdbfe;
+  background:#eff6ff;
+  border-radius:14px;
+  padding:8px;
+  cursor:pointer;
+}
+
+.ai-queue-card.active{
+  border-color:#2563eb;
+  box-shadow:0 0 0 3px rgba(37,99,235,.18);
+}
+
+.ai-queue-name{
+  font-weight:900;
+  color:#1d4ed8;
+  font-size:12px;
+}
+
+.ai-queue-text{
+  font-size:12px;
+  font-weight:800;
+  color:#111827;
+}
+
+.ai-queue-small{
+  font-size:11px;
+  color:#6b7280;
+}
+
+.live-small-card{
+  overflow:hidden;
+}
+
+.live-small-card .row{
+  margin-left:0;
+  margin-right:0;
+}
+
+.live-small-card .col-6{
+  padding-left:3px;
+  padding-right:3px;
+}
+
+.live-small-card input.form-control{
+  min-width:0;
+  width:100%;
+  font-size:12px;
+  padding:4px 6px;
+}
+
+.live-small-card .btn{
+  white-space:nowrap;
+}
+
+.live-off-side{
+  width:42px;
+  min-width:42px;
+}.stock-zone .panel{
+  height:calc(100vh - 110px);
+  min-height:650px;
+  overflow:hidden;
+}
+
+.stock-list{
+  flex:1 1 auto;
+  min-height:0;
+  overflow-y:auto;
+}
+
+
+
+.order-chat-box{
+  margin-top:12px;
+  background:rgba(255,255,255,.06);
+  border:1px solid rgba(255,255,255,.12);
+  border-radius:16px;
+  padding:10px;
+}
+
+.order-chat-list{
+  display:flex;
+  flex-direction:column;
+  gap:8px;
+  max-height:260px;
+  overflow-y:auto;
+}
+
+.order-chat-card{
+  background:rgba(255,255,255,.08);
+  border:1px solid rgba(255,255,255,.12);
+  border-radius:14px;
+  padding:9px;
+  cursor:pointer;
+}
+
+.order-chat-card:hover{
+  background:rgba(255,255,255,.13);
+}
+
+.order-chat-name{
+  font-weight:900;
+  color:#facc15;
+  font-size:13px;
+}
+
+.order-chat-meta{
+  color:#cbd5e1;
+  font-size:11px;
+}
+
+.order-chat-order{
+  color:#fff;
+  font-size:12px;
+  font-weight:800;
+  margin-top:3px;
+  word-break:break-word;
+}
+
+.order-chat-badge{
+  display:inline-flex;
+  border:1px solid rgba(255,255,255,.18);
+  border-radius:999px;
+  padding:2px 7px;
+  font-size:10px;
+  font-weight:900;
+  color:#fff;
+  background:rgba(255,255,255,.10);
+}
+
+.resize-handle{
+  height:10px;
+  margin:-2px auto 8px;
+  width:64px;
+  border-radius:999px;
+  background:#d1d5db;
+  cursor:ns-resize;
+}
+
+.live-control-box{
+  flex:0 0 auto;
+  height:170px;
+  min-height:115px;
+  max-height:45vh;
+  overflow-y:auto;
+  resize:vertical;
+  position:relative;
+  z-index:2;
+  border-top:1px solid var(--border);
+  padding:10px 12px;
+  background:#fff;
+}
+
+.live-small-card{
+  padding:7px;
+  border-radius:12px;
+}
+
+.live-small-card .small{
+  font-size:11px;
+}
+
+.live-small-code{
+  font-size:12px;
+}
+
+.live-small-card input.form-control{
+  height:26px;
+  font-size:11px;
+  padding:2px 5px;
+}
+
+.live-small-card label.small{
+  display:none;
+}
+
+.live-small-card .btn{
+  height:28px;
+  font-size:11px;
+  padding:3px 8px;
+}
+
+.live-small-card .fw-bold.text-danger{
+  font-size:13px;
+  margin-top:4px !important;
+}
+
+.suggestion-mini-name{
+  font-size:12px;
+  font-weight:800;
+  color:#374151;
+  line-height:1.2;
+  margin-top:2px;
+}
+
+body.chat-popup-open .order-chat-list{
+  pointer-events:none;
+  opacity:.75;
+}
+
+.chat-popup-actions{
+  border:1px solid #e5e7eb;
+  background:#fff;
+  border-radius:14px;
+  padding:10px;
+  margin-bottom:10px;
+}
+
+.chat-popup-order-row{
+  display:flex;
+  gap:6px;
+  flex-wrap:wrap;
+  margin-bottom:8px;
+}
+
+.chat-popup-order-chip{
+  border:1px solid #d1d5db;
+  background:#fff;
+  border-radius:999px;
+  padding:5px 9px;
+  font-size:12px;
+  font-weight:900;
+}
+
+.chat-popup-order-chip.active{
+  background:#111827;
+  color:#fff;
+  border-color:#111827;
+}
+
+.chat-popup-badges{
+  display:flex;
+  gap:6px;
+  flex-wrap:wrap;
+  margin-bottom:8px;
+}
+
+.chat-popup-badge{
+  display:inline-flex;
+  border:1px solid #e5e7eb;
+  border-radius:999px;
+  padding:4px 8px;
+  font-size:11px;
+  font-weight:900;
+  background:#f9fafb;
+}
+
+.chat-popup-badge.ai{
+  background:#ecfdf5;
+  color:#166534;
+  border-color:#bbf7d0;
+}
+
+.chat-popup-badge.manual{
+  background:#fff7ed;
+  color:#9a3412;
+  border-color:#fdba74;
+}
+
+.chat-popup-badge.paid{
+  background:#eff6ff;
+  color:#1d4ed8;
+  border-color:#bfdbfe;
+}
+  </style>
+</head>
+
+<body>
+<div class="admin-live-shell">
+
+  <div class="topbar">
+    <div>
+      <div class="top-title">🔴 Admin Live Dashboard</div>
+      <div class="top-sub">Video kecil • komen besar • AI cadangan stok 916 • klik untuk live</div>
+    </div>
+
+
+<div>   
+      <span id="authStatus" class="auth-pill">Memuatkan…</span>
+      <a href="index.html" class="btn btn-outline-secondary btn-chip">🏠 Home</a>
+      <a href="admin.html" class="btn btn-outline-secondary btn-chip">Admin</a>
+      <a href="adminstok-j916.html" class="btn btn-outline-secondary btn-chip">Stok 916</a>
+      <a href="comment.html" class="btn btn-danger btn-chip">Buka Comment</a>
+      <button id="btnLogout" class="btn btn-outline-secondary btn-chip" type="button" style="display:none">Log keluar</button>
+    </div>
+  </div>
+
+  <div class="live-layout">
+
+    <section class="video-zone">
+      <div class="panel video-card">
+        <div class="panel-head">
+          <div>
+            <h2 class="panel-title">📺 Video Live</h2>
+            <div class="panel-sub text-light opacity-75">Paparan kecil untuk admin monitor</div>
+          </div>
+          <button id="btnReloadVideo" class="btn btn-sm btn-outline-light rounded-pill" type="button">Reload</button>
+        </div>
+
+        <div class="panel-body">
+          <div class="yt-mini">
+            <div class="ratio ratio-16x9">
+              <iframe
+                id="ytLiveFrame"
+                src="https://www.youtube.com/embed/ekRtZMEz9fM?playsinline=1&rel=0&modestbranding=1&origin=https://emasamir.app"
+                frameborder="0"
+                allow="encrypted-media; picture-in-picture"
+                referrerpolicy="strict-origin-when-cross-origin"
+                allowfullscreen>
+              </iframe>
+            </div>
+          </div>
+
+          <div class="live-status-row">
+            <div class="mini-stat">
+              <div class="mini-stat-label">Komen 5 minit</div>
+              <div id="statComment5" class="mini-stat-value">0</div>
+            </div>
+
+            <div class="mini-stat">
+              <div class="mini-stat-label">Stok Live</div>
+              <div id="statLiveCount" class="mini-stat-value">0</div>
+            </div>
+          </div>
+
+          <div class="mt-3">
+            <label class="form-label small text-light opacity-75 mb-1">YouTube Video ID</label>
+            <div class="input-group input-group-sm">
+              <input id="ytVideoIdInput" class="form-control" placeholder="Contoh: ekRtZMEz9fM">
+              <button id="btnSaveYt" class="btn btn-warning fw-bold" type="button">Simpan</button>
+            </div>
+
+            <div class="form-check form-switch mt-2">
+              <input id="showHomeLiveInput" class="form-check-input" type="checkbox">
+              <label class="form-check-label small text-light" for="showHomeLiveInput">
+                Papar Live di halaman utama
+              </label>
+            </div>
+          </div>
+
+          <div class="active-live-item">
+            <div class="d-flex justify-content-between align-items-center mb-2">
+              <div class="fw-bold">Item sedang Live</div>
+              <button id="btnClearLiveLocal" class="btn btn-sm btn-outline-light rounded-pill" type="button">Clear UI</button>
+            </div>
+
+<div class="order-chat-box">
+  <div class="d-flex justify-content-between align-items-center mb-2">
+    <div class="fw-bold">🧾 Chat Ada Order</div>
+    <button id="btnReloadOrderChats" class="btn btn-sm btn-outline-light rounded-pill" type="button">
+      Reload
+    </button>
+  </div>
+
+  <div id="orderChatList" class="order-chat-list">
+    <div class="small text-light opacity-75">Memuatkan order chat…</div>
+  </div>
+</div>
+
+            <div id="activeLiveBox" class="small text-light opacity-75">
+              Belum ada item dipilih.
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="chat-zone">
+      <div class="panel">
+        <div class="panel-head">
+          <div>
+            <h2 class="panel-title">💬 Komen Live Besar</h2>
+            <div id="chatStatus" class="panel-sub">Menyambung socket…</div>
+          </div>
+
+          <div class="chat-toolbar">
+            <button id="btnClearChatUI" class="btn btn-sm btn-outline-secondary rounded-pill" type="button">Clear paparan</button>
+            <button id="btnScrollBottom" class="btn btn-sm btn-dark rounded-pill" type="button">Bawah</button>
+          </div>
+        </div>
+
+        <div id="chatListBig" class="chat-list-big"></div>
+
+        <div class="ai-box">
+          <div id="aiCurrentBox" class="ai-current">
+            <div class="ai-title">🤖 AI Cadangan</div>
+            <div class="ai-detail">
+              Menunggu komen seperti <b>“nak cincin size 12”</b> atau <b>“nak rantai tangan 17”</b>.
+            </div>
+          </div>
+
+          <div id="aiQueueBox" class="suggestion-strip"></div>
+<div id="suggestionStrip" class="suggestion-strip"></div>
+        </div>
+      </div>
+    </section>
+
+    <section class="stock-zone">
+      <div class="panel">
+        <div class="panel-head">
+          <div>
+            <h2 class="panel-title">🛒 Stok 916</h2>
+            <div id="stockStatus" class="panel-sub">Memuatkan stok…</div>
+          </div>
+          <button id="btnReloadStock" class="btn btn-sm btn-outline-primary rounded-pill" type="button">Reload</button>
+        </div>
+
+        <div class="panel-body">
+          <div class="filter-grid">
+            <div class="full">
+              <input id="stockQ" class="form-control form-control-sm" placeholder="Cari kod / nama / kategori…">
+            </div>
+
+            <div>
+              <label class="form-label small mb-1">Min</label>
+              <input id="filterMin" class="form-control form-control-sm" type="number" step="0.1" placeholder="size/cm">
+            </div>
+
+            <div>
+              <label class="form-label small mb-1">Max</label>
+              <input id="filterMax" class="form-control form-control-sm" type="number" step="0.1" placeholder="size/cm">
+            </div>
+
+            <div>
+              <label class="form-label small mb-1">Bajet RM</label>
+              <input id="filterBudget" class="form-control form-control-sm" type="number" step="1" placeholder="cth 800">
+            </div>
+
+            <div>
+              <label class="form-label small mb-1">Status</label>
+              <select id="filterStatus" class="form-select form-select-sm">
+                <option value="AVAILABLE">AVAILABLE</option>
+                <option value="ALL">Semua</option>
+                <option value="PENDING">PENDING</option>
+                <option value="PAID">PAID</option>
+              </select>
+            </div>
+
+            <div class="full">
+              <div class="category-chip-row">
+                <button class="cat-chip active" data-cat="">Semua</button>
+                <button class="cat-chip" data-cat="CC">Cincin</button>
+                <button class="cat-chip" data-cat="RT">Rantai Tangan</button>
+                <button class="cat-chip" data-cat="RL">Rantai Leher</button>
+                <button class="cat-chip" data-cat="RK">Rantai Kaki</button>
+                <button class="cat-chip" data-cat="LK">Loket</button>
+                <button class="cat-chip" data-cat="SB">Subang</button>
+                <button class="cat-chip" data-cat="BC">Bead/Charm</button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div id="stockList" class="stock-list">
+          <div class="empty-box">Memuatkan stok…</div>
+        </div>
+
+        <div class="live-control-box">
+  <div class="resize-handle" title="Tarik untuk besar/kecil"></div>
+          <div class="d-flex justify-content-between align-items-center mb-2">
+            <div class="fw-bold">🔴 Live dipilih</div>
+            <div class="input-group input-group-sm" style="width:140px">
+              <span class="input-group-text">Faktor</span>
+              <input id="liveFactor" class="form-control" type="number" step="0.01" min="0.5">
+            </div>
+          </div>
+
+          <div id="liveSmallList" class="live-small-list">
+            <div class="small text-muted">Belum ada item live.</div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+  </div>
+</div>
+
+<div class="modal fade" id="chatPopupModal" tabindex="-1">
+  <div class="modal-dialog modal-dialog-centered modal-lg">
+    <div class="modal-content rounded-4">
+
+      <div class="modal-header">
+        <h5 class="modal-title fw-bold">💬 Chat Customer</h5>
+        <button class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+
+     <div class="modal-body d-flex flex-column" style="height:70vh">
+
+  <div id="chatPopupActions" class="chat-popup-actions" style="display:none;">
+    <div id="chatPopupBadges" class="chat-popup-badges"></div>
+    <div id="chatPopupOrders" class="chat-popup-order-row"></div>
+
+    <div class="d-flex gap-2 flex-wrap">
+      <button id="btnPopupPaidChat" class="btn btn-sm btn-outline-primary rounded-pill" type="button">
+        Dah Bayar
+      </button>
+
+      <button id="btnPopupClearPaidChat" class="btn btn-sm btn-outline-secondary rounded-pill" type="button">
+        Buang Paid(Chat)
+      </button>
+
+      <button id="btnPopupManual" class="btn btn-sm btn-warning rounded-pill fw-bold" type="button">
+        Mode Manual
+      </button>
+
+      <button id="btnPopupBackAi" class="btn btn-sm btn-success rounded-pill fw-bold" type="button">
+        Kembali AI
+      </button>
+    </div>
+
+    <div id="chatPopupActionMsg" class="small text-muted mt-2"></div>
+  </div>
+
+  <div id="chatPopupList" style="flex:1;overflow-y:auto;padding:10px;background:#f9fafb;border-radius:12px"></div>
+
+        <div class="mt-2 d-flex gap-2">
+          <input id="chatPopupInput" class="form-control" placeholder="Taip mesej…">
+          <button id="chatPopupSend" class="btn btn-dark">Hantar</button>
+        </div>
+
+      </div>
+
+    </div>
+  </div>
+</div>
+
+
+<div class="modal fade" id="liveActionModal" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content rounded-4">
+      <div class="modal-header">
+        <h5 class="modal-title fw-black" style="font-weight:900;">Live Item 916</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Tutup"></button>
+      </div>
+
+      <div class="modal-body">
+        <div id="modalLiveItem" class="modal-live-item mb-3"></div>
+
+        <div class="row g-2">
+          <div class="col-6">
+            <label class="form-label small">Harga/g Live</label>
+            <input id="modalHarga916" class="form-control" type="number" step="0.01">
+          </div>
+
+          <div class="col-6">
+            <label class="form-label small">Upah Live RM</label>
+            <input id="modalUpah" class="form-control" type="number" step="0.01">
+          </div>
+
+          <div class="col-12">
+            <label class="form-label small">Harga Live Anggaran</label>
+            <div id="modalLivePrice" class="form-control bg-light fw-bold">RM 0.00</div>
+          </div>
+        </div>
+
+        <div id="modalMsg" class="small text-muted mt-2"></div>
+      </div>
+
+      <div class="modal-footer">
+        <button id="btnModalLiveOn" class="btn btn-danger fw-bold rounded-pill" type="button">
+          🔴 Live Kan Item
+        </button>
+        <button id="btnModalLockOrder" class="btn btn-success fw-bold rounded-pill" type="button">
+          Lock & Buat Order
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+
+<script>
+const SB_URL = "https://dduizetstqqjrpsezbpi.supabase.co";
+const SB_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRkdWl6ZXRzdHFxanJwc2V6YnBpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTg3MzI0ODQsImV4cCI6MjA3NDMwODQ4NH0.CrlHXrmHtKgR9qc2192U6quRb5lpFEeOSgwG0Lb8KRM";
+
+const sb = window.supabase.createClient(SB_URL, SB_KEY);
+
+const CHAT_ROOM = "emasamir-live";
+const SOCKET_URL = "qr-emas-amir-production.up.railway.app";
+
+const ADMIN_WA = "60168055916";
+const QR_DUITNOW_URL = "https://emasamir.app/qr-maybank.html";
+
+const $ = id => document.getElementById(id);
+
+let liveSocket = null;
+let currentAdmin = null;
+let adminPhone = "";
+
+let ALL_STOCK = [];
+let FILTERED_STOCK = [];
+let LIVE_MAP = {};
+let LIVE_SELECTED_ROW = null;
+
+let currentCat = "";
+let lastAiIntent = null;
+
+let shownChatIds = new Set();
+let chatRows5Min = [];
+let AI_QUEUE = [];
+let ACTIVE_AI_QUEUE_ID = "";
+
+let AI_CUSTOMER_CONTEXT = {};
+let AI_LAST2_BY_USER = {};
+
+let LIVE_MULTIPLIER = Number(localStorage.getItem("adminLiveMultiplier") || "1.08") || 1.08;
+let ACTIVE_THREAD_ID = "";
+let ACTIVE_THREAD_ROW = null;
+let ACTIVE_PAID_REF = "";
+
+
+function money(n){
+  return "RM " + Number(n || 0).toFixed(2);
+}
+
+function escapeHtml(str){
+  return String(str || "")
+    .replace(/&/g,"&amp;")
+    .replace(/</g,"&lt;")
+    .replace(/>/g,"&gt;")
+    .replace(/"/g,"&quot;")
+    .replace(/'/g,"&#039;");
+}
+
+function fmtTime(iso){
+  try{
+    return new Date(iso).toLocaleTimeString("ms-MY", {
+      hour:"2-digit",
+      minute:"2-digit",
+      hour12:true
+    });
+  }catch(e){
+    return "";
+  }
+}
+
+function shortName(name){
+  let n = String(name || "Tetamu").trim().replace(/\s+/g," ");
+  if (!n) return "Tetamu";
+  n = n.replace(/\b(bin|binti|bt|bte)\b.*$/i, "").trim();
+  if (n.length > 24) n = n.slice(0,24).trim() + "…";
+  return n || "Tetamu";
+}
+
+function normalizePhoneDigits(p){
+  return String(p || "").replace(/\D/g,"");
+}
+
+function toMsisdnIntl(p){
+  const d = normalizePhoneDigits(p);
+  if (!d) return "";
+
+  if (d.startsWith("65") && d.length >= 10 && d.length <= 12) return d;
+
+  if ((d.length === 8 || d.length === 9) && /^[89]/.test(d)){
+    return "65" + d;
+  }
+
+  if (d.startsWith("60")) return d;
+  if (d.startsWith("0")) return "6" + d;
+  if (d.startsWith("1")) return "60" + d;
+
+  return "60" + d;
+}
+
+async function sendWA(msisdn, text){
+  try{
+    const res = await fetch("/.netlify/functions/send-wa", {
+      method:"POST",
+      headers:{ "Content-Type":"application/json" },
+      body:JSON.stringify({
+        phone: msisdn,
+        message: text
+      })
+    });
+
+    const raw = await res.text();
+    let j = {};
+    try{ j = JSON.parse(raw); }catch(e){}
+
+    return res.ok && (j.ok !== false);
+  }catch(e){
+    console.warn("sendWA error:", e);
+    return false;
+  }
+}
+
+function calcLivePrice(pricePerG, weightG, upah){
+  return ((Number(pricePerG || 0) * Number(weightG || 0)) + Number(upah || 0)) * LIVE_MULTIPLIER;
+}
+
+function fmtCm(v){
+  const n = Number(v || 0);
+  if (!Number.isFinite(n) || n <= 0) return "";
+  return n.toFixed(1).replace(/\.0$/,"") + "cm";
+}
+
+function getRowCat(row){
+  const code = String(row?.code || "").toUpperCase();
+  if (code.length >= 2) return code.slice(0,2);
+  return String(row?.cat_code || row?.category || "").toUpperCase();
+}
+
+function rowDimText(row){
+  const berat = Number(row?.weight_g || 0);
+  const panjang = fmtCm(row?.length_cm ?? row?.panjang_cm ?? row?.current_length_cm);
+  const lebar = fmtCm(row?.width_cm ?? row?.lebar_cm);
+
+  const arr = [];
+  if (berat > 0) arr.push("Berat " + berat.toFixed(2) + "g");
+  if (panjang) arr.push("Panjang " + panjang);
+  if (lebar) arr.push("Lebar " + lebar);
+
+  return arr.join(" • ");
+}
+
+function rowSizeValue(row){
+  const cat = getRowCat(row);
+  const len = Number(row?.length_cm || row?.panjang_cm || row?.current_length_cm || 0);
+  const size = Number(row?.size || row?.saiz || 0);
+
+  if (cat === "CC"){
+    return size || len || 0;
+  }
+
+  return len || size || 0;
+}
+
+function getRowUpah(row){
+  return Number(row?.upah_override_rm ?? row?.upah_default_rm ?? row?.wage_default ?? 0);
+}
+
+function getRowPrice(row){
+  const weight = Number(row?.weight_g || 0);
+  const upah = getRowUpah(row);
+  const h916 = Number(window._price916 || 0);
+
+  if (row?.live_price_rm != null) return Number(row.live_price_rm || 0);
+  if (row?.price_rm != null) return Number(row.price_rm || 0);
+
+  return calcLivePrice(h916, weight, upah);
+}
+
+function getRowImage(row){
+  const candidates = [
+    row?._img_from_items,
+    row?._img1_from_items,
+    row?.img1,
+    row?.product_img1,
+    row?.design_img1,
+    row?.design_img1_url,
+    row?.image_url,
+    row?.img_url,
+    row?.image1,
+    row?.photo_url,
+    row?.img
+  ];
+
+  const img = candidates.find(u => u && String(u).trim().length > 5);
+  return img || ("https://placehold.co/300x300?text=" + encodeURIComponent(row?.code || "916"));
+}
+
+const AI_BUFFER_MS = 2 * 60 * 1000;
+
+function normalizeAiText(text){
+  return String(text || "")
+    .toLowerCase()
+    .replace(/\bsaiz\b/g, "size")
+    .replace(/\bsz\b/g, "size")
+    .replace(/\bpjg\b/g, "panjang")
+    .replace(/\bpnjg\b/g, "panjang")
+    .replace(/\bpanjng\b/g, "panjang")
+    .replace(/\bpajang\b/g, "panjang")
+    .replace(/\bpaksu\b/g, "")
+    .replace(/\bpak su\b/g, "")
+    .replace(/\bada\b/g, "")
+    .replace(/\bade\b/g, "")
+    .replace(/\bnak\b/g, "")
+    .replace(/\bluv\b/g, "love")
+    .replace(/\bjuntai\b/g, "gantung")
+    .replace(/\bgantong\b/g, "gantung")
+    .replace(/\bboba\b/g, "bead charm boba")
+    .replace(/\blipan\b/g, "lipan")
+    .replace(/\bgila2\b/g, "gila gila")
+    .replace(/\bgila-gila\b/g, "gila gila")
+    .replace(/\bhollow\b/g, "holow")
+    .replace(/\bholo\b/g, "holow")
+    .replace(/\bhollo\b/g, "holow")
+    .replace(/\bsawah\b/g, "sauh")
+    .replace(/\bsauf\b/g, "sauh")
+    .replace(/\bsauah\b/g, "sauh")
+    .replace(/\bsun flower\b/g, "sunflower")
+    .replace(/\bstemping\b/g, "stamping")
+    .replace(/\s+/g, " ")
+    .trim();
+}
+
+function getAiCustomerKey(row){
+  const phone4 = String(row?.phone4 || "").trim();
+  const name = String(row?.name || "").trim().toLowerCase();
+
+  if (phone4) return phone4;
+  if (name) return name;
+
+  return "unknown";
+}
+
+function detectAiProductKeyword(t){
+  const productWords = [
+    "gila gila",
+    "koko",
+    "mesin",
+    "love",
+    "gantung",
+    "lipan",
+    "sauh",
+    "sunflower",
+    "baison",
+    "holow",
+    "naruto",
+    "hibiscus",
+    "twin",
+    "stamping",
+    "engraving",
+    "butterfly",
+    "flower",
+    "boba",
+    "bead",
+    "charm",
+    "tulis nama",
+    "coco",
+    "padu"
+  ];
+
+  for (const w of productWords){
+    if (t.includes(w)) return w;
+  }
+
+  return "";
+}
+
+function findBestProductKeywordFromStock(t){
+  const stop = new Set([
+    "rantai","tangan","leher","cincin","subang","loket",
+    "bajet","budget","stamping","engrave","engraving","barang","emas",
+    "ada","nak","size","panjang","cm","rm","bawah","under"
+  ]);
+
+  let best = "";
+
+  (ALL_STOCK || []).forEach(row => {
+    const name = normalizeAiText(row?.name || row?.product_name || row?.design_name || "");
+    name.split(" ").forEach(w => {
+      if (w.length < 4) return;
+      if (stop.has(w)) return;
+      if (t.includes(w) && w.length > best.length) best = w;
+    });
+  });
+
+  return best;
+}
+
+function isAiIntentReady(intent){
+  if (!intent) return false;
+
+  const adaKategori = !!intent.cat;
+  const adaSaiz = !!intent.target;
+  const adaBajet = !!intent.budget;
+  const adaNamaBarang = !!intent.keyword;
+
+  return adaKategori && (adaSaiz || adaBajet || adaNamaBarang);
+}
+
+function detectIntentFromComment(text, row){
+  const raw = String(text || "").trim();
+  const t = normalizeAiText(raw);
+
+  if (!raw) return null;
+
+  let cat = "";
+  let catLabel = "";
+  let keyword = "";
+
+  const rules = [
+    { cat:"CC", label:"Cincin", words:["cincin","ring","cc"] },
+    { cat:"RT", label:"Rantai Tangan", words:["rantai tangan","gelang","bracelet","rt"] },
+    { cat:"RL", label:"Rantai Leher", words:["rantai leher","leher","necklace","rl"] },
+    { cat:"RK", label:"Rantai Kaki", words:["rantai kaki","anklet","rk"] },
+    { cat:"LK", label:"Loket", words:["loket","pendant","lk"] },
+    { cat:"SB", label:"Subang", words:["subang","earring","sb"] },
+    { cat:"BC", label:"Bead/Charm", words:["bead","charm","bc","boba"] }
+  ];
+
+  for (const r of rules){
+    const hit = r.words.find(w => t.includes(w));
+    if (hit){
+      cat = r.cat;
+      catLabel = r.label;
+      break;
+    }
+  }
+
+  keyword = findBestProductKeywordFromStock(t) || detectAiProductKeyword(t);
+
+  if (!cat && keyword){
+    if (["gila gila","koko","mesin","love","gantung","sauh","sunflower","baison","holow"].includes(keyword)){
+      cat = "RT";
+      catLabel = "Rantai Tangan";
+    }
+
+    if (["lipan"].includes(keyword)){
+      cat = "CC";
+      catLabel = "Cincin";
+    }
+
+    if (["boba","bead","charm"].includes(keyword)){
+      cat = "BC";
+      catLabel = "Bead/Charm";
+    }
+  }
+
+  let target = 0;
+
+  const sizeMatch =
+    t.match(/\bsize\s*[:\-]?\s*(\d{1,2}(?:\.\d+)?)/i) ||
+    t.match(/\bpanjang\s*[:\-]?\s*(\d{1,2}(?:\.\d+)?)/i) ||
+    t.match(/\b(\d{1,2}(?:\.\d+)?)\s*(?:cm|inci)\b/i);
+
+  if (sizeMatch){
+    target = Number(sizeMatch[1] || 0);
+  }
+
+  let budget = 0;
+  let budgetMode = "";
+
+  const budgetMatch =
+    t.match(/\brm\s*([0-9]{2,6})/i) ||
+    t.match(/\bbajet\s*([0-9]{2,6})/i) ||
+    t.match(/\bbudget\s*([0-9]{2,6})/i) ||
+    t.match(/\bbawah\s*([0-9]{2,6})/i) ||
+    t.match(/\bunder\s*([0-9]{2,6})/i);
+
+  if (budgetMatch){
+    budget = Number(budgetMatch[1] || 0);
+    budgetMode = /\b(bawah|under)\b/i.test(t) ? "MAX" : "RANGE";
+  }
+
+  const hasProductWord =
+    cat || keyword || target || budget ||
+    /\b(panjang|size|bajet|budget|rm|holow|lipan|love|gantung|koko|mesin|gila|sauh|sunflower|baison)\b/i.test(t);
+
+  if (!hasProductWord) return null;
+
+  const customerKey = getAiCustomerKey(row || {});
+  const old = AI_CUSTOMER_CONTEXT[customerKey] || {};
+
+  const merged = {
+    raw,
+    clean:t,
+    cat: cat || old.cat || "",
+    catLabel: catLabel || old.catLabel || "",
+    keyword: keyword || old.keyword || "",
+    target: target || old.target || 0,
+    budget: budget || old.budget || 0,
+    budgetMode: budgetMode || old.budgetMode || "",
+    updated_at: Date.now()
+  };
+
+  if (merged.target){
+    if (merged.cat === "CC"){
+      merged.min = merged.target;
+      merged.max = merged.target + 1;
+    }else if (merged.cat === "RT" || merged.cat === "RK"){
+      merged.min = Math.max(0, merged.target - 0.5);
+      merged.max = merged.target + 1.5;
+    }else if (merged.cat === "RL"){
+      merged.min = Math.max(0, merged.target - 1);
+      merged.max = merged.target + 2;
+    }else{
+      merged.min = Math.max(0, merged.target - 1);
+      merged.max = merged.target + 1;
+    }
+  }else{
+    merged.min = 0;
+    merged.max = 0;
+  }
+
+  if (merged.budget){
+    if (merged.budgetMode === "MAX"){
+      merged.budgetMin = 0;
+      merged.budgetMax = merged.budget;
+    }else{
+      merged.budgetMin = Math.max(0, merged.budget - 300);
+      merged.budgetMax = merged.budget + 300;
+    }
+  }else{
+    merged.budgetMin = 0;
+    merged.budgetMax = 0;
+  }
+
+  AI_CUSTOMER_CONTEXT[customerKey] = merged;
+
+  return merged;
+}</script>
+<script>
+async function loadPrice916(){
+  try{
+    const { data, error } = await sb.rpc("price_916_current_v1");
+    if (error) throw error;
+
+    const row = Array.isArray(data) ? data[0] : data;
+    window._price916 = Number(row?.price_per_g || 0);
+  }catch(e){
+    console.warn("loadPrice916 error:", e);
+    window._price916 = 0;
+  }
+}
+
+async function loadYoutubeConfig(){
+  try{
+    const { data, error } = await sb
+      .from("live_config")
+      .select("youtube_video_id, show_home_live")
+      .eq("id", 1)
+      .maybeSingle();
+
+    if (error) throw error;
+
+    const videoId = String(data?.youtube_video_id || "ekRtZMEz9fM").trim();
+    const showHome = data?.show_home_live === true;
+
+    $("ytVideoIdInput").value = videoId;
+    $("showHomeLiveInput").checked = showHome;
+
+    setYoutubeFrame(videoId);
+  }catch(e){
+    console.warn("loadYoutubeConfig error:", e);
+    setYoutubeFrame("ekRtZMEz9fM");
+  }
+}
+
+function setYoutubeFrame(videoId){
+  const frame = $("ytLiveFrame");
+  if (!frame) return;
+
+  const vid = String(videoId || "ekRtZMEz9fM").trim();
+
+  frame.src =
+    "https://www.youtube.com/embed/" +
+    encodeURIComponent(vid) +
+    "?playsinline=1&rel=0&modestbranding=1&origin=https://emasamir.app";
+}
+
+async function saveYoutubeConfig(){
+  const videoId = String($("ytVideoIdInput")?.value || "").trim();
+  const showHomeLive = $("showHomeLiveInput")?.checked === true;
+
+  if (!videoId && showHomeLive){
+    alert("Sila masukkan Video ID YouTube dahulu.");
+    return;
+  }
+
+  try{
+    const { error } = await sb
+      .from("live_config")
+      .upsert({
+        id: 1,
+        youtube_video_id: videoId,
+        show_home_live: showHomeLive
+      });
+
+    if (error) throw error;
+
+    setYoutubeFrame(videoId || "ekRtZMEz9fM");
+    alert("Setting YouTube Live disimpan.");
+  }catch(e){
+    alert("Gagal simpan YouTube Live: " + (e?.message || e));
+  }
+}
+
+async function loadStock(){
+  const q = String($("stockQ")?.value || "").trim();
+  const stockStatus = $("stockStatus");
+
+  if (stockStatus) stockStatus.textContent = "Memuatkan stok…";
+
+  try{
+    const { data, error } = await sb.rpc("j916_admin_items_list_v1", {
+      p_query: q || null
+    });
+
+    if (error) throw error;
+
+    ALL_STOCK = Array.isArray(data) ? data : [];
+
+    await attachItemMedia(ALL_STOCK);
+
+    applyStockFilters();
+
+    if (stockStatus){
+      stockStatus.textContent = `${ALL_STOCK.length} item dimuatkan`;
+    }
+  }catch(e){
+    console.warn("loadStock error:", e);
+    ALL_STOCK = [];
+    applyStockFilters();
+
+    if (stockStatus){
+      stockStatus.textContent = "Ralat muat stok.";
+    }
+  }
+}
+
+async function attachItemMedia(rows){
+  try{
+    const codes = (rows || [])
+      .map(r => String(r?.code || "").toUpperCase().trim())
+      .filter(Boolean);
+
+    if (!codes.length) return;
+
+    const { data, error } = await sb
+      .from("j916_items")
+      .select(`
+        code,
+        design:j916_designs (
+          img1_url,
+          img2_url,
+          img3_url,
+          img1,
+          img2,
+          img3,
+          video_url
+        )
+      `)
+      .in("code", codes);
+
+    if (error) return;
+
+    const mediaMap = new Map();
+
+    (data || []).forEach(r => {
+      const code = String(r?.code || "").toUpperCase().trim();
+      const d = r?.design || {};
+
+      mediaMap.set(code, {
+        img1: d?.img1_url || d?.img1 || "",
+        img2: d?.img2_url || d?.img2 || "",
+        img3: d?.img3_url || d?.img3 || "",
+        video: d?.video_url || ""
+      });
+    });
+
+    rows.forEach(r => {
+      const code = String(r?.code || "").toUpperCase().trim();
+      const m = mediaMap.get(code);
+
+      if (m?.img1) r._img1_from_items = m.img1;
+      if (m?.img2) r._img2_from_items = m.img2;
+      if (m?.img3) r._img3_from_items = m.img3;
+      if (m?.img1) r._img_from_items = m.img1;
+      if (m?.video) r._video_from_items = m.video;
+    });
+  }catch(e){
+    console.warn("attachItemMedia error:", e);
+  }
+}
+
+function applyStockFilters(){
+  const term = String($("stockQ")?.value || "").trim().toLowerCase();
+  const status = String($("filterStatus")?.value || "AVAILABLE");
+  const min = Number($("filterMin")?.value || 0);
+  const max = Number($("filterMax")?.value || 0);
+  const budget = Number($("filterBudget")?.value || 0);
+
+  FILTERED_STOCK = ALL_STOCK.filter(row => {
+    const code = String(row?.code || "").toLowerCase();
+    const name = String(row?.name || row?.product_name || row?.design_name || "").toLowerCase();
+    const cat = getRowCat(row);
+    const sizeVal = rowSizeValue(row);
+    const price = getRowPrice(row);
+
+
+
+    if (status !== "ALL" && String(row?.status || "") !== status) return false;
+    if (currentCat && cat !== currentCat) return false;
+
+    if (term){
+      const hay = `${code} ${name} ${cat}`.toLowerCase();
+      if (!hay.includes(term)) return false;
+    }
+
+    if (min && sizeVal < min) return false;
+    if (max && sizeVal > max) return false;
+    if (budget && price > budget) return false;
+
+    return true;
+  });
+
+  renderStockList();
+}
+
+function renderStockList(){
+  const list = $("stockList");
+  if (!list) return;
+
+  if (!FILTERED_STOCK.length){
+    list.innerHTML = `<div class="empty-box">Tiada stok ikut tapisan.</div>`;
+    return;
+  }
+
+  list.innerHTML = FILTERED_STOCK.slice(0, 120).map(row => stockCardHTML(row)).join("");
+
+  list.querySelectorAll("[data-stock-id]").forEach(card => {
+    card.addEventListener("click", () => {
+      const id = card.getAttribute("data-stock-id");
+      const row = ALL_STOCK.find(x => String(x.id) === String(id));
+      if (row) openLiveAction(row);
+    });
+  });
+}
+
+function stockCardHTML(row){
+  const id = String(row?.id || "");
+  const code = String(row?.code || "").toUpperCase();
+  const name = row?.name || row?.product_name || row?.design_name || "-";
+  const status = String(row?.status || "");
+  const img = getRowImage(row);
+  const price = getRowPrice(row);
+  const spec = rowDimText(row);
+  const cat = getRowCat(row);
+
+  const suggested = isRowSuggested(row) ? " suggested" : "";
+  const liveSelected = LIVE_MAP[id] ? " live-selected" : "";
+
+  return `
+    <div class="stock-card${suggested}${liveSelected}" data-stock-id="${escapeHtml(id)}">
+      <div class="d-flex gap-2">
+        <img class="stock-img" src="${escapeHtml(img)}" alt="${escapeHtml(code)}"
+          onerror="if(!this.dataset.f){this.dataset.f=1;this.src='https://placehold.co/300x300?text=${encodeURIComponent(code)}'}">
+
+        <div class="flex-grow-1" style="min-width:0;">
+          <div class="d-flex justify-content-between gap-2">
+            <div>
+              <div class="stock-code">${escapeHtml(code)}</div>
+              <div class="stock-name">${escapeHtml(name)}</div>
+            </div>
+            <span class="status-pill status-${escapeHtml(status)}">${escapeHtml(status || "-")}</span>
+          </div>
+
+          <div class="stock-spec">${escapeHtml(spec || cat)}</div>
+
+          <div class="d-flex justify-content-between align-items-end mt-2">
+            <div class="stock-price">${money(price)}</div>
+            <div class="small text-muted">Klik untuk live</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  `;
+}
+
+function isRowSuggested(row){
+  if (!lastAiIntent) return false;
+
+  const cat = getRowCat(row);
+  const sizeVal = rowSizeValue(row);
+  const price = getRowPrice(row);
+
+  if (lastAiIntent.cat && cat !== lastAiIntent.cat) return false;
+
+  if (lastAiIntent.min && sizeVal < lastAiIntent.min) return false;
+  if (lastAiIntent.max && sizeVal > lastAiIntent.max) return false;
+
+  if (lastAiIntent.budget && price > lastAiIntent.budget) return false;
+
+  return true;
+}
+
+function runAiSuggestion(intent){
+  lastAiIntent = intent;
+
+  const aiBox = $("aiCurrentBox");
+
+  if (!intent){
+    if (aiBox){
+      aiBox.innerHTML = `
+        <div class="ai-title">🤖 AI Cadangan</div>
+        <div class="ai-detail">
+          Menunggu komen seperti <b>“nak cincin size 12”</b> atau <b>“nak rantai tangan 17”</b>.
+        </div>
+      `;
+    }
+
+    renderSuggestionStrip([]);
+    renderStockList();
+    return;
+  }
+
+  const matches = ALL_STOCK
+    .filter(row => {
+      if (String(row?.status || "") !== "AVAILABLE") return false;
+
+     const cat = getRowCat(row);
+const sizeVal = rowSizeValue(row);
+const price = getRowPrice(row);
+
+const nameHay = [
+  row?.code || "",
+  row?.name || "",
+  row?.product_name || "",
+  row?.design_name || ""
+].join(" ").toLowerCase();
+
+if (intent.cat && cat !== intent.cat) return false;
+
+if (intent.keyword){
+  const cleanWords = String(intent.clean || "")
+    .split(" ")
+    .filter(w => w.length >= 3 && !["panjang","size","bajet","budget","ada"].includes(w));
+
+  const keywordOk =
+    nameHay.includes(intent.keyword) ||
+    cleanWords.some(w => nameHay.includes(w));
+
+  if (!keywordOk) return false;
+}
+
+      if (intent.min && sizeVal < intent.min) return false;
+      if (intent.max && sizeVal > intent.max) return false;
+
+      if (intent.budgetMin && price < intent.budgetMin) return false;
+if (intent.budgetMax && price > intent.budgetMax) return false;
+
+      return true;
+    })
+    .sort((a,b) => {
+      const av = rowSizeValue(a);
+      const bv = rowSizeValue(b);
+      const target = Number(intent.target || 0);
+
+      if (target){
+        const da = Math.abs(av - target);
+        const db = Math.abs(bv - target);
+        if (da !== db) return da - db;
+      }
+
+      return getRowPrice(a) - getRowPrice(b);
+    })
+    .slice(0, 12);
+
+  if (aiBox){
+    const rangeText = intent.min || intent.max
+      ? `${intent.min || "-"} - ${intent.max || "-"}`
+      : "-";
+
+    aiBox.innerHTML = `
+      <div class="ai-title">🤖 AI detect: ${escapeHtml(intent.catLabel || "Permintaan")}</div>
+      <div class="ai-detail">
+        Komen: <b>${escapeHtml(intent.raw)}</b><br>
+        Cadangan: <b>${escapeHtml(intent.cat || "ALL")}</b>
+        ${intent.target ? ` • target ${escapeHtml(intent.target)}` : ""}
+        ${rangeText !== "-" ? ` • range ${escapeHtml(rangeText)}` : ""}
+        ${intent.budget ? ` • bajet bawah RM ${escapeHtml(intent.budget)}` : ""}
+        <br>
+        Jumpa <b>${matches.length}</b> item sesuai.
+      </div>
+    `;
+  }
+
+  renderSuggestionStrip(matches);
+  renderStockList();
+}
+
+function addAiQueue(row, intent){
+  if (!intent) return;
+
+  const customerKey = getAiCustomerKey(row || {});
+  const id = "ai_" + customerKey;
+
+  const existingIndex = AI_QUEUE.findIndex(x => x.id === id);
+
+  const nextItem = {
+    id,
+    row,
+    intent,
+    name: shortName(row.name || "Tetamu"),
+    phone4: String(row.phone4 || ""),
+    time: row.created_at || new Date().toISOString()
+  };
+
+  if (existingIndex >= 0){
+    AI_QUEUE.splice(existingIndex, 1);
+  }
+
+  AI_QUEUE.unshift(nextItem);
+
+  // Papar 2 permintaan terbaru sahaja supaya dashboard tak jem
+  AI_QUEUE = AI_QUEUE.slice(0, 2);
+
+  ACTIVE_AI_QUEUE_ID = id;
+
+  renderAiQueue();
+  runAiSuggestion(intent);
+}
+function renderAiQueue(){
+  const box = $("aiQueueBox");
+  if (!box) return;
+
+  if (!AI_QUEUE.length){
+    box.innerHTML = "";
+    return;
+  }
+
+  box.innerHTML = AI_QUEUE.slice(0, 2).map(q => {
+    const active = q.id === ACTIVE_AI_QUEUE_ID ? " active" : "";
+    const label = q.intent.catLabel || q.intent.cat || "Permintaan";
+    const range = q.intent.min || q.intent.max
+      ? `${q.intent.min || "-"} - ${q.intent.max || "-"}`
+      : "";
+
+    return `
+      <div class="ai-queue-card${active}" data-aiq="${escapeHtml(q.id)}">
+        <div class="d-flex justify-content-between gap-2">
+          <div class="ai-queue-name">${escapeHtml(q.name)}${q.phone4 ? " (" + escapeHtml(q.phone4) + ")" : ""}</div>
+          <button type="button"
+                  class="btn btn-sm btn-outline-danger py-0 px-2"
+                  data-aiq-del="${escapeHtml(q.id)}">
+            ×
+          </button>
+        </div>
+
+        <div class="ai-queue-text">${escapeHtml(label)} ${q.intent.target ? " " + escapeHtml(q.intent.target) : ""}</div>
+        <div class="ai-queue-small">${range ? "Range " + escapeHtml(range) + " • " : ""}${escapeHtml(q.intent.raw)}</div>
+      </div>
+    `;
+  }).join("");
+
+  box.querySelectorAll("[data-aiq]").forEach(card => {
+    card.addEventListener("click", ev => {
+      if (ev.target.closest("[data-aiq-del]")) return;
+
+      const id = card.getAttribute("data-aiq");
+      const q = AI_QUEUE.find(x => x.id === id);
+      if (!q) return;
+
+      ACTIVE_AI_QUEUE_ID = id;
+      renderAiQueue();
+      runAiSuggestion(q.intent);
+    });
+  });
+
+  box.querySelectorAll("[data-aiq-del]").forEach(btn => {
+    btn.addEventListener("click", ev => {
+      ev.stopPropagation();
+
+      const id = btn.getAttribute("data-aiq-del");
+      AI_QUEUE = AI_QUEUE.filter(x => x.id !== id);
+
+      if (ACTIVE_AI_QUEUE_ID === id){
+        ACTIVE_AI_QUEUE_ID = AI_QUEUE[0]?.id || "";
+        if (AI_QUEUE[0]) runAiSuggestion(AI_QUEUE[0].intent);
+        else runAiSuggestion(null);
+      }
+
+      renderAiQueue();
+    });
+  });
+}
+
+function renderSuggestionStrip(rows){
+  const strip = $("suggestionStrip");
+  if (!strip) return;
+
+  if (!rows || !rows.length){
+    strip.innerHTML = "";
+    return;
+  }
+
+  strip.innerHTML = rows.slice(0, 8).map(row => {
+    const code = String(row?.code || "").toUpperCase();
+    const name = row?.name || row?.product_name || row?.design_name || "-";
+    const price = getRowPrice(row);
+    const sizeVal = rowSizeValue(row);
+
+    return `
+      <button type="button"
+              class="suggestion-mini text-start"
+              data-suggest-id="${escapeHtml(row.id)}">
+        <div class="suggestion-mini-code">${escapeHtml(code)}</div>
+        <div class="suggestion-mini-name">${escapeHtml(name)}</div>
+        <div class="small">${escapeHtml(rowDimText(row) || "-")}</div>
+        <div class="fw-bold text-danger">${money(price)}</div>
+        <div class="small text-muted">Size/cm: ${escapeHtml(sizeVal || "-")}</div>
+      </button>
+    `;
+  }).join("");
+
+  strip.querySelectorAll("[data-suggest-id]").forEach(btn => {
+    btn.addEventListener("click", () => {
+      const id = btn.getAttribute("data-suggest-id");
+      const row = ALL_STOCK.find(x => String(x.id) === String(id));
+      if (row) openLiveAction(row);
+    });
+  });
+}
+function renderChatMessage(row, markAi){
+  const list = $("chatListBig");
+  if (!list || !row) return;
+
+  const id = String(row.id || `${row.created_at}_${row.message}`);
+  if (shownChatIds.has(id)) return;
+  shownChatIds.add(id);
+
+  const name = shortName(row.name || "Tetamu");
+  const phone4 = String(row.phone4 || "").trim();
+  const head = phone4 ? `${name} (${phone4})` : name;
+  const time = fmtTime(row.created_at);
+  const msg = String(row.message || "");
+
+  const div = document.createElement("div");
+  div.className = "chat-msg" + (markAi ? " ai-hit" : "");
+  div.innerHTML = `
+    <div class="d-flex justify-content-between gap-2">
+      <div class="chat-name">${escapeHtml(head)}</div>
+      <div class="chat-time">${escapeHtml(time)}</div>
+    </div>
+    <div class="chat-text">${escapeHtml(msg)}</div>
+  `;
+
+  list.appendChild(div);
+
+  while (list.children.length > 200){
+    list.removeChild(list.firstChild);
+  }
+
+  list.scrollTop = list.scrollHeight;
+}
+
+async function loadChatInitial(){
+  try{
+    const since = new Date(Date.now() - 60 * 60 * 1000).toISOString();
+
+    const { data, error } = await sb
+      .from("live_chat_messages")
+      .select("*")
+      .eq("room", CHAT_ROOM)
+      .gte("created_at", since)
+      .order("created_at", { ascending:true })
+      .limit(200);
+
+    if (error) throw error;
+
+    $("chatListBig").innerHTML = "";
+    shownChatIds.clear();
+
+    (data || []).forEach(row => {
+      const intent = detectIntentFromComment(row.message, row);
+      renderChatMessage(row, !!intent);
+    });
+
+    updateCommentStats(data || []);
+  }catch(e){
+    console.warn("loadChatInitial error:", e);
+  }
+}
+
+function updateCommentStats(rows){
+  const sinceMs = Date.now() - 5 * 60 * 1000;
+
+  chatRows5Min = (rows || []).filter(r => {
+    const t = new Date(r.created_at).getTime();
+    return t && t >= sinceMs;
+  });
+
+  const unique = new Set();
+
+  chatRows5Min.forEach(r => {
+    const key =
+      String(r.phone4 || "").trim() ||
+      String(r.name || "").trim().toLowerCase();
+
+    if (key) unique.add(key);
+  });
+
+  if ($("statComment5")) $("statComment5").textContent = unique.size;
+}
+
+function connectSocket(){
+  try{
+    liveSocket = io(SOCKET_URL, {
+      transports:["websocket","polling"]
+    });
+
+    liveSocket.on("connect", () => {
+      $("chatStatus").textContent = "Socket live aktif.";
+      liveSocket.emit("join_live");
+    });
+
+    liveSocket.on("disconnect", () => {
+      $("chatStatus").textContent = "Socket terputus. Menyambung semula…";
+    });
+
+    liveSocket.on("live_comment_new", row => {
+  renderChatMessage(row, false);
+
+  const customerKey = getAiCustomerKey(row || {});
+  const nowMs = Date.now();
+
+  if (!AI_LAST2_BY_USER[customerKey]){
+    AI_LAST2_BY_USER[customerKey] = [];
+  }
+
+  AI_LAST2_BY_USER[customerKey] = AI_LAST2_BY_USER[customerKey]
+    .filter(x => (nowMs - Number(x._ai_ms || 0)) <= AI_BUFFER_MS);
+
+  AI_LAST2_BY_USER[customerKey].push({
+    ...row,
+    _ai_ms: nowMs
+  });
+
+  AI_LAST2_BY_USER[customerKey] = AI_LAST2_BY_USER[customerKey].slice(-2);
+
+  const combinedText = AI_LAST2_BY_USER[customerKey]
+    .map(x => x.message || "")
+    .join(" ");
+
+  const intent = detectIntentFromComment(combinedText, row);
+
+  if (isAiIntentReady(intent)){
+    AI_LAST2_BY_USER[customerKey] = [];
+    AI_CUSTOMER_CONTEXT[customerKey] = {};
+    addAiQueue(row, intent);
+  }else{
+    runAiSuggestion(null);
+  }
+
+  chatRows5Min.push(row);
+  updateCommentStats(chatRows5Min);
+});
+
+    liveSocket.on("live_comment_error", err => {
+      console.warn("live_comment_error:", err);
+    });
+  }catch(e){
+    console.warn("connectSocket error:", e);
+    $("chatStatus").textContent = "Socket gagal sambung.";
+  }
+}
+</script>
+<script>
+function openLiveAction(row){
+  LIVE_SELECTED_ROW = row;
+
+  const modalEl = $("liveActionModal");
+  const modalItem = $("modalLiveItem");
+
+  const code = String(row?.code || "").toUpperCase();
+  const name = row?.name || row?.product_name || row?.design_name || "-";
+  const img = getRowImage(row);
+  const weight = Number(row?.weight_g || 0);
+  const upah = getRowUpah(row);
+  const h916 = Number(window._price916 || 0);
+  const spec = rowDimText(row);
+
+  $("modalHarga916").value = h916 ? h916.toFixed(2) : "";
+  $("modalUpah").value = upah ? upah.toFixed(2) : "0.00";
+
+  modalItem.innerHTML = `
+    <img src="${escapeHtml(img)}" alt="${escapeHtml(code)}"
+      onerror="if(!this.dataset.f){this.dataset.f=1;this.src='https://placehold.co/300x300?text=${encodeURIComponent(code)}'}">
+
+    <div style="min-width:0;flex:1;">
+      <div class="mono fw-bold">${escapeHtml(code)}</div>
+      <div class="fw-bold">${escapeHtml(name)}</div>
+      <div class="small text-muted">${escapeHtml(spec || (weight.toFixed(2) + "g"))}</div>
+      <div class="small text-muted">Status: ${escapeHtml(row?.status || "-")}</div>
+    </div>
+  `;
+
+  $("modalMsg").textContent = "";
+  renderModalPrice();
+
+  bootstrap.Modal.getOrCreateInstance(modalEl).show();
+}
+
+function renderModalPrice(){
+  const row = LIVE_SELECTED_ROW;
+  if (!row) return;
+
+  const h916 = Number($("modalHarga916")?.value || 0);
+  const upah = Number($("modalUpah")?.value || 0);
+  const weight = Number(row?.weight_g || 0);
+  const liveRM = calcLivePrice(h916, weight, upah);
+
+  $("modalLivePrice").textContent = money(liveRM);
+}
+
+async function setLiveSpotlight(itemId, active){
+  const seconds = 300;
+  window._LIVE_SECONDS = seconds;
+
+  const { error } = await sb.rpc("j916_live_spotlight_set_v1", {
+    p_item_id: itemId,
+    p_active: active,
+    p_seconds: seconds
+  });
+
+  if (error) throw error;
+}
+
+async function setLiveOverride(itemId, h916, upah){
+  const minutes = Math.ceil((window._LIVE_SECONDS || 300) / 60);
+
+  const { error } = await sb.rpc("j916_live_price_override_set_v1", {
+    p_item_id: itemId,
+    p_price_per_g: h916,
+    p_upah_rm: upah,
+    p_minutes: minutes
+  });
+
+  if (error) throw error;
+}
+
+async function clearLiveOverride(itemId){
+  try{
+    await sb.rpc("j916_live_override_clear_v1", {
+      p_item_id:itemId
+    });
+  }catch(e){
+    await sb.rpc("j916_live_price_override_set_v1", {
+      p_item_id:itemId,
+      p_price_per_g:null,
+      p_upah_rm:null,
+      p_minutes:0
+    });
+  }
+}
+
+async function liveOnSelected(){
+  const row = LIVE_SELECTED_ROW;
+  if (!row) return;
+
+  const btn = $("btnModalLiveOn");
+  const msg = $("modalMsg");
+
+  const id = String(row.id || "");
+  const h916 = Number($("modalHarga916")?.value || 0);
+  const upah = Number($("modalUpah")?.value || 0);
+
+  if (!id){
+    alert("Item tidak sah.");
+    return;
+  }
+
+  if (!h916){
+    alert("Harga/g Live tidak sah.");
+    return;
+  }
+
+  btn.disabled = true;
+  msg.textContent = "Sedang live kan item…";
+
+  try{
+    await setLiveSpotlight(id, true);
+    await setLiveOverride(id, h916, upah);
+
+    LIVE_MAP[id] = {
+      id,
+      code: row.code,
+      name: row.name || row.product_name || row.design_name || row.code,
+      weight_g: Number(row.weight_g || 0),
+      harga916: h916,
+      upah,
+      base_upah: getRowUpah(row),
+      row
+    };
+
+    renderLiveSmallList();
+    renderActiveLiveBox();
+    renderStockList();
+
+    msg.textContent = "Berjaya live kan item ✅";
+    setTimeout(() => {
+      bootstrap.Modal.getOrCreateInstance($("liveActionModal")).hide();
+    }, 350);
+  }catch(e){
+    msg.textContent = "❌ " + (e?.message || e);
+  }finally{
+    btn.disabled = false;
+  }
+}
+
+async function liveOff(id){
+  id = String(id || "");
+
+  if (!id) return;
+
+  if (!confirm("Live Off item ini?")) return;
+
+  try{
+    await setLiveSpotlight(id, false);
+    await clearLiveOverride(id);
+
+    if (LIVE_MAP[id]) delete LIVE_MAP[id];
+
+    renderLiveSmallList();
+    renderActiveLiveBox();
+    renderStockList();
+
+    await loadStock();
+  }catch(e){
+    alert("Ralat Live Off: " + (e?.message || e));
+  }
+}
+
+function renderLiveSmallList(){
+  const wrap = $("liveSmallList");
+  if (!wrap) return;
+
+  const rows = Object.values(LIVE_MAP);
+
+  if ($("statLiveCount")) $("statLiveCount").textContent = rows.length;
+
+  if (!rows.length){
+    wrap.innerHTML = `<div class="small text-muted">Belum ada item live.</div>`;
+    return;
+  }
+
+  wrap.innerHTML = rows.map(L => {
+    const liveRM = calcLivePrice(L.harga916, L.weight_g, L.upah);
+
+    return `
+      <div class="live-small-card">
+        <div class="d-flex justify-content-between gap-2">
+          <div style="min-width:0;flex:1;">
+            <div class="live-small-code">${escapeHtml(L.code)}</div>
+            <div class="small text-muted">${escapeHtml(L.name || "-")} • ${Number(L.weight_g || 0).toFixed(2)}g</div>
+
+            <div class="row g-1 mt-2">
+              <div class="col-6">
+                <label class="small text-muted">Harga/g</label>
+                <input class="form-control form-control-sm"
+                       type="number"
+                       step="0.01"
+                       value="${Number(L.harga916 || 0).toFixed(2)}"
+                       data-live-edit-h="${escapeHtml(L.id)}">
+              </div>
+
+              <div class="col-6">
+                <label class="small text-muted">Upah</label>
+                <input class="form-control form-control-sm"
+                       type="number"
+                       step="0.01"
+                       value="${Number(L.upah || 0).toFixed(2)}"
+                       data-live-edit-u="${escapeHtml(L.id)}">
+              </div>
+            </div>
+
+            <div class="fw-bold text-danger mt-2" id="livePrice_${escapeHtml(L.id)}">
+              ${money(liveRM)}
+            </div>
+
+            <div class="d-flex gap-2 mt-2">
+  <button class="btn btn-sm btn-primary rounded-pill flex-fill"
+          type="button"
+          data-live-save-price="${escapeHtml(L.id)}">
+    Simpan Harga Live
+  </button>
+
+  <button class="btn btn-sm btn-outline-danger rounded-pill"
+          type="button"
+          data-live-off-small="${escapeHtml(L.id)}">
+    Off
+  </button>
+</div>
+          </div>
+
+                 </div>
+      </div>
+    `;
+  }).join("");
+
+  wrap.querySelectorAll("[data-live-edit-h], [data-live-edit-u]").forEach(inp => {
+    inp.addEventListener("input", () => {
+      const id = inp.getAttribute("data-live-edit-h") || inp.getAttribute("data-live-edit-u");
+      updateLiveSmallPreview(id);
+    });
+  });
+
+  wrap.querySelectorAll("[data-live-save-price]").forEach(btn => {
+    btn.addEventListener("click", () => {
+      saveLiveSmallPrice(btn.getAttribute("data-live-save-price"));
+    });
+  });
+
+  wrap.querySelectorAll("[data-live-off-small]").forEach(btn => {
+    btn.addEventListener("click", () => {
+      liveOff(btn.getAttribute("data-live-off-small"));
+    });
+  });
+}
+
+function updateLiveSmallPreview(id){
+  id = String(id || "");
+  const L = LIVE_MAP[id];
+  if (!L) return;
+
+  const h = Number(document.querySelector(`[data-live-edit-h="${id}"]`)?.value || 0);
+  const u = Number(document.querySelector(`[data-live-edit-u="${id}"]`)?.value || 0);
+
+  const price = calcLivePrice(h, L.weight_g, u);
+  const el = document.getElementById("livePrice_" + id);
+
+  if (el) el.textContent = money(price);
+}
+
+async function saveLiveSmallPrice(id){
+  id = String(id || "");
+  const L = LIVE_MAP[id];
+  if (!L) return;
+
+  const h = Number(document.querySelector(`[data-live-edit-h="${id}"]`)?.value || 0);
+  const u = Number(document.querySelector(`[data-live-edit-u="${id}"]`)?.value || 0);
+
+  if (!h){
+    alert("Harga/g tidak sah.");
+    return;
+  }
+
+  try{
+    await setLiveOverride(id, h, u);
+
+    LIVE_MAP[id].harga916 = h;
+    LIVE_MAP[id].upah = u;
+
+    renderLiveSmallList();
+    renderActiveLiveBox();
+    renderStockList();
+
+    alert("Harga live dikemaskini ✅");
+  }catch(e){
+    alert("Ralat simpan harga live: " + (e?.message || e));
+  }
+}
+function renderActiveLiveBox(){
+  const box = $("activeLiveBox");
+  if (!box) return;
+
+  const rows = Object.values(LIVE_MAP);
+
+  if (!rows.length){
+    box.innerHTML = "Belum ada item dipilih.";
+    return;
+  }
+
+  box.innerHTML = rows.map(L => {
+    const img = getRowImage(L.row || {});
+    const liveRM = calcLivePrice(L.harga916, L.weight_g, L.upah);
+
+    return `
+      <div class="d-flex gap-2 align-items-center mb-2">
+        <img src="${escapeHtml(img)}" alt="${escapeHtml(L.code)}"
+          onerror="if(!this.dataset.f){this.dataset.f=1;this.src='https://placehold.co/300x300?text=${encodeURIComponent(L.code)}'}">
+        <div style="min-width:0;">
+          <div class="active-code">${escapeHtml(L.code)}</div>
+          <div class="small text-light opacity-75">${escapeHtml(L.name || "-")}</div>
+          <div class="fw-bold text-warning">${money(liveRM)}</div>
+        </div>
+      </div>
+    `;
+  }).join("");
+}
+
+async function seedLivePanelFromDB(){
+  try{
+    const { data, error } = await sb
+      .from("j916_live_now_v1")
+      .select("item_id");
+
+    if (error) throw error;
+
+    const ids = (data || []).map(x => String(x.item_id || "")).filter(Boolean);
+
+    LIVE_MAP = {};
+
+    if (!ids.length){
+      renderLiveSmallList();
+      renderActiveLiveBox();
+      return;
+    }
+
+    let items = ALL_STOCK || [];
+
+    if (!items.length){
+      const { data: stockRows } = await sb.rpc("j916_admin_items_list_v1", {
+        p_query:null
+      });
+
+      items = Array.isArray(stockRows) ? stockRows : [];
+      ALL_STOCK = items;
+      await attachItemMedia(ALL_STOCK);
+    }
+
+    ids.forEach(id => {
+      const row = items.find(x => String(x.id) === String(id));
+
+      if (row){
+        const upah = getRowUpah(row);
+
+        LIVE_MAP[id] = {
+          id,
+          code: row.code,
+          name: row.name || row.product_name || row.design_name || row.code,
+          weight_g: Number(row.weight_g || 0),
+          harga916: Number(window._price916 || 0),
+          upah,
+          base_upah: upah,
+          row
+        };
+      }
+    });
+
+    renderLiveSmallList();
+    renderActiveLiveBox();
+    renderStockList();
+  }catch(e){
+    console.warn("seedLivePanelFromDB error:", e);
+  }
+}
+
+async function createLiveOrderFromSelected(){
+  const row = LIVE_SELECTED_ROW;
+  if (!row) return;
+
+  const id = String(row.id || "");
+  const code = String(row.code || "").toUpperCase();
+  const h916 = Number($("modalHarga916")?.value || 0);
+  const upah = Number($("modalUpah")?.value || 0);
+  const weight = Number(row.weight_g || 0);
+
+  if (!id || !code){
+    alert("Item tidak sah.");
+    return;
+  }
+
+  if (!h916){
+    alert("Harga/g tidak sah.");
+    return;
+  }
+
+  let phone = prompt("No telefon pelanggan (cth 0123456789 / 81234567):", "");
+  if (phone === null) return;
+
+  phone = String(phone || "").trim();
+
+  if (!phone){
+    alert("Sila masukkan no telefon pelanggan.");
+    return;
+  }
+
+  const phoneLocal = normalizePhoneDigits(phone);
+  if (!/^\d{8,15}$/.test(phoneLocal)){
+    alert("No telefon tak sah.");
+    return;
+  }
+
+  const shipAsk = prompt("Caj penghantaran RM? Letak 0 jika pickup.", "0");
+  if (shipAsk === null) return;
+
+  const shipRm = Number(shipAsk || 0);
+  const itemRM = calcLivePrice(h916, weight, upah);
+  const totalRM = itemRM + shipRm;
+
+  if (!confirm(
+    `Sahkan order LIVE?\n\n` +
+    `Item: ${code}\n` +
+    `Harga barang: RM ${itemRM.toFixed(2)}\n` +
+    `Penghantaran: RM ${shipRm.toFixed(2)}\n` +
+    `Jumlah: RM ${totalRM.toFixed(2)}\n\n` +
+    `Telefon: ${phoneLocal}`
+  )) return;
+
+  const btn = $("btnModalLockOrder");
+  const msg = $("modalMsg");
+
+  btn.disabled = true;
+  msg.textContent = "Sedang buat order LIVE…";
+
+  try{
+    const checkoutGroup = (window.crypto && crypto.randomUUID)
+      ? crypto.randomUUID()
+      : (`live_${Date.now()}_${Math.random().toString(16).slice(2)}`);
+
+    const { data, error } = await sb.rpc("j916_live_manual_order_v1", {
+      p_item_id: id,
+      p_code: code,
+      p_weight_g: weight,
+      p_price_per_g: h916,
+      p_upah_rm: upah,
+      p_amount_cents: Math.round(itemRM * 100),
+      p_customer_phone: phoneLocal,
+      p_shipping_rm: shipRm,
+      p_checkout_group: checkoutGroup
+    });
+
+    if (error) throw error;
+
+    const orderCode =
+      (typeof data === "string") ? data :
+      data?.order_code || data?.reference || "(order)";
+
+    try{
+      await sb.rpc("j916_admin_item_status_v1", {
+        p_item_id:id,
+        p_status:"PENDING"
+      });
+    }catch(e){}
+
+    const msgCust =
+`Assalamualaikum,
+
+Tempahan barang kemas LIVE di Emas Amir telah direkodkan.
+
+No. Order : ${orderCode}
+
+Item : ${code}
+Jumlah barang : RM ${itemRM.toFixed(2)}
+Penghantaran  : RM ${shipRm.toFixed(2)}
+Jumlah perlu bayar : RM ${totalRM.toFixed(2)}
+
+No Akaun untuk Pembayaran Secara Online Transfer
+👇🏻👇🏻👇🏻
+Bank      : Maybank
+Nama      : EMAS AMIR SDN. BHD.
+No Akaun  : 552031155695
+Reference : LETAK NO 4 DIGIT AKHIR WHATSAPP ANDA
+
+${QR_DUITNOW_URL ? `Atau boleh scan QR: ${QR_DUITNOW_URL}\n` : ""}
+Sila buat bayaran mengikut jumlah di atas dan hantarkan resit bayaran. ✅`;
+
+    const msgAdmin =
+`[ORDER LIVE BARU - ADMIN LIVE]
+
+Order : ${orderCode}
+Item  : ${code}
+
+Jumlah barang : RM ${itemRM.toFixed(2)}
+Penghantaran  : RM ${shipRm.toFixed(2)}
+Jumlah + Pos  : RM ${totalRM.toFixed(2)}
+
+Telefon pelanggan: ${phoneLocal}
+Status: PENDING`;
+
+    try{
+      await sendWA(toMsisdnIntl(phoneLocal), msgCust);
+      await sendWA(toMsisdnIntl(ADMIN_WA), msgAdmin);
+    }catch(e){
+      console.warn("WA error:", e);
+    }
+
+    msg.textContent = "Order berjaya dibuat ✅";
+
+    await loadStock();
+
+    setTimeout(() => {
+      bootstrap.Modal.getOrCreateInstance($("liveActionModal")).hide();
+    }, 500);
+
+    alert("Order LIVE berjaya dibuat.\n\nOrder: " + orderCode);
+  }catch(e){
+    msg.textContent = "❌ " + (e?.message || e);
+  }finally{
+    btn.disabled = false;
+  }
+}
+</script>
+<script>
+async function adminLiveApiPost(url, body){
+  const r = await fetch(url, {
+    method:"POST",
+    headers:{ "Content-Type":"application/json" },
+    body:JSON.stringify(body || {})
+  });
+
+  const j = await r.json().catch(()=>({}));
+
+  if (!r.ok || j.ok !== true){
+    throw new Error(j.error || ("HTTP " + r.status));
+  }
+
+  return j;
+}
+
+function getOrderSummaryText(row){
+  const s = String(row?.order_summary || "").trim();
+  if (s) return s;
+
+  if (Array.isArray(row?.order_refs_short) && row.order_refs_short.length){
+    return row.order_refs_short.join(", ");
+  }
+
+  if (Array.isArray(row?.order_refs) && row.order_refs.length){
+    return row.order_refs.map(x => String(x).slice(0,8)).join(", ");
+  }
+
+  if (row?.order_ref_short) return String(row.order_ref_short);
+  if (row?.order_ref) return String(row.order_ref).slice(0,8);
+
+  return "";
+}
+
+function parseOrderSummaryItems(orderSummary){
+  const s = String(orderSummary || "").trim();
+  if (!s) return [];
+
+  const items = [];
+
+  s.split("•").forEach(part => {
+    const p = String(part || "").trim();
+    if (!p) return;
+
+    const m = p.match(/^(916|999)\s*:\s*(.+)$/i);
+    if (!m) return;
+
+    const kind = String(m[1] || "").trim();
+    const refs = String(m[2] || "")
+      .split(",")
+      .map(x => String(x || "").trim())
+      .filter(Boolean);
+
+    refs.forEach(ref => {
+      items.push({ kind, ref });
+    });
+  });
+
+  return items;
+}
+
+function detectPopupMode(row, thread){
+  const meta = thread?.meta || row?.meta || {};
+  const directMode =
+    row?.mode ??
+    row?.admin_mode ??
+    row?.thread_mode ??
+    row?.manual_mode ??
+    meta?.mode ??
+    meta?.admin_mode ??
+    thread?.mode ??
+    thread?.admin_mode;
+
+  if (typeof directMode === "boolean") return directMode ? "MANUAL" : "AI";
+
+  const dm = String(directMode || "").trim().toUpperCase();
+  if (dm === "MANUAL" || dm === "ADMIN_MANUAL" || dm === "WAITING") return "MANUAL";
+  if (dm === "AI" || dm === "AUTO" || dm === "KEMBALI_AI") return "AI";
+
+  return "AI";
+}
+
+function renderChatPopupActions(thread, row){
+  const wrap = $("chatPopupActions");
+  const badges = $("chatPopupBadges");
+  const ordersBox = $("chatPopupOrders");
+  const msg = $("chatPopupActionMsg");
+
+  if (!wrap || !badges || !ordersBox) return;
+
+  const items = parseOrderSummaryItems(row?.order_summary || "");
+  const mode = detectPopupMode(row, thread);
+  const meta = thread?.meta || {};
+  const paidRefs = Array.isArray(meta.paid_chat_order_refs)
+    ? meta.paid_chat_order_refs.map(x => String(x || "").trim()).filter(Boolean)
+    : [];
+
+  if (!ACTIVE_PAID_REF && items.length){
+    ACTIVE_PAID_REF = items[0].ref;
+  }
+
+  const selectedShort = ACTIVE_PAID_REF ? ACTIVE_PAID_REF.slice(0, 8) : "";
+  const isPaid = !!ACTIVE_PAID_REF && paidRefs.some(x => {
+    const v = String(x || "").trim();
+    return v === ACTIVE_PAID_REF || v.slice(0, 8) === selectedShort;
+  });
+
+  wrap.style.display = "";
+
+  badges.innerHTML = `
+    <span class="chat-popup-badge ${mode === "MANUAL" ? "manual" : "ai"}">
+      MODE ${mode}
+    </span>
+    ${isPaid ? `<span class="chat-popup-badge paid">paid(chat)</span>` : ``}
+    <span class="chat-popup-badge">thread:${escapeHtml(String(ACTIVE_THREAD_ID || "").slice(0,8))}</span>
+  `;
+
+  if (items.length){
+    ordersBox.innerHTML = items.map(item => `
+      <button
+        type="button"
+        class="chat-popup-order-chip${ACTIVE_PAID_REF === item.ref ? " active" : ""}"
+        data-popup-order-ref="${escapeHtml(item.ref)}"
+        data-popup-order-kind="${escapeHtml(item.kind)}"
+      >
+        ${escapeHtml(item.kind)}: ${escapeHtml(item.ref)}
+      </button>
+    `).join("");
+
+    ordersBox.querySelectorAll("[data-popup-order-ref]").forEach(btn => {
+      btn.onclick = () => {
+        ACTIVE_PAID_REF = String(btn.getAttribute("data-popup-order-ref") || "").trim();
+        renderChatPopupActions(thread, row);
+      };
+    });
+  }else{
+    ordersBox.innerHTML = `<div class="small text-muted">Tiada order dikesan untuk thread ini.</div>`;
+  }
+
+  if (msg) msg.textContent = "";
+
+  $("btnPopupPaidChat").disabled = !ACTIVE_PAID_REF;
+  $("btnPopupClearPaidChat").disabled = !ACTIVE_PAID_REF;
+}
+
+async function setPopupPaidChat(flagValue){
+  if (!ACTIVE_THREAD_ID){
+    $("chatPopupActionMsg").textContent = "Pilih chat dulu.";
+    return;
+  }
+
+  if (!ACTIVE_PAID_REF){
+    $("chatPopupActionMsg").textContent = "Tiada order untuk ditanda.";
+    return;
+  }
+
+  try{
+    $("chatPopupActionMsg").textContent = flagValue ? "Set paid(chat)..." : "Buang paid(chat)...";
+
+    const { data: th, error: e0 } = await sb
+      .from("chat_threads")
+      .select("id,meta")
+      .eq("id", ACTIVE_THREAD_ID)
+      .maybeSingle();
+
+    if (e0) throw e0;
+
+    const currentMeta = (th && th.meta && typeof th.meta === "object") ? th.meta : {};
+    const prevRefs = Array.isArray(currentMeta.paid_chat_order_refs)
+      ? currentMeta.paid_chat_order_refs.map(x => String(x || "").trim()).filter(Boolean)
+      : [];
+
+    const selected = String(ACTIVE_PAID_REF || "").trim();
+    const selectedShort = selected ? selected.slice(0, 8) : "";
+
+    let nextRefs = prevRefs.slice();
+
+    if (flagValue){
+      if (selected && !nextRefs.includes(selected)) nextRefs.push(selected);
+      if (selectedShort && !nextRefs.includes(selectedShort)) nextRefs.push(selectedShort);
+    }else{
+      nextRefs = nextRefs.filter(x => {
+        const v = String(x || "").trim();
+        return v !== selected && v !== selectedShort;
+      });
+    }
+
+    nextRefs = Array.from(new Set(nextRefs));
+
+    const nextMeta = {
+      ...currentMeta,
+      paid_chat: nextRefs.length > 0,
+      paid_chat_order_refs: nextRefs
+    };
+
+    const { error } = await sb
+      .from("chat_threads")
+      .update({ meta: nextMeta })
+      .eq("id", ACTIVE_THREAD_ID);
+
+    if (error) throw error;
+
+    const item = parseOrderSummaryItems(ACTIVE_THREAD_ROW?.order_summary || "")
+      .find(x => x.ref === ACTIVE_PAID_REF);
+
+    const kind = String(item?.kind || "").toUpperCase();
+
+    if (kind === "999"){
+      await sb
+        .from("goldbar_order")
+        .update({ status: flagValue ? "PAID" : "PENDING" })
+        .ilike("reference_1", ACTIVE_PAID_REF + "%");
+    }
+
+    if (kind === "916"){
+      await sb
+        .from("j916_orders")
+        .update({ status: flagValue ? "PAID" : "PENDING" })
+        .ilike("order_code", ACTIVE_PAID_REF + "%");
+    }
+
+    await loadThreadMessages(ACTIVE_THREAD_ID, true);
+    await loadRecentOrderChats();
+
+    $("chatPopupActionMsg").textContent = flagValue
+      ? "paid(chat) berjaya disimpan."
+      : "paid(chat) berjaya dibuang.";
+
+  }catch(e){
+    $("chatPopupActionMsg").textContent = "Ralat: " + (e?.message || e);
+  }
+}
+
+async function setPopupModeManual(){
+  if (!ACTIVE_THREAD_ID) return;
+
+  try{
+    $("chatPopupActionMsg").textContent = "Menukar ke manual...";
+
+    await adminLiveApiPost("/.netlify/functions/admin-chat-set-mode", {
+      admin_phone: adminPhone,
+      thread_id: ACTIVE_THREAD_ID,
+      admin_mode: true
+    });
+
+    await loadThreadMessages(ACTIVE_THREAD_ID, true);
+    await loadRecentOrderChats();
+
+    $("chatPopupActionMsg").textContent = "Thread sudah masuk mode manual.";
+  }catch(e){
+    $("chatPopupActionMsg").textContent = "Ralat: " + (e?.message || e);
+  }
+}
+
+async function setPopupBackToAi(){
+  if (!ACTIVE_THREAD_ID) return;
+
+  try{
+    $("chatPopupActionMsg").textContent = "Menukar kembali ke AI...";
+
+    await adminLiveApiPost("/.netlify/functions/admin-chat-set-mode", {
+      admin_phone: adminPhone,
+      thread_id: ACTIVE_THREAD_ID,
+      admin_mode: false
+    });
+
+    await loadThreadMessages(ACTIVE_THREAD_ID, true);
+    await loadRecentOrderChats();
+
+    $("chatPopupActionMsg").textContent = "Thread sudah kembali ke AI.";
+  }catch(e){
+    $("chatPopupActionMsg").textContent = "Ralat: " + (e?.message || e);
+  }
+}
+
+function renderOrderChats(rows){
+  const box = $("orderChatList");
+  if (!box) return;
+
+  if (!rows.length){
+    box.innerHTML = `<div class="small text-light opacity-75">Belum ada chat order aktif.</div>`;
+    return;
+  }
+
+  box.innerHTML = rows.slice(0, 12).map(r=>{
+    const name = shortName(r.customer_name || r.customer_phone || "Customer");
+    const phone = String(r.customer_phone || "-");
+    const order = getOrderSummaryText(r);
+    const status = String(r.status || "OPEN").toUpperCase();
+    const unread = r.unread === true ? `<span class="order-chat-badge">UNREAD</span>` : "";
+    const waiting = r.waiting_customer === true ? `<span class="order-chat-badge">WAITING</span>` : "";
+
+    return `
+      <div class="order-chat-card" data-order-thread="${escapeHtml(r.thread_id || "")}">
+        <div class="d-flex justify-content-between gap-2">
+          <div class="order-chat-name">${escapeHtml(name)}</div>
+          <span class="order-chat-badge">${escapeHtml(status)}</span>
+        </div>
+
+        <div class="order-chat-meta">${escapeHtml(phone)} • thread:${escapeHtml(String(r.thread_id || "").slice(0,8))}</div>
+        <div class="order-chat-order">${escapeHtml(order || "Ada order")}</div>
+
+        <div class="d-flex gap-1 mt-2">
+          ${unread}
+          ${waiting}
+        </div>
+      </div>
+    `;
+  }).join("");
+
+  box.querySelectorAll("[data-order-thread]").forEach(card=>{
+    card.addEventListener("click", async ()=>{
+      const tid = card.getAttribute("data-order-thread") || "";
+      if (!tid) return;
+
+     ACTIVE_THREAD_ID = tid;
+ACTIVE_THREAD_ROW = rows.find(x => String(x.thread_id || "") === String(tid)) || null;
+ACTIVE_PAID_REF = "";
+
+bootstrap.Modal.getOrCreateInstance($("chatPopupModal")).show();
+document.body.classList.add("chat-popup-open");
+
+await loadThreadMessages(tid);
+    });
+  });
+}
+async function loadRecentOrderChats(){
+  const box = $("orderChatList");
+  if (!box) return;
+
+  if (!adminPhone){
+    box.innerHTML = `<div class="small text-warning">Admin phone belum ready.</div>`;
+    return;
+  }
+
+  try{
+    const j = await adminLiveApiPost("/.netlify/functions/admin-chat-list", {
+      admin_phone: adminPhone
+    });
+
+    const rows = Array.isArray(j.rows) ? j.rows : [];
+renderChatPopupActions(j.thread || {}, ACTIVE_THREAD_ROW || {});
+
+    const orderRows = rows
+      .filter(r => getOrderSummaryText(r))
+      .filter(r => String(r.status || "").toUpperCase() !== "DONE")
+      .sort((a,b)=>{
+        const ta = new Date(a.last_message_at || a.created_at || 0).getTime();
+        const tb = new Date(b.last_message_at || b.created_at || 0).getTime();
+        return tb - ta;
+      });
+
+    renderOrderChats(orderRows);
+  }catch(e){
+    console.warn("loadRecentOrderChats error:", e);
+    box.innerHTML = `<div class="small text-danger">Ralat muat chat order.</div>`;
+  }
+}
+
+async function loadThreadMessages(threadId, silent){
+  if (!threadId) return;
+
+  const box = $("chatPopupList");
+  if (!box) return;
+
+ if (!silent) box.innerHTML = "Loading...";
+
+  try{
+    const j = await adminLiveApiPost("/.netlify/functions/admin-chat-thread", {
+      admin_phone: adminPhone,
+      thread_id: threadId
+    });
+
+    const rows = Array.isArray(j.messages) ? j.messages : [];
+renderChatPopupActions(j.thread || {}, ACTIVE_THREAD_ROW || {});
+
+    if (!rows.length){
+      box.innerHTML = `<div class="text-muted small">Belum ada mesej.</div>`;
+      return;
+    }
+
+    box.innerHTML = rows.map(r=>{
+      const role = String(r.role || "").toLowerCase();
+      const meta = r.meta || {};
+      const isMe = role === "admin" || meta.admin_reply === true;
+
+      return `
+        <div style="margin-bottom:8px;text-align:${isMe ? "right" : "left"}">
+          <div style="
+            display:inline-block;
+            background:${isMe ? "#111827" : "#e5e7eb"};
+            color:${isMe ? "#fff" : "#111"};
+            padding:8px 10px;
+            border-radius:12px;
+            max-width:80%;
+            font-size:13px;
+            white-space:pre-wrap;
+            text-align:left;
+          ">
+            ${escapeHtml(r.text || "")}
+          </div>
+        </div>
+      `;
+    }).join("");
+
+    box.scrollTop = box.scrollHeight;
+
+  }catch(e){
+    console.warn("loadThreadMessages error:", e);
+    box.innerHTML = "Ralat load chat: " + escapeHtml(e.message || e);
+  }
+}
+async function sendThreadMessage(){
+  const input = $("chatPopupInput");
+  const text = String(input.value || "").trim();
+
+  if (!text || !ACTIVE_THREAD_ID) return;
+
+  input.value = "";
+
+  try{
+    await adminLiveApiPost("/.netlify/functions/admin-chat-send", {
+      thread_id: ACTIVE_THREAD_ID,
+      message: text,
+      admin_phone: adminPhone
+    });
+
+    await loadThreadMessages(ACTIVE_THREAD_ID);
+
+  }catch(e){
+    alert("Gagal hantar mesej");
+  }
+}
+
+function setupEvents(){
+  $("btnReloadVideo")?.addEventListener("click", loadYoutubeConfig);
+  $("btnSaveYt")?.addEventListener("click", saveYoutubeConfig);
+$("btnReloadOrderChats")?.addEventListener("click", loadRecentOrderChats);
+  $("btnReloadStock")?.addEventListener("click", loadStock);
+$("chatPopupSend")?.addEventListener("click", sendThreadMessage);
+
+$("btnPopupPaidChat")?.addEventListener("click", () => setPopupPaidChat(true));
+$("btnPopupClearPaidChat")?.addEventListener("click", () => setPopupPaidChat(false));
+$("btnPopupManual")?.addEventListener("click", setPopupModeManual);
+$("btnPopupBackAi")?.addEventListener("click", setPopupBackToAi);
+
+$("chatPopupInput")?.addEventListener("keypress", e=>{
+  if (e.key === "Enter"){
+    e.preventDefault();
+    sendThreadMessage();
+  }
+});
+
+$("chatPopupModal")?.addEventListener("hidden.bs.modal", ()=>{
+  ACTIVE_THREAD_ID = "";
+  ACTIVE_THREAD_ROW = null;
+  ACTIVE_PAID_REF = "";
+  document.body.classList.remove("chat-popup-open");
+  loadRecentOrderChats();
+});
+  $("stockQ")?.addEventListener("input", () => {
+    clearTimeout(window.__stockDeb);
+    window.__stockDeb = setTimeout(loadStock, 300);
+  });
+
+  ["filterMin","filterMax","filterBudget","filterStatus"].forEach(id => {
+    $(id)?.addEventListener("input", applyStockFilters);
+    $(id)?.addEventListener("change", applyStockFilters);
+  });
+
+  document.querySelectorAll(".cat-chip").forEach(btn => {
+    btn.addEventListener("click", () => {
+      document.querySelectorAll(".cat-chip").forEach(b => b.classList.remove("active"));
+      btn.classList.add("active");
+      currentCat = String(btn.getAttribute("data-cat") || "");
+      applyStockFilters();
+    });
+  });
+
+  $("liveFactor")?.addEventListener("input", () => {
+    let v = Number($("liveFactor").value || 0);
+    if (!v || v <= 0) v = 1;
+
+    LIVE_MULTIPLIER = v;
+    localStorage.setItem("adminLiveMultiplier", String(v));
+
+    renderStockList();
+    renderLiveSmallList();
+    renderActiveLiveBox();
+    renderModalPrice();
+  });
+
+  $("modalHarga916")?.addEventListener("input", renderModalPrice);
+  $("modalUpah")?.addEventListener("input", renderModalPrice);
+
+  $("btnModalLiveOn")?.addEventListener("click", liveOnSelected);
+  $("btnModalLockOrder")?.addEventListener("click", createLiveOrderFromSelected);
+
+  $("btnClearChatUI")?.addEventListener("click", () => {
+    $("chatListBig").innerHTML = "";
+    shownChatIds.clear();
+  });
+
+  $("btnScrollBottom")?.addEventListener("click", () => {
+    const list = $("chatListBig");
+    if (list) list.scrollTop = list.scrollHeight;
+  });
+
+  $("btnClearLiveLocal")?.addEventListener("click", () => {
+    LIVE_MAP = {};
+    renderLiveSmallList();
+    renderActiveLiveBox();
+    renderStockList();
+  });
+
+  $("btnLogout")?.addEventListener("click", () => {
+    try{ window.auth_clear && window.auth_clear(); }catch(e){}
+    location.href = "login.html#login";
+  });
+}
+
+async function boot(){
+  const authStatus = $("authStatus");
+
+  let ok = false;
+
+  if (window.adminGuard && typeof adminGuard.require === "function"){
+    ok = await adminGuard.require({
+      onChecking:() => {
+        if (authStatus) authStatus.textContent = "Mengesahkan akses…";
+      },
+      onDenied:() => {
+        if (authStatus) authStatus.textContent = "Akses ditolak";
+      },
+      onAllowed:(phone) => {
+  adminPhone = normalizePhoneDigits(phone);
+  if (authStatus) authStatus.textContent = "Admin — " + phone;
+}
+    });
+  }else{
+    const a = (window.auth_get && window.auth_get()) || null;
+
+    if (!a){
+      location.href = "login.html#login";
+      return;
+    }
+
+    currentAdmin = a;
+
+    if (authStatus){
+      authStatus.textContent = "Admin — " + (a.phone || a.msisdn || "");
+    }
+
+    ok = true;
+
+
+  }
+
+  if (!ok) return;
+
+  if ($("btnLogout")) $("btnLogout").style.display = "";
+
+  if ($("liveFactor")){
+    $("liveFactor").value = LIVE_MULTIPLIER.toFixed(2);
+  }
+
+  setupEvents();
+
+await loadRecentOrderChats();
+  await loadPrice916();
+  await loadYoutubeConfig();
+  await loadStock();
+  await seedLivePanelFromDB();
+  await loadChatInitial();
+
+  connectSocket();
+
+  setInterval(loadChatInitial, 60000);
+  setInterval(loadStock, 90000);
+setInterval(()=>{
+  if (!ACTIVE_THREAD_ID && document.visibilityState === "visible"){
+    loadRecentOrderChats();
+  }
+}, 45000);
+
+setInterval(()=>{
+  const modalOpen = document.body.classList.contains("chat-popup-open");
+  if (ACTIVE_THREAD_ID && modalOpen && document.visibilityState === "visible"){
+    loadThreadMessages(ACTIVE_THREAD_ID, true);
+  }
+}, 12000);}
+
+boot();
+</script>
+</body>
+</html>

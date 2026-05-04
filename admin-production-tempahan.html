@@ -1,0 +1,1903 @@
+<!doctype html>
+<html lang="ms">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <link rel="stylesheet" href="/global.css">
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Dancing+Script:wght@700&family=Great+Vibes&family=Lobster&family=Pacifico&family=Poppins:wght@400;500;600;700;800&family=Satisfy&display=swap" rel="stylesheet">
+
+  <title>Admin Production Tempahan — Loket Nama • Emas Amir</title>
+<link rel="icon" href="data:,">
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="auth.js?v=13.1"></script>
+  <script src="admin-guard.js?v=1"></script>
+<script src="https://cdn.jsdelivr.net/npm/opentype.js@latest/dist/opentype.min.js"></script>
+
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+
+  <style>
+    :root{
+      --bg:#f6f7f9;
+      --card:#ffffff;
+      --border:#e9ecef;
+      --soft:#f8f9fa;
+      --muted:#6c757d;
+      --text:#212529;
+      --brand:#0d6efd;
+      --ok:#198754;
+      --warn:#fd7e14;
+      --danger:#dc3545;
+      --shadow:0 1px 2px rgba(16,24,40,.04);
+      --radius:16px;
+    }
+    *{box-sizing:border-box}
+    body{margin:0;background:var(--bg);color:var(--text);font:14px/1.45 system-ui,-apple-system,Segoe UI,Roboto,Arial}
+    .page{max-width:1440px;margin:0 auto;padding:16px}
+    .topbar{
+      display:flex;align-items:center;justify-content:space-between;gap:12px;
+      background:#fff;border:1px solid var(--border);border-radius:18px;
+      padding:12px 14px;box-shadow:var(--shadow);margin-bottom:14px
+    }
+    .top-left{display:flex;align-items:center;gap:12px;min-width:0}
+    .brand-title{font-weight:800;font-size:18px}
+    .muted{color:var(--muted)}
+    .xsmall{font-size:12px}
+    .pill{
+      display:inline-flex;align-items:center;gap:8px;
+      padding:8px 12px;border-radius:999px;background:#eef1f4;
+      border:1px solid #e5e7eb;font-size:12px;white-space:nowrap
+    }
+    .icon-btn{border-radius:12px}
+
+    .stack{display:flex;flex-direction:column;gap:14px}
+    .cardx{
+      background:var(--card);border:1px solid var(--border);
+      border-radius:var(--radius);box-shadow:var(--shadow)
+    }
+    .cardx .head{
+      padding:14px 16px;border-bottom:1px solid var(--border);
+      display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap
+    }
+    .cardx .body{padding:14px 16px}
+    .section-title{font-weight:800;font-size:16px}
+    .summary-grid{
+      display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:10px
+    }
+    .kpi{
+      border:1px solid var(--border);border-radius:14px;background:var(--soft);padding:12px
+    }
+    .kpi .label{font-size:12px;color:var(--muted);margin-bottom:4px}
+    .kpi .value{font-size:22px;font-weight:800}
+    .mono{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace}
+    .toolbar{display:flex;flex-wrap:wrap;gap:8px}
+    .empty{
+      border:1px dashed var(--border);border-radius:14px;padding:18px;color:var(--muted);
+      text-align:center;background:#fafbfc
+    }
+    .table-wrap{overflow:auto}
+    table{width:100%;border-collapse:collapse}
+    th,td{padding:10px 8px;border-bottom:1px solid var(--border);vertical-align:middle}
+    th{font-size:12px;color:var(--muted);font-weight:700;background:#fafbfc;position:sticky;top:0}
+    .badge-soft{
+      display:inline-flex;align-items:center;justify-content:center;
+      border:1px solid var(--border);border-radius:999px;padding:4px 10px;
+      background:#f8f9fa;font-size:12px;font-weight:700
+    }
+    .status-DRAFT{background:#eef1f4}
+    .status-REVIEW{background:#fff8e6;color:#8a5a00;border-color:#ffe1a8}
+    .status-APPROVED{background:#eaf3ff;color:#004ea8;border-color:#b9d5ff}
+    .status-LASER_QUEUE{background:#fff3e8;color:#a14c00;border-color:#ffd7b8}
+    .status-LASER_DONE{background:#e8fff1;color:#136c43;border-color:#ccefd9}
+    .status-COMPLETED{background:#e7fff7;color:#0f766e;border-color:#b7efe5}
+    .status-CANCELLED{background:#fff1f3;color:#b42318;border-color:#fecdd3}
+
+    .order-status-PENDING{background:#fff8e6;color:#8a5a00;border-color:#ffe1a8}
+    .order-status-PAID{background:#e8fff1;color:#136c43;border-color:#ccefd9}
+    .order-status-COMPLETED{background:#eaf3ff;color:#004ea8;border-color:#b9d5ff}
+    .order-status-CANCELLED{background:#fff1f3;color:#b42318;border-color:#fecdd3}
+
+    .preview-mini{
+      width:110px;
+      height:62px;
+      border:1px solid #e5e7eb;
+      border-radius:12px;
+      background:
+        linear-gradient(rgba(0,0,0,.03) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(0,0,0,.03) 1px, transparent 1px),
+        #fff;
+      background-size:12px 12px, 12px 12px;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      overflow:hidden;
+      flex:0 0 auto;
+    }
+    .preview-mini-text{
+      font-size:16px;
+      line-height:1;
+      color:#111827;
+      white-space:nowrap;
+      transform-origin:center center;
+    }
+    .action-stack{
+      display:flex;
+      flex-wrap:wrap;
+      gap:6px;
+      justify-content:flex-end;
+    }
+    .small-kv{
+      display:grid;
+      grid-template-columns:150px 1fr;
+      gap:6px 10px;
+      font-size:14px
+    }
+    .small-kv .k{color:#6b7280}
+    .small-kv .v{font-weight:600;color:#111827}
+    .job-preview-box{
+      border:1px solid #e5e7eb;
+      border-radius:16px;
+      background:#fff;
+      padding:14px
+    }
+    .job-preview-stage{
+      min-height:360px;
+      border:1px solid #e5e7eb;
+      border-radius:14px;
+      background:
+        linear-gradient(rgba(0,0,0,.03) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(0,0,0,.03) 1px, transparent 1px),
+        #fff;
+      background-size:20px 20px, 20px 20px;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      overflow:hidden;
+      position:relative
+    }
+        .read-badge{
+      display:inline-flex;
+      align-items:center;
+      min-height:31px;
+      padding:6px 10px;
+      border:1px solid var(--border);
+      border-radius:10px;
+      background:#fafbfc;
+      font-size:12px
+    }
+    .right{text-align:right}
+    .toast-wrap{position:fixed;right:16px;bottom:16px;z-index:1080}
+    .filter-chip{
+      border:1px solid #e5e7eb;background:#f8fafc;padding:6px 10px;border-radius:999px;font-size:.9rem
+    }
+    .filter-chip.active{
+      background:#111827;color:#fff;border-color:#111827
+    }
+    .grid-detail{
+      display:grid;
+      grid-template-columns:380px minmax(0,1fr);
+      gap:14px
+    }
+    .note-box{
+      white-space:pre-wrap;
+      line-height:1.45
+    }
+    .muted-box{
+      border:1px solid var(--border);
+      background:#fafbfc;
+      border-radius:12px;
+      padding:10px 12px;
+      color:var(--muted);
+      font-size:12px
+    }
+    @media (max-width:1200px){
+      .summary-grid{grid-template-columns:repeat(3,minmax(0,1fr))}
+      .grid-detail{grid-template-columns:1fr}
+    }
+    @media (max-width:720px){
+      .summary-grid{grid-template-columns:1fr}
+      .topbar{flex-direction:column;align-items:stretch}
+      .top-left{align-items:flex-start}
+    }
+  </style>
+</head>
+<body>
+  <div class="page">
+
+    <div class="topbar">
+      <div class="top-left">
+        <a href="index.html" class="btn btn-outline-secondary icon-btn">🏠</a>
+        <div>
+          <div class="brand-title">🏭 Admin Production Tempahan Loket</div>
+          <div class="muted xsmall">Queue • Review • Laser • Berat • SVG • PLT</div>
+        </div>
+        <span id="who" class="pill">Memuatkan…</span>
+      </div>
+
+      <div class="d-flex gap-2">
+        <button class="btn btn-outline-secondary icon-btn" type="button" data-bs-toggle="offcanvas" data-bs-target="#menuCanvas" aria-controls="menuCanvas">
+          ☰ Menu
+        </button>
+        <a id="logout" class="btn btn-outline-secondary icon-btn" href="javascript:">Log keluar</a>
+      </div>
+    </div>
+
+    <div class="stack">
+
+      <div class="cardx">
+        <div class="head">
+          <div class="section-title">Summary Production</div>
+          <div class="toolbar">
+            <span id="summaryMeta" class="pill">Memuatkan…</span>
+          </div>
+        </div>
+        <div class="body">
+          <div class="summary-grid">
+            <div class="kpi">
+              <div class="label">Semua Order</div>
+              <div id="sumAll" class="value mono">0</div>
+            </div>
+            <div class="kpi">
+              <div class="label">Queue Laser</div>
+              <div id="sumLaserQueue" class="value mono">0</div>
+            </div>
+            <div class="kpi">
+              <div class="label">Laser Done</div>
+              <div id="sumLaserDone" class="value mono">0</div>
+            </div>
+            <div class="kpi">
+              <div class="label">Siap</div>
+              <div id="sumCompleted" class="value mono">0</div>
+            </div>
+            <div class="kpi">
+              <div class="label">Jumlah Berat Siap</div>
+              <div id="sumWeightFinal" class="value mono">0.000</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="cardx">
+        <div class="head">
+          <div class="section-title">Queue Order Loket</div>
+          <div class="toolbar" id="prodFilterRow">
+            <button class="filter-chip active" data-pfilter="ALL">Semua</button>
+            <button class="filter-chip" data-pfilter="DRAFT">Draft</button>
+            <button class="filter-chip" data-pfilter="REVIEW">Review</button>
+            <button class="filter-chip" data-pfilter="APPROVED">Approved</button>
+            <button class="filter-chip" data-pfilter="LASER_QUEUE">Laser Queue</button>
+            <button class="filter-chip" data-pfilter="LASER_DONE">Laser Done</button>
+            <button class="filter-chip" data-pfilter="COMPLETED">Siap</button>
+            <button class="filter-chip" data-pfilter="CANCELLED">Cancel</button>
+          </div>
+        </div>
+        <div class="body">
+          <div class="row g-2 mb-3">
+            <div class="col-lg-8">
+              <div class="input-group">
+                <span class="input-group-text">Cari</span>
+                <input id="searchBox" class="form-control" placeholder="Cari ref / phone / customer / nama loket / material / font">
+              </div>
+            </div>
+            <div class="col-lg-4 d-flex gap-2">
+              <button id="btnRefresh" class="btn btn-outline-secondary w-100">Refresh</button>
+            </div>
+          </div>
+
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th style="width:140px">Tarikh</th>
+                  <th style="width:150px">Order</th>
+                  <th style="width:180px">Pelanggan</th>
+                  <th style="width:360px">Rekaan</th>
+                  <th style="width:210px">Berat</th>
+                  <th style="width:150px">Status</th>
+                  <th style="width:200px">Order Status</th>
+                  <th style="width:290px">Tindakan</th>
+                </tr>
+              </thead>
+              <tbody id="queueBody">
+                <tr><td colspan="8"><div class="empty">Memuatkan…</div></td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- OFFCANVAS -->
+  <div class="offcanvas offcanvas-end" tabindex="-1" id="menuCanvas" aria-labelledby="menuCanvasLabel">
+    <div class="offcanvas-header">
+      <h5 class="offcanvas-title" id="menuCanvasLabel">Menu Admin</h5>
+      <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Tutup"></button>
+    </div>
+    <div class="offcanvas-body">
+      <div class="d-grid gap-2">
+        <a class="btn btn-outline-secondary text-start" href="index.html">🏠 Dashboard</a>
+        <a class="btn btn-outline-secondary text-start" href="admin.html">🧭 Admin</a>
+        <a class="btn btn-outline-secondary text-start" href="admin-tempahan.html">📋 Admin Tempahan Loket</a>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL DETAIL -->
+  <div class="modal fade" id="detailModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-xl modal-dialog-scrollable">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title">
+            Production Loket
+            <span class="text-muted small ms-2" id="dm_ref">-</span>
+          </h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Tutup"></button>
+        </div>
+
+        <div class="modal-body">
+          <div class="grid-detail">
+            <div class="job-preview-box">
+              <h6 class="mb-3">Maklumat Tempahan</h6>
+
+              <div class="small-kv mb-3">
+                <div class="k">Pelanggan</div><div class="v" id="dm_customer">-</div>
+                <div class="k">Telefon</div><div class="v" id="dm_phone">-</div>
+                <div class="k">Nama Loket</div><div class="v" id="dm_name">-</div>
+                <div class="k">Material</div><div class="v" id="dm_material">-</div>
+                <div class="k">Font</div><div class="v" id="dm_font">-</div>
+                <div class="k">Ring</div><div class="v" id="dm_ring">-</div>
+                <div class="k">Simbol</div><div class="v" id="dm_orn">-</div>
+                <div class="k">Saiz</div><div class="v" id="dm_size">-</div>
+                <div class="k">Tebal</div><div class="v" id="dm_thickness">-</div>
+                <div class="k">Anggaran Berat</div><div class="v" id="dm_weight_est">-</div>
+                <div class="k">Jumlah</div><div class="v" id="dm_total">-</div>
+                <div class="k">Order Status</div><div class="v" id="dm_status">-</div>
+                <div class="k">Production</div><div class="v" id="dm_pstatus">-</div>
+              </div>
+
+              <div class="mb-3">
+                <label class="form-label">Nota Production</label>
+                <textarea id="dm_notes" class="form-control" rows="6" placeholder="Nota production..."></textarea>
+              </div>
+
+              <div class="d-grid gap-2">
+                <button id="btnSaveNote" class="btn btn-outline-primary" type="button">Simpan Nota</button>
+                <button id="btnToReview" class="btn btn-outline-warning" type="button">Tanda Review</button>
+                <button id="btnApprove" class="btn btn-outline-info" type="button">Approve</button>
+                <button id="btnQueueLaser" class="btn btn-outline-dark" type="button">Masuk Queue Laser</button>
+                <button id="btnLaserDone" class="btn btn-outline-success" type="button">Tanda Laser Done</button>
+                <button id="btnComplete" class="btn btn-success" type="button">Tanda Siap</button>
+                <button id="btnCancelProd" class="btn btn-outline-danger" type="button">Cancel Production</button>
+              </div>
+            </div>
+
+            <div class="stack">
+              <div class="job-preview-box">
+                <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
+                  <h6 class="mb-0">Preview Production</h6>
+                  <div class="d-flex gap-2 flex-wrap">
+                    <span class="read-badge">Nama: <span id="dm_size_name" class="ms-1">-</span></span>
+                    <span class="read-badge">Overall: <span id="dm_size_overall" class="ms-1">-</span></span>
+                    <span class="read-badge">Tebal: <span id="dm_size_thick" class="ms-1">-</span></span>
+                  </div>
+                </div>
+
+                <div class="job-preview-stage">
+  <svg id="jobStageSvg" viewBox="0 0 980 620" style="width:100%;height:100%;display:block" aria-label="Preview Production Loket">
+    <defs>
+      <marker id="jobArrow" markerWidth="8" markerHeight="8" refX="4" refY="4" orient="auto">
+        <path d="M0,0 L8,4 L0,8 z" fill="#111827"></path>
+      </marker>
+    </defs>
+
+    <rect x="0" y="0" width="980" height="620" fill="transparent"></rect>
+
+    <text id="jobNameSvgText"
+          x="490"
+          y="325"
+          text-anchor="middle"
+          style="
+            font-family:'Pacifico',cursive;
+            font-size:138px;
+            font-weight:700;
+            fill:#fff;
+            stroke:#111827;
+            stroke-width:8px;
+            stroke-linejoin:round;
+            stroke-linecap:round;
+            paint-order:stroke fill;
+          ">
+      Atiqah
+    </text>
+
+    <g id="jobRingsGroup"></g>
+
+    <text id="jobOrnamentLeft"
+          x="190"
+          y="200"
+          style="
+            font-size:28px;
+            dominant-baseline:middle;
+            text-anchor:middle;
+            fill:#111827;
+            paint-order:stroke fill;
+            stroke:#fff;
+            stroke-width:3px;
+            stroke-linejoin:round;
+          "></text>
+
+    <text id="jobOrnamentRight"
+          x="790"
+          y="200"
+          style="
+            font-size:28px;
+            dominant-baseline:middle;
+            text-anchor:middle;
+            fill:#111827;
+            paint-order:stroke fill;
+            stroke:#fff;
+            stroke-width:3px;
+            stroke-linejoin:round;
+          "></text>
+
+    <line id="jobWidthLine"
+          x1="180" y1="96" x2="800" y2="96"
+          stroke="#111827" stroke-width="2.2" fill="none"
+          marker-start="url(#jobArrow)" marker-end="url(#jobArrow)"></line>
+
+    <text id="jobWidthLabel"
+          x="490" y="82" text-anchor="middle"
+          style="font-family:'Poppins',sans-serif;font-size:20px;font-weight:800;fill:#111827">36.00 mm</text>
+
+    <line id="jobHeightLine"
+          x1="872" y1="166" x2="872" y2="396"
+          stroke="#111827" stroke-width="2.2" fill="none"
+          marker-start="url(#jobArrow)" marker-end="url(#jobArrow)"></line>
+
+    <text id="jobHeightLabel"
+          x="900" y="286"
+          transform="rotate(90 900 286)"
+          style="font-family:'Poppins',sans-serif;font-size:18px;font-weight:800;fill:#111827">18.00 mm</text>
+  </svg>
+</div>
+
+                <div class="row g-3 mt-1">
+                  <div class="col-md-4">
+                    <label class="form-label">Final Lebar (mm)</label>
+                    <input id="dm_final_width" type="number" step="0.01" class="form-control">
+                  </div>
+                  <div class="col-md-4">
+                    <label class="form-label">Final Tinggi (mm)</label>
+                    <input id="dm_final_height" type="number" step="0.01" class="form-control">
+                  </div>
+                  <div class="col-md-4">
+                    <label class="form-label">Final Tebal (mm)</label>
+                    <input id="dm_final_thickness" type="number" step="0.01" class="form-control">
+                  </div>
+
+                 <div class="col-md-3">
+  <label class="form-label">Anggaran Berat (g)</label>
+  <input id="dm_weight_est_view" type="text" class="form-control" readonly>
+</div>
+<div class="col-md-3">
+  <label class="form-label">Berat Asal Sebelum Laser (g)</label>
+  <input id="dm_weight_before" type="number" step="0.001" class="form-control" placeholder="Contoh 1.250">
+</div>
+<div class="col-md-3">
+  <label class="form-label">Berat Selepas Laser (g)</label>
+  <input id="dm_weight_after" type="number" step="0.001" class="form-control" placeholder="Contoh 1.180">
+</div>
+<div class="col-md-3">
+  <label class="form-label">Berat Siap (g)</label>
+  <input id="dm_weight_final" type="number" step="0.001" class="form-control" placeholder="Contoh 1.160">
+</div>
+
+                  <div class="col-md-6">
+                    <label class="form-label">Link SVG Production</label>
+                    <input id="dm_svg_url" type="text" class="form-control" placeholder="https://...svg">
+                  </div>
+                  <div class="col-md-6">
+                    <label class="form-label">Link PLT Production</label>
+                    <input id="dm_plt_url" type="text" class="form-control" placeholder="https://...plt">
+                  </div>
+
+                  <div class="col-12 d-flex gap-2 flex-wrap">
+  <button id="btnSaveProduction" class="btn btn-primary" type="button">Simpan Production</button>
+  <button id="btnOpenSvg" class="btn btn-outline-secondary" type="button">Download SVG</button>
+  <button id="btnOpenPlt" class="btn btn-outline-secondary" type="button">Download PLT</button>
+  <button id="btnPrintSheet" class="btn btn-outline-dark" type="button">Print Job Sheet</button>
+</div>
+                </div>
+              </div>
+
+             <div class="muted-box">
+  Flow cadangan: Draft → Review → Approved → Laser Queue → Laser Done → Completed.
+  <br>Anggaran berat = rujukan awal sebelum laser.
+  <br>Berat asal = timbang sebelum laser.
+  <br>Berat selepas laser = terus lepas laser.
+  <br>Berat siap = selepas finishing / polish / ring siap.
+</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="modal-footer">
+          <button class="btn btn-light" data-bs-dismiss="modal">Tutup</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- TOAST -->
+  <div class="toast-wrap">
+    <div class="toast align-items-center text-bg-dark border-0" id="mainToast" role="status" aria-live="polite" aria-atomic="true">
+      <div class="d-flex">
+        <div class="toast-body" id="toastMsg">OK.</div>
+        <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Tutup"></button>
+      </div>
+    </div>
+  </div>
+
+  <!-- AUDIO -->
+  <audio id="soundCash" preload="auto">
+    <source src="https://dduizetstqqjrpsezbpi.supabase.co/storage/v1/object/public/cash-emas/cashier-quotka-chingquot-sound-effect-129698.mp3?v=1" type="audio/mpeg">
+  </audio>
+
+  <div id="audioHint" class="small text-muted"
+       style="position:fixed;right:16px;bottom:72px;background:#fff;border:1px solid #e5e7eb;border-radius:10px;padding:6px 10px;display:none;z-index:9999">
+    Bunyi dikunci — klik <button id="btnUnlockAudio" class="btn btn-sm btn-outline-dark">Aktifkan</button>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+
+  <script>
+    function getSupabaseClient() {
+      if (window.sb) return window.sb;
+      if (window.supabaseClient) return window.supabaseClient;
+      if (window._supabase) return window._supabase;
+
+      if (window.SUPABASE_URL && window.SUPABASE_ANON_KEY) {
+        return window.supabase.createClient(window.SUPABASE_URL, window.SUPABASE_ANON_KEY);
+      }
+
+      const SB_URL = "https://dduizetstqqjrpsezbpi.supabase.co";
+      const SB_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRkdWl6ZXRzdHFxanJwc2V6YnBpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTg3MzI0ODQsImV4cCI6MjA3NDMwODQ4NH0.CrlHXrmHtKgR9qc2192U6quRb5lpFEeOSgwG0Lb8KRM";
+      return window.supabase.createClient(SB_URL, SB_KEY);
+    }
+
+    const sb = getSupabaseClient();
+
+    const TABLE_NAME = 'tempahan_loket_orders';
+    const REFRESH_MS = 6000;
+
+    let currentUser = null;
+    let CURRENT_FILTER = 'ALL';
+    let _rowsCache = {};
+    let _prevLaserDoneIds = new Set();
+    let _currentId = null;
+    let _tick = null;
+    let _isRefreshing = false;
+
+    const $ = (id) => document.getElementById(id);
+
+    const els = {
+      who: $('who'),
+      logout: $('logout'),
+
+      summaryMeta: $('summaryMeta'),
+      sumAll: $('sumAll'),
+      sumLaserQueue: $('sumLaserQueue'),
+      sumLaserDone: $('sumLaserDone'),
+      sumCompleted: $('sumCompleted'),
+      sumWeightFinal: $('sumWeightFinal'),
+
+      searchBox: $('searchBox'),
+      btnRefresh: $('btnRefresh'),
+      queueBody: $('queueBody'),
+
+      dm_ref: $('dm_ref'),
+      dm_customer: $('dm_customer'),
+      dm_phone: $('dm_phone'),
+      dm_name: $('dm_name'),
+      dm_material: $('dm_material'),
+      dm_font: $('dm_font'),
+      dm_ring: $('dm_ring'),
+      dm_orn: $('dm_orn'),
+      dm_size: $('dm_size'),
+      dm_thickness: $('dm_thickness'),
+      dm_weight_est: $('dm_weight_est'),
+dm_weight_est_view: $('dm_weight_est_view'),
+dm_total: $('dm_total'),
+dm_status: $('dm_status'),
+dm_pstatus: $('dm_pstatus'),
+dm_notes: $('dm_notes'),
+
+      dm_size_name: $('dm_size_name'),
+      dm_size_overall: $('dm_size_overall'),
+      dm_size_thick: $('dm_size_thick'),
+
+      dm_final_width: $('dm_final_width'),
+      dm_final_height: $('dm_final_height'),
+      dm_final_thickness: $('dm_final_thickness'),
+      dm_weight_before: $('dm_weight_before'),
+      dm_weight_after: $('dm_weight_after'),
+      dm_weight_final: $('dm_weight_final'),
+      dm_svg_url: $('dm_svg_url'),
+      dm_plt_url: $('dm_plt_url'),
+
+      btnSaveNote: $('btnSaveNote'),
+      btnToReview: $('btnToReview'),
+      btnApprove: $('btnApprove'),
+      btnQueueLaser: $('btnQueueLaser'),
+      btnLaserDone: $('btnLaserDone'),
+      btnComplete: $('btnComplete'),
+      btnCancelProd: $('btnCancelProd'),
+      btnSaveProduction: $('btnSaveProduction'),
+      btnOpenSvg: $('btnOpenSvg'),
+      btnOpenPlt: $('btnOpenPlt'),
+      btnPrintSheet: $('btnPrintSheet'),
+
+            mainToast: $('mainToast'),
+      toastMsg: $('toastMsg')
+    };
+
+    function num(v){
+      const n = Number(v);
+      return Number.isFinite(n) ? n : 0;
+    }
+
+    function fmt3(v){
+      return num(v).toFixed(3);
+    }
+
+    function fmt2(v){
+      return num(v).toFixed(2);
+    }
+
+    function money(v){
+      return 'RM ' + Number(v || 0).toFixed(2);
+    }
+
+    function esc(s){
+      return String(s || '')
+        .replaceAll('&','&amp;')
+        .replaceAll('<','&lt;')
+        .replaceAll('>','&gt;')
+        .replaceAll('"','&quot;')
+        .replaceAll("'","&#39;");
+    }
+
+    function safeUpper(s){
+      return String(s || '').trim().toUpperCase();
+    }
+
+    function fmtDateTime(s){
+      if (!s) return '-';
+      const d = new Date(s);
+      if (Number.isNaN(d.getTime())) return '-';
+      return d.toLocaleString('ms-MY', { hour12:false });
+    }
+
+    function showToast(msg){
+  els.toastMsg.textContent = msg || 'OK';
+  new bootstrap.Toast(els.mainToast, { delay:2200 }).show();
+}
+
+function buildSafeFileBase(row){
+  const ref = String(row?.reference_1 || row?.id || 'loket').trim();
+  const nama = String(row?.loket_name || 'loket')
+    .trim()
+    .toLowerCase()
+    .replace(/[^\p{L}\p{N}\s-]/gu, '')
+    .replace(/\s+/g, '-')
+    .replace(/-+/g, '-')
+    .replace(/^-|-$/g, '');
+
+  return `${nama || 'loket'}-${ref}`;
+}
+
+function downloadBlobFile(blob, filename){
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = filename;
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+  setTimeout(() => URL.revokeObjectURL(url), 1500);
+}
+
+function svgTextY(fontName){
+  const f = String(fontName || '').trim();
+  if (f === 'Pacifico') return 355;
+  if (f === 'Lobster') return 350;
+  if (f === 'Dancing Script') return 352;
+  if (f === 'Great Vibes') return 360;
+  if (f === 'Satisfy') return 352;
+  if (f === 'Poppins') return 338;
+  return 350;
+}
+
+function getFontUrl(fontName){
+  const f = String(fontName || '').trim().toLowerCase();
+
+  if (f === 'pacifico') return '/fonts/Pacifico-Regular.ttf';
+  if (f === 'lobster') return '/fonts/Lobster-Regular.ttf';
+  if (f === 'dancing script') return '/fonts/DancingScript-Regular.ttf';
+  if (f === 'great vibes') return '/fonts/GreatVibes-Regular.ttf';
+  if (f === 'satisfy') return '/fonts/Satisfy-Regular.ttf';
+  if (f === 'poppins') return '/fonts/Poppins-Bold.ttf';
+
+  return '/fonts/Pacifico-Regular.ttf';
+}
+
+
+const __fontCache = new Map();
+
+async function loadFontCached(fontName){
+  const url = getFontUrl(fontName);
+
+  if (__fontCache.has(url)) return __fontCache.get(url);
+
+  const font = await new Promise((resolve, reject) => {
+    opentype.load(url, function(err, loadedFont){
+      if (err || !loadedFont){
+        reject(err || new Error('Font gagal load'));
+        return;
+      }
+      resolve(loadedFont);
+    });
+  });
+
+  __fontCache.set(url, font);
+  return font;
+}
+
+async function textToPathData(text, fontName, fontSize = 138){
+  const font = await loadFontCached(fontName);
+
+  const path = font.getPath(text, 0, 0, fontSize);
+  const box = path.getBoundingBox();
+  const d = path.toPathData(3);
+
+  return { d, box };
+}
+function buildRingSvgByMode(ring){
+  let ringSvg = '';
+
+  if (ring === 'left' || ring === 'both'){
+    ringSvg += `
+      <circle cx="128" cy="255" r="16" fill="#fff" stroke="#111827" stroke-width="7"></circle>
+      <circle cx="128" cy="255" r="7" fill="#fff" stroke="#111827" stroke-width="4"></circle>
+    `;
+  }
+  if (ring === 'right' || ring === 'both'){
+    ringSvg += `
+      <circle cx="852" cy="255" r="16" fill="#fff" stroke="#111827" stroke-width="7"></circle>
+      <circle cx="852" cy="255" r="7" fill="#fff" stroke="#111827" stroke-width="4"></circle>
+    `;
+  }
+  if (ring === 'top-center'){
+    ringSvg += `
+      <circle cx="490" cy="150" r="16" fill="#fff" stroke="#111827" stroke-width="7"></circle>
+      <circle cx="490" cy="150" r="7" fill="#fff" stroke="#111827" stroke-width="4"></circle>
+    `;
+  }
+  if (ring === 'top-left'){
+    ringSvg += `
+      <circle cx="310" cy="150" r="16" fill="#fff" stroke="#111827" stroke-width="7"></circle>
+      <circle cx="310" cy="150" r="7" fill="#fff" stroke="#111827" stroke-width="4"></circle>
+    `;
+  }
+  if (ring === 'top-right'){
+    ringSvg += `
+      <circle cx="670" cy="150" r="16" fill="#fff" stroke="#111827" stroke-width="7"></circle>
+      <circle cx="670" cy="150" r="7" fill="#fff" stroke="#111827" stroke-width="4"></circle>
+    `;
+  }
+  if (ring === 'top-both'){
+    ringSvg += `
+      <circle cx="310" cy="150" r="16" fill="#fff" stroke="#111827" stroke-width="7"></circle>
+      <circle cx="310" cy="150" r="7" fill="#fff" stroke="#111827" stroke-width="4"></circle>
+      <circle cx="670" cy="150" r="16" fill="#fff" stroke="#111827" stroke-width="7"></circle>
+      <circle cx="670" cy="150" r="7" fill="#fff" stroke="#111827" stroke-width="4"></circle>
+    `;
+  }
+
+  return ringSvg;
+}
+
+async function buildProductionSvgText(row){
+  const name = jobSafeName(row.loket_name || 'Loket');
+  const fontName = row.font_name || 'Pacifico';
+
+  const widthMm = Number(els.dm_final_width?.value || row.final_width_mm || row.custom_width_mm || 36);
+  const heightMm = Number(els.dm_final_height?.value || row.final_height_mm || row.custom_height_mm || row.height_mm || 12);
+  const thickMm = Number(els.dm_final_thickness?.value || row.final_thickness_mm || row.thickness_mm || 0.8);
+
+  const ornament = jobOrnamentMap(row.ornament || 'none');
+  const ring = String(row.ring_position || 'left');
+
+  const ringSvg = buildRingSvgByMode(ring);
+
+  const ornLeft = ornament.iconLeft
+    ? `<text x="160" y="220" text-anchor="middle" font-size="28" fill="#111827" stroke="#fff" stroke-width="3" paint-order="stroke fill">${ornament.iconLeft}</text>`
+    : '';
+
+  const ornRight = ornament.iconRight
+    ? `<text x="820" y="220" text-anchor="middle" font-size="28" fill="#111827" stroke="#fff" stroke-width="3" paint-order="stroke fill">${ornament.iconRight}</text>`
+    : '';
+
+  const { d, box } = await textToPathData(name, fontName, 138);
+
+  const targetCenterX = 490;
+  const targetCenterY = 325;
+
+  const textWidth = box.x2 - box.x1;
+  const textHeight = box.y2 - box.y1;
+
+  const tx = targetCenterX - (box.x1 + textWidth / 2);
+  const ty = targetCenterY - (box.y1 + textHeight / 2);
+
+  return `<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 980 620" width="980" height="620">
+  <rect x="0" y="0" width="980" height="620" fill="#ffffff"/>
+
+  <line x1="180" y1="96" x2="800" y2="96" stroke="#111827" stroke-width="2.2"/>
+  <line x1="180" y1="96" x2="192" y2="90" stroke="#111827" stroke-width="2.2"/>
+  <line x1="180" y1="96" x2="192" y2="102" stroke="#111827" stroke-width="2.2"/>
+  <line x1="800" y1="96" x2="788" y2="90" stroke="#111827" stroke-width="2.2"/>
+  <line x1="800" y1="96" x2="788" y2="102" stroke="#111827" stroke-width="2.2"/>
+  <text x="490" y="82" text-anchor="middle" font-family="Poppins, sans-serif" font-size="20" font-weight="800" fill="#111827">${fmt2(widthMm)} mm</text>
+
+  <line x1="872" y1="166" x2="872" y2="396" stroke="#111827" stroke-width="2.2"/>
+  <line x1="872" y1="166" x2="866" y2="178" stroke="#111827" stroke-width="2.2"/>
+  <line x1="872" y1="166" x2="878" y2="178" stroke="#111827" stroke-width="2.2"/>
+  <line x1="872" y1="396" x2="866" y2="384" stroke="#111827" stroke-width="2.2"/>
+  <line x1="872" y1="396" x2="878" y2="384" stroke="#111827" stroke-width="2.2"/>
+  <text x="900" y="286" transform="rotate(90 900 286)" font-family="Poppins, sans-serif" font-size="18" font-weight="800" fill="#111827">${fmt2(heightMm)} mm</text>
+
+  ${ringSvg}
+  ${ornLeft}
+  ${ornRight}
+
+  <g transform="translate(${tx},${ty})">
+    <path d="${d}"
+          fill="#ffffff"
+          stroke="#111827"
+          stroke-width="8"
+          stroke-linejoin="round"
+          stroke-linecap="round"
+          vector-effect="non-scaling-stroke"/>
+  </g>
+
+  <text x="40" y="590" font-family="Poppins, sans-serif" font-size="14" fill="#6b7280">Lebar: ${fmt2(widthMm)} mm • Tinggi: ${fmt2(heightMm)} mm • Tebal: ${fmt2(thickMm)} mm</text>
+</svg>`;
+}
+
+function extractPathFromSvg(svgText){
+  const doc = new DOMParser().parseFromString(svgText, 'image/svg+xml');
+  const pathEl = doc.querySelector('path');
+  if (!pathEl) throw new Error('Path SVG tidak dijumpai.');
+  return pathEl.getAttribute('d') || '';
+}
+
+function tokenizePath(d){
+  return String(d || '')
+    .replace(/,/g, ' ')
+    .match(/[a-zA-Z]|-?\d*\.?\d+(?:e[-+]?\d+)?/g) || [];
+}
+
+function buildProductionPltTextFromPath(pathD){
+  const tokens = tokenizePath(pathD);
+  const out = ['IN;', 'SP1;'];
+
+  let i = 0;
+  let cmd = '';
+  let cx = 0;
+  let cy = 0;
+  let sx = 0;
+  let sy = 0;
+
+  const SCALE = 35;
+  const OFFSET_X = 7000;
+  const OFFSET_Y = 9000;
+
+  function toHpX(x){ return Math.round(OFFSET_X + x * SCALE); }
+  function toHpY(y){ return Math.round(OFFSET_Y - y * SCALE); }
+
+  while (i < tokens.length){
+    const t = tokens[i++];
+
+    if (/^[a-zA-Z]$/.test(t)){
+      cmd = t;
+      if (cmd === 'Z' || cmd === 'z'){
+        out.push(`PU${toHpX(sx)},${toHpY(sy)};`);
+        cx = sx;
+        cy = sy;
+      }
+      continue;
+    }
+
+    i--;
+
+    if (cmd === 'M'){
+      const x = parseFloat(tokens[i++]);
+      const y = parseFloat(tokens[i++]);
+      cx = x; cy = y; sx = x; sy = y;
+      out.push(`PU${toHpX(cx)},${toHpY(cy)};`);
+      cmd = 'L';
+      continue;
+    }
+
+    if (cmd === 'm'){
+      const x = cx + parseFloat(tokens[i++]);
+      const y = cy + parseFloat(tokens[i++]);
+      cx = x; cy = y; sx = x; sy = y;
+      out.push(`PU${toHpX(cx)},${toHpY(cy)};`);
+      cmd = 'l';
+      continue;
+    }
+
+    if (cmd === 'L'){
+      const x = parseFloat(tokens[i++]);
+      const y = parseFloat(tokens[i++]);
+      cx = x; cy = y;
+      out.push(`PD${toHpX(cx)},${toHpY(cy)};`);
+      continue;
+    }
+
+    if (cmd === 'l'){
+      const x = cx + parseFloat(tokens[i++]);
+      const y = cy + parseFloat(tokens[i++]);
+      cx = x; cy = y;
+      out.push(`PD${toHpX(cx)},${toHpY(cy)};`);
+      continue;
+    }
+
+    if (cmd === 'H'){
+      const x = parseFloat(tokens[i++]);
+      cx = x;
+      out.push(`PD${toHpX(cx)},${toHpY(cy)};`);
+      continue;
+    }
+
+    if (cmd === 'h'){
+      const x = cx + parseFloat(tokens[i++]);
+      cx = x;
+      out.push(`PD${toHpX(cx)},${toHpY(cy)};`);
+      continue;
+    }
+
+    if (cmd === 'V'){
+      const y = parseFloat(tokens[i++]);
+      cy = y;
+      out.push(`PD${toHpX(cx)},${toHpY(cy)};`);
+      continue;
+    }
+
+    if (cmd === 'v'){
+      const y = cy + parseFloat(tokens[i++]);
+      cy = y;
+      out.push(`PD${toHpX(cx)},${toHpY(cy)};`);
+      continue;
+    }
+
+    if (cmd === 'C' || cmd === 'c' || cmd === 'S' || cmd === 's' || cmd === 'Q' || cmd === 'q' || cmd === 'T' || cmd === 't' || cmd === 'A' || cmd === 'a'){
+      throw new Error('PLT sebenar perlukan flatten curve dulu. Path sekarang masih ada curve.');
+    }
+  }
+
+  out.push('PU;');
+  out.push('SP0;');
+  return out.join('\n');
+}
+    function fontCssFamily(fontName){
+      const f = String(fontName || '').trim();
+      if (!f) return "'Poppins', sans-serif";
+      if (f === 'Poppins') return "'Poppins', sans-serif";
+      return `'${f}', cursive`;
+    }
+
+    function ringLabel(v){
+      const m = {
+        'NONE':'Tiada Ring',
+        'LEFT':'Ring Kiri',
+        'RIGHT':'Ring Kanan',
+        'BOTH':'Kiri + Kanan',
+        'TOP-CENTER':'Tengah Atas',
+        'TOP-LEFT':'Atas Kiri',
+        'TOP-RIGHT':'Atas Kanan',
+        'TOP-BOTH':'Atas Kiri + Kanan'
+      };
+      return m[safeUpper(v)] || (v || '-');
+    }
+
+    function ornamentLabel(v){
+      const m = {
+        'NONE':'Tiada',
+        'HEART':'Love',
+        'DOUBLE-HEART':'Love Berganda',
+        'FLOWER':'Bunga',
+        'STAR':'Bintang',
+        'CROWN':'Crown',
+        'BUTTERFLY':'Butterfly',
+        'LEAF':'Daun'
+      };
+      return m[safeUpper(v)] || (v || '-');
+    }
+
+    function ornamentIcon(name){
+      const m = {
+        'NONE':'',
+        'TIADA':'',
+        'HEART':'❤',
+        'LOVE':'❤',
+        'DOUBLE-HEART':'❤❤',
+        'LOVE BERGANDA':'❤❤',
+        'FLOWER':'✿',
+        'BUNGA':'✿',
+        'STAR':'★',
+        'BINTANG':'★',
+        'CROWN':'♛',
+        'BUTTERFLY':'🦋',
+        'LEAF':'❦',
+        'DAUN':'❦'
+      };
+      return m[safeUpper(name)] || '';
+    }
+
+    function prodBadgeHtml(p){
+      const s = safeUpper(p);
+      return `<span class="badge-soft status-${esc(s || 'DRAFT')}">${esc(s || '-')}</span>`;
+    }
+
+    function orderBadgeHtml(s){
+      const x = safeUpper(s);
+      return `<span class="badge-soft order-status-${esc(x || 'PENDING')}">${esc(x || '-')}</span>`;
+    }
+
+    function previewScaleByWidth(widthMm){
+      const base = Number(widthMm || 36);
+      return Math.max(0.68, Math.min(1.30, base / 36));
+    }
+
+    function guessHeightFromWidthAndName(widthMm, fontName, name){
+      const len = Math.max(1, String(name || '').trim().length);
+      const fontFactor = safeUpper(fontName) === 'POPPINS' ? 1.08 : 1;
+      const ratio = 0.34 + Math.min(0.06, len * 0.002);
+      return Number(widthMm || 0) * ratio * fontFactor;
+    }
+
+    function miniPreviewHtml(row){
+      const text = esc(row.loket_name || 'Loket');
+      const font = fontCssFamily(row.font_name);
+      const scale = previewScaleByWidth(row.final_width_mm || row.custom_width_mm || 36);
+
+      return `
+        <div class="preview-mini">
+          <div class="preview-mini-text" style="font-family:${font};transform:scale(${scale});">
+            ${text}
+          </div>
+        </div>
+      `;
+    }
+
+    async function initAuth(){
+      let ok = false;
+      if (window.adminGuard && typeof adminGuard.require === 'function'){
+        ok = await adminGuard.require({
+          onChecking: ()=> { els.who.textContent = 'Mengesahkan akses…'; },
+          onDenied: ()=> { els.who.textContent = 'Akses ditolak'; },
+          onAllowed: (phone)=> { els.who.textContent = phone || 'Admin'; }
+        });
+      } else {
+        const a = (window.auth_get && window.auth_get()) || null;
+        if (!a){
+          location.href = 'login.html#login';
+          return false;
+        }
+        els.who.textContent = a.phone || a.name || 'Admin';
+        ok = true;
+      }
+
+      if (!ok) return false;
+
+      const { data:{ user } } = await sb.auth.getUser().catch(() => ({ data:{ user:null } }));
+      currentUser = user || null;
+      return true;
+    }
+
+    async function logout(){
+      try{
+        await sb.auth.signOut();
+      }catch(_e){}
+      location.href = 'login.html#login';
+    }
+
+    async function fetchRows(){
+      let query = sb
+        .from(TABLE_NAME)
+        .select('*')
+        .order('created_at', { ascending:false });
+
+      if (CURRENT_FILTER !== 'ALL'){
+        query = query.eq('production_status', CURRENT_FILTER);
+      }
+
+      const q = (els.searchBox.value || '').trim();
+      if (q){
+        const like = `%${q}%`;
+        query = query.or([
+          `reference_1.ilike.${like}`,
+          `customer_name.ilike.${like}`,
+          `customer_phone.ilike.${like}`,
+          `loket_name.ilike.${like}`,
+          `material.ilike.${like}`,
+          `font_name.ilike.${like}`,
+          `ornament.ilike.${like}`
+        ].join(','));
+      }
+
+      const { data, error } = await query;
+      if (error) throw error;
+      return Array.isArray(data) ? data : [];
+    }
+
+    async function loadSummary(){
+      const { data, error } = await sb.from(TABLE_NAME).select('production_status,weight_final_g');
+      if (error){
+        console.error(error);
+        els.summaryMeta.textContent = 'Ralat summary';
+        return;
+      }
+
+      const rows = Array.isArray(data) ? data : [];
+      let sumLaserQueue = 0;
+      let sumLaserDone = 0;
+      let sumCompleted = 0;
+      let weightFinal = 0;
+
+      for (const r of rows){
+        const ps = safeUpper(r.production_status || 'DRAFT');
+        if (ps === 'LASER_QUEUE') sumLaserQueue++;
+        if (ps === 'LASER_DONE') sumLaserDone++;
+        if (ps === 'COMPLETED') sumCompleted++;
+        weightFinal += num(r.weight_final_g || 0);
+      }
+
+      els.sumAll.textContent = String(rows.length);
+      els.sumLaserQueue.textContent = String(sumLaserQueue);
+      els.sumLaserDone.textContent = String(sumLaserDone);
+      els.sumCompleted.textContent = String(sumCompleted);
+      els.sumWeightFinal.textContent = fmt3(weightFinal);
+      els.summaryMeta.textContent = `${rows.length} order production`;
+    }
+
+    function renderQueue(rows){
+      _rowsCache = Object.fromEntries(rows.map(r => [r.id, r]));
+
+      const currentLaserDone = new Set(
+        rows.filter(r => safeUpper(r.production_status) === 'LASER_DONE').map(r => r.id)
+      );
+
+      if (_prevLaserDoneIds.size > 0){
+        let hasNew = false;
+        for (const id of currentLaserDone){
+          if (!_prevLaserDoneIds.has(id)){ hasNew = true; break; }
+        }
+        if (hasNew) playCash();
+      }
+      _prevLaserDoneIds = currentLaserDone;
+
+      if (!rows.length){
+        els.queueBody.innerHTML = `<tr><td colspan="8"><div class="empty">Tiada order untuk filter ini</div></td></tr>`;
+        return;
+      }
+
+      els.queueBody.innerHTML = rows.map(r => {
+        const sizeW = num(r.final_width_mm || r.custom_width_mm || 36);
+        const sizeH = num(r.final_height_mm || guessHeightFromWidthAndName(sizeW, r.font_name, r.loket_name));
+        const prod = safeUpper(r.production_status || 'DRAFT');
+
+        return `
+          <tr>
+            <td>
+              <div>${esc(fmtDateTime(r.created_at))}</div>
+              ${r.laser_done_at ? `<div class="muted xsmall">Laser: ${esc(fmtDateTime(r.laser_done_at))}</div>` : ``}
+            </td>
+
+            <td>
+              <div class="fw-semibold mono">${esc(r.reference_1 || r.id)}</div>
+              <div class="muted xsmall">ID: ${esc(String(r.id).slice(0,8))}</div>
+            </td>
+
+            <td>
+              <div>${esc(r.customer_name || '-')}</div>
+              <div class="muted xsmall">${esc(r.customer_phone || '-')}</div>
+            </td>
+
+            <td>
+              <div class="d-flex gap-2 align-items-start">
+                ${miniPreviewHtml(r)}
+                <div>
+                  <div class="fw-semibold">${esc(r.loket_name || '-')}</div>
+                  <div class="muted xsmall">${esc(r.material || '-')} • ${esc(r.font_name || '-')}</div>
+                  <div class="muted xsmall">Ring: ${esc(ringLabel(r.ring_position))} • Simbol: ${esc(ornamentLabel(r.ornament))}</div>
+                  <div class="muted xsmall">Tebal: ${fmt2(r.final_thickness_mm || r.thickness_mm)} mm • Saiz: ${fmt2(sizeW)} × ${fmt2(sizeH)} mm</div>
+                </div>
+              </div>
+            </td>
+
+            <td>
+              <div class="xsmall">Anggaran: <span class="mono">${fmt3(r.estimated_weight_g)} g</span></div>
+              <div class="xsmall">Sblm laser: <span class="mono">${r.weight_before_laser_g == null ? '-' : fmt3(r.weight_before_laser_g) + ' g'}</span></div>
+              <div class="xsmall">Slps laser: <span class="mono">${r.weight_after_laser_g == null ? '-' : fmt3(r.weight_after_laser_g) + ' g'}</span></div>
+              <div class="xsmall">Siap: <span class="mono">${r.weight_final_g == null ? '-' : fmt3(r.weight_final_g) + ' g'}</span></div>
+            </td>
+
+            <td>${prodBadgeHtml(prod)}</td>
+            <td>${orderBadgeHtml(r.status || 'PENDING')}</td>
+
+            <td>
+              <div class="action-stack">
+                <button class="btn btn-sm btn-outline-dark" onclick="openDetail('${r.id}')">Buka</button>
+                <button class="btn btn-sm btn-outline-warning" onclick="quickSetStatus('${r.id}','REVIEW')">Review</button>
+                <button class="btn btn-sm btn-outline-info" onclick="quickSetStatus('${r.id}','APPROVED')">Approve</button>
+                <button class="btn btn-sm btn-outline-secondary" onclick="quickSetStatus('${r.id}','LASER_QUEUE')">Queue Laser</button>
+                <button class="btn btn-sm btn-outline-success" onclick="quickSetStatus('${r.id}','LASER_DONE')">Laser Done</button>
+              </div>
+            </td>
+          </tr>
+        `;
+      }).join('');
+    }
+
+    async function refreshAll(){
+      const rows = await fetchRows();
+      renderQueue(rows);
+      await loadSummary();
+    }
+
+    async function safeRefresh(){
+      if (_isRefreshing) return;
+      _isRefreshing = true;
+      try{
+        await refreshAll();
+      }finally{
+        _isRefreshing = false;
+      }
+    }
+
+    function startAutoRefresh(){
+      if (_tick) return;
+      _tick = setInterval(safeRefresh, REFRESH_MS);
+      document.addEventListener('visibilitychange', ()=>{
+        if (!document.hidden) safeRefresh();
+      });
+    }
+
+    function stopAutoRefresh(){
+      if (_tick){
+        clearInterval(_tick);
+        _tick = null;
+      }
+    }
+
+    function jobClamp(v, min, max){
+  return Math.max(min, Math.min(max, v));
+}
+
+function jobSafeName(raw){
+  let s = String(raw || "")
+    .replace(/[^\p{L}\p{N}\s]/gu, "")
+    .replace(/\s+/g, " ")
+    .trim();
+
+  if (!s) s = "Atiqah";
+  return s.slice(0, 12);
+}
+
+function jobFontFamily(fontName){
+  const f = String(fontName || "Pacifico").trim();
+  return `'${f}', ${f === "Poppins" ? "sans-serif" : "cursive"}`;
+}
+
+function jobOrnamentMap(v){
+  const k = safeUpper(v);
+  if (k === "NONE" || k === "TIADA") return { label:"Tiada", iconLeft:"", iconRight:"" };
+  if (k === "HEART" || k === "LOVE") return { label:"Love", iconLeft:"❤", iconRight:"" };
+  if (k === "DOUBLE-HEART" || k === "LOVE BERGANDA") return { label:"Love Berganda", iconLeft:"❤", iconRight:"❤" };
+  if (k === "FLOWER" || k === "BUNGA") return { label:"Bunga", iconLeft:"✿", iconRight:"" };
+  if (k === "STAR" || k === "BINTANG") return { label:"Bintang", iconLeft:"★", iconRight:"" };
+  if (k === "CROWN") return { label:"Crown", iconLeft:"♛", iconRight:"" };
+  if (k === "BUTTERFLY") return { label:"Butterfly", iconLeft:"🦋", iconRight:"" };
+  if (k === "LEAF" || k === "DAUN") return { label:"Daun", iconLeft:"❦", iconRight:"" };
+  return { label:v || "Tiada", iconLeft:"", iconRight:"" };
+}
+
+function jobGetTextBBoxSafe(){
+  const el = $('jobNameSvgText');
+  try{
+    const box = el.getBBox();
+    if (!box || !isFinite(box.x) || !isFinite(box.y) || !isFinite(box.width) || !isFinite(box.height)){
+      throw new Error("Invalid bbox");
+    }
+    return box;
+  }catch(_e){
+    return {
+      x: 490 - 180,
+      y: 300 - 60,
+      width: 360,
+      height: 120
+    };
+  }
+}
+
+function jobBuildRing(cx, cy, outerR = 16, innerR = 7){
+  return `
+    <circle cx="${cx}" cy="${cy}" r="${outerR}" fill="#fff" stroke="#111827" stroke-width="7"></circle>
+    <circle cx="${cx}" cy="${cy}" r="${innerR}" fill="#fff" stroke="#111827" stroke-width="4"></circle>
+  `;
+}
+
+function jobRenderRings(ringValue){
+  const box = jobGetTextBBoxSafe();
+  const ringsGroup = $('jobRingsGroup');
+
+  const padSide = 18;
+  const padTop = 18;
+
+  const leftX = jobClamp(box.x - padSide, 28, 952);
+  const rightX = jobClamp(box.x + box.width + padSide, 28, 952);
+  const sideY = jobClamp(box.y + (box.height * 0.48), 28, 592);
+
+  const topCenterX = jobClamp(box.x + (box.width / 2), 28, 952);
+  const topLeftX = jobClamp(box.x + Math.min(28, box.width * 0.18), 28, 952);
+  const topRightX = jobClamp(box.x + box.width - Math.min(28, box.width * 0.18), 28, 952);
+  const topY = jobClamp(box.y - padTop, 28, 592);
+
+  let html = "";
+  const ring = String(ringValue || "left");
+
+  switch(ring){
+    case "none":
+      html = "";
+      break;
+    case "left":
+      html = jobBuildRing(leftX, sideY);
+      break;
+    case "right":
+      html = jobBuildRing(rightX, sideY);
+      break;
+    case "both":
+      html = jobBuildRing(leftX, sideY) + jobBuildRing(rightX, sideY);
+      break;
+    case "top-center":
+      html = jobBuildRing(topCenterX, topY);
+      break;
+    case "top-left":
+      html = jobBuildRing(topLeftX, topY);
+      break;
+    case "top-right":
+      html = jobBuildRing(topRightX, topY);
+      break;
+    case "top-both":
+      html = jobBuildRing(topLeftX, topY) + jobBuildRing(topRightX, topY);
+      break;
+    default:
+      html = jobBuildRing(leftX, sideY);
+      break;
+  }
+
+  ringsGroup.innerHTML = html;
+}
+
+function jobRenderOrnaments(ornamentValue){
+  const box = jobGetTextBBoxSafe();
+  const orn = jobOrnamentMap(ornamentValue);
+
+  const leftEl = $('jobOrnamentLeft');
+  const rightEl = $('jobOrnamentRight');
+
+  const autoLeftX = jobClamp(box.x - 26, 20, 960);
+  const autoRightX = jobClamp(box.x + box.width + 26, 20, 960);
+  const autoTopY = jobClamp(box.y - 14, 24, 590);
+
+  leftEl.textContent = orn.iconLeft || "";
+  rightEl.textContent = orn.iconRight || "";
+
+  leftEl.setAttribute("x", autoLeftX);
+  leftEl.setAttribute("y", autoTopY);
+
+  rightEl.setAttribute("x", autoRightX);
+  rightEl.setAttribute("y", autoTopY);
+
+  leftEl.style.display = orn.iconLeft ? "block" : "none";
+  rightEl.style.display = orn.iconRight ? "block" : "none";
+}
+
+function applyJobPreview(row){
+  const name = jobSafeName(row.loket_name || 'Loket');
+  const fontName = row.font_name || 'Pacifico';
+  const ring = String(row.ring_position || 'left');
+  const ornament = row.ornament || 'none';
+
+  const widthMm = Number(row.final_width_mm || row.custom_width_mm || 36);
+  const heightMm = Number(
+  row.final_height_mm 
+  || row.custom_height_mm 
+  || row.height_mm 
+  || 12
+);
+  const thickMm = Number(row.final_thickness_mm || row.thickness_mm || 0.8);
+
+  const nameSvg = $('jobNameSvgText');
+
+  nameSvg.textContent = name;
+  nameSvg.style.fontFamily = jobFontFamily(fontName);
+  nameSvg.style.fontWeight = fontName === "Poppins" ? "800" : "700";
+
+  $('jobWidthLabel').textContent = `${fmt2(widthMm)} mm`;
+  $('jobHeightLabel').textContent = `${fmt2(heightMm)} mm`;
+
+  $('dm_size_name').textContent = `${fmt2(widthMm)} × ${fmt2(heightMm)} mm`;
+$('dm_size_overall').textContent = `${fmt2(widthMm)} × ${fmt2(heightMm)} mm`;
+$('dm_size_thick').textContent = `${fmt2(thickMm)} mm`;
+
+  requestAnimationFrame(() => {
+    jobRenderRings(ring);
+    jobRenderOrnaments(ornament);
+  });
+}
+
+    function fillDetail(row){
+      _currentId = row.id;
+
+      const sizeW = num(row.final_width_mm || row.custom_width_mm || 36);
+      const sizeH = num(
+  row.final_height_mm 
+  || row.custom_height_mm 
+  || row.height_mm 
+  || 12
+);
+
+      els.dm_ref.textContent = row.reference_1 || row.id;
+      els.dm_customer.textContent = row.customer_name || '-';
+      els.dm_phone.textContent = row.customer_phone || '-';
+      els.dm_name.textContent = row.loket_name || '-';
+      els.dm_material.textContent = row.material || '-';
+      els.dm_font.textContent = row.font_name || '-';
+      els.dm_ring.textContent = ringLabel(row.ring_position);
+      els.dm_orn.textContent = ornamentLabel(row.ornament);
+      els.dm_size.textContent = `${fmt2(sizeW)} × ${fmt2(sizeH)} mm`;
+      els.dm_thickness.textContent = `${fmt2(row.final_thickness_mm || row.thickness_mm)} mm`;
+     els.dm_weight_est.textContent = `${fmt3(row.estimated_weight_g)} g`;
+els.dm_weight_est_view.value = fmt3(row.estimated_weight_g);
+els.dm_total.textContent = money(row.total_rm);
+      els.dm_status.textContent = row.status || '-';
+      els.dm_pstatus.textContent = row.production_status || '-';
+      els.dm_notes.value = row.production_notes || '';
+
+      els.dm_final_width.value = fmt2(sizeW);
+      els.dm_final_height.value = fmt2(sizeH);
+      els.dm_final_thickness.value = fmt2(row.final_thickness_mm || row.thickness_mm || 0.8);
+
+      els.dm_weight_before.value = row.weight_before_laser_g == null ? '' : fmt3(row.weight_before_laser_g);
+      els.dm_weight_after.value = row.weight_after_laser_g == null ? '' : fmt3(row.weight_after_laser_g);
+      els.dm_weight_final.value = row.weight_final_g == null ? '' : fmt3(row.weight_final_g);
+
+      els.dm_svg_url.value = row.svg_file_url || '';
+      els.dm_plt_url.value = row.plt_file_url || '';
+
+      applyJobPreview(row);
+    }
+
+    window.openDetail = function(id){
+      const row = _rowsCache[id];
+      if (!row){
+        showToast('Order tidak dijumpai.');
+        return;
+      }
+      fillDetail(row);
+      new bootstrap.Modal($('detailModal')).show();
+    };
+
+    function getDetailPatch(){
+      const final_width_mm = num(els.dm_final_width.value || 0);
+      const final_height_mm = num(els.dm_final_height.value || 0);
+      const final_thickness_mm = num(els.dm_final_thickness.value || 0);
+
+      if (final_width_mm <= 0) throw new Error('Final lebar tidak sah.');
+      if (final_height_mm <= 0) throw new Error('Final tinggi tidak sah.');
+      if (final_thickness_mm <= 0) throw new Error('Final tebal tidak sah.');
+
+      return {
+        final_width_mm,
+        final_height_mm,
+        final_thickness_mm,
+        weight_before_laser_g: els.dm_weight_before.value === '' ? null : num(els.dm_weight_before.value),
+        weight_after_laser_g: els.dm_weight_after.value === '' ? null : num(els.dm_weight_after.value),
+        weight_final_g: els.dm_weight_final.value === '' ? null : num(els.dm_weight_final.value),
+        svg_file_url: els.dm_svg_url.value.trim(),
+        plt_file_url: els.dm_plt_url.value.trim(),
+        production_notes: els.dm_notes.value.trim()
+      };
+    }
+
+    async function savePatch(id, patch, successMsg){
+      const { error } = await sb.from(TABLE_NAME).update(patch).eq('id', id);
+      if (error) throw error;
+      showToast(successMsg || 'Berjaya disimpan.');
+      await safeRefresh();
+      const updated = _rowsCache[id];
+      if (updated) fillDetail(updated);
+    }
+
+    window.quickSetStatus = async function(id, nextStatus){
+      try{
+        const patch = { production_status: nextStatus };
+        if (nextStatus === 'LASER_QUEUE') patch.laser_started_at = new Date().toISOString();
+        if (nextStatus === 'LASER_DONE') patch.laser_done_at = new Date().toISOString();
+        if (nextStatus === 'COMPLETED'){
+          patch.completed_at = new Date().toISOString();
+          patch.status = 'COMPLETED';
+        }
+        if (nextStatus === 'CANCELLED'){
+          patch.status = 'CANCELLED';
+        }
+
+        const { error } = await sb.from(TABLE_NAME).update(patch).eq('id', id);
+        if (error) throw error;
+
+        await safeRefresh();
+        showToast(`Status production: ${nextStatus}`);
+      }catch(e){
+        alert('Ralat tukar status: ' + (e?.message || e));
+      }
+    };
+
+    els.btnSaveNote.addEventListener('click', async ()=>{
+      if (!_currentId) return;
+      try{
+        await savePatch(_currentId, {
+          production_notes: els.dm_notes.value.trim()
+        }, 'Nota production disimpan.');
+      }catch(e){
+        alert('Ralat simpan nota: ' + (e?.message || e));
+      }
+    });
+
+    els.btnSaveProduction.addEventListener('click', async ()=>{
+      if (!_currentId) return;
+      try{
+        await savePatch(_currentId, getDetailPatch(), 'Maklumat production disimpan.');
+      }catch(e){
+        alert('Ralat simpan production: ' + (e?.message || e));
+      }
+    });
+
+    els.btnToReview.addEventListener('click', async ()=>{
+      if (!_currentId) return;
+      try{
+        await savePatch(_currentId, {
+          ...getDetailPatch(),
+          production_status: 'REVIEW'
+        }, 'Status: REVIEW');
+      }catch(e){
+        alert('Ralat set review: ' + (e?.message || e));
+      }
+    });
+
+    els.btnApprove.addEventListener('click', async ()=>{
+      if (!_currentId) return;
+      try{
+        await savePatch(_currentId, {
+          ...getDetailPatch(),
+          production_status: 'APPROVED',
+          approved_at: new Date().toISOString()
+        }, 'Design diapprove.');
+      }catch(e){
+        alert('Ralat approve: ' + (e?.message || e));
+      }
+    });
+
+    els.btnQueueLaser.addEventListener('click', async ()=>{
+      if (!_currentId) return;
+      try{
+        await savePatch(_currentId, {
+          ...getDetailPatch(),
+          production_status: 'LASER_QUEUE',
+          laser_started_at: new Date().toISOString()
+        }, 'Masuk queue laser.');
+      }catch(e){
+        alert('Ralat queue laser: ' + (e?.message || e));
+      }
+    });
+
+    els.btnLaserDone.addEventListener('click', async ()=>{
+      if (!_currentId) return;
+      try{
+        const patch = getDetailPatch();
+        if (patch.weight_after_laser_g == null || patch.weight_after_laser_g <= 0){
+          alert('Berat selepas laser wajib isi dulu.');
+          return;
+        }
+
+        await savePatch(_currentId, {
+          ...patch,
+          production_status: 'LASER_DONE',
+          laser_done_at: new Date().toISOString()
+        }, 'Laser siap direkod.');
+      }catch(e){
+        alert('Ralat laser done: ' + (e?.message || e));
+      }
+    });
+
+    els.btnComplete.addEventListener('click', async ()=>{
+      if (!_currentId) return;
+      try{
+        const patch = getDetailPatch();
+        if (patch.weight_final_g == null || patch.weight_final_g <= 0){
+          alert('Berat siap wajib isi dulu.');
+          return;
+        }
+
+        await savePatch(_currentId, {
+          ...patch,
+          production_status: 'COMPLETED',
+          status: 'COMPLETED',
+          completed_at: new Date().toISOString()
+        }, 'Tempahan ditanda siap.');
+      }catch(e){
+        alert('Ralat tanda siap: ' + (e?.message || e));
+      }
+    });
+
+    els.btnCancelProd.addEventListener('click', async ()=>{
+      if (!_currentId) return;
+      const ok = confirm('Cancel production untuk order ini?');
+      if (!ok) return;
+
+      try{
+        await savePatch(_currentId, {
+          production_status: 'CANCELLED',
+          status: 'CANCELLED',
+          production_notes: els.dm_notes.value.trim()
+        }, 'Production dibatalkan.');
+      }catch(e){
+        alert('Ralat cancel production: ' + (e?.message || e));
+      }
+    });
+
+   els.btnOpenSvg.addEventListener('click', async ()=>{
+  try{
+    if (!_currentId){
+      showToast('Order belum dipilih.');
+      return;
+    }
+
+    const row = _rowsCache[_currentId];
+    if (!row){
+      showToast('Order tidak dijumpai.');
+      return;
+    }
+
+    const svgText = await buildProductionSvgText(row);
+    const blob = new Blob([svgText], { type: 'image/svg+xml;charset=utf-8' });
+    downloadBlobFile(blob, `${buildSafeFileBase(row)}.svg`);
+    showToast('SVG berjaya dijana.');
+  }catch(e){
+    alert('Ralat generate SVG: ' + (e?.message || e));
+  }
+});
+
+els.btnOpenPlt.addEventListener('click', async ()=>{
+  try{
+    if (!_currentId){
+      showToast('Order belum dipilih.');
+      return;
+    }
+
+    const row = _rowsCache[_currentId];
+    if (!row){
+      showToast('Order tidak dijumpai.');
+      return;
+    }
+
+    const svgText = await buildProductionSvgText(row);
+    const pathD = extractPathFromSvg(svgText);
+    const pltText = buildProductionPltTextFromPath(pathD);
+
+    const blob = new Blob([pltText], { type: 'text/plain;charset=utf-8' });
+    downloadBlobFile(blob, `${buildSafeFileBase(row)}.plt`);
+    showToast('PLT berjaya dijana.');
+  }catch(e){
+    alert('Ralat generate PLT: ' + (e?.message || e));
+  }
+});
+    els.btnPrintSheet.addEventListener('click', ()=>{
+      if (!_currentId) return;
+      const row = _rowsCache[_currentId];
+      if (!row){
+        showToast('Order tidak dijumpai.');
+        return;
+      }
+
+      const width = els.dm_final_width.value || fmt2(row.final_width_mm || row.custom_width_mm || 36);
+      const height = els.dm_final_height.value || fmt2(row.final_height_mm || guessHeightFromWidthAndName((row.final_width_mm || row.custom_width_mm || 36), row.font_name, row.loket_name));
+      const thick = els.dm_final_thickness.value || fmt2(row.final_thickness_mm || row.thickness_mm || 0.8);
+      const wBefore = els.dm_weight_before.value || '-';
+      const wAfter = els.dm_weight_after.value || '-';
+      const wFinal = els.dm_weight_final.value || '-';
+      const notes = els.dm_notes.value || row.production_notes || '';
+
+      const w = window.open('', '_blank');
+      if (!w) return;
+
+      w.document.write(`
+        <html lang="ms">
+        <head>
+          <meta charset="utf-8">
+          <title>Job Sheet ${esc(row.reference_1 || row.id)}</title>
+          <style>
+            body{font-family:Arial,sans-serif;padding:22px;color:#111}
+            h2{margin:0 0 16px}
+            .box{border:1px solid #ddd;border-radius:12px;padding:14px;margin-bottom:14px}
+            .kv{display:grid;grid-template-columns:180px 1fr;gap:8px 10px}
+            .k{color:#666}
+            .v{font-weight:700}
+            .big{
+              margin-top:8px;border:1px solid #ddd;border-radius:12px;min-height:140px;
+              display:flex;align-items:center;justify-content:center;font-size:46px
+            }
+          </style>
+        </head>
+        <body>
+          <h2>Job Sheet — Production Loket</h2>
+
+          <div class="box">
+            <div class="kv">
+              <div class="k">Rujukan</div><div class="v">${esc(row.reference_1 || row.id)}</div>
+              <div class="k">Pelanggan</div><div class="v">${esc(row.customer_name || '-')}</div>
+              <div class="k">Telefon</div><div class="v">${esc(row.customer_phone || '-')}</div>
+              <div class="k">Nama Loket</div><div class="v">${esc(row.loket_name || '-')}</div>
+              <div class="k">Material</div><div class="v">${esc(row.material || '-')}</div>
+              <div class="k">Font</div><div class="v">${esc(row.font_name || '-')}</div>
+              <div class="k">Ring</div><div class="v">${esc(ringLabel(row.ring_position))}</div>
+              <div class="k">Simbol</div><div class="v">${esc(ornamentLabel(row.ornament))}</div>
+              <div class="k">Final Saiz</div><div class="v">${esc(width)} mm × ${esc(height)} mm</div>
+              <div class="k">Final Tebal</div><div class="v">${esc(thick)} mm</div>
+              <div class="k">Berat Asal</div><div class="v">${esc(wBefore)} g</div>
+              <div class="k">Berat Selepas Laser</div><div class="v">${esc(wAfter)} g</div>
+              <div class="k">Berat Siap</div><div class="v">${esc(wFinal)} g</div>
+              <div class="k">Status Production</div><div class="v">${esc(row.production_status || '-')}</div>
+            </div>
+          </div>
+
+          <div class="box">
+            <div style="font-weight:700;margin-bottom:8px">Preview</div>
+            <div class="big" style="font-family:${fontCssFamily(row.font_name)}">${esc(row.loket_name || '-')}</div>
+          </div>
+
+          <div class="box">
+            <div style="font-weight:700;margin-bottom:8px">Nota</div>
+            <div>${esc(notes).replace(/\n/g,'<br>') || '-'}</div>
+          </div>
+
+          <script>window.onload = () => window.print();<\/script>
+        </body>
+        </html>
+      `);
+      w.document.close();
+    });
+
+    document.addEventListener('click', async (e)=>{
+      const pf = e.target?.closest?.('[data-pfilter]');
+      if (pf){
+        e.preventDefault();
+        CURRENT_FILTER = pf.getAttribute('data-pfilter') || 'ALL';
+        document.querySelectorAll('#prodFilterRow [data-pfilter]').forEach(b => b.classList.remove('active'));
+        pf.classList.add('active');
+        await safeRefresh();
+      }
+    });
+
+    els.btnRefresh.addEventListener('click', safeRefresh);
+    els.searchBox.addEventListener('keydown', async (e)=>{
+      if (e.key === 'Enter') await safeRefresh();
+    });
+    els.logout.addEventListener('click', logout);
+
+    function __tryUnlockAudio(){
+      const a = document.getElementById('soundCash');
+      if (!a) return Promise.resolve(false);
+      a.volume = 1.0;
+      a.muted = false;
+      return a.play().then(()=>{
+        a.pause();
+        a.currentTime = 0;
+        window.__cashUnlocked = true;
+        return true;
+      }).catch(()=>false);
+    }
+
+    function __showHint(show){
+      const h = document.getElementById('audioHint');
+      if (h) h.style.display = show ? '' : 'none';
+    }
+
+    (function setupAudioUnlock(){
+      if (window.__audioUnlockReady) return;
+      window.__audioUnlockReady = true;
+
+      const handler = async ()=>{
+        if (window.__cashUnlocked) return cleanup();
+        const ok = await __tryUnlockAudio();
+        if (ok){
+          cleanup();
+          __showHint(false);
+        }
+      };
+
+      function cleanup(){
+        window.removeEventListener('click', handler, true);
+        window.removeEventListener('touchstart', handler, true);
+        window.removeEventListener('keydown', handler, true);
+      }
+
+      window.addEventListener('click', handler, true);
+      window.addEventListener('touchstart', handler, true);
+      window.addEventListener('keydown', handler, true);
+
+      setTimeout(()=>{
+        if (!window.__cashUnlocked) __showHint(true);
+      }, 1000);
+
+      document.getElementById('btnUnlockAudio')?.addEventListener('click', handler);
+    })();
+
+    function playCash(){
+      const a = document.getElementById('soundCash');
+      if (!a) return;
+
+      const doPlay = ()=>{
+        a.currentTime = 0;
+        a.play().catch(()=>{});
+      };
+
+      if (!window.__cashUnlocked){
+        const once = async ()=>{
+          const ok = await __tryUnlockAudio();
+          if (ok) doPlay();
+          cleanup();
+        };
+        function cleanup(){
+          window.removeEventListener('click', once, true);
+          window.removeEventListener('touchstart', once, true);
+          window.removeEventListener('keydown', once, true);
+        }
+        window.addEventListener('click', once, true);
+        window.addEventListener('touchstart', once, true);
+        window.addEventListener('keydown', once, true);
+        return;
+      }
+
+      doPlay();
+    }
+
+    window.addEventListener('beforeunload', stopAutoRefresh);
+
+    (async function boot(){
+      const ok = await initAuth();
+      if (!ok) return;
+      await safeRefresh();
+      startAutoRefresh();
+    })();
+  </script>
+</body>
+</html>

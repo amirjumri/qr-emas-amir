@@ -171,29 +171,33 @@ function resitNo(suffix){
   let qErr = null;
 
   async function tryQuery(selectList, byCol, value){
-  const q = await sb.from('j916_orders')
-    .select(selectList)
-    .eq(byCol, value)
-    .in('status', ['PAID','COMPLETED'])
-    .order('created_at',{ascending:true});
-  if (q.error) { qErr = q.error; return []; }
-  return q.data || [];
-}
+    const q = await sb.from('j916_orders')
+      .select(selectList)
+      .eq(byCol, value)
+      .in('status', ['PAID','COMPLETED'])
+      .order('created_at',{ascending:true});
+    if (q.error) { qErr = q.error; return []; }
+    return q.data || [];
+  }
+
+  const SELECT_LIST =
+  'id,created_at,customer_name,phone,customer_ic,user_id,email,alamat,item_name,name,code,weight_g,weight_new_g,weight_orig_g,grams,qty,amount_cents,method,status,bill_id_text,bill_id,order_code,shipping_cents,discount_cents,subtotal_rm,shipping_rm,pay_disc_rm,coupon_disc_rm,grand_total_rm,checkout_group,price_per_g,unit_rm,upah_rm';
 
   // cuba ikut bill_id_text dahulu
-if (bill) rows = await tryQuery(
-  'id,created_at,customer_name,phone,customer_ic,user_id,email,alamat,item_name,name,code,weight_g,weight_new_g,weight_orig_g,grams,qty,amount_cents,method,status,bill_id_text,bill_id,order_code,shipping_cents,discount_cents,subtotal_rm,shipping_rm,pay_disc_rm,coupon_disc_rm,grand_total_rm,checkout_group',
-  'bill_id_text', bill
-);
+  if (bill) rows = await tryQuery(
+    SELECT_LIST,
+    'bill_id_text', bill
+  );
 
-// fallback ikut bill_id (kalau Billplz ID disimpan di bill_id)
-if (!rows.length && bill) rows = await tryQuery(
-  'id,created_at,customer_name,phone,customer_ic,user_id,email,alamat,item_name,name,code,weight_g,weight_new_g,weight_orig_g,grams,qty,amount_cents,method,status,bill_id_text,bill_id,order_code,shipping_cents,discount_cents,subtotal_rm,shipping_rm,pay_disc_rm,coupon_disc_rm,grand_total_rm,checkout_group',
-  'bill_id', bill
-);
+  // fallback ikut bill_id (kalau Billplz ID disimpan di bill_id)
+  if (!rows.length && bill) rows = await tryQuery(
+    SELECT_LIST,
+    'bill_id', bill
+  );
+
   // fallback ikut order_code
   if (!rows.length && order) rows = await tryQuery(
-    'id,created_at,customer_name,phone,customer_ic,user_id,email,alamat,item_name,name,code,weight_g,weight_new_g,weight_orig_g,grams,qty,amount_cents,method,status,bill_id_text,bill_id,order_code,shipping_cents,discount_cents,subtotal_rm,shipping_rm,pay_disc_rm,coupon_disc_rm,grand_total_rm,checkout_group',
+    SELECT_LIST,
     'order_code', order
   );
 
@@ -202,57 +206,33 @@ if (!rows.length && bill) rows = await tryQuery(
     console.warn('[resit-j916] retry with * due to', qErr);
     if (bill){
       const r1 = await sb.from('j916_orders')
-        .select('*').eq('bill_id_text',bill).eq('status','PAID')
+        .select('*').eq('bill_id_text',bill).in('status',['PAID','COMPLETED'])
         .order('created_at',{ascending:true});
       rows = r1.data || [];
     }
     if (!rows.length && order){
       const r2 = await sb.from('j916_orders')
-        .select('*').eq('order_code',order).eq('status','PAID')
+        .select('*').eq('order_code',order).in('status',['PAID','COMPLETED'])
         .order('created_at',{ascending:true});
       rows = r2.data || [];
     }
   }
 
   // ===========================
-  // ✅ FIX: pilih HEAD row yang betul
-  //   - headRow untuk shipping/discount/grand total
-  //   - rows untuk senarai item
+  // ✅ FIX UTAMA:
+  //   Jangan expand ikut checkout_group.
+  //   Resit ikut bill/order yang diminta sahaja.
   // ===========================
   let headRow = rows.length ? rows[0] : null;
 
-  // 🔗 Kalau ada checkout_group → ambil SEMUA item dalam group (PAID)
+  // kalau query by bill/order, headRow dah betul — tapi buat safety pick ikut key
   if (rows.length) {
-    const grp = rows[0].checkout_group;
-    if (grp) {
-      const g = await sb.from('j916_orders')
-  .select('*')
-  .eq('checkout_group', grp)
-  .in('status', ['PAID','COMPLETED'])
-  .order('created_at', { ascending: true });
+    if (bill) headRow = rows.find(r => String(r.bill_id_text||'') === String(bill) || String(r.bill_id||'') === String(bill)) || headRow;
+    if (order) headRow = rows.find(r => String(r.order_code||'') === String(order)) || headRow;
 
-      if (!g.error && Array.isArray(g.data) && g.data.length) {
-        rows = g.data;
-
-        // ✅ headRow mesti ikut bill_id_text (kalau ada), kalau tidak ikut order_code, kalau tidak kekalkan asal
-        if (bill) {
-          headRow = rows.find(r => String(r.bill_id_text||'') === String(bill)) || headRow;
-        } else if (order) {
-          headRow = rows.find(r => String(r.order_code||'') === String(order)) || headRow;
-        } else {
-          headRow = headRow || rows[0];
-        }
-
-        // ✅ extra fallback: kalau masih head tak ada grand/amount, cari row yang ada amount/grand
-        if (headRow && !(Number(headRow.amount_cents) > 0) && !(Number(headRow.grand_total_rm) > 0)) {
-          const candidate = rows.find(r => (Number(r.amount_cents) > 0) || (Number(r.grand_total_rm) > 0));
-          if (candidate) headRow = candidate;
-        }
-      }
-    } else {
-      // kalau tak ada group, headRow kekal rows[0]
-      if (bill) headRow = rows.find(r => String(r.bill_id_text||'') === String(bill)) || headRow;
-      if (order) headRow = rows.find(r => String(r.order_code||'') === String(order)) || headRow;
+    if (headRow && !(Number(headRow.amount_cents) > 0) && !(Number(headRow.grand_total_rm) > 0)) {
+      const candidate = rows.find(r => (Number(r.amount_cents) > 0) || (Number(r.grand_total_rm) > 0));
+      if (candidate) headRow = candidate;
     }
   }
 
@@ -283,7 +263,7 @@ if (!rows.length && bill) rows = await tryQuery(
       email  = email  || cust?.email  || '';
       alamat = alamat || cust?.alamat || '';
 
-      // Jika IC masih kosong, cuba tarik dari customers (select('*') selamat)
+      // Jika IC masih kosong, cuba tarik dari customers
       if (!custIC){
         const qc = await sb.from('customers')
           .select('*')
@@ -322,10 +302,8 @@ if (!rows.length && bill) rows = await tryQuery(
   $('resitBill').textContent = 'Bill/Order: ' + (first.bill_id_text || first.bill_id || first.order_code || bill || order);
   $('resitNo').textContent   = 'No. Resit: ' + resitNo(first.order_code || first.bill_id_text || bill || order);
 
- // ========== Ringkasan jumlah & diskaun ==========
-  // ✅ IMPORTANT:
-  // Untuk checkout_group (multi item), jangan percaya amount_cents / grand_total_rm pada 1 row.
-  // Resit mesti kira sendiri: GRAND = SUBTOTAL + SHIPPING - DISCOUNT
+  // ========== Ringkasan jumlah & diskaun ==========
+  // Resit ikut rows yang match bill/order sahaja.
 
   // 1) Kira DISKAUN total (sum semua row – biasanya hanya 1 row ada nilai)
   const discRM = Number(rows.reduce((acc, r) => {
@@ -338,18 +316,36 @@ if (!rows.length && bill) rows = await tryQuery(
   let subtotalGross = 0;
   const items = rows.map(r => {
     const qty = Math.max(1, Number(r.qty || 1));
-    let priceGross = Number(r.unit_rm);
+    let priceGross = 0;
 
-    if (!Number.isFinite(priceGross) || priceGross <= 0) {
-      if (r.subtotal_rm != null) {
-        priceGross = Number(r.subtotal_rm) / qty;
-      } else if (Number(r.amount_cents) > 0) {
-        // fallback: amount_cents hanya untuk dapatkan unit price bila tiada unit_rm/subtotal_rm
-        priceGross = centsToRm(r.amount_cents) / qty;
-      } else {
-        priceGross = 0;
-      }
-    }
+const w =
+  (r.weight_new_g != null && Number(r.weight_new_g) > 0) ? Number(r.weight_new_g)
+  : (r.weight_g != null && Number(r.weight_g) > 0) ? Number(r.weight_g)
+  : (r.grams != null ? Number(r.grams) : 0);
+
+const ppg  = Number(r.price_per_g || 0);
+const upah = Number(r.upah_rm || 0);
+
+// ✅ kalau ada upah, utamakan harga yang memang sudah disimpan dalam order
+if (upah > 0) {
+  if (Number(r.unit_rm) > 0) {
+    priceGross = Number(r.unit_rm);
+  } else if (r.subtotal_rm != null) {
+    priceGross = Number(r.subtotal_rm) / qty;
+  } else if (Number(r.amount_cents) > 0) {
+    priceGross = centsToRm(r.amount_cents) / qty;
+  }
+}
+// ✅ kalau tiada upah, baru guna berat × harga/g
+else if (w > 0 && ppg > 0) {
+  priceGross = w * ppg;
+} else if (Number(r.unit_rm) > 0) {
+  priceGross = Number(r.unit_rm);
+} else if (r.subtotal_rm != null) {
+  priceGross = Number(r.subtotal_rm) / qty;
+} else if (Number(r.amount_cents) > 0) {
+  priceGross = centsToRm(r.amount_cents) / qty;
+}
 
     const lineGross = priceGross * qty;
     subtotalGross += lineGross;
@@ -359,28 +355,28 @@ if (!rows.length && bill) rows = await tryQuery(
 
   const subRM = Number(subtotalGross.toFixed(2));
 
-  // 3) Shipping total (sum semua row – sebab dalam group, shipping boleh duduk pada row pertama sahaja)
+  // 3) Shipping total
   const shipRM = Number(rows.reduce((acc, r) => {
     const s = (r.shipping_rm != null) ? Number(r.shipping_rm) : centsToRm(r.shipping_cents);
     return acc + Number(s || 0);
   }, 0).toFixed(2));
 
-  // 4) Grand total – kira sendiri (paling betul untuk group)
+  // 4) Grand total – kira sendiri
   const grandRM = Number((subRM + shipRM - discRM).toFixed(2));
 
   // ========== Jadual item (TANPA agih diskaun per item) ==========
   const body = items.map((it, i) => {
     const { r, qty, priceGross, lineGross } = it;
 
-    // ✅ Jangan agih diskaun ke item (elak merapu untuk checkout_group)
     const itemDisc = 0;
     const lineNet  = lineGross;
 
     const itemW = Number(
-  (r.weight_new_g != null && Number(r.weight_new_g) > 0) ? r.weight_new_g
-  : (r.weight_g != null && Number(r.weight_g) > 0) ? r.weight_g
-  : (r.grams != null ? r.grams : 0)
-);
+      (r.weight_new_g != null && Number(r.weight_new_g) > 0) ? r.weight_new_g
+      : (r.weight_g != null && Number(r.weight_g) > 0) ? r.weight_g
+      : (r.grams != null ? r.grams : 0)
+    );
+
     const title = [
       r.code ? ('#' + r.code) : null,
       (r.name || r.item_name || '-'),

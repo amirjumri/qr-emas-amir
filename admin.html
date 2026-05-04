@@ -2,7 +2,8 @@
 <html lang="ms">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<link rel="stylesheet" href="/global.css">
 <title>Admin Emas Amir</title>
 <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
 <style>
@@ -28,21 +29,133 @@
       Laman Utama
     </a>
 
-<a class="btn btn-outline-secondary btn-chip" href="admin-misc-service.html">
-      Admin Service
-    </a>   
 
- <a class="btn btn-outline-secondary btn-chip" href="admin-j999.html">
-      Admin 999
-    </a>
+<!-- ADMIN REPORT -->
+    <div class="btn-group">
+      <button
+        type="button"
+        class="btn btn-outline-secondary btn-chip dropdown-toggle"
+        data-bs-toggle="dropdown"
+        aria-expanded="false">
+        Admin Report
+      </button>
 
-    <a class="btn btn-outline-secondary btn-chip" href="admin-j916.html">
-      Admin 916
-    </a>
+      <ul class="dropdown-menu">
+        <li>
+          <a class="dropdown-item" href="admin-misc-service.html">
+            Misc Service
+          </a>
+        </li>
+        <li>
+          <a class="dropdown-item" href="admin-report.html">
+            Admin Report 916
+          </a>
+        </li>
+<li>
+          <a class="dropdown-item" href="admin-report-j999.html">
+            Admin Report 999
+          </a>
+        </li>
 
-    <a class="btn btn-outline-secondary btn-chip" href="adminstok-j916.html">
-      Admin Stok 916
-    </a>
+        <li>
+          <a class="dropdown-item" href="admin-gold-stockout.html">
+            Stok Out
+          </a>
+        </li>
+<li>
+          <a class="dropdown-item" href="admin-j916-rules.html">
+            Admin Rule
+          </a>
+        </li>
+<li>
+          <a class="dropdown-item" href="admin-gold999-production.html">
+            Admin Production 9999
+          </a>
+        </li>
+<li>
+          <a class="dropdown-item" href="admin-production-tempahan.html">
+            Admin Production Tempahan
+          </a>
+        </li>
+<li>
+          <a class="dropdown-item" href="admin-live.html">
+            Admin Live
+          </a>
+        </li>
+
+<li>
+          <a class="dropdown-item" href="admin-zakat.html">
+            Admin Zakat
+          </a>
+        </li>
+<li>
+  <a class="dropdown-item" href="admin-point.html">
+    Admin Point
+  </a>
+</li>
+<li>
+  <a class="dropdown-item" href="admin-misi.html">
+    Admin Misi 0.1g
+  </a>
+</li>
+
+
+      </ul>
+    </div>
+    <!-- /ADMIN REPORT -->
+
+<!-- ADMIN 916 999 TABUNG -->
+    <div class="btn-group">
+      <button
+        type="button"
+        class="btn btn-outline-secondary btn-chip dropdown-toggle"
+        data-bs-toggle="dropdown"
+        aria-expanded="false">
+        Admin 916 999 Tabung
+      </button>
+
+      <ul class="dropdown-menu">
+        <li>
+          <a class="dropdown-item" href="admin-j916.html">
+            Admin 916
+          </a>
+        </li>
+<li>
+          <a class="dropdown-item" href="adminstok-j916.html">
+            Admin Stok 916
+          </a>
+        </li>
+<li>
+          <a class="dropdown-item" href="admin-stok-voice-batch.html">
+            Admin Stok Voice
+          </a>
+        </li>
+
+        <li>
+          <a class="dropdown-item" href="admin-j999.html">
+            Admin 999
+          </a>
+        </li>
+        <li>
+          <a class="dropdown-item" href="admintabung-simpan.html">
+            Admin Tabung
+          </a>
+        </li>
+<li>
+          <a class="dropdown-item" href="admin-tempahan.html">
+            Admin Tempahan
+          </a>
+<li>
+          <a class="dropdown-item" href="admin-chat.html">
+            Admin Chat
+          </a>
+<li>
+          <a class="dropdown-item" href="admin-notification.html">
+            Admin Notification
+          </a>
+      </ul>
+    </div>
+    <!-- /ADMIN 916 999 Tabung -->
 
     <!-- ADMIN TRADE DROPDOWN -->
     <div class="btn-group">
@@ -74,9 +187,35 @@
     </div>
     <!-- /ADMIN TRADE -->
 
-    <a class="btn btn-outline-secondary btn-chip" href="admintabung-simpan.html">
-      Admin Tabung
-    </a>
+ <!-- ADMIN CERT DROPDOWN -->
+    <div class="btn-group">
+      <button
+        type="button"
+        class="btn btn-outline-secondary btn-chip dropdown-toggle"
+        data-bs-toggle="dropdown"
+        aria-expanded="false">
+        Admin Cert
+      </button>
+
+      <ul class="dropdown-menu">
+        <li>
+          <a class="dropdown-item" href="admin-cert-psd.html">
+            Admin Cert 36
+          </a>
+        </li>
+        <li>
+          <a class="dropdown-item" href="custom-studio.html">
+            Cert Studio
+          </a>
+        </li>
+<li>
+          <a class="dropdown-item" href="quran.html">
+            Quran
+          </a>
+
+      </ul>
+    </div>
+    <!-- /ADMIN CERT -->
 
     <a class="btn btn-outline-secondary btn-chip" href="account.html">
       Akaun
@@ -86,6 +225,52 @@
 </div>
 
 <hr>
+
+<!-- Kawalan LIVE Comment Page -->
+<div class="card">
+  <div class="card-body">
+    <h5 class="card-title">🔴 Kawalan LIVE Page</h5>
+    <div class="text-muted small mb-3">
+      Kawal status page komen live. Bila tutup, customer akan nampak nota tiada live.
+    </div>
+
+    <div class="row g-2">
+      <div class="col-md-3">
+        <label class="form-label">Status LIVE</label>
+        <select id="liveStatusAdmin" class="form-select">
+          <option value="LIVE">LIVE sedang berjalan</option>
+          <option value="ENDED">LIVE sudah tamat</option>
+        </select>
+      </div>
+
+      <div class="col-md-9">
+        <label class="form-label">Nota bila LIVE tamat</label>
+        <input id="liveMessageAdmin" class="form-control"
+               value="LIVE sudah tamat. Tunggu LIVE seterusnya ya. Sila daftar, buka Chat Ai-Dan dan aktifkan notifikasi untuk dapat alert LIVE berikutnya.">
+      </div>
+
+      <div class="col-12 d-flex flex-wrap gap-2 mt-2">
+        <button id="btnSaveLiveStatus" class="btn btn-primary">
+          Simpan Status
+        </button>
+
+        <button id="btnEndLiveNow" class="btn btn-danger">
+          Tutup LIVE Sekarang
+        </button>
+
+        <button id="btnStartLiveNow" class="btn btn-success">
+          Buka LIVE Semula
+        </button>
+
+        <button id="btnResetShareCount" class="btn btn-outline-secondary">
+          Reset Share Count
+        </button>
+      </div>
+
+      <div id="liveAdminNote" class="small text-muted mt-2"></div>
+    </div>
+  </div>
+</div>
 
   <!-- Pengurusan Admin -->
   <div class="card">
@@ -194,10 +379,10 @@
     </div>
   </div>
 
-  <!-- Edit Upah — Gold Coin & Dinar -->
+  <!-- Edit Upah — Gold Coin, Gold Bar & Dinar -->
   <div class="card">
     <div class="card-body">
-      <h5 class="card-title">🪙 Edit Upah — Gold Coin & Dinar</h5>
+      <h5 class="card-title">🪙 Edit Upah — Gold Coin, Gold Bar & Dinar</h5>
       <div class="text-muted small mb-2">
         Simpan upah setiap berat. Halaman <b>GoldBar/Coin</b> akan auto dikemas kini (realtime).
       </div>
@@ -208,6 +393,15 @@
         <table class="table table-sm table-xs align-middle">
           <thead><tr><th>Berat</th><th style="width:180px">Upah (RM)</th><th>Catatan</th></tr></thead>
           <tbody id="upahCoinBody"><tr><td colspan="3">Memuatkan…</td></tr></tbody>
+        </table>
+      </div>
+
+      <!-- BAR -->
+      <h6 class="mt-3 mb-2">Gold Bar</h6>
+      <div class="table-responsive">
+        <table class="table table-sm table-xs align-middle">
+          <thead><tr><th>Berat</th><th style="width:180px">Upah (RM)</th><th>Catatan</th></tr></thead>
+          <tbody id="upahBarBody"><tr><td colspan="3">Memuatkan…</td></tr></tbody>
         </table>
       </div>
 
@@ -452,6 +646,85 @@ function setLocalNow(el){
   const dd=String(now.getDate()).padStart(2,"0");const hh=String(now.getHours()).padStart(2,"0");
   const mi=String(now.getMinutes()).padStart(2,"0");el.value=`${yyyy}-${mm}-${dd}T${hh}:${mi}`;
 }
+
+async function loadLiveAdminControl(){
+  const note = $("liveAdminNote");
+
+  try{
+    const { data, error } = await sb
+      .from("live_config")
+      .select("live_status, live_message, share_count")
+      .eq("id", 1)
+      .maybeSingle();
+
+    if (error) throw error;
+
+    $("liveStatusAdmin").value = data?.live_status || "LIVE";
+    $("liveMessageAdmin").value = data?.live_message || "LIVE sudah tamat. Tunggu LIVE seterusnya ya. Sila daftar, buka Chat Ai-Dan dan aktifkan notifikasi untuk dapat alert LIVE berikutnya.";
+
+    if (note){
+      note.textContent = `Share LIVE sekarang: ${Number(data?.share_count || 0)} kali`;
+    }
+
+  }catch(e){
+    if (note) note.textContent = "Ralat muat kawalan LIVE: " + (e?.message || e);
+  }
+}
+
+async function saveLiveAdminControl(statusValue){
+  const note = $("liveAdminNote");
+  const status = statusValue || $("liveStatusAdmin").value || "LIVE";
+  const msg = $("liveMessageAdmin").value || "";
+
+  if (note) note.textContent = "Menyimpan status LIVE…";
+
+  const { error } = await sb
+    .from("live_config")
+    .update({
+      live_status: status,
+      live_message: msg
+    })
+    .eq("id", 1);
+
+  if (error){
+    if (note) note.textContent = "Gagal simpan: " + error.message;
+    return;
+  }
+
+  $("liveStatusAdmin").value = status;
+  if (note){
+    note.textContent = status === "ENDED"
+      ? "✔ LIVE ditutup. Customer akan nampak nota tiada live."
+      : "✔ LIVE dibuka semula.";
+  }
+}
+
+$("btnSaveLiveStatus").onclick = () => saveLiveAdminControl();
+
+$("btnEndLiveNow").onclick = () => {
+  $("liveStatusAdmin").value = "ENDED";
+  saveLiveAdminControl("ENDED");
+};
+
+$("btnStartLiveNow").onclick = () => {
+  $("liveStatusAdmin").value = "LIVE";
+  saveLiveAdminControl("LIVE");
+};
+
+$("btnResetShareCount").onclick = async () => {
+  const ok = confirm("Reset jumlah share LIVE kepada 0?");
+  if (!ok) return;
+
+  const { error } = await sb
+    .from("live_config")
+    .update({ share_count: 0 })
+    .eq("id", 1);
+
+  $("liveAdminNote").textContent = error
+    ? "Gagal reset: " + error.message
+    : "✔ Share count sudah reset ke 0.";
+};
+
 function ensureTimeFilled(el){
   if(!el.value) return; if(/T00:00$/.test(el.value)){
     const now=new Date(); const hh=String(now.getHours()).padStart(2,"0"); const mi=String(now.getMinutes()).padStart(2,"0");
@@ -583,8 +856,9 @@ async function loadBuyHistory(limit=50){
   }
 }
 
-/* ---------- UPAH: Coin & Dinar ---------- */
+/* ---------- UPAH: Coin, Bar & Dinar ---------- */
 const COIN_WEIGHTS  = [0.10,0.15,0.25,0.50,1.00,1.50,2.50,3.00,5.00];
+const BAR_WEIGHTS   = [0.50,1.00];
 const DINAR_WEIGHTS = [1.0625,2.1250,4.2500];
 const DINAR_LABELS  = {
   1.0625: "1/4 dinar (1.0625g)",
@@ -610,6 +884,12 @@ async function renderUpah(kind, weights, tbodyId){
       const key = Number(w).toFixed(4);
       const val = map.has(key) ? map.get(key) : 0;
       const label = (kind==='dinar') ? (DINAR_LABELS[Number(w)] || `${w}g`) : `${w}g`;
+      const note = kind==='dinar'
+        ? `Upah jualan untuk Dinar ${label}`
+        : kind==='bar'
+          ? `Upah jualan untuk Gold Bar ${label}`
+          : `Upah jualan untuk Gold Coin ${label}`;
+
       return `
         <tr>
           <td>${label}</td>
@@ -619,7 +899,7 @@ async function renderUpah(kind, weights, tbodyId){
                    data-kind="${kind}" data-weight="${w}"
                    value="${Number(val).toFixed(2)}">
           </td>
-          <td>Upah jualan untuk ${kind==='dinar' ? 'Dinar '+label : 'Gold Coin '+label}</td>
+          <td>${note}</td>
         </tr>`;
     }).join("");
   }catch(e){
@@ -687,7 +967,7 @@ async function loadPaymentDiscounts(){
   const map = new Map((data||[]).map(r => [String(r.method || "").toLowerCase(), Number(r.percent || 0)]));
 
   $("discFpx").value     = map.get("fpx")         || 0;
-  $("discManual").value  = map.get("manual")      || 0;          // 🔹 Tunai / E-Wallet (Manual)
+  $("discManual").value  = map.get("manual")      || 0;
   $("discCard").value    = map.get("card_wallet") || 0;
   $("discBnpl").value    = map.get("bnpl")        || 0;
 
@@ -697,7 +977,7 @@ async function loadPaymentDiscounts(){
 $("btnSaveDisc").onclick = async ()=>{
   const rows = [
     { method: "fpx",         percent: Number($("discFpx").value    || 0) },
-    { method: "manual",      percent: Number($("discManual").value || 0) }, // 🔹 Tunai / E-Wallet (Manual)
+    { method: "manual",      percent: Number($("discManual").value || 0) },
     { method: "card_wallet", percent: Number($("discCard").value   || 0) },
     { method: "bnpl",        percent: Number($("discBnpl").value   || 0) },
   ];
@@ -717,7 +997,7 @@ function setNowIfEmpty(el){
   }
 }
 function getCpMethods(){
-  if($("cpMAll").checked) return null; // semua
+  if($("cpMAll").checked) return null;
   const vals=[...document.querySelectorAll(".cpMethod:checked")].map(x=>x.value);
   return vals.length? vals : null;
 }
@@ -769,7 +1049,6 @@ async function loadCoupons(){
 }
 
 $("btnSaveCoupon").onclick = async ()=>{
-  // isi default tarikh jika kosong
   setNowIfEmpty($("cpStart"));
   setNowIfEmpty($("cpEnd"));
 
@@ -781,7 +1060,7 @@ $("btnSaveCoupon").onclick = async ()=>{
     start_at: new Date($("cpStart").value).toISOString(),
     end_at:   new Date($("cpEnd").value).toISOString(),
     min_order: Number($("cpMinOrder").value||0),
-    applicable_methods: getCpMethods(), // null=semua
+    applicable_methods: getCpMethods(),
     per_user_limit: parseInt($("cpPerUser").value||"1"),
     max_redemptions: $("cpMaxAll").value? parseInt($("cpMaxAll").value) : null,
     active: true
@@ -841,7 +1120,6 @@ async function loadRewards(){
     `;
   }).join("");
 
-  // Butang toggle aktif / nyahaktif
   [...body.querySelectorAll("button[data-toggle]")].forEach(btn=>{
     btn.onclick = async ()=>{
       const id = btn.getAttribute("data-toggle");
@@ -857,7 +1135,6 @@ async function loadRewards(){
     };
   });
 
-  // Butang isi ke atas (untuk edit cepat)
   [...body.querySelectorAll("button[data-fill]")].forEach(btn=>{
     btn.onclick = ()=>{
       const id = btn.getAttribute("data-fill");
@@ -875,7 +1152,6 @@ async function loadRewards(){
   });
 }
 
-// Simpan / upsert reward
 $("btnSaveReward").onclick = async ()=>{
   const code  = ($("rwCode").value||"").trim().toUpperCase();
   const title = $("rwTitle").value || null;
@@ -935,21 +1211,23 @@ $("btnSaveReward").onclick = async ()=>{
   await loadLatest();
   await loadBuyHistory();
 
-  // Upah Coin & Dinar
+  // Upah Coin, Bar & Dinar
   await renderUpah('coin',  COIN_WEIGHTS,  'upahCoinBody');
+  await renderUpah('bar',   BAR_WEIGHTS,   'upahBarBody');
   await renderUpah('dinar', DINAR_WEIGHTS, 'upahDinarBody');
   $("btnSaveUpah").onclick = saveAllUpah;
 
   // Tambahan: Diskaun Payment + Kupon
   await loadPaymentDiscounts();
   await loadCoupons();
-// 🔥 Tambahan: Loyalty Rewards
+
+  // Tambahan: Loyalty Rewards
   await loadRewards();
+await loadLiveAdminControl();
 
 })();
 
 (async () => {
-    // tunjuk status ringkas pada UI (optional)
     const pill = document.getElementById('authStatus');
     const set = (t)=> pill && (pill.textContent = t);
 
@@ -959,13 +1237,7 @@ $("btnSaveReward").onclick = async ()=>{
       onAllowed:  (phone)=> set?.("Log masuk (admin) — " + phone)
     });
 
-    if (!ok) return; // TERHENTI DI SINI jika bukan admin
-
-    // >>> di bawah ini barulah anda jalankan kod page admin sedia ada
-    // contoh:
-    //   initAdmin916UI();
-    //   loadPrice916();
-    //   renderDesigns();
+    if (!ok) return;
   })();
 
 </script>

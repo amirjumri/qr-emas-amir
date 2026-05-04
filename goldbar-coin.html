@@ -2,42 +2,135 @@
 <html lang="ms">
 <head>
   <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<link rel="stylesheet" href="/global.css">
   <title>GoldBar / Coin Fizikal — Emas Amir</title>
 
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css">
-  <link rel="stylesheet" href="goldbar-coin.css?v=1.1">
+  <link rel="stylesheet" href="goldbar-coin.css?v=2.0">
 </head>
 <body>
+<div class="page-shell">
+<div class="wrap">
 
-  <!-- Top actions -->
-  <div class="top-actions">
-    <!-- kiri: home + status login (pill) -->
-    <a class="btn btn-outline-secondary btn-chip" href="index.html">Halaman Utama</a>
-    <span id="loginStatus" class="pill">Memuatkan…</span>
+  <!-- TOPBAR -->
+  <div class="topbar">
+    <div class="top-left">
+      <a href="index.html" class="btn btn-outline-secondary icon-btn">🏠</a>
+      <div>
+        <div class="brand-title">🪙 GoldBar / Coin Fizikal</div>
+        <div class="muted xsmall">Gold Coin • Gold Bar • Dinar</div>
+      </div>
+      <span id="loginStatus" class="pill">Memuatkan…</span>
+    </div>
 
-    <!-- kanan: navigasi konsisten -->
-    <a class="btn btn-outline-secondary btn-chip ms-auto" href="tabung.html">Tabung</a>
-    <a class="btn btn-outline-secondary btn-chip" href="j916.html">Barang Kemas 916</a>
-    <a class="btn btn-outline-secondary btn-chip" href="jual-emas.html">Jual Emas</a>
-    <a class="btn btn-outline-secondary btn-chip" href="policy.html">Polisi</a>
-    <a class="btn btn-outline-secondary btn-chip" href="account.html">Akaun</a>
-    <button id="btnLogin"  class="btn btn-outline-secondary btn-chip" type="button">Log masuk</button>
-    <button id="btnLogout" class="btn btn-outline-secondary btn-chip" type="button" style="display:none">Log keluar</button>
+    <div class="d-flex gap-2">
+      <button class="btn btn-outline-secondary icon-btn" type="button" data-bs-toggle="offcanvas" data-bs-target="#menuCanvas" aria-controls="menuCanvas">
+        ☰ Menu
+      </button>
+      <button id="btnLogin" class="btn btn-outline-secondary icon-btn" type="button">Log masuk</button>
+      <button id="btnLogout" class="btn btn-outline-secondary icon-btn" type="button" style="display:none">Log keluar</button>
+    </div>
   </div>
 
-  <div class="page-wrap">
-    <h4 class="mb-3">
-      <span class="me-2">🪙</span>
-      <b>GoldBar / Coin Fizikal</b>
-      <small class="muted ms-2">Harga auto ikut sistem (admin update)</small>
-    </h4>
+  <!-- RINGKASAN -->
+  <div class="box mb-3">
+    <div class="summary-head">
+      <div>
+        <div class="fw-semibold">Katalog Fizikal</div>
+        <div class="muted xsmall">Harga auto ikut sistem (admin update)</div>
+      </div>
+      <div class="text-md-end">
+        <div class="price-lg">Pilih berat & design</div>
+        <div class="price-note">Tekan mana-mana berat untuk buka pilihan design dan checkout</div>
+      </div>
+    </div>
+
+    <hr class="my-3">
 
     <div class="row g-3">
-      <!-- Gold Coin -->
-      <div class="col-lg-6">
-        <div class="section-card">
-          <h5 class="mb-3">Gold Coin</h5>
+      <div class="col-md-4">
+        <div class="d-flex align-items-start gap-2">
+          <div style="font-size:20px;line-height:1">🪙</div>
+          <div>
+            <div class="fw-semibold">Gold Coin</div>
+            <div class="muted xsmall">Sesuai untuk hadiah & simpanan</div>
+          </div>
+        </div>
+      </div>
+      <div class="col-md-4">
+        <div class="d-flex align-items-start gap-2">
+          <div style="font-size:20px;line-height:1">🏅</div>
+          <div>
+            <div class="fw-semibold">Gold Bar</div>
+            <div class="muted xsmall">Pilihan berat fizikal pelbagai saiz</div>
+          </div>
+        </div>
+      </div>
+      <div class="col-md-4">
+        <div class="d-flex align-items-start gap-2">
+          <div style="font-size:20px;line-height:1">✨</div>
+          <div>
+            <div class="fw-semibold">Koleksi Dinar</div>
+            <div class="muted xsmall">Design khas & koleksi terpilih</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- TINDAKAN -->
+  <div class="box mb-3">
+    <div class="fw-semibold mb-2">Pilih Kategori</div>
+
+    <div class="action-list">
+      <div class="action-item" data-open="panelCoin">
+        <div class="action-left">
+          <div class="action-ico">🪙</div>
+          <div>
+            <div class="action-title">Gold Coin</div>
+            <div class="action-sub">Pilih berat coin, design, kuantiti dan teruskan pembelian</div>
+          </div>
+        </div>
+        <div class="chev">›</div>
+      </div>
+
+      <div class="action-item" data-open="panelBar">
+        <div class="action-left">
+          <div class="action-ico">🏅</div>
+          <div>
+            <div class="action-title">Gold Bar</div>
+            <div class="action-sub">Pilih berat gold bar dan design yang tersedia</div>
+          </div>
+        </div>
+        <div class="chev">›</div>
+      </div>
+
+      <div class="action-item" data-open="panelDinar">
+        <div class="action-left">
+          <div class="action-ico">✨</div>
+          <div>
+            <div class="action-title">Koleksi Dinar</div>
+            <div class="action-sub">Lihat koleksi dinar dan terus pilih design</div>
+          </div>
+        </div>
+        <div class="chev">›</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- PANEL: GOLD COIN -->
+  <div class="collapse mb-3" id="panelCoin">
+    <div class="panel">
+      <div class="panel-h">
+        <div>
+          <div class="fw-semibold">🪙 Gold Coin</div>
+          <div class="muted xsmall">Klik berat untuk pilih design, kuantiti & beli</div>
+        </div>
+        <button class="btn btn-sm btn-outline-secondary" type="button" data-bs-toggle="collapse" data-bs-target="#panelCoin">Tutup</button>
+      </div>
+      <div class="panel-b">
+        <div class="table-wrap">
           <div class="table-responsive">
             <table class="tb">
               <thead>
@@ -51,16 +144,59 @@
               </tbody>
             </table>
           </div>
-          <div class="small muted mt-2">
-            Klik berat (contoh 0.1g) untuk pilih design, masukkan kuantiti & beli.
-          </div>
+        </div>
+        <div class="small muted mt-2">
+          Tekan mana-mana berat coin untuk buka design yang tersedia.
         </div>
       </div>
+    </div>
+  </div>
 
-      <!-- Koleksi Dinar -->
-      <div class="col-lg-6">
-        <div class="section-card">
-          <h5 class="mb-3">Koleksi Dinar</h5>
+  <!-- PANEL: GOLD BAR -->
+  <div class="collapse mb-3" id="panelBar">
+    <div class="panel">
+      <div class="panel-h">
+        <div>
+          <div class="fw-semibold">🏅 Gold Bar</div>
+          <div class="muted xsmall">Klik berat untuk pilih design, kuantiti & beli</div>
+        </div>
+        <button class="btn btn-sm btn-outline-secondary" type="button" data-bs-toggle="collapse" data-bs-target="#panelBar">Tutup</button>
+      </div>
+      <div class="panel-b">
+        <div class="table-wrap">
+          <div class="table-responsive">
+            <table class="tb">
+              <thead>
+                <tr>
+                  <th style="width:55%">Berat</th>
+                  <th class="right">Harga Jual (RM)</th>
+                </tr>
+              </thead>
+              <tbody id="tbBar">
+                <tr><td colspan="2" class="muted">Memuatkan…</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+        <div class="small muted mt-2">
+          Tekan mana-mana berat gold bar untuk buka design yang tersedia.
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- PANEL: DINAR -->
+  <div class="collapse mb-3" id="panelDinar">
+    <div class="panel">
+      <div class="panel-h">
+        <div>
+          <div class="fw-semibold">✨ Koleksi Dinar</div>
+          <div class="muted xsmall">Klik berat untuk pilih design, kuantiti & beli</div>
+        </div>
+        <button class="btn btn-sm btn-outline-secondary" type="button" data-bs-toggle="collapse" data-bs-target="#panelDinar">Tutup</button>
+      </div>
+      <div class="panel-b">
+        <div class="table-wrap">
           <div class="table-responsive">
             <table class="tb">
               <thead>
@@ -75,313 +211,358 @@
             </table>
           </div>
         </div>
+        <div class="small muted mt-2">
+          Tekan mana-mana berat dinar untuk buka design yang tersedia.
+        </div>
       </div>
     </div>
   </div>
 
-  <!-- =========================
-       Modal: Pilih Design + Mini Cart
-       ========================= -->
-  <div class="modal fade" id="modalDesign" tabindex="-1" aria-hidden="true">
-    <div class="modal-dialog modal-xl modal-dialog-scrollable">
-      <div class="modal-content">
-        <div class="modal-header">
-          <h5 class="modal-title"><span id="mdTitle">Pilih Design</span></h5>
-          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Tutup"></button>
+</div>
+</div>
+
+<!-- OFFCANVAS MENU -->
+<div class="offcanvas offcanvas-end" tabindex="-1" id="menuCanvas" aria-labelledby="menuCanvasLabel">
+  <div class="offcanvas-header">
+    <h5 class="offcanvas-title" id="menuCanvasLabel">Menu</h5>
+    <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Tutup"></button>
+  </div>
+  <div class="offcanvas-body">
+    <div class="d-grid gap-2">
+      <a href="index.html" class="btn btn-outline-secondary">🏠 Halaman Utama</a>
+      <a href="tabung.html" class="btn btn-outline-secondary">💰 Tabung Emas</a>
+      <a href="j916.html" class="btn btn-outline-secondary">Barang Kemas 916</a>
+      <a href="jual-emas.html" class="btn btn-outline-secondary">Jual Emas</a>
+      <a href="policy.html" class="btn btn-outline-secondary">Polisi</a>
+      <a href="account.html" class="btn btn-outline-secondary">Akaun</a>
+      <hr>
+      <div class="muted xsmall">Tip: Tekan “Gold Coin / Gold Bar / Koleksi Dinar” untuk buka panel.</div>
+    </div>
+  </div>
+</div>
+
+<!-- =========================
+     Modal: Pilih Design + Mini Cart
+     ========================= -->
+<div class="modal fade" id="modalDesign" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-xl modal-dialog-scrollable">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title"><span id="mdTitle">Pilih Design</span></h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Tutup"></button>
+      </div>
+
+      <div class="modal-body">
+        <p id="mdNote" class="text-muted mb-2"></p>
+
+        <div class="d-flex align-items-center gap-3 mb-3 flex-wrap">
+          <div class="form-check">
+            <input class="form-check-input" type="radio" name="cardType" id="optReady" checked>
+            <label class="form-check-label" for="optReady">Ready Card</label>
+          </div>
+          <div class="form-check">
+            <input class="form-check-input" type="radio" name="cardType" id="optCustom">
+            <label class="form-check-label" for="optCustom">Custom Card</label>
+          </div>
         </div>
 
-        <div class="modal-body">
-          <p id="mdNote" class="text-muted mb-2"></p>
-
-          <!-- Kad Ready/Custom -->
-          <div class="d-flex align-items-center gap-3 mb-3">
-            <div class="form-check">
-              <input class="form-check-input" type="radio" name="cardType" id="optReady" checked>
-              <label class="form-check-label" for="optReady">Ready Card</label>
-            </div>
-            <div class="form-check">
-              <input class="form-check-input" type="radio" name="cardType" id="optCustom">
-              <label class="form-check-label" for="optCustom">Custom Card</label>
-            </div>
-          </div>
-
-          <!-- Preview besar -->
+        <div class="preview-wrap">
           <img id="bigPreview" class="img-fluid d-block mx-auto" alt="">
           <div id="bigName" class="text-center fw-semibold mt-1"></div>
-
-          <!-- Grid thumbnail (kecil) -->
-          <div id="designGrid" class="design-grid mt-3"></div>
-
-          <hr class="my-3">
-
-          <!-- Qty + Price + Add -->
-          <div class="d-flex align-items-center gap-2">
-            <button id="qtyMinus" class="btn btn-outline-secondary btn-sm" type="button">-</button>
-            <input id="qtyInput" class="form-control form-control-sm" type="number" min="1" max="99" value="1" style="width:80px;text-align:center">
-            <button id="qtyPlus" class="btn btn-outline-secondary btn-sm" type="button">+</button>
-
-            <div class="ms-auto text-end">
-              <div class="small text-muted">Harga unit</div>
-              <div id="mdPriceUnit" class="fw-bold">RM 0.00</div>
-            </div>
-            <div style="width:24px"></div>
-            <div class="text-end">
-              <div class="small text-muted">Jumlah</div>
-              <div id="mdPriceTotal" class="fw-bold">RM 0.00</div>
-            </div>
-
-            <button id="btnAddToList" class="btn btn-primary ms-3" type="button">Tambah ke Senarai</button>
-          </div>
-
-          <!-- Senarai (mini-cart) -->
-          <div class="mt-3">
-            <div class="small text-muted mb-1">Senarai Pesanan (sementara)</div>
-            <div class="table-responsive">
-              <table class="table table-sm align-middle">
-                <thead>
-                  <tr>
-                    <th>Item</th>
-                    <th>Kad</th>
-                    <th class="text-end">Qty</th>
-                    <th class="text-end">Unit (RM)</th>
-                    <th class="text-end">Jumlah (RM)</th>
-                    <th></th>
-                  </tr>
-                </thead>
-                <tbody id="cartBody">
-                  <tr><td colspan="6" class="text-muted">Tiada item.</td></tr>
-                </tbody>
-                <tfoot>
-                  <tr>
-                    <th colspan="4" class="text-end">Subtotal:</th>
-                    <th class="text-end" id="cartSubtotal">RM 0.00</th>
-                    <th></th>
-                  </tr>
-                </tfoot>
-              </table>
-            </div>
-          </div>
         </div>
 
-        <div class="modal-footer">
-          <button id="btnBuyNow" class="btn btn-outline-primary" type="button">Checkout Item Ini Sahaja</button>
-          <button id="btnCheckoutAll" class="btn btn-primary" type="button">Checkout Semua</button>
+        <div id="designGrid" class="design-grid mt-3"></div>
+
+        <hr class="my-3">
+
+        <div class="d-flex align-items-center gap-2 flex-wrap">
+          <button id="qtyMinus" class="btn btn-outline-secondary btn-sm" type="button">-</button>
+          <input id="qtyInput" class="form-control form-control-sm" type="number" min="1" max="99" value="1" style="width:80px;text-align:center">
+          <button id="qtyPlus" class="btn btn-outline-secondary btn-sm" type="button">+</button>
+
+          <div class="ms-sm-auto text-sm-end">
+            <div class="small text-muted">Harga unit</div>
+            <div id="mdPriceUnit" class="fw-bold">RM 0.00</div>
+          </div>
+
+          <div style="width:12px"></div>
+
+          <div class="text-sm-end">
+            <div class="small text-muted">Jumlah</div>
+            <div id="mdPriceTotal" class="fw-bold">RM 0.00</div>
+          </div>
+
+          <button id="btnAddToList" class="btn btn-primary ms-sm-3" type="button">Tambah ke Senarai</button>
+        </div>
+
+        <div class="mt-3">
+          <div class="small text-muted mb-1">Senarai Pesanan (sementara)</div>
+          <div class="table-responsive">
+            <table class="table table-sm align-middle">
+              <thead>
+                <tr>
+                  <th>Item</th>
+                  <th>Kad</th>
+                  <th class="text-end">Qty</th>
+                  <th class="text-end">Unit (RM)</th>
+                  <th class="text-end">Jumlah (RM)</th>
+                  <th></th>
+                </tr>
+              </thead>
+              <tbody id="cartBody">
+                <tr><td colspan="6" class="text-muted">Tiada item.</td></tr>
+              </tbody>
+              <tfoot>
+                <tr>
+                  <th colspan="4" class="text-end">Subtotal:</th>
+                  <th class="text-end" id="cartSubtotal">RM 0.00</th>
+                  <th></th>
+                </tr>
+              </tfoot>
+            </table>
+          </div>
         </div>
       </div>
-    </div>
-  </div>
 
-  <!-- =========================
-       Modal: Sahkan Pembelian (dengan Pos + Kaedah + Kupon)
-       ========================= -->
-  <div class="modal fade" id="modalConfirm" tabindex="-1" aria-hidden="true">
-    <div class="modal-dialog modal-lg modal-dialog-centered">
-      <div class="modal-content">
-        <div class="modal-header">
-          <h5 class="modal-title">
-            Sahkan Pembelian
-            <!-- STATUS LOGIN DALAM MODAL -->
-            <small id="modalWhoBrief" class="text-muted ms-2"></small>
-          </h5>
-          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Tutup"></button>
-        </div>
-
-        <div class="modal-body">
-          <div class="mb-3">
-            <div id="confirmItems" class="small"></div>
-          </div>
-
-          <!-- Pilihan Pos -->
-          <div class="ship-box mb-3">
-            <div class="fw-semibold mb-2">Pilihan Pos</div>
-            <div class="d-flex flex-wrap gap-3">
-              <div class="form-check">
-                <input class="form-check-input" type="radio" name="shipOpt" id="shipPU" value="PU" checked>
-                <label class="form-check-label" for="shipPU">Pick Up di Kedai — RM 0</label>
-              </div>
-              <div class="form-check">
-                <input class="form-check-input" type="radio" name="shipOpt" id="shipMY" value="MY">
-                <label class="form-check-label" for="shipMY">Semenanjung Malaysia — RM 10</label>
-              </div>
-              <div class="form-check">
-                <input class="form-check-input" type="radio" name="shipOpt" id="shipMYE" value="MYE">
-                <label class="form-check-label" for="shipMYE">Sabah/Sarawak — RM 20</label>
-              </div>
-              <div class="form-check">
-                <input class="form-check-input" type="radio" name="shipOpt" id="shipSG" value="SG">
-                <label class="form-check-label" for="shipSG">Singapore — RM 45</label>
-              </div>
-            </div>
-          </div>
-
-          <!-- Kaedah Bayaran -->
-          <div class="method-box mb-3">
-            <div class="fw-semibold mb-2">Kaedah Bayaran</div>
-            <div class="d-flex flex-wrap gap-3">
-              <div class="form-check">
-                <input class="form-check-input" type="radio" name="payMethod" id="payFPX" value="FPX" checked>
-                <label class="form-check-label" for="payFPX">FPX (Diskaun 6%)</label>
-              </div>
-              <div class="form-check">
-                <!-- Kad/E-Wallet/BNPL ditukar jadi Tunai / E-Wallet (Manual) -->
-                <input class="form-check-input" type="radio" name="payMethod" id="payCARD" value="CARD_EWALLET">
-                <label class="form-check-label" for="payCARD">
-                  Tunai / E-Wallet (Manual)
-                </label>
-              </div>
-
-              <!--
-              <div class="form-check">
-                <input class="form-check-input" type="radio" name="payMethod" id="payBNPL" value="BNPL">
-                <label class="form-check-label" for="payBNPL">PayLater / BNPL (Tiada diskaun)</label>
-              </div>
-              -->
-            </div>
-          </div>
-
-          <!-- Kupon -->
-          <div class="coupon-box mb-3">
-            <div class="fw-semibold mb-2">Kupon</div>
-            <div class="d-flex gap-2 flex-wrap">
-              <input id="couponCode" class="form-control" placeholder="Masukkan kod kupon">
-              <button id="btnApplyCoupon" class="btn btn-outline-primary" type="button">Tebus</button>
-              <div id="couponStatus" class="small ms-1"></div>
-            </div>
-          </div>
-
-          <!-- Ringkasan Jumlah -->
-          <div class="mt-2">
-            <div class="price-line"><span>Subtotal</span><b id="cfSubtotal">RM 0.00</b></div>
-            <div class="price-line"><span>Pos</span><b id="cfShipping">RM 0.00</b></div>
-            <div class="price-line">
-              <span class="text-success">Diskaun Kaedah</span>
-              <b class="text-success" id="cfPayDisc">- RM 0.00</b>
-            </div>
-            <div class="price-line">
-              <span class="text-primary">Diskaun Kupon</span>
-              <b class="text-primary" id="cfCouponDisc">- RM 0.00</b>
-            </div>
-            <hr class="my-2">
-            <div class="d-flex justify-content-between fs-5">
-              <span>Jumlah Bayar</span>
-              <b id="cfGrand">RM 0.00</b>
-            </div>
-          </div>
-
-          <div class="text-muted small mt-2">
-            Pilih kaedah bayaran di bawah. Jika kembali tanpa bayar, status kekal PENDING.
-          </div>
-
-          <!-- Prompt login dalam modal -->
-          <div id="modalLoginPrompt" class="alert alert-warning py-2 px-3 small mt-3" style="display:none">
-            Anda perlu log masuk untuk meneruskan pembayaran.
-            <button id="btnModalLogin" type="button" class="btn btn-sm btn-outline-primary ms-2">Log masuk</button>
-          </div>
-        </div>
-
-        <!-- Footer: 2 butang — FPX & Tunai/E-Wallet Manual -->
-        <div class="modal-footer">
-          <button class="btn btn-outline-secondary" data-bs-dismiss="modal" type="button">Batal</button>
-          <button id="btnProceedBillplz" class="btn btn-success btn-wide" type="button" disabled>
-            Bayar FPX
-          </button>
-          <button id="btnProceedOther" class="btn btn-primary btn-wide" type="button" disabled>
-            Tunai / E-Wallet (Manual)
-          </button>
-        </div>
+      <div class="modal-footer">
+        <button id="btnBuyNow" class="btn btn-outline-primary" type="button">Checkout Item Ini Sahaja</button>
+        <button id="btnCheckoutAll" class="btn btn-primary" type="button">Checkout Semua</button>
       </div>
     </div>
-  </div>
-
-  <!-- =========================
-       Modal: Makluman Pembayaran
-       ========================= -->
-  <div class="modal fade" id="modalPayInfo" tabindex="-1" aria-hidden="true">
-    <div class="modal-dialog modal-dialog-centered">
-      <div class="modal-content">
-        <div class="modal-header">
-          <h5 class="modal-title">Makluman Pembayaran</h5>
-          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Tutup"></button>
-        </div>
-
-        <div class="modal-body">
-  <div class="mb-2 small text-muted">
-    Jika di <b>Sejarah Lock/Order</b> status masih
-    <span class="badge bg-warning text-dark">PENDING</span> — pembayaran belum disahkan admin.
-  </div>
-  <div class="mb-2 small">
-    Jika status <span class="badge bg-success">PAID</span> — pembayaran <b>berjaya</b> ✅
-    (admin telah sahkan pembayaran diterima).
-  </div>
-  <div class="mb-2 small">
-    Jika status <span class="badge bg-danger">FAILED</span> — admin telah <b>batalkan</b> pesanan anda.
-  </div>
-
-  <div class="alert alert-info small my-3">
-    Selepas berjaya, admin akan sahkan &amp; asingkan pesanan anda.
-    Anda juga akan menerima WhatsApp pengesahan daripada admin.
-  </div>
-
-  <hr class="my-2">
-
-  <div class="d-flex align-items-start gap-2 small">
-    <div class="text-muted">Kaedah dipilih:</div>
-    <div id="payInfoMethod" class="fw-semibold">FPX</div>
-  </div>
-  <div class="small text-muted mt-1">
-    Klik butang di bawah untuk meneruskan pembayaran.
   </div>
 </div>
 
-        <div class="modal-footer">
-          <button class="btn btn-outline-secondary" data-bs-dismiss="modal" type="button">Kembali</button>
+<!-- =========================
+     Modal: Sahkan Pembelian
+     ========================= -->
+<div class="modal fade" id="modalConfirm" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-lg modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">
+          Sahkan Pembelian
+          <small id="modalWhoBrief" class="text-muted ms-2"></small>
+        </h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Tutup"></button>
+      </div>
 
-          <!-- Dua butang, JS akan tunjuk/sembunyi ikut kaedah -->
-          <button id="btnPayInfoFPX"  class="btn btn-success" type="button">
-            Teruskan ke Pembayaran FPX
-          </button>
-          <button id="btnPayInfoCARD" class="btn btn-primary" type="button">
-            Teruskan ke Tunai / E-Wallet (Manual)
-          </button>
+      <div class="modal-body">
+        <div class="mb-3">
+          <div id="confirmItems" class="small"></div>
         </div>
+
+        <div class="ship-box mb-3">
+          <div class="fw-semibold mb-2">Pilihan Pos</div>
+          <div class="d-flex flex-wrap gap-3">
+            <div class="form-check">
+              <input class="form-check-input" type="radio" name="shipOpt" id="shipPU" value="PU" checked>
+              <label class="form-check-label" for="shipPU">Pick Up di Kedai — RM 0</label>
+            </div>
+            <div class="form-check">
+              <input class="form-check-input" type="radio" name="shipOpt" id="shipMY" value="MY">
+              <label class="form-check-label" for="shipMY">Semenanjung Malaysia — RM 10</label>
+            </div>
+            <div class="form-check">
+              <input class="form-check-input" type="radio" name="shipOpt" id="shipMYE" value="MYE">
+              <label class="form-check-label" for="shipMYE">Sabah/Sarawak — RM 20</label>
+            </div>
+            <div class="form-check">
+              <input class="form-check-input" type="radio" name="shipOpt" id="shipSG" value="SG">
+              <label class="form-check-label" for="shipSG">Singapore — RM 45</label>
+            </div>
+          </div>
+        </div>
+
+        <div class="method-box mb-3">
+          <div class="fw-semibold mb-2">Kaedah Bayaran</div>
+          <div class="d-flex flex-wrap gap-3">
+            <div class="form-check">
+              <input class="form-check-input" type="radio" name="payMethod" id="payFPX" value="FPX" checked>
+              <label class="form-check-label" for="payFPX">FPX (Diskaun 6%)</label>
+            </div>
+            <div class="form-check">
+              <input class="form-check-input" type="radio" name="payMethod" id="payCARD" value="CARD_EWALLET">
+              <label class="form-check-label" for="payCARD">Tunai / E-Wallet (Manual)</label>
+            </div>
+          </div>
+        </div>
+
+        <div class="coupon-box mb-3">
+          <div class="fw-semibold mb-2">Kupon</div>
+          <div class="d-flex gap-2 flex-wrap">
+            <input id="couponCode" class="form-control" placeholder="Masukkan kod kupon">
+            <button id="btnApplyCoupon" class="btn btn-outline-primary" type="button">Tebus</button>
+            <div id="couponStatus" class="small ms-1"></div>
+          </div>
+        </div>
+
+        <div class="mt-2">
+          <div class="price-line"><span>Subtotal</span><b id="cfSubtotal">RM 0.00</b></div>
+          <div class="price-line"><span>Pos</span><b id="cfShipping">RM 0.00</b></div>
+          <div class="price-line">
+            <span class="text-success">Diskaun Kaedah</span>
+            <b class="text-success" id="cfPayDisc">- RM 0.00</b>
+          </div>
+          <div class="price-line">
+            <span class="text-primary">Diskaun Kupon</span>
+            <b class="text-primary" id="cfCouponDisc">- RM 0.00</b>
+          </div>
+          <hr class="my-2">
+          <div class="d-flex justify-content-between fs-5">
+            <span>Jumlah Bayar</span>
+            <b id="cfGrand">RM 0.00</b>
+          </div>
+        </div>
+
+        <div class="text-muted small mt-2">
+          Pilih kaedah bayaran di bawah. Jika kembali tanpa bayar, status kekal PENDING.
+        </div>
+
+        <div id="modalLoginPrompt" class="alert alert-warning py-2 px-3 small mt-3" style="display:none">
+          Anda perlu log masuk untuk meneruskan pembayaran.
+          <button id="btnModalLogin" type="button" class="btn btn-sm btn-outline-primary ms-2">Log masuk</button>
+        </div>
+      </div>
+
+      <div class="modal-footer">
+        <button class="btn btn-outline-secondary" data-bs-dismiss="modal" type="button">Batal</button>
+        <button id="btnProceedBillplz" class="btn btn-success btn-wide" type="button" disabled>
+          Bayar FPX
+        </button>
+        <button id="btnProceedOther" class="btn btn-primary btn-wide" type="button" disabled>
+          Tunai / E-Wallet (Manual)
+        </button>
       </div>
     </div>
   </div>
-
-  <!-- =========================
-       Modal SELEPAS MANUAL BAYARAN (WhatsApp) — KHAS GOLDBAR
-       ========================= -->
-  <div class="modal fade" id="modalAfterManualGB" tabindex="-1" aria-hidden="true">
-    <div class="modal-dialog modal-dialog-centered">
-      <div class="modal-content">
-        <div class="modal-header">
-          <h5 class="modal-title">Teruskan Bayaran di WhatsApp</h5>
-          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Tutup"></button>
-        </div>
-        <div class="modal-body small">
-  WhatsApp sedang atau akan dibuka di tetingkap baharu.<br><br>
-  Sila teruskan bayaran &amp; hantar resit kepada admin Emas Amir di WhatsApp.
-  <br><br>
-  Halaman ini akan kembali ke <b>Halaman Utama</b> secara automatik dalam beberapa saat.
 </div>
-        <div class="modal-footer">
-          <button id="btnManualHomeGB" type="button" class="btn btn-primary">
-            Pergi ke Halaman Utama Sekarang
-          </button>
+
+<!-- =========================
+     Modal: Makluman Pembayaran
+     ========================= -->
+<div class="modal fade" id="modalPayInfo" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Makluman Pembayaran</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Tutup"></button>
+      </div>
+
+      <div class="modal-body">
+        <div class="mb-2 small text-muted">
+          Jika di <b>Sejarah Lock/Order</b> status masih
+          <span class="badge bg-warning text-dark">PENDING</span> — pembayaran belum disahkan admin.
         </div>
+        <div class="mb-2 small">
+          Jika status <span class="badge bg-success">PAID</span> — pembayaran <b>berjaya</b> ✅
+          (admin telah sahkan pembayaran diterima).
+        </div>
+        <div class="mb-2 small">
+          Jika status <span class="badge bg-danger">FAILED</span> — admin telah <b>batalkan</b> pesanan anda.
+        </div>
+
+        <div class="alert alert-info small my-3">
+          Selepas berjaya, admin akan sahkan &amp; asingkan pesanan anda.
+          Anda juga akan menerima WhatsApp pengesahan daripada admin.
+        </div>
+
+        <hr class="my-2">
+
+        <div class="d-flex align-items-start gap-2 small">
+          <div class="text-muted">Kaedah dipilih:</div>
+          <div id="payInfoMethod" class="fw-semibold">FPX</div>
+        </div>
+        <div class="small text-muted mt-1">
+          Klik butang di bawah untuk meneruskan pembayaran.
+        </div>
+      </div>
+
+      <div class="modal-footer">
+        <button class="btn btn-outline-secondary" data-bs-dismiss="modal" type="button">Kembali</button>
+        <button id="btnPayInfoFPX" class="btn btn-success" type="button">
+          Teruskan ke Pembayaran FPX
+        </button>
+        <button id="btnPayInfoCARD" class="btn btn-primary" type="button">
+          Teruskan ke Tunai / E-Wallet (Manual)
+        </button>
       </div>
     </div>
   </div>
+</div>
 
-  <!-- Libs -->
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<!-- =========================
+     Modal Selepas Manual
+     ========================= -->
+<div class="modal fade" id="modalAfterManualGB" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Teruskan Bayaran di WhatsApp</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Tutup"></button>
+      </div>
+      <div class="modal-body small">
+        WhatsApp sedang atau akan dibuka di tetingkap baharu.<br><br>
+        Sila teruskan bayaran &amp; hantar resit kepada admin Emas Amir di WhatsApp.
+        <br><br>
+        Halaman ini akan kembali ke <b>Halaman Utama</b> secara automatik dalam beberapa saat.
+      </div>
+      <div class="modal-footer">
+        <button id="btnManualHomeGB" type="button" class="btn btn-primary">
+          Pergi ke Halaman Utama Sekarang
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Libs -->
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="agent-ref.js?v=1"></script>
-  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+<script src="auth.js?v=13.1"></script>
+<script src="goldbar-coin.js?v=1.3"></script>
 
-  <!-- auth helper -->
-  <script src="auth.js?v=13.1"></script>
+<script>
+/* Buka/tutup panel macam tabung */
+(function(){
+  const panels = {
+    panelCoin:  document.getElementById("panelCoin"),
+    panelBar:   document.getElementById("panelBar"),
+    panelDinar: document.getElementById("panelDinar")
+  };
 
-  <!-- JS utama goldbar/coin -->
-  <script src="goldbar-coin.js?v=1.3"></script>
+  function openPanel(id){
+    Object.keys(panels).forEach(pid=>{
+      if(pid !== id){
+        try{
+          const inst = bootstrap.Collapse.getOrCreateInstance(panels[pid], { toggle:false });
+          inst.hide();
+        }catch{}
+      }
+    });
+
+    const el = panels[id];
+    if(!el) return;
+
+    try{
+      const inst = bootstrap.Collapse.getOrCreateInstance(el, { toggle:false });
+      inst.show();
+    }catch{
+      el.classList.add("show");
+    }
+
+    setTimeout(()=>{
+      try{ el.scrollIntoView({ behavior:"smooth", block:"start" }); }catch{}
+    }, 150);
+  }
+
+  document.querySelectorAll(".action-item[data-open]").forEach(el=>{
+    el.addEventListener("click", ()=>{
+      openPanel(el.getAttribute("data-open"));
+    });
+  });
+})();
+</script>
+
 </body>
 </html>

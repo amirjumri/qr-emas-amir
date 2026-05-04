@@ -2,7 +2,8 @@
 <html lang="ms">
 <head>
   <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<link rel="stylesheet" href="/global.css">
   <title>Admin • Stok 916 — Emas Amir</title>
 
   <!-- Libs -->
@@ -61,17 +62,25 @@
 
 <div class="card p-3 mb-3">
   <h6 class="mb-2">YouTube Live (Emas Amir)</h6>
-  <div class="input-group input-group-sm">
+
+  <div class="input-group input-group-sm mb-2">
     <span class="input-group-text">Video ID</span>
     <input id="ytVideoIdInput" type="text" class="form-control"
            placeholder="Contoh: NnPMdN553RU">
     <button class="btn btn-primary" type="button" onclick="saveYtId()">Simpan</button>
   </div>
+
+  <div class="form-check form-switch">
+    <input id="showHomeLiveInput" class="form-check-input" type="checkbox">
+    <label class="form-check-label" for="showHomeLiveInput">
+      Papar Live di halaman utama
+    </label>
+  </div>
+
   <small class="text-muted">
-    Copy ID dari link YouTube (lepas <code>v=</code>).
+    ON = petak YouTube LIVE keluar di index. OFF = sembunyi.
   </small>
 </div>
-
   <!-- HEADER -->
   <div class="d-flex justify-content-between align-items-end flex-wrap gap-2">
     <div>
@@ -150,17 +159,26 @@
                 <label for="d_active" class="form-check-label">Aktif</label>
               </div>
               <div class="mb-2">
-                <label class="form-label">Gambar (3 URL)</label>
-                <div class="input-group input-group-sm mb-1">
-                  <span class="input-group-text">Img1</span><input id="d_img1" class="form-control">
-                </div>
-                <div class="input-group input-group-sm mb-1">
-                  <span class="input-group-text">Img2</span><input id="d_img2" class="form-control">
-                </div>
-                <div class="input-group input-group-sm">
-                  <span class="input-group-text">Img3</span><input id="d_img3" class="form-control">
-                </div>
-              </div>
+  <label class="form-label">Gambar (3 URL)</label>
+  <div class="input-group input-group-sm mb-1">
+    <span class="input-group-text">Img1</span><input id="d_img1" class="form-control">
+  </div>
+  <div class="input-group input-group-sm mb-1">
+    <span class="input-group-text">Img2</span><input id="d_img2" class="form-control">
+  </div>
+  <div class="input-group input-group-sm mb-2">
+    <span class="input-group-text">Img3</span><input id="d_img3" class="form-control">
+  </div>
+
+  <label class="form-label">Video Produk (1 URL)</label>
+  <div class="input-group input-group-sm">
+    <span class="input-group-text">Video</span>
+    <input id="d_video_url" class="form-control" placeholder="URL video Bunny / MP4 / HLS">
+  </div>
+  <div class="small text-muted mt-1">
+    Contoh: Bunny Direct Play URL (.m3u8 / .mp4). Jangan guna link player /play/.
+  </div>
+</div>
 
               <div class="d-flex gap-2">
                 <button id="btnDesignSave" class="btn btn-primary" type="button">Simpan</button>
@@ -173,10 +191,16 @@
         </div>
 
         <div class="col-lg-7">
-          <div class="d-flex justify-content-between align-items-center mb-2">
-            <div class="fw-semibold">Senarai Design</div>
-            <button id="btnReloadDesign" class="btn btn-outline-secondary btn-sm" type="button">Muat semula</button>
-          </div>
+         <div class="d-flex justify-content-between align-items-center mb-2 gap-2 flex-wrap">
+  <div class="fw-semibold">Senarai Design</div>
+  <button id="btnReloadDesign" class="btn btn-outline-secondary btn-sm" type="button">Muat semula</button>
+</div>
+
+<div class="input-group input-group-sm mb-2">
+  <span class="input-group-text">Cari</span>
+  <input id="designListSearch" class="form-control" placeholder="Cari nama / kategori design…">
+  <button id="btnClearDesignSearch" class="btn btn-outline-secondary" type="button">Reset</button>
+</div>
           <div class="table-responsive">
             <table class="table table-sm align-middle">
               <thead class="table-light">
@@ -774,99 +798,224 @@ async function savePrice916(){
 }
 
 /* Design */
+let _allDesigns = [];
+let _designRowsCache = [];
+
 function fillDesignOptions(rows){
-  // 🆕 simpan semua design (aktif) dalam memori
   _allDesigns = rows || [];
 
   const sel = $('i_design_id');
-  const list = _allDesigns;
+  if (!sel) return;
 
-  sel.innerHTML = list.length
-    ? list.map(r => `<option value="${r.id}">${r.cat_code ? `[${r.cat_code}] ` : ''}${r.name}</option>`).join('')
+  sel.innerHTML = _allDesigns.length
+    ? _allDesigns.map(r => `<option value="${r.id}">${r.cat_code ? `[${r.cat_code}] ` : ''}${r.name}</option>`).join('')
     : `<option value="">— Tiada design —</option>`;
 }
-async function loadDesigns(){
-  $('designTable').innerHTML=`<tr><td colspan="5" class="text-muted">Memuatkan…</td></tr>`;
-  const fix=(u)=>!u?null:(u.startsWith('http')?u:`${SB_URL}/storage/v1/object${u}`);
-  try{
-    const {data,error}=await sb.rpc('j916_admin_products_list_v1');
-    if(error) throw error;
-    const rows=(Array.isArray(data)?data:[]).map(r=>({
-      id:r.id, name:r.name, upah_default_rm:r.upah_default_rm??r.wage_default??0,
-      is_active:!!r.is_active, cat_code:r.cat_code||r.category||'',
-      img1:fix(r.img1||r.img1_url), img2:fix(r.img2||r.img2_url), img3:fix(r.img3||r.img3_url)
-    }));
 
-// 🆕 Cari design ikut tulisan dalam kotak "Cari design"
+function renderDesignTable(rows){
+  const term = ($('designListSearch')?.value || '').trim().toLowerCase();
+
+  const filtered = term
+    ? rows.filter(r =>
+        (`${r.name || ''} ${r.cat_code || ''} ${r.cat_name || ''}`)
+          .toLowerCase()
+          .includes(term)
+      )
+    : rows;
+
+  if(!filtered.length){
+    $('designTable').innerHTML = `<tr><td colspan="5" class="text-muted">Tiada design dijumpai.</td></tr>`;
+    return;
+  }
+
+  $('designTable').innerHTML = filtered.map(r=>`
+    <tr>
+      <td>
+        <div class="d-flex align-items-center gap-2">
+          ${r.img1 ? `<img src="${r.img1}" style="height:36px;width:36px;object-fit:cover;border-radius:4px">` : '—'}
+          <span>${r.name || '-'}</span>
+        </div>
+      </td>
+      <td>${r.cat_code || '—'}</td>
+      <td class="right">${money(r.upah_default_rm || 0)}</td>
+      <td><span class="code-badge">${r.is_active ? 'Aktif' : 'Tidak'}</span></td>
+      <td class="right">
+        <button class="btn btn-sm btn-outline-primary" data-edit="${r.id}" type="button">Edit</button>
+      </td>
+    </tr>
+  `).join('');
+
+  document.querySelectorAll('[data-edit]').forEach(b=>{
+    b.addEventListener('click',()=>{
+      const id = b.getAttribute('data-edit');
+      const row = rows.find(x => String(x.id) === String(id));
+      if(!row) return;
+
+      $('d_id').value = row.id;
+      $('d_name').value = row.name || '';
+      $('d_upah').value = Number(row.upah_default_rm || 0).toFixed(2);
+      $('d_active').checked = !!row.is_active;
+      $('d_img1').value = row.img1 || '';
+      $('d_img2').value = row.img2 || '';
+      $('d_img3').value = row.img3 || '';
+      if ($('d_video_url')) $('d_video_url').value = row.video_url || '';
+      $('d_cat').value = row.cat_code || '';
+      $('designMsg').textContent = 'Mode edit (' + row.id + ')';
+    });
+  });
+}
+
+function setupDesignListSearch(){
+  $('designListSearch')?.addEventListener('input', () => {
+    renderDesignTable(_designRowsCache);
+  });
+
+  $('btnClearDesignSearch')?.addEventListener('click', () => {
+    if ($('designListSearch')) $('designListSearch').value = '';
+    renderDesignTable(_designRowsCache);
+  });
+}
+
 function setupDesignSearch(){
   const inp = $('i_design_search');
-  if (!inp) return;
+  const sel = $('i_design_id');
+  if (!inp || !sel) return;
 
   inp.addEventListener('input', () => {
     const term = (inp.value || '').trim().toLowerCase();
 
-    // kalau kosong → tunjuk semua design
     const list = term
       ? _allDesigns.filter(d =>
           (`${d.cat_code || ''} ${d.name || ''}`).toLowerCase().includes(term)
         )
       : _allDesigns;
 
-    const sel = $('i_design_id');
     sel.innerHTML = list.length
       ? list.map(r => `<option value="${r.id}">${r.cat_code ? `[${r.cat_code}] ` : ''}${r.name}</option>`).join('')
       : `<option value="">— Tiada design jumpa —</option>`;
   });
 }
-// === PETA UPAH DEFAULT DESIGN (untuk LIVE) ===
-window._designUpahMap = new Map(
-  rows.map(r => [String(r.id), Number(r.upah_default_rm || 0)])
-);
-    if(!rows.length){ $('designTable').innerHTML=`<tr><td colspan="5" class="text-muted">Tiada design.</td></tr>`; fillDesignOptions([]); return; }
-    $('designTable').innerHTML=rows.map(r=>`
-      <tr>
-        <td><div class="d-flex align-items-center gap-2">${r.img1?`<img src="${r.img1}" style="height:36px;width:36px;object-fit:cover;border-radius:4px">`:'—'}<span>${r.name||'-'}</span></div></td>
-        <td>${r.cat_code||'—'}</td>
-        <td class="right">${money(r.upah_default_rm||0)}</td>
-        <td><span class="code-badge">${r.is_active?'Aktif':'Tidak'}</span></td>
-        <td class="right"><button class="btn btn-sm btn-outline-primary" data-edit="${r.id}" type="button">Edit</button></td>
-      </tr>`).join('');
-    document.querySelectorAll('[data-edit]').forEach(b=>{
-      b.addEventListener('click',()=>{
-        const id=b.getAttribute('data-edit'); const row=rows.find(x=>String(x.id)===String(id)); if(!row) return;
-        $('d_id').value=row.id; $('d_name').value=row.name||''; $('d_upah').value=Number(row.upah_default_rm||0).toFixed(2);
-        $('d_active').checked=!!row.is_active; $('d_img1').value=row.img1||''; $('d_img2').value=row.img2||''; $('d_img3').value=row.img3||''; $('d_cat').value=row.cat_code||'';
-        $('designMsg').textContent='Mode edit ('+row.id+')';
-      });
-    });
-    fillDesignOptions(rows.filter(r=>r.is_active));
-  }catch(e){ console.error(e); $('designTable').innerHTML=`<tr><td colspan="5" class="text-danger">Ralat memuatkan design.</td></tr>`; fillDesignOptions([]); }
-}
-async function saveDesign(){
-  const id=$('d_id').value||null, name=$('d_name').value.trim(), upah=Number($('d_upah').value||0),
-        active=$('d_active').checked, img1=$('d_img1')?.value?.trim()||null, img2=$('d_img2')?.value?.trim()||null, img3=$('d_img3')?.value?.trim()||null, cat=$('d_cat')?.value||null;
-  if(!name){ alert('Nama design diperlukan.'); return; }
+
+async function loadDesigns(){
+  $('designTable').innerHTML = `<tr><td colspan="5" class="text-muted">Memuatkan…</td></tr>`;
+
+  const fix = (u) => !u ? null : (u.startsWith('http') ? u : `${SB_URL}/storage/v1/object${u}`);
+
   try{
-    const {error}=await sb.rpc('j916_admin_products_upsert_v1',{p_id:id?p_id=id:null,p_name:name,p_upah_default_rm:upah,p_is_active:active,p_img1:img1,p_img2:img2,p_img3:img3,p_cat_code:cat});
+    const { data, error } = await sb.rpc('j916_admin_products_list_v1');
+    if(error) throw error;
+
+    const rows = (Array.isArray(data) ? data : []).map(r => ({
+      id: r.id,
+      name: r.name,
+      upah_default_rm: r.upah_default_rm ?? r.wage_default ?? 0,
+      is_active: !!r.is_active,
+      cat_code: r.cat_code || r.category || '',
+      cat_name: r.cat_name || '',
+      img1: fix(r.img1 || r.img1_url),
+      img2: fix(r.img2 || r.img2_url),
+      img3: fix(r.img3 || r.img3_url),
+      video_url: fix(r.video_url || r.video1_url || r.video)
+    }));
+
+    window._designUpahMap = new Map(
+      rows.map(r => [String(r.id), Number(r.upah_default_rm || 0)])
+    );
+
+    if(!rows.length){
+      $('designTable').innerHTML = `<tr><td colspan="5" class="text-muted">Tiada design.</td></tr>`;
+      fillDesignOptions([]);
+      return;
+    }
+
+    _designRowsCache = rows;
+    renderDesignTable(rows);
+    fillDesignOptions(rows.filter(r => r.is_active));
+
+  }catch(e){
+    console.error(e);
+    $('designTable').innerHTML = `<tr><td colspan="5" class="text-danger">Ralat memuatkan design.</td></tr>`;
+    fillDesignOptions([]);
+  }
+}
+
+function convertBunnyURL(url){
+  if (!url) return null;
+
+  url = String(url).trim();
+
+  // 🔥 CASE: player.mediadelivery.net/play/xxx/yyy
+  if (url.includes("player.mediadelivery.net/play/")){
+    const parts = url.split("/play/")[1]?.split("?")[0]?.split("/");
+
+    const libraryId = parts?.[0];
+    const videoId   = parts?.[1];
+
+    if (libraryId && videoId){
+      return `https://iframe.mediadelivery.net/embed/${libraryId}/${videoId}?autoplay=true&muted=true`;
+    }
+  }
+
+  return url;
+}async function saveDesign(){
+  const id=$('d_id').value||null, name=$('d_name').value.trim(), upah=Number($('d_upah').value||0),
+        active=$('d_active').checked,
+        img1=$('d_img1')?.value?.trim()||null,
+        img2=$('d_img2')?.value?.trim()||null,
+        img3=$('d_img3')?.value?.trim()||null,
+        cat=$('d_cat')?.value||null;
+
+  let videoUrl = $('d_video_url')?.value?.trim() || null;
+  videoUrl = convertBunnyURL(videoUrl);
+  if(!name){ alert('Nama design diperlukan.'); return; }
+
+  try{
+    const {error}=await sb.rpc('j916_admin_products_upsert_v1',{
+      p_id:id||null,
+      p_name:name,
+      p_upah_default_rm:upah,
+      p_is_active:active,
+      p_img1:img1,
+      p_img2:img2,
+      p_img3:img3,
+      p_video_url:videoUrl,
+      p_cat_code:cat
+    });
     if(error) throw error;
   }catch(e){
-    const {error}=await sb.rpc('j916_admin_products_upsert_v1',{p_id:id||null,p_name:name,p_upah_default_rm:upah,p_is_active:active,p_img1:img1,p_img2:img2,p_img3:img3,p_cat_code:cat});
-    if(error){ $('designMsg').textContent='Ralat: '+(e?.message||error?.message||e); return; }
+    $('designMsg').textContent='Ralat: '+(e?.message||e);
+    return;
   }
-  $('designMsg').textContent='Disimpan.'; resetDesignForm(); await loadDesigns();await loadItems();
-refreshLiveBaseUpah();
-}
-function resetDesignForm(){ $('d_id').value=''; $('d_name').value=''; $('d_upah').value=''; $('d_active').checked=true; $('d_img1').value=''; $('d_img2').value=''; $('d_img3').value=''; $('d_cat').value=''; $('designMsg').textContent=''; }
 
+  $('designMsg').textContent='Disimpan.';
+  resetDesignForm();
+  await loadDesigns();
+  await loadItems();
+  refreshLiveBaseUpah();
+}
+function resetDesignForm(){
+  $('d_id').value='';
+  $('d_name').value='';
+  $('d_upah').value='';
+  $('d_active').checked=true;
+  $('d_img1').value='';
+  $('d_img2').value='';
+  $('d_img3').value='';
+  if ($('d_video_url')) $('d_video_url').value='';
+  $('d_cat').value='';
+  $('designMsg').textContent='';
+}
 async function loadYtIdForAdmin(){
   try{
     const { data, error } = await sb
       .from("live_config")
-      .select("youtube_video_id")
+      .select("youtube_video_id, show_home_live")
       .eq("id",1)
       .maybeSingle();
-    if (!error && data && data.youtube_video_id){
-      document.getElementById("ytVideoIdInput").value = data.youtube_video_id;
+
+    if (!error && data){
+      document.getElementById("ytVideoIdInput").value = data.youtube_video_id || "";
+      document.getElementById("showHomeLiveInput").checked = data.show_home_live === true;
     }
   }catch(e){
     console.warn("loadYtIdForAdmin error", e);
@@ -875,25 +1024,37 @@ async function loadYtIdForAdmin(){
 
 async function saveYtId(){
   const input = document.getElementById("ytVideoIdInput");
+  const chk = document.getElementById("showHomeLiveInput");
+
   const videoId = (input.value || "").trim();
-  if (!videoId){
-    alert("Sila masukkan video ID YouTube.");
+  const showHomeLive = chk ? chk.checked : false;
+
+  if (!videoId && showHomeLive){
+    alert("Sila masukkan video ID YouTube dahulu.");
     return;
   }
 
   try{
     const { error } = await sb
       .from("live_config")
-      .upsert({ id: 1, youtube_video_id: videoId });
+      .upsert({
+        id: 1,
+        youtube_video_id: videoId,
+        show_home_live: showHomeLive
+      });
+
     if (error) throw error;
-    alert("YouTube Live ID berjaya disimpan.");
+
+    alert(showHomeLive
+      ? "YouTube Live disimpan & akan dipaparkan di halaman utama."
+      : "YouTube Live disimpan & disembunyikan dari halaman utama.");
   }catch(e){
     console.warn("saveYtId error", e);
-    alert("Gagal simpan ID, cuba lagi.");
+    alert("Gagal simpan setting live, cuba lagi.");
   }
 }
 
-
+loadYtIdForAdmin();
 
 /* ===== LIVE (UI SAHAJA – belum SQL override) ===== */
 let _live = {}; // {id, code, name, weight_g, harga916, upah, base_upah, confirmed}
@@ -1008,7 +1169,7 @@ async function refreshLiveBaseUpah(){
       }
     }
 
-    // Kemas kini DOM kad tanpa render penuh
+// Kemas kini DOM kad tanpa render penuh
     const card = document.querySelector(`.live-card input[data-live-upah="${L.id}"]`)?.closest('.live-card');
     if (card){
       const upahInput = card.querySelector(`[data-live-upah="${L.id}"]`);
@@ -2293,8 +2454,63 @@ document.querySelectorAll('[data-splitstatus]').forEach(btn => {
 document
   .querySelector('[data-bs-target="#tabSplit"]')
   ?.addEventListener('shown.bs.tab', loadSplit);
-// 🆕 Carian design
-let _allDesigns = [];
+
+
+function renderDesignTable(rows){
+  const term = ($('designListSearch')?.value || '').trim().toLowerCase();
+
+  const filtered = term
+    ? rows.filter(r =>
+        (`${r.name || ''} ${r.cat_code || ''} ${r.cat_name || ''}`)
+          .toLowerCase()
+          .includes(term)
+      )
+    : rows;
+
+  if(!filtered.length){
+    $('designTable').innerHTML = `<tr><td colspan="5" class="text-muted">Tiada design dijumpai.</td></tr>`;
+    return;
+  }
+
+  $('designTable').innerHTML = filtered.map(r=>`
+    <tr>
+      <td><div class="d-flex align-items-center gap-2">${r.img1?`<img src="${r.img1}" style="height:36px;width:36px;object-fit:cover;border-radius:4px">`:'—'}<span>${r.name||'-'}</span></div></td>
+      <td>${r.cat_code||'—'}</td>
+      <td class="right">${money(r.upah_default_rm||0)}</td>
+      <td><span class="code-badge">${r.is_active?'Aktif':'Tidak'}</span></td>
+      <td class="right"><button class="btn btn-sm btn-outline-primary" data-edit="${r.id}" type="button">Edit</button></td>
+    </tr>`).join('');
+
+  document.querySelectorAll('[data-edit]').forEach(b=>{
+    b.addEventListener('click',()=>{
+      const id=b.getAttribute('data-edit');
+      const row=rows.find(x=>String(x.id)===String(id));
+      if(!row) return;
+
+      $('d_id').value=row.id;
+      $('d_name').value=row.name||'';
+      $('d_upah').value=Number(row.upah_default_rm||0).toFixed(2);
+      $('d_active').checked=!!row.is_active;
+      $('d_img1').value=row.img1||'';
+      $('d_img2').value=row.img2||'';
+      $('d_img3').value=row.img3||'';
+      if ($('d_video_url')) $('d_video_url').value=row.video_url||'';
+      $('d_cat').value=row.cat_code||'';
+      $('designMsg').textContent='Mode edit ('+row.id+')';
+    });
+  });
+}
+
+function setupDesignListSearch(){
+  $('designListSearch')?.addEventListener('input', () => {
+    renderDesignTable(_designRowsCache);
+  });
+
+  $('btnClearDesignSearch')?.addEventListener('click', () => {
+    if ($('designListSearch')) $('designListSearch').value = '';
+    renderDesignTable(_designRowsCache);
+  });
+}
 
 function setupDesignSearch(){
   const inp = document.getElementById("i_design_search");
@@ -2342,7 +2558,8 @@ function setupDesignSearch(){
 
   await loadPrice916();
   await loadDesigns();       // 👉 load dulu (isi _allDesigns)
-  setupDesignSearch();       // 👉 lepas tu baru attach event search
+  setupDesignSearch();
+setupDesignListSearch();       // 👉 lepas tu baru attach event search
   await loadItems();
   await seedLivePanelFromDB();
   initLiveMultiplierInput();

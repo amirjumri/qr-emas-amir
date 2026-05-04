@@ -1,0 +1,3071 @@
+<!doctype html>
+<html lang="ms">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <link rel="stylesheet" href="/global.css">
+  <title>Pengurusan Emas Saya – Emas Amir</title>
+
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+
+  <style>
+    :root{
+      --bg:#f6f7f9;
+      --card:#ffffff;
+      --chip:#eef1f4;
+      --border:#e9ecef;
+      --border-soft:#eef1f4;
+      --muted:#6c757d;
+      --text:#212529;
+      --shadow:0 1px 2px rgba(16,24,40,.04);
+    }
+
+    *{box-sizing:border-box}
+
+    body{
+      background:var(--bg);
+      color:var(--text);
+    }
+
+    .wrap{
+      max-width:1100px;
+      margin:16px auto 48px;
+      padding:12px;
+    }
+
+    .box{
+      background:var(--card);
+      border:1px solid var(--border);
+      border-radius:16px;
+      padding:16px;
+      box-shadow:var(--shadow);
+    }
+
+    .box + .box{ margin-top:14px; }
+
+    .muted{ color:var(--muted)!important; }
+    .ok{ color:#0b7a0b; font-weight:700; }
+    .err{ color:#b91c1c; font-weight:700; }
+
+    .pill{
+      display:inline-flex;
+      align-items:center;
+      gap:8px;
+      padding:6px 10px;
+      border-radius:999px;
+      background:var(--chip);
+      font-size:12px;
+      color:#495057;
+      border:1px solid transparent;
+    }
+
+    .icon-btn{ border-radius:12px; }
+
+    .topbar{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:10px;
+      flex-wrap:wrap;
+      margin-bottom:14px;
+    }
+
+    .top-left{
+      display:flex;
+      align-items:center;
+      gap:10px;
+      flex-wrap:wrap;
+    }
+
+    .brand-title{
+      font-weight:900;
+      font-size:18px;
+      letter-spacing:.2px;
+    }
+
+    .xsmall{ font-size:.8rem; }
+
+    .section-title{
+      font-weight:900;
+      font-size:18px;
+      margin-bottom:12px;
+    }
+
+    .sub-title{
+      font-weight:800;
+      font-size:16px;
+      margin-bottom:12px;
+    }
+
+    .mini-note{
+      color:#6b7280;
+      font-size:12px;
+    }
+
+    .summary-grid{
+      display:grid;
+      grid-template-columns:repeat(4,minmax(0,1fr));
+      gap:12px;
+    }
+
+    .summary-card{
+      border:1px solid var(--border);
+      border-radius:14px;
+      background:#fff;
+      padding:14px;
+    }
+
+    .summary-label{
+      font-size:12px;
+      color:#6b7280;
+      margin-bottom:6px;
+    }
+
+    .summary-value{
+      font-size:26px;
+      line-height:1.1;
+      font-weight:900;
+      letter-spacing:-.5px;
+    }
+
+    .summary-sub{
+      margin-top:4px;
+      color:#6b7280;
+      font-size:12px;
+    }
+
+    .info-strip{
+      display:flex;
+      align-items:flex-start;
+      gap:10px;
+      flex-wrap:wrap;
+    }
+
+    .info-item{
+      flex:1 1 220px;
+      border:1px solid var(--border);
+      border-radius:14px;
+      padding:12px;
+      background:#fff;
+    }
+
+    .action-list{
+      display:grid;
+      gap:10px;
+    }
+
+    .action-item{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:10px;
+      padding:14px;
+      border:1px solid var(--border);
+      border-radius:14px;
+      background:#fff;
+      cursor:pointer;
+      transition:transform .06s ease, box-shadow .06s ease, border-color .06s ease;
+    }
+
+    .action-item:hover{
+      border-color:#dde3ea;
+    }
+
+    .action-item:active{
+      transform:scale(.995);
+    }
+
+    .action-left{
+      display:flex;
+      align-items:center;
+      gap:12px;
+      min-width:0;
+    }
+
+    .action-ico{
+      width:38px;
+      height:38px;
+      border-radius:12px;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      background:#f3f4f6;
+      font-size:18px;
+      flex:0 0 38px;
+    }
+
+    .action-title{
+      font-weight:800;
+      line-height:1.1;
+    }
+
+    .action-sub{
+      font-size:12px;
+      color:#6b7280;
+      margin-top:2px;
+    }
+
+    .chev{
+      color:#9ca3af;
+      font-weight:700;
+      font-size:20px;
+      line-height:1;
+    }
+
+    .panel{
+      border:1px solid var(--border);
+      border-radius:16px;
+      background:#fff;
+      overflow:hidden;
+    }
+
+    .panel-h{
+      padding:14px;
+      border-bottom:1px solid var(--border-soft);
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:10px;
+      flex-wrap:wrap;
+    }
+
+    .panel-b{
+      padding:14px;
+    }
+
+    .form-label{
+      font-weight:600;
+      margin-bottom:.45rem;
+    }
+
+    .form-control,
+    .form-select,
+    .btn{
+      border-radius:12px;
+    }
+
+    .type-grid{
+      display:grid;
+      grid-template-columns:repeat(3,minmax(0,1fr));
+      gap:12px;
+    }
+
+    .type-card{
+      border:1px solid var(--border);
+      border-radius:16px;
+      background:#fff;
+      padding:16px;
+      box-shadow:var(--shadow);
+    }
+
+    .type-head{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:8px;
+      margin-bottom:10px;
+    }
+
+    .type-name{
+      font-weight:900;
+      font-size:16px;
+    }
+
+    .type-badge{
+      display:inline-flex;
+      align-items:center;
+      padding:4px 8px;
+      border-radius:999px;
+      background:#f8f9fa;
+      border:1px solid var(--border);
+      font-size:11px;
+      color:#495057;
+    }
+
+.type-tools{
+      display:flex;
+      align-items:center;
+      gap:8px;
+    }
+
+    .btn-edit-target{
+      border:1px solid var(--border);
+      background:#fff;
+      color:#495057;
+      border-radius:999px;
+      padding:4px 10px;
+      font-size:11px;
+      font-weight:700;
+      line-height:1;
+      cursor:pointer;
+    }
+
+    .btn-edit-target:hover{
+      background:#f8f9fa;
+      border-color:#d7dde5;
+    }
+
+    .type-stat{
+      display:flex;
+      justify-content:space-between;
+      gap:12px;
+      padding:7px 0;
+      border-top:1px dashed #e9ecef;
+      font-size:13px;
+      align-items:center;
+    }
+
+    .type-stat:first-of-type{ border-top:0; padding-top:0; }
+
+    .progress{
+      height:10px;
+      border-radius:999px;
+      background:#edf1f5;
+    }
+
+    .table-wrap{
+      border:1px solid var(--border);
+      border-radius:14px;
+      overflow:hidden;
+      background:#fff;
+    }
+
+    .table-sticky thead th{
+      position:sticky;
+      top:0;
+      background:#f8f9fb !important;
+      z-index:5;
+    }
+
+    .table > :not(caption) > * > *{
+      padding:.8rem .75rem;
+      border-bottom-color:var(--border-soft);
+      vertical-align:middle;
+    }
+
+    .history-head{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:12px;
+      flex-wrap:wrap;
+      margin-bottom:10px;
+    }
+
+    .pagination.pager{
+      gap:6px;
+    }
+
+    .pager .page-link{
+      border-radius:8px;
+      border:1px solid #dee2e6;
+      color:#212529;
+    }
+
+    .pager .page-item.active .page-link{
+      background:#0d6efd;
+      border-color:#0d6efd;
+      color:#fff;
+    }
+
+    .tag-source{
+      display:inline-flex;
+      align-items:center;
+      padding:4px 8px;
+      border-radius:999px;
+      font-size:11px;
+      font-weight:700;
+      border:1px solid transparent;
+    }
+
+    .src-ea{ background:#eef7ff; color:#0d6efd; border-color:#d7ebff; }
+    .src-other{ background:#f8f9fa; color:#495057; border-color:#e9ecef; }
+    .src-gift{ background:#fff8e6; color:#8a5a00; border-color:#f1dfb0; }
+    .src-tabung{ background:#eef9ee; color:#0b7a0b; border-color:#cfe8cf; }
+
+    .mono{
+      font-family:ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,"Liberation Mono","Courier New",monospace;
+    }
+
+    .empty-note{
+      padding:22px 14px;
+      text-align:center;
+      color:#6b7280;
+      border:1px dashed #dce3ea;
+      border-radius:14px;
+      background:#fafbfc;
+    }
+
+    .page-shell{
+      min-height:100vh;
+      background:#f6f7f9;
+      transform:translateX(0);
+      transition:transform .22s ease-out;
+      will-change:transform;
+    }
+
+    .page-shell.dragging{
+      transition:none;
+    }
+
+    body.swipe-peek{
+      background:#e5e7eb;
+    }
+
+    .offcanvas .btn{ border-radius:12px; }
+
+    @media (max-width:991.98px){
+      .summary-grid{ grid-template-columns:repeat(2,minmax(0,1fr)); }
+      .type-grid{ grid-template-columns:repeat(2,minmax(0,1fr)); }
+    }
+
+    @media (max-width:767.98px){
+      .wrap{
+        padding:10px;
+        margin-top:10px;
+      }
+
+      .top-left{
+        width:100%;
+        align-items:flex-start;
+      }
+
+      .topbar > .d-flex{
+        width:100%;
+      }
+
+      .topbar > .d-flex .btn{
+        flex:1 1 auto;
+      }
+
+      .summary-grid{ grid-template-columns:1fr; }
+      .type-grid{ grid-template-columns:1fr; }
+
+      .history-head{
+        align-items:flex-start;
+        flex-direction:column;
+      }
+    }
+
+    @media print{
+      .topbar,
+      .action-list,
+      .offcanvas,
+      .btn,
+      .no-print{
+        display:none !important;
+      }
+
+      body{
+        background:#fff;
+      }
+
+      .wrap{
+        max-width:none;
+        margin:0;
+        padding:0;
+      }
+
+      .box,
+      .panel,
+      .table-wrap,
+      .summary-card,
+      .type-card{
+        box-shadow:none !important;
+      }
+
+#zakatAsOfDate[disabled]{
+  background:#f3f4f6;
+  cursor:not-allowed;
+  font-weight:600;
+}
+    }
+  </style>
+</head>
+<body>
+<div class="page-shell">
+  <div class="wrap">
+
+    <!-- TOPBAR -->
+    <div class="topbar">
+      <div class="top-left">
+        <a href="account.html" class="btn btn-outline-secondary icon-btn">←</a>
+        <div>
+          <div class="brand-title">📒 Pengurusan Emas Saya</div>
+          <div class="muted xsmall">Rekod emas • Target simpanan • Report</div>
+        </div>
+        <span id="who" class="pill">Memuatkan…</span>
+      </div>
+
+      <div class="d-flex gap-2">
+        <button class="btn btn-outline-secondary icon-btn" type="button" data-bs-toggle="offcanvas" data-bs-target="#menuCanvas" aria-controls="menuCanvas">
+          ☰ Menu
+        </button>
+        <a href="account.html" class="btn btn-outline-secondary icon-btn">Akaun</a>
+      </div>
+    </div>
+
+    <!-- RINGKASAN -->
+    <div class="box mb-3">
+      <div class="section-title">Ringkasan Simpanan</div>
+
+      <div class="summary-grid">
+        <div class="summary-card">
+          <div class="summary-label">Jumlah Rekod</div>
+          <div class="summary-value" id="sumItems">0</div>
+          <div class="summary-sub">Auto + manual</div>
+        </div>
+
+        <div class="summary-card">
+          <div class="summary-label">Jumlah Berat</div>
+          <div class="summary-value" id="sumGrams">0.000 g</div>
+          <div class="summary-sub">Semua jenis emas</div>
+        </div>
+
+        <div class="summary-card">
+          <div class="summary-label">Jumlah Harga Beli</div>
+          <div class="summary-value" id="sumBuy">RM 0.00</div>
+          <div class="summary-sub">Berdasarkan rekod yang ada harga</div>
+        </div>
+
+        <div class="summary-card">
+          <div class="summary-label">Jenis Aktif</div>
+          <div class="summary-value" id="sumTypes">0</div>
+          <div class="summary-sub">999.9 / 916 / lain-lain</div>
+        </div>
+      </div>
+
+      <div class="info-strip mt-3">
+        <div class="info-item">
+          <div class="fw-semibold">Auto Masuk dari Emas Amir</div>
+          <div class="mini-note">Pesanan Gold Bar / Coin dan 916 yang sah akan dibaca masuk ke sini secara automatik.</div>
+        </div>
+        <div class="info-item">
+          <div class="fw-semibold">Rekod Manual</div>
+          <div class="mini-note">Barang beli di kedai lain, hadiah, atau rekod lama boleh ditambah sendiri.</div>
+        </div>
+        <div class="info-item">
+          <div class="fw-semibold">Analitik Ikut Jenis</div>
+          <div class="mini-note">Semua kiraan dipisahkan ikut 999.9, 916, 835, 750, 375, tabung dan lain-lain.</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- TINDAKAN -->
+    <div class="box mb-3 no-print">
+      <div class="fw-semibold mb-2">Tindakan</div>
+
+      <div class="action-list">
+        <div class="action-item" data-open="panelAdd">
+          <div class="action-left">
+            <div class="action-ico">➕</div>
+            <div>
+              <div class="action-title">Tambah Rekod Baru</div>
+              <div class="action-sub">Isi rekod emas beli tempat lain, hadiah atau simpanan lama</div>
+            </div>
+          </div>
+          <div class="chev">›</div>
+        </div>
+
+        <div class="action-item" data-open="panelTarget">
+          <div class="action-left">
+            <div class="action-ico">🎯</div>
+            <div>
+              <div class="action-title">Target Simpanan</div>
+              <div class="action-sub">Tetapkan target gram ikut jenis emas</div>
+            </div>
+          </div>
+          <div class="chev">›</div>
+        </div>
+
+        <div class="action-item" data-open="panelAnalytics">
+          <div class="action-left">
+            <div class="action-ico">📊</div>
+            <div>
+              <div class="action-title">Analitik Ikut Jenis</div>
+              <div class="action-sub">Lihat jumlah item, gram, harga beli dan purata harga per gram</div>
+            </div>
+          </div>
+          <div class="chev">›</div>
+        </div>
+
+        <div class="action-item" data-open="panelHistory">
+          <div class="action-left">
+            <div class="action-ico">🕘</div>
+            <div>
+              <div class="action-title">Sejarah Rekod</div>
+              <div class="action-sub">Gabungan rekod auto Emas Amir dan rekod manual anda</div>
+            </div>
+          </div>
+          <div class="chev">›</div>
+        </div>
+
+        <div class="action-item" data-open="panelZakat">
+          <div class="action-left">
+            <div class="action-ico">🕌</div>
+            <div>
+              <div class="action-title">Zakat</div>
+              <div class="action-sub">Semak haul emas dan ringkasan zakat ikut negeri</div>
+            </div>
+          </div>
+          <div class="chev">›</div>
+        </div>
+
+       <div class="action-item" data-open="panelAdjust">
+  <div class="action-left">
+    <div class="action-ico">↩️</div>
+    <div>
+      <div class="action-title">Jual / Salah Rekod</div>
+      <div class="action-sub">Pilih rekod yang mahu ditolak dari simpanan</div>
+    </div>
+  </div>
+  <div class="chev">›</div>
+</div>
+
+<div class="action-item" id="btnPrintAction">
+  <div class="action-left">
+    <div class="action-ico">🖨️</div>
+    <div>
+      <div class="action-title">Cetak Report</div>
+      <div class="action-sub">Cetak / simpan laporan semasa</div>
+    </div>
+  </div>
+  <div class="chev">›</div>
+</div>
+      </div>
+    </div>
+
+    <!-- ANALYTICS -->
+    <div class="collapse mb-3 show" id="panelAnalytics">
+      <div class="panel">
+        <div class="panel-h">
+          <div>
+            <div class="fw-semibold">📊 Analitik Ikut Jenis</div>
+            <div class="muted xsmall">Semua jenis dikira berasingan</div>
+          </div>
+          <button class="btn btn-sm btn-outline-secondary no-print" type="button" data-bs-toggle="collapse" data-bs-target="#panelAnalytics">Tutup</button>
+        </div>
+        <div class="panel-b">
+          <div id="typeCards" class="type-grid">
+            <div class="empty-note">Memuatkan analitik…</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- TARGET -->
+    <div class="collapse mb-3" id="panelTarget">
+      <div class="panel">
+        <div class="panel-h">
+          <div>
+            <div class="fw-semibold">🎯 Target Simpanan</div>
+            <div class="muted xsmall">Tetapkan target ikut jenis emas</div>
+          </div>
+          <button class="btn btn-sm btn-outline-secondary no-print" type="button" data-bs-toggle="collapse" data-bs-target="#panelTarget">Tutup</button>
+        </div>
+        <div class="panel-b">
+          <div class="row g-3 no-print">
+            <div class="col-md-4">
+              <label class="form-label">Jenis Emas</label>
+              <select id="targetGoldType" class="form-select">
+                <option value="999.9">999.9</option>
+                <option value="916">916</option>
+                <option value="835">835</option>
+                <option value="750">750</option>
+                <option value="375">375</option>
+                <option value="TABUNG">Tabung</option>
+                <option value="LAIN">Lain-lain</option>
+              </select>
+            </div>
+            <div class="col-md-4">
+              <label class="form-label">Target Berat (g)</label>
+              <input id="targetWeight" type="number" step="0.001" min="0.001" class="form-control" placeholder="cth: 50">
+            </div>
+<div class="col-md-4">
+  <label class="form-label">Tarikh Capai Target</label>
+  <input id="targetDate" type="date" class="form-control">
+</div>
+            <div class="col-md-4 d-flex align-items-end">
+              <button id="btnSaveTarget" class="btn btn-primary w-100">Simpan Target</button>
+            </div>
+          </div>
+
+          <div class="mt-2 no-print">
+            <span id="targetStatus" class="muted"></span>
+          </div>
+
+          <hr class="my-3">
+
+          <div id="targetList" class="row g-3">
+            <div class="col-12">
+              <div class="empty-note">Belum ada target disimpan.</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- TAMBAH REKOD -->
+    <div class="collapse mb-3" id="panelAdd">
+      <div class="panel">
+        <div class="panel-h">
+          <div>
+            <div class="fw-semibold">➕ Tambah Rekod Baru</div>
+            <div class="muted xsmall">Untuk emas beli di tempat lain, hadiah atau rekod lama</div>
+          </div>
+          <button class="btn btn-sm btn-outline-secondary no-print" type="button" data-bs-toggle="collapse" data-bs-target="#panelAdd">Tutup</button>
+        </div>
+        <div class="panel-b">
+          <div class="row g-3 no-print">
+            <div class="col-md-4">
+              <label class="form-label">Jenis Emas</label>
+              <select id="fGoldType" class="form-select">
+                <option value="999.9">999.9</option>
+                <option value="916">916</option>
+                <option value="835">835</option>
+                <option value="750">750</option>
+                <option value="375">375</option>
+                <option value="LAIN">Lain-lain</option>
+                <option value="TABUNG">Tabung</option>
+              </select>
+            </div>
+
+            <div class="col-md-4">
+              <label class="form-label">Kategori Barang</label>
+              <select id="fCategory" class="form-select">
+                <option value="CINCIN">Cincin</option>
+                <option value="RANTAI_TANGAN">Rantai tangan</option>
+                <option value="RANTAI_LEHER">Rantai leher</option>
+                <option value="GELANG_KAKI">Gelang kaki</option>
+                <option value="GOLD_BAR">Gold bar</option>
+                <option value="COIN">Coin</option>
+                <option value="TABUNG">Tabung</option>
+                <option value="LAIN">Lain-lain</option>
+              </select>
+            </div>
+
+            <div class="col-md-4">
+              <label class="form-label">Berat (g)</label>
+              <input id="fWeight" type="number" step="0.001" min="0.001" class="form-control" placeholder="cth: 1.000">
+            </div>
+
+            <div class="col-md-4">
+              <label class="form-label">Harga Beli (RM)</label>
+              <input id="fBuyPrice" type="number" step="0.01" min="0" class="form-control" placeholder="cth: 350.00">
+            </div>
+
+            <div class="col-md-4">
+              <label class="form-label">Tarikh Beli</label>
+              <input id="fBuyDate" type="date" class="form-control">
+            </div>
+
+            <div class="col-md-4">
+              <label class="form-label">Sumber</label>
+              <select id="fSource" class="form-select">
+                <option value="OTHER">Kedai lain</option>
+                <option value="GIFT">Hadiah</option>
+                <option value="EMAS_AMIR">Emas Amir</option>
+              </select>
+            </div>
+
+            <div class="col-md-4">
+              <label class="form-label">Kategori Zakat</label>
+              <select id="fZakatCategory" class="form-select">
+                <option value="SIMPANAN">Simpanan</option>
+                <option value="PERHIASAN">Perhiasan</option>
+              </select>
+              <div class="mini-note mt-1">Untuk semakan zakat emas nanti.</div>
+            </div>
+
+            <div class="col-12">
+              <label class="form-label">Nota</label>
+              <textarea id="fNote" class="form-control" rows="3" placeholder="Contoh: Nama kedai yang beli  / beli masa kahwin / hadiah / simpanan lama"></textarea>
+            </div>
+
+            <div class="col-12">
+              <button id="btnSaveManual" class="btn btn-primary">Simpan Rekod</button>
+              <span id="saveManualStatus" class="ms-2 muted"></span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+<!-- JUAL / SALAH REKOD -->
+<div class="collapse mb-3" id="panelAdjust">
+  <div class="panel">
+    <div class="panel-h">
+      <div>
+        <div class="fw-semibold">↩️ Jual / Salah Rekod</div>
+        <div class="muted xsmall">Pilih rekod sedia ada dan keluarkan item penuh dari simpanan</div>
+      </div>
+      <button class="btn btn-sm btn-outline-secondary no-print" type="button" data-bs-toggle="collapse" data-bs-target="#panelAdjust">Tutup</button>
+    </div>
+
+    <div class="panel-b">
+      <div class="row g-3 no-print">
+        <div class="col-md-7">
+          <label class="form-label">Pilih Rekod</label>
+          <select id="adjAssetId" class="form-select">
+            <option value="">-- Pilih rekod --</option>
+          </select>
+          <div class="mini-note mt-1">Pilih 1 rekod. Sistem akan ambil terus berat dan harga beli asal item ini.</div>
+        </div>
+
+        <div class="col-md-5">
+          <label class="form-label">Tindakan</label>
+          <select id="adjReason" class="form-select">
+            <option value="JUAL">Jual</option>
+            <option value="SALAH_REKOD">Salah rekod</option>
+          </select>
+        </div>
+
+        <div class="col-md-4" id="adjSellPriceWrap">
+          <label class="form-label">Harga Jual (RM)</label>
+          <input id="adjSellPrice" type="number" step="0.01" min="0" class="form-control" placeholder="cth: 1800.00">
+          <div class="mini-note mt-1">Hanya untuk rekod jual.</div>
+        </div>
+
+        <div class="col-12">
+          <label class="form-label">Nota</label>
+          <textarea id="adjNote" class="form-control" rows="3" placeholder="Contoh: dijual semula / tersalah rekod"></textarea>
+        </div>
+
+        <div class="col-12">
+          <div id="adjPreview" class="empty-note text-start">
+            Sila pilih rekod untuk lihat ringkasan.
+          </div>
+        </div>
+
+       <div class="col-12">
+          <button id="btnSaveAdjust" class="btn btn-danger">Sahkan Keluarkan Rekod</button>
+          <span id="adjustStatus" class="ms-2 muted"></span>
+        </div>
+
+        <div class="col-12 mt-2">
+          <div class="border-top pt-3">
+            <div class="fw-semibold mb-2">Sejarah Jual / Salah Rekod</div>
+            <div class="mini-note mb-2">Senarai rekod yang telah dikeluarkan dari simpanan.</div>
+
+            <div class="table-wrap">
+              <div class="table-responsive">
+                <table class="table table-sm align-middle mb-0">
+                  <thead class="table-light">
+                    <tr>
+                      <th style="width:120px">Tarikh</th>
+                      <th style="width:120px">Tindakan</th>
+                      <th>Jenis</th>
+                      <th>Kategori</th>
+                      <th class="text-end">Berat</th>
+                      <th class="text-end">Harga Beli</th>
+                      <th class="text-end">Harga Jual</th>
+                      <th>Nota</th>
+                    </tr>
+                  </thead>
+                  <tbody id="adjHistTbody">
+                    <tr><td colspan="8" class="text-muted py-4">Memuatkan…</td></tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+
+            <div class="mt-2">
+              <small class="text-muted" id="adjHistInfo">0 rekod</small>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ZAKAT -->
+<div class="collapse mb-3" id="panelZakat">
+  <div class="panel">
+    <div class="panel-h">
+      <div>
+        <div class="fw-semibold">🕌 Zakat</div>
+        <div class="muted xsmall">Semakan haul emas dan ringkasan awal zakat</div>
+      </div>
+      <button class="btn btn-sm btn-outline-secondary no-print" type="button" data-bs-toggle="collapse" data-bs-target="#panelZakat">Tutup</button>
+    </div>
+
+    <div class="panel-b">
+      <div class="row g-3 no-print">
+        <div class="col-md-4">
+          <label class="form-label">Negeri Rujukan Zakat</label>
+          <select id="zakatState" class="form-select">
+            <option value="JOHOR">Johor</option>
+            <option value="KEDAH">Kedah</option>
+            <option value="KELANTAN">Kelantan</option>
+            <option value="MELAKA">Melaka</option>
+            <option value="NEGERI_SEMBILAN">Negeri Sembilan</option>
+            <option value="PAHANG">Pahang</option>
+            <option value="PERAK">Perak</option>
+            <option value="PERLIS">Perlis</option>
+            <option value="PULAU_PINANG">Pulau Pinang</option>
+            <option value="SABAH">Sabah</option>
+            <option value="SARAWAK">Sarawak</option>
+            <option value="SELANGOR" selected>Selangor</option>
+            <option value="TERENGGANU">Terengganu</option>
+            <option value="WILAYAH_PERSEKUTUAN">Wilayah Persekutuan</option>
+          </select>
+         <div class="mini-note mt-1">Nisab rasmi negeri akan ikut tetapan Admin Zakat nanti.</div>
+<div class="mini-note">Negeri dicadangkan automatik berdasarkan alamat akaun anda. Anda masih boleh tukar manual.</div>
+        </div>
+
+       <div class="col-md-4">
+  <label class="form-label">Tarikh Semakan</label>
+  <input id="zakatAsOfDate" type="date" class="form-control" disabled>
+
+  <div class="mini-note mt-1">
+    Tarikh semakan automatik ikut hari semasa
+  </div>
+</div>
+
+        <div class="col-md-4 d-flex align-items-end">
+          <button id="btnRefreshZakat" class="btn btn-outline-secondary w-100">Refresh Semakan Zakat</button>
+        </div>
+      </div>
+
+     <div class="summary-grid mt-3">
+  <div class="summary-card">
+    <div class="summary-label">Rekod Cukup Haul</div>
+    <div class="summary-value" id="zakatHaulItems">0</div>
+    <div class="summary-sub">Rekod yang melepasi tempoh haul</div>
+  </div>
+
+  <div class="summary-card">
+    <div class="summary-label">Jumlah Berat Emas Tulen</div>
+    <div class="summary-value" id="zakatPureGrams">0.000 g</div>
+    <div class="summary-sub">Berat tulen item simpanan yang cukup haul</div>
+  </div>
+
+  <div class="summary-card">
+    <div class="summary-label">Nilai Emas Layak Zakat</div>
+    <div class="summary-value" id="zakatValueRm">RM 0.00</div>
+    <div class="summary-sub">Nilai ikut harga emas rujukan negeri</div>
+  </div>
+
+  <div class="summary-card">
+    <div class="summary-label">Anggaran Zakat</div>
+    <div class="summary-value" id="zakatEstimateRm">RM 0.00</div>
+    <div class="summary-sub">Anggaran semasa berdasarkan kadar zakat</div>
+  </div>
+
+  <div class="summary-card">
+    <div class="summary-label">Nisab Negeri</div>
+    <div class="summary-value" id="zakatNisab">-</div>
+    <div class="summary-sub">Akan ikut tetapan Admin Zakat</div>
+  </div>
+
+  <div class="summary-card">
+    <div class="summary-label">Status</div>
+    <div class="summary-value" id="zakatStatus">Semakan awal</div>
+    <div class="summary-sub">Haul dikira per rekod, nisab akan ikut negeri</div>
+  </div>
+</div>
+
+      <div class="mt-3">
+  <div class="empty-note text-start" id="zakatSummaryBox">
+    Pilih negeri dan tarikh semakan untuk lihat ringkasan haul emas anda.
+  </div>
+
+  <div id="zakatNoDataNotice" class="mini-note mt-2 text-danger" style="display:none;">
+    <strong>Makluman:</strong> Negeri rujukan yang dipilih tidak mempunyai data nisab zakat automatik lengkap dalam sistem ini
+    (<strong>Perlis, Melaka, Negeri Sembilan, Perak</strong>).
+    Kiraan ini dipaparkan sebagai semakan awal sahaja. Untuk pengesahan lanjut, sila rujuk pusat zakat berhampiran
+    atau laman web rasmi pusat zakat negeri anda.
+  </div>
+</div>
+
+<div class="mt-3">
+  <div class="table-wrap">
+    <div class="panel-b">
+      <div class="row g-3">
+
+        <div class="col-12">
+          <div class="fw-semibold">A. Zakat Simpanan</div>
+          <div class="mini-note">Kiraan untuk item kategori simpanan yang telah cukup haul dan melepasi nisab negeri.</div>
+        </div>
+
+        <div class="col-md-6">
+          <label class="form-label">Jumlah Berat Emas Tulen Simpanan</label>
+          <div class="form-control bg-light" id="zakatSimpananPureWeightBox">0.000 g</div>
+          <div class="mini-note mt-1">Untuk simpanan yang cukup haul sahaja.</div>
+        </div>
+
+        <div class="col-md-6">
+          <label class="form-label">Jumlah Harga Simpanan Dikenakan Zakat</label>
+          <div class="form-control bg-light" id="zakatSimpananValueBox">RM 0.00</div>
+        </div>
+
+        <div class="col-md-6">
+          <label class="form-label">Kadar Zakat Simpanan</label>
+          <div class="form-control bg-light" id="zakatSimpananRateBox">2.50%</div>
+        </div>
+
+        <div class="col-md-6">
+          <label class="form-label">Jumlah Zakat Simpanan</label>
+          <div class="form-control bg-light" id="zakatSimpananPayableBox">RM 0.00</div>
+        </div>
+
+        <div class="col-12"><hr class="my-1"></div>
+
+        <div class="col-12">
+          <div class="fw-semibold">B. Zakat Perhiasan</div>
+          <div class="mini-note">Kiraan untuk item kategori perhiasan yang telah cukup haul dan melebihi uruf negeri.</div>
+        </div>
+
+        <div class="col-md-6">
+          <label class="form-label">Jumlah Berat Emas Tulen Perhiasan</label>
+          <div class="form-control bg-light" id="zakatPerhiasanPureWeightBox">0.000 g</div>
+        </div>
+
+        <div class="col-md-6">
+          <label class="form-label">Had Uruf Negeri</label>
+          <div class="form-control bg-light" id="zakatPerhiasanUrufBox">0.000 g</div>
+        </div>
+
+        <div class="col-md-6">
+          <label class="form-label">Lebihan Perhiasan Dikenakan Zakat</label>
+          <div class="form-control bg-light" id="zakatPerhiasanChargeableWeightBox">0.000 g</div>
+        </div>
+
+        <div class="col-md-6">
+          <label class="form-label">Jumlah Harga Perhiasan Dikenakan Zakat</label>
+          <div class="form-control bg-light" id="zakatPerhiasanValueBox">RM 0.00</div>
+        </div>
+
+        <div class="col-md-6">
+          <label class="form-label">Kadar Zakat Perhiasan</label>
+          <div class="form-control bg-light" id="zakatPerhiasanRateBox">2.50%</div>
+        </div>
+
+        <div class="col-md-6">
+          <label class="form-label">Jumlah Zakat Perhiasan</label>
+          <div class="form-control bg-light" id="zakatPerhiasanPayableBox">RM 0.00</div>
+        </div>
+
+        <div class="col-12"><hr class="my-1"></div>
+
+        <div class="col-12">
+          <div class="fw-semibold">C. Jumlah Keseluruhan</div>
+          <div class="mini-note">Gabungan zakat simpanan dan zakat perhiasan.</div>
+        </div>
+
+        <div class="col-md-6">
+          <label class="form-label">Jumlah Nilai Keseluruhan Dikenakan Zakat</label>
+          <div class="form-control bg-light" id="zakatGrandValueBox">RM 0.00</div>
+        </div>
+
+        <div class="col-md-6">
+          <label class="form-label">Jumlah Zakat Keseluruhan</label>
+          <div class="form-control bg-light" id="zakatGrandPayableBox">RM 0.00</div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+</div>
+     <div class="mt-3">
+        <div class="fw-semibold mb-2">Senarai Rekod Cukup Haul</div>
+        <div class="mini-note mb-2">
+          Senarai ini tunjuk item yang telah cukup tempoh haul. Semakan nisab dan rekod zakat penuh akan disambung dalam Admin Zakat.
+        </div>
+
+        <div class="table-wrap">
+          <div class="table-responsive">
+            <table class="table table-sm align-middle mb-0">
+              <thead class="table-light">
+                <tr>
+  <th style="width:120px">Tarikh Beli</th>
+  <th style="width:140px">Tempoh Simpan</th>
+  <th>Jenis</th>
+  <th>Kategori</th>
+  <th>Kategori Zakat</th>
+  <th class="text-end">Berat (g)</th>
+  <th class="text-end">Berat Zakat (g)</th>
+</tr>
+              </thead>
+             <tbody id="zakatCukupHaulTbody">
+  <tr><td colspan="7" class="text-muted py-4">Memuatkan…</td></tr>
+</tbody>
+            </table>
+          </div>
+        </div>
+
+        <div class="mt-2">
+          <small class="text-muted" id="zakatCukupHaulInfo">0 rekod</small>
+        </div>
+      </div>
+
+      <div class="mt-4">
+        <div class="fw-semibold mb-2">Senarai Rekod Belum Cukup Haul</div>
+        <div class="mini-note mb-2">
+          Senarai ini tunjuk item yang masih dalam tempoh haul dan belum cukup setahun.
+        </div>
+
+        <div class="table-wrap">
+          <div class="table-responsive">
+            <table class="table table-sm align-middle mb-0">
+              <thead class="table-light">
+                <tr>
+                  <tr>
+  <th style="width:120px">Tarikh Beli</th>
+  <th style="width:140px">Tempoh Simpan</th>
+  <th>Jenis</th>
+  <th>Kategori</th>
+  <th>Kategori Zakat</th>
+  <th class="text-end">Berat (g)</th>
+  <th class="text-end">Berat Zakat (g)</th>
+</tr>
+              </thead>
+              <tbody id="zakatBelumHaulTbody">
+  <tr><td colspan="7" class="text-muted py-4">Memuatkan…</td></tr>
+</tbody>
+            </table>
+          </div>
+        </div>
+
+        <div class="mt-2">
+          <small class="text-muted" id="zakatBelumHaulInfo">0 rekod</small>
+        </div>
+      </div>
+</div>
+    </div>
+  </div>
+</div>
+
+    <!-- HISTORY -->
+    <div class="collapse mb-3" id="panelHistory">
+      <div class="panel">
+        <div class="panel-h">
+          <div>
+            <div class="fw-semibold">🕘 Sejarah Rekod</div>
+            <div class="muted xsmall">Gabungan rekod auto Emas Amir dan rekod manual</div>
+          </div>
+          <button class="btn btn-sm btn-outline-secondary no-print" type="button" data-bs-toggle="collapse" data-bs-target="#panelHistory">Tutup</button>
+        </div>
+        <div class="panel-b">
+          <div class="history-head no-print">
+            <div>
+              <div class="sub-title mb-1">Senarai Rekod</div>
+              <div class="mini-note">Tapis ikut jenis atau sumber untuk semak simpanan anda.</div>
+            </div>
+
+            <div class="d-flex gap-2 flex-wrap">
+              <select id="fltType" class="form-select" style="min-width:160px">
+                <option value="ALL">Semua Jenis</option>
+                <option value="999.9">999.9</option>
+                <option value="916">916</option>
+                <option value="835">835</option>
+                <option value="750">750</option>
+                <option value="375">375</option>
+                <option value="TABUNG">Tabung</option>
+                <option value="LAIN">Lain-lain</option>
+              </select>
+
+              <select id="fltSource" class="form-select" style="min-width:170px">
+                <option value="ALL">Semua Sumber</option>
+                <option value="EMAS_AMIR">Emas Amir</option>
+                <option value="OTHER">Kedai lain</option>
+                <option value="GIFT">Hadiah</option>
+                <option value="TABUNG">Tabung</option>
+              </select>
+
+              <button id="btnRefreshAll" class="btn btn-outline-secondary">Refresh</button>
+            </div>
+          </div>
+
+          <div class="table-wrap">
+            <div class="table-responsive">
+              <table class="table table-sm align-middle table-sticky mb-0">
+                <thead class="table-light">
+                  <tr>
+                    <th style="width:140px">Tarikh</th>
+                    <th>Jenis</th>
+                    <th>Kategori</th>
+                    <th class="text-end">Berat (g)</th>
+                    <th class="text-end">Harga Beli</th>
+                    <th>Sumber</th>
+                    <th>Butiran</th>
+                  </tr>
+                </thead>
+                <tbody id="histTbody">
+                  <tr><td colspan="7" class="text-muted py-4">Memuatkan…</td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <div class="d-flex justify-content-between align-items-center flex-wrap gap-2 mt-3">
+            <small class="text-muted" id="histInfo">0 rekod</small>
+            <ul class="pagination pager mb-0 no-print" id="histPager"></ul>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- OFFCANVAS MENU -->
+<div class="offcanvas offcanvas-end" tabindex="-1" id="menuCanvas" aria-labelledby="menuCanvasLabel">
+  <div class="offcanvas-header">
+    <h5 class="offcanvas-title" id="menuCanvasLabel">Menu</h5>
+    <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Tutup"></button>
+  </div>
+  <div class="offcanvas-body">
+    <div class="d-grid gap-2">
+      <a href="index.html" class="btn btn-outline-secondary">🏠 Halaman Utama</a>
+      <a href="account.html" class="btn btn-outline-secondary">👤 Akaun</a>
+      <a href="tabung.html" class="btn btn-outline-secondary">💰 Tabung Emas</a>
+      <a href="goldbar-coin.html" class="btn btn-outline-secondary">🪙 GoldBar / Coin Fizikal</a>
+      <a href="j916.html" class="btn btn-outline-secondary">💍 Barang Kemas 916</a>
+      <a href="jual-emas.html" class="btn btn-outline-secondary">Jual Emas</a>
+      <a href="policy.html" class="btn btn-outline-secondary">Polisi</a>
+      <hr>
+      <div class="muted xsmall">Tip: Rekod pembelian Emas Amir akan ditarik automatik. Barang luar boleh tambah manual.</div>
+    </div>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="auth.js?v=13.1"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+
+<script>
+(() => {
+  "use strict";
+
+  const $ = id => document.getElementById(id);
+  const sb = window.sb;
+  const ses = (window.auth_get && window.auth_get()) || {};
+
+  const money = n => "RM " + Number(n || 0).toFixed(2);
+  const num = n => Number(n || 0);
+  const round3 = n => Number(num(n).toFixed(3));
+  const todayStr = () => {
+    const d = new Date();
+    const yyyy = d.getFullYear();
+    const mm = String(d.getMonth() + 1).padStart(2, "0");
+    const dd = String(d.getDate()).padStart(2, "0");
+    return `${yyyy}-${mm}-${dd}`;
+  };
+  const fmtDate = iso => {
+    if (!iso) return "-";
+    const d = new Date(iso);
+    if (isNaN(d)) return iso;
+    return d.toLocaleDateString("ms-MY");
+  };
+  const fmtDateTime = iso => {
+    if (!iso) return "-";
+    const d = new Date(iso);
+    if (isNaN(d)) return iso;
+    return d.toLocaleString("ms-MY", { hour12:false });
+  };
+
+  $("who").textContent = ses && (ses.name || ses.phone)
+    ? "Log masuk sebagai " + (ses.name || ses.phone)
+    : "Tidak log masuk";
+
+  if (!ses.phone && !ses.id) {
+    alert("Sila log masuk terlebih dahulu.");
+    location.href = "login.html?next=" + encodeURIComponent("gold-wallet.html") + "#login";
+    return;
+  }
+
+ $("fBuyDate").value = todayStr();
+  if ($("zakatAsOfDate")) $("zakatAsOfDate").value = todayStr();
+
+  const GOLD_ORDER_PAGE_SIZE = 8;
+  let HIST_PAGE = 1;
+  let ALL_ASSETS = [];
+  let TARGETS = [];
+
+  const DEFAULT_TYPES = ["999.9", "916", "835", "750", "375", "TABUNG", "LAIN"];
+
+  function onlyDigits(s){
+    return String(s || "").replace(/\D+/g, "");
+  }
+
+  function bothPhones(raw){
+    const d = onlyDigits(raw);
+    if (!d) return ["", ""];
+    const p60 = d.startsWith("60") ? d : (d.startsWith("0") ? ("6" + d) : ("60" + d));
+    const p0  = d.startsWith("0") ? d : (d.startsWith("60") ? ("0" + d.slice(2)) : ("0" + d));
+    return [p60, p0];
+  }
+
+  function mapCategoryLabel(cat){
+    const v = String(cat || "").toUpperCase();
+    if (v === "CINCIN") return "Cincin";
+    if (v === "RANTAI_TANGAN") return "Rantai tangan";
+    if (v === "RANTAI_LEHER") return "Rantai leher";
+    if (v === "GELANG_KAKI") return "Gelang kaki";
+    if (v === "GOLD_BAR") return "Gold bar";
+    if (v === "COIN") return "Coin";
+    if (v === "TABUNG") return "Tabung";
+    if (v === "LAIN") return "Lain-lain";
+    return cat || "-";
+  }
+
+  function mapSourceLabel(src){
+    const v = String(src || "").toUpperCase();
+    if (v === "EMAS_AMIR") return "Emas Amir";
+    if (v === "OTHER") return "Kedai lain";
+    if (v === "GIFT") return "Hadiah";
+    if (v === "TABUNG") return "Tabung";
+    return src || "-";
+  }
+
+  function mapSourceClass(src){
+    const v = String(src || "").toUpperCase();
+    if (v === "EMAS_AMIR") return "src-ea";
+    if (v === "OTHER") return "src-other";
+    if (v === "GIFT") return "src-gift";
+    if (v === "TABUNG") return "src-tabung";
+    return "src-other";
+  }
+
+function getZakatCategoryLabel(row){
+  const txt = String(row?.note || "");
+  const m = txt.match(/\[ZAKAT:(SIMPANAN|PERHIASAN)\]/i);
+  if (m && m[1]) {
+    return m[1].toUpperCase() === "PERHIASAN" ? "Perhiasan" : "Simpanan";
+  }
+
+  // fallback ringkas:
+  // kalau auto emas amir / gold bar / coin biasa anggap simpanan
+  const cat = String(row?.category || "").toUpperCase();
+  if (cat === "GOLD_BAR" || cat === "COIN" || cat === "TABUNG") return "Simpanan";
+
+  // default
+  return "Simpanan";
+}
+
+function getPurityFactor(goldType){
+  const gt = String(goldType || "").toUpperCase();
+  if (gt === "999.9") return 1.000;
+  if (gt === "916") return 0.916;
+  if (gt === "835") return 0.835;
+  if (gt === "750") return 0.750;
+  if (gt === "375") return 0.375;
+  if (gt === "TABUNG") return 1.000;
+  return 0;
+}
+
+async function fetchZakatStateSetting(state){
+  try{
+    const stateKey = String(state || "SELANGOR").toUpperCase();
+
+    const { data, error } = await sb
+      .from("zakat_state_settings")
+      .select("*")
+      .eq("state_code", stateKey)
+      .order("effective_date", { ascending:false })
+      .limit(1)
+      .maybeSingle();
+
+    if (error) throw error;
+
+    console.log("[gold-wallet] zakat_state_settings row:", data);
+
+    return data || null;
+  }catch(e){
+    console.warn("[gold-wallet] fetchZakatStateSetting:", e);
+    return null;
+  }
+}
+
+const NO_ZAKAT_STATES = [
+  "PERLIS",
+  "MELAKA",
+  "NEGERI_SEMBILAN",
+  "PERAK"
+];
+
+function toggleZakatNoDataNotice(state){
+  const box = document.getElementById("zakatNoDataNotice");
+  if (!box) return;
+
+  const st = String(state || "").toUpperCase();
+
+  if (NO_ZAKAT_STATES.includes(st)){
+    box.style.display = "";
+  } else {
+    box.style.display = "none";
+  }
+}
+function diffDays(fromDate, toDate){
+  const a = new Date(fromDate);
+  const b = new Date(toDate);
+  a.setHours(0,0,0,0);
+  b.setHours(0,0,0,0);
+  return Math.max(0, Math.floor((b - a) / (1000 * 60 * 60 * 24)));
+}
+
+function formatTempohHaul(fromDate, toDate){
+  const days = diffDays(fromDate, toDate);
+  const years = Math.floor(days / 365);
+  const remainAfterYear = days % 365;
+  const months = Math.floor(remainAfterYear / 30);
+
+  if (years <= 0 && months <= 0) return `${days} hari`;
+  if (years <= 0) return `${months} bln`;
+  return `${years} thn ${months} bln`;
+}
+
+function formatTempohBelumHaul(fromDate, toDate){
+  const days = diffDays(fromDate, toDate);
+
+  if (days < 30) return `baru ${days} hari`;
+
+  const months = Math.floor(days / 30);
+  const extraDays = days % 30;
+
+  if (extraDays <= 0) return `baru ${months} bln`;
+  return `baru ${months} bln ${extraDays} hari`;
+}
+
+function mapAdjustReasonLabel(v){
+    const s = String(v || "").toUpperCase();
+    if (s === "JUAL") return "Jual";
+    if (s === "SALAH_REKOD") return "Salah rekod";
+    return v || "-";
+  }
+
+  function mapAdjustReasonBadge(v){
+    const s = String(v || "").toUpperCase();
+    if (s === "JUAL") {
+      return `<span class="tag-source src-ea">Jual</span>`;
+    }
+    if (s === "SALAH_REKOD") {
+      return `<span class="tag-source src-other">Salah rekod</span>`;
+    }
+    return `<span class="tag-source src-other">${v || "-"}</span>`;
+  }
+
+function daysBetween(a, b){
+    const da = new Date(a);
+    const db = new Date(b);
+    if (isNaN(da) || isNaN(db)) return 0;
+    return Math.floor((db - da) / (1000 * 60 * 60 * 24));
+  }
+
+  function formatHoldingAge(days){
+    const d = Math.max(0, Number(days || 0));
+    const years = Math.floor(d / 365);
+    const months = Math.floor((d % 365) / 30);
+    const remDays = Math.floor((d % 365) % 30);
+
+    if (years > 0) return `${years} thn ${months} bln`;
+    if (months > 0) return `${months} bln ${remDays} hari`;
+    return `${remDays} hari`;
+  }
+
+  function getActiveAssetsForZakat(){
+    const activeRows = ALL_ASSETS.filter(r => String(r.asset_origin || "").toUpperCase() !== "ADJUSTMENT");
+
+    const removedIds = new Set(
+      ALL_ASSETS
+        .filter(r => String(r.asset_origin || "").toUpperCase() === "ADJUSTMENT")
+        .map(r => String(r.adjust_source_system_id || r.source_system_id || ""))
+        .filter(Boolean)
+    );
+
+    return activeRows.filter(r => !removedIds.has(String(r.source_system_id || "")));
+  }
+
+  
+  function inferGoldTypeFromKind(kind){
+    const k = String(kind || "").toLowerCase();
+    if (k.includes("916")) return "916";
+    if (k.includes("tabung")) return "TABUNG";
+    return "999.9";
+  }
+
+  function inferCategoryFromGoldbar(row){
+    const kind = String(row.kind || "").toLowerCase();
+    const design = String(row.design_name || "").toLowerCase();
+    if (kind.includes("coin") || design.includes("coin")) return "COIN";
+    if (kind.includes("dinar") || design.includes("dinar")) return "COIN";
+    return "GOLD_BAR";
+  }
+
+  function statusOk(status){
+    const s = String(status || "").toUpperCase();
+    return s === "PAID" || s === "COMPLETED" || s === "APPROVED";
+  }
+
+  async function getAuthUid(){
+    try{
+      const r = await sb.auth.getUser();
+      return r?.data?.user?.id || null;
+    }catch{
+      return null;
+    }
+  }
+
+  async function getUidGabungan(){
+    try{
+      const authId = await getAuthUid();
+      if (authId) return authId;
+    }catch{}
+
+    const a = (window.auth_get && window.auth_get()) || {};
+    const ids = [a.id, a.customer_id].filter(Boolean);
+    if (!ids.length) return null;
+
+    const { data, error } = await sb
+      .from("v_auth_ident")
+      .select("uid_gabungan")
+      .or(`auth_uid.in.(${ids.join(",")}),customer_id.in.(${ids.join(",")})`)
+      .limit(1);
+
+    if (error) return null;
+    return data?.[0]?.uid_gabungan || null;
+  }
+
+ async function fetchGoldbarAssets(){
+    const raw = ses.phone || "";
+    const [p60, p0] = bothPhones(raw);
+    if (!p60 && !p0) return [];
+
+    const { data: rows, error } = await sb
+      .from("goldbar_order")
+      .select("*")
+      .or(`customer_phone.eq.${p60},customer_phone.eq.${p0}`)
+      .order("created_at", { ascending:false });
+
+    if (error) {
+      console.warn("[gold-wallet] fetchGoldbarAssets:", error);
+      return [];
+    }
+
+    return (rows || [])
+      .filter(r => statusOk(r.status))
+      .map(r => {
+        const qty = num(r.qty || 1);
+        const weight = round3(num(r.weight_g) * qty);
+        return {
+          asset_id: "EA-GB-" + String(r.id),
+          source_system_id: r.id,
+          asset_origin: "AUTO",
+          gold_type: inferGoldTypeFromKind(r.kind),
+          category: inferCategoryFromGoldbar(r),
+          weight_g: weight,
+          buy_price_rm: num(r.total_rm ?? r.grand_total_rm ?? 0),
+          buy_date: r.created_at,
+          source: "EMAS_AMIR",
+          note: [r.design_name, r.reference_1].filter(Boolean).join(" • "),
+          status: String(r.status || "").toUpperCase(),
+          display_ref: r.reference_1 || r.id,
+          created_at: r.created_at
+        };
+      });
+  }
+
+  function map916Row(r){
+    return {
+      id: r.id,
+      created_at: r.created_at,
+      reference: r.reference_1 || r.reference || r.id,
+      name: r.item_name || r.product_name || r.title || "-",
+      weight: num(r.weight_g || r.grams || 0),
+      qty: num(r.qty || r.quantity || 1),
+      total: num(r.total_rm || r.total || 0),
+      status: String(r.status || "PENDING").toUpperCase()
+    };
+  }
+
+  async function fetch916Assets(){
+    const raw = ses.phone || "";
+    const [p60, p0] = bothPhones(raw);
+    const phone = p60 || p0;
+    if (!phone) return [];
+
+    try{
+      const rpc = await sb.rpc("j916_account_orders_v1", {
+        p_phone: phone,
+        p_status: null,
+        p_page: 1,
+        p_size: 500
+      });
+
+      if (rpc.error) throw rpc.error;
+
+      const rows = Array.isArray(rpc.data)
+        ? rpc.data
+        : (rpc.data?.items || []);
+
+      return rows
+        .map(map916Row)
+        .filter(r => statusOk(r.status))
+        .map(r => ({
+          asset_id: "EA-916-" + String(r.id),
+          source_system_id: r.id,
+          asset_origin: "AUTO",
+          gold_type: "916",
+          category: "LAIN",
+          weight_g: round3(r.weight),
+          buy_price_rm: num(r.total),
+          buy_date: r.created_at,
+          source: "EMAS_AMIR",
+          note: [r.name, r.reference].filter(Boolean).join(" • "),
+          status: r.status,
+          display_ref: r.reference,
+          created_at: r.created_at
+        }));
+    }catch(err){
+      console.warn("[gold-wallet] fetch916Assets rpc fallback:", err);
+      try{
+        const { data: rows, error } = await sb
+          .from("j916_orders")
+          .select("*")
+          .or(`customer_phone.eq.${p60},customer_phone.eq.${p0}`)
+          .order("created_at", { ascending:false });
+
+        if (error) throw error;
+
+        return (rows || [])
+          .map(map916Row)
+          .filter(r => statusOk(r.status))
+          .map(r => ({
+            asset_id: "EA-916-" + String(r.id),
+            source_system_id: r.id,
+            asset_origin: "AUTO",
+            gold_type: "916",
+            category: "LAIN",
+            weight_g: round3(r.weight),
+            buy_price_rm: num(r.total),
+            buy_date: r.created_at,
+            source: "EMAS_AMIR",
+            note: [r.name, r.reference].filter(Boolean).join(" • "),
+            status: r.status,
+            display_ref: r.reference,
+            created_at: r.created_at
+          }));
+      }catch(e2){
+        console.warn("[gold-wallet] fetch916Assets fallback:", e2);
+        return [];
+      }
+    }
+  }
+
+  async function fetchTabungAssets(){
+    try{
+      const uid = await getUidGabungan();
+      if (!uid) return [];
+
+      const { data, error } = await sb
+        .from("v_tabung_units_by_uid")
+        .select("total_units")
+        .eq("auth_uid", uid)
+        .single();
+
+      if (error && error.code !== "PGRST116") throw error;
+
+      const units = num(data?.total_units || 0);
+      if (units <= 0) return [];
+
+      return [{
+        asset_id: "TABUNG-" + String(uid),
+        source_system_id: uid,
+        asset_origin: "AUTO",
+        gold_type: "TABUNG",
+        category: "TABUNG",
+        weight_g: round3(units / 10),
+        buy_price_rm: 0,
+        buy_date: null,
+        source: "TABUNG",
+        note: `Baki tabung semasa: ${units} unit`,
+        status: "ACTIVE",
+        display_ref: uid,
+        created_at: new Date().toISOString()
+      }];
+    }catch(e){
+      console.warn("[gold-wallet] fetchTabungAssets:", e);
+      return [];
+    }
+  }
+
+  async function fetchManualAssets(){
+    try{
+      const uid = await getUidGabungan();
+      if (!uid) return [];
+
+      const { data, error } = await sb
+        .from("user_gold_assets")
+        .select("*")
+        .eq("user_id", uid)
+        .order("buy_date", { ascending:false })
+        .order("created_at", { ascending:false });
+
+      if (error) throw error;
+
+     return (data || []).map(r => ({
+        asset_id: "MAN-" + String(r.id),
+        source_system_id: r.source_system_id || r.id,
+        adjust_source_system_id: r.source_system_id || null,
+        asset_origin: String(r.asset_origin || "MANUAL").toUpperCase(),
+        adjust_reason: String(r.adjust_reason || "").toUpperCase(),
+        sell_price_rm: num(r.sell_price_rm),
+        gold_type: String(r.gold_type || "LAIN").toUpperCase(),
+        category: String(r.category || "LAIN").toUpperCase(),
+        weight_g: round3(r.weight_g),
+        buy_price_rm: num(r.buy_price_rm),
+        buy_date: r.buy_date || r.created_at,
+        source: String(r.source || "OTHER").toUpperCase(),
+        note: r.note || "",
+        status: "ACTIVE",
+        display_ref: r.id,
+        created_at: r.created_at
+      }));
+    }catch(e){
+      console.warn("[gold-wallet] fetchManualAssets:", e);
+      return [];
+    }
+  }
+
+  async function fetchTargets(){
+    try{
+      const uid = await getUidGabungan();
+      if (!uid) return [];
+
+      const { data, error } = await sb
+        .from("user_gold_targets")
+        .select("*")
+        .eq("user_id", uid)
+        .order("gold_type", { ascending:true });
+
+      if (error) throw error;
+      return data || [];
+    }catch(e){
+      console.warn("[gold-wallet] fetchTargets:", e);
+      return [];
+    }
+  }
+
+
+  function getTypeSummaryMap(rows){
+  const map = new Map();
+
+  for (const t of DEFAULT_TYPES){
+    map.set(t, {
+      gold_type: t,
+      items: 0,
+      grams: 0,
+      buy: 0,
+      priced_items: 0
+    });
+  }
+
+  const activeRows = rows.filter(r => String(r.asset_origin || "").toUpperCase() !== "ADJUSTMENT");
+
+  const removedIds = new Set(
+    rows
+      .filter(r => String(r.asset_origin || "").toUpperCase() === "ADJUSTMENT")
+      .map(r => String(r.adjust_source_system_id || r.source_system_id || ""))
+      .filter(Boolean)
+  );
+
+  const visibleRows = activeRows.filter(r => !removedIds.has(String(r.source_system_id || "")));
+
+  visibleRows.forEach(r => {
+    const gt = String(r.gold_type || "LAIN").toUpperCase();
+    if (!map.has(gt)) {
+      map.set(gt, {
+        gold_type: gt,
+        items: 0,
+        grams: 0,
+        buy: 0,
+        priced_items: 0
+      });
+    }
+
+    const row = map.get(gt);
+    row.items += 1;
+    row.grams += num(r.weight_g);
+    row.buy += num(r.buy_price_rm);
+    if (num(r.buy_price_rm) > 0 && num(r.weight_g) > 0) row.priced_items += 1;
+  });
+
+  return map;
+}
+
+function getNetWeightBySourceId(sourceSystemId){
+    const baseRows = ALL_ASSETS.filter(r =>
+      String(r.source_system_id || "") === String(sourceSystemId || "") &&
+      String(r.asset_origin || "") !== "ADJUSTMENT"
+    );
+
+    const adjRows = ALL_ASSETS.filter(r =>
+      String(r.adjust_source_system_id || "") === String(sourceSystemId || "") &&
+      String(r.asset_origin || "") === "ADJUSTMENT"
+    );
+
+    const base = baseRows.reduce((a, b) => a + num(b.weight_g), 0);
+    const adj = adjRows.reduce((a, b) => a + num(b.weight_g), 0); // adj memang negatif
+    return round3(base + adj);
+  }
+
+ function getAdjustableAssets(){
+  const baseRows = ALL_ASSETS
+    .filter(r => String(r.asset_origin || "") !== "ADJUSTMENT")
+    .sort((a, b) => new Date(b.buy_date || b.created_at || 0) - new Date(a.buy_date || a.created_at || 0));
+
+  return baseRows
+    .map(r => {
+      const netWeight = getNetWeightBySourceId(r.source_system_id);
+      const fullyRemoved = netWeight <= 0;
+
+      return {
+        ...r,
+        net_weight_g: netWeight,
+        is_removed: fullyRemoved
+      };
+    })
+    .filter(r => !r.is_removed);
+}
+
+  function fillAdjustAssetOptions(){
+    const sel = $("adjAssetId");
+    if (!sel) return;
+
+    const rows = getAdjustableAssets();
+
+    sel.innerHTML = `<option value="">-- Pilih rekod --</option>` + rows.map(r => {
+      const label = [
+        String(r.gold_type || "").toUpperCase(),
+        mapCategoryLabel(r.category),
+        `${round3(r.net_weight_g).toFixed(3)} g`,
+        mapSourceLabel(r.source),
+        r.note || r.display_ref || ""
+      ].filter(Boolean).join(" • ");
+
+      return `<option value="${String(r.source_system_id)}">${label}</option>`;
+    }).join("");
+  }
+
+  function renderAdjustPreview(){
+  const box = $("adjPreview");
+  const id = $("adjAssetId").value;
+  const reason = String($("adjReason")?.value || "JUAL").toUpperCase();
+
+  if (!id){
+    box.innerHTML = `Sila pilih rekod untuk lihat ringkasan.`;
+    return;
+  }
+
+  const row = getAdjustableAssets().find(x => String(x.source_system_id) === String(id));
+  if (!row){
+    box.innerHTML = `Rekod tidak dijumpai.`;
+    return;
+  }
+
+  box.innerHTML = `
+    <div><strong>Jenis:</strong> ${String(row.gold_type || "-").toUpperCase()}</div>
+    <div><strong>Kategori:</strong> ${mapCategoryLabel(row.category)}</div>
+    <div><strong>Berat Asal:</strong> ${round3(row.weight_g).toFixed(3)} g</div>
+    <div><strong>Harga Beli Asal:</strong> ${num(row.buy_price_rm) > 0 ? money(row.buy_price_rm) : "-"}</div>
+    <div><strong>Sumber:</strong> ${mapSourceLabel(row.source)}</div>
+    <div><strong>Butiran:</strong> ${row.note || row.display_ref || "-"}</div>
+    <hr class="my-2">
+    <div><strong>Kesan selepas sahkan:</strong></div>
+    <div>- Jumlah Rekod akan tolak 1</div>
+    <div>- Jumlah Berat akan tolak ${round3(row.weight_g).toFixed(3)} g</div>
+    <div>- Jumlah Harga Beli akan tolak ${num(row.buy_price_rm) > 0 ? money(row.buy_price_rm) : "RM 0.00"}</div>
+    <div>- Tindakan dipilih: ${reason === "JUAL" ? "Jual" : "Salah rekod"}</div>
+  `;
+}
+
+function renderAdjustHistory(){
+    const tb = $("adjHistTbody");
+    const info = $("adjHistInfo");
+    if (!tb || !info) return;
+
+    const rows = ALL_ASSETS
+      .filter(r => String(r.asset_origin || "").toUpperCase() === "ADJUSTMENT")
+      .sort((a, b) => new Date(b.created_at || b.buy_date || 0) - new Date(a.created_at || a.buy_date || 0));
+
+    if (!rows.length){
+      tb.innerHTML = `<tr><td colspan="8" class="text-muted py-4">Belum ada sejarah jual / salah rekod.</td></tr>`;
+      info.textContent = "0 rekod";
+      return;
+    }
+
+    tb.innerHTML = rows.map(r => {
+      const sellPrice = num(r.sell_price_rm);
+      const buyPriceAbs = Math.abs(num(r.buy_price_rm));
+      const weightAbs = Math.abs(num(r.weight_g));
+      const reason = String(r.adjust_reason || "").toUpperCase();
+
+      return `
+        <tr>
+          <td>${fmtDate(r.buy_date || r.created_at)}</td>
+          <td>${mapAdjustReasonBadge(reason || "-")}</td>
+          <td><strong>${String(r.gold_type || "-").toUpperCase()}</strong></td>
+          <td>${mapCategoryLabel(r.category)}</td>
+          <td class="text-end">${round3(weightAbs).toFixed(3)}</td>
+          <td class="text-end">${buyPriceAbs > 0 ? money(buyPriceAbs) : "-"}</td>
+          <td class="text-end">${reason === "JUAL" && sellPrice > 0 ? money(sellPrice) : "-"}</td>
+          <td>
+            <div>${r.note || "-"}</div>
+            ${r.created_at ? `<div class="small text-muted">Direkod: ${fmtDateTime(r.created_at)}</div>` : ""}
+          </td>
+        </tr>
+      `;
+    }).join("");
+
+    info.textContent = `${rows.length} rekod`;
+  }
+function syncAdjustReasonUI(){
+  const reason = String($("adjReason")?.value || "JUAL").toUpperCase();
+  const wrap = $("adjSellPriceWrap");
+  const input = $("adjSellPrice");
+
+  if (!wrap || !input) return;
+
+  if (reason === "JUAL"){
+    wrap.style.display = "";
+  } else {
+    wrap.style.display = "none";
+    input.value = "";
+  }
+
+  renderAdjustPreview();
+}
+
+
+  function renderSummary(rows){
+  const activeRows = rows.filter(r => String(r.asset_origin || "").toUpperCase() !== "ADJUSTMENT");
+
+  const removedIds = new Set(
+    rows
+      .filter(r => String(r.asset_origin || "").toUpperCase() === "ADJUSTMENT")
+      .map(r => String(r.adjust_source_system_id || r.source_system_id || ""))
+      .filter(Boolean)
+  );
+
+  const visibleActiveRows = activeRows.filter(r => !removedIds.has(String(r.source_system_id || "")));
+
+  const sumItems = visibleActiveRows.length;
+  const sumGrams = visibleActiveRows.reduce((a, b) => a + num(b.weight_g), 0);
+  const sumBuy = visibleActiveRows.reduce((a, b) => a + num(b.buy_price_rm), 0);
+  const types = [...new Set(visibleActiveRows.map(r => String(r.gold_type || "").toUpperCase()).filter(Boolean))];
+
+  $("sumItems").textContent = sumItems;
+  $("sumGrams").textContent = round3(sumGrams).toFixed(3) + " g";
+  $("sumBuy").textContent = money(sumBuy);
+  $("sumTypes").textContent = types.length;
+}
+
+  function renderTypeCards(rows){
+    const wrap = $("typeCards");
+    const summaryMap = getTypeSummaryMap(rows);
+    const targetsByType = new Map(TARGETS.map(t => [String(t.gold_type || "").toUpperCase(), t]));
+
+    const order = [...summaryMap.keys()].sort((a, b) => {
+      const ai = DEFAULT_TYPES.indexOf(a);
+      const bi = DEFAULT_TYPES.indexOf(b);
+      if (ai === -1 && bi === -1) return a.localeCompare(b);
+      if (ai === -1) return 1;
+      if (bi === -1) return -1;
+      return ai - bi;
+    });
+
+    const html = order.map(type => {
+      const s = summaryMap.get(type);
+      const avg = s.grams > 0 && s.buy > 0 ? (s.buy / s.grams) : 0;
+      const t = targetsByType.get(type);
+      const target = num(t?.target_weight_g || 0);
+      const tDate = t?.target_date || null;
+      const progress = target > 0 ? Math.min(100, (s.grams / target) * 100) : 0;
+
+      let needPerMonth = null;
+      let needClass = "";
+
+      if (tDate && target > s.grams) {
+        const today = new Date();
+        const targetDateObj = new Date(tDate);
+        const daysLeft = (targetDateObj - today) / (1000 * 60 * 60 * 24);
+        const monthsLeft = daysLeft / 30;
+
+        if (monthsLeft > 0) {
+          needPerMonth = (target - s.grams) / monthsLeft;
+          needClass = needPerMonth > 5 ? "text-danger" : "text-success";
+        }
+      }
+
+      return `
+        <div class="type-card">
+          <div class="type-head">
+            <div class="type-name">${type}</div>
+            <span class="type-badge">${s.items} rekod</span>
+          </div>
+
+          <div class="type-stat">
+            <span>Semasa</span>
+            <strong>${round3(s.grams).toFixed(3)} g</strong>
+          </div>
+
+          <div class="type-stat">
+            <span>Total harga beli</span>
+            <strong>${money(s.buy)}</strong>
+          </div>
+
+          <div class="type-stat">
+            <span>Purata harga / g</span>
+            <strong>${avg > 0 ? money(avg) : "-"}</strong>
+          </div>
+
+          <div class="type-stat">
+            <span>Target</span>
+            <strong>${target > 0 ? (round3(target).toFixed(3) + " g") : "-"}</strong>
+          </div>
+
+          <div class="type-stat">
+            <span>Tarikh Target</span>
+            <strong>${tDate ? fmtDate(tDate) : "-"}</strong>
+          </div>
+
+          <div class="type-stat">
+            <span>Perlu Simpan / Bulan</span>
+            <strong class="${needClass}">
+              ${
+                needPerMonth && needPerMonth > 0
+                  ? round3(needPerMonth).toFixed(3) + " g"
+                  : "-"
+              }
+            </strong>
+          </div>
+
+          <div class="type-stat">
+            <span>Baki ke target</span>
+            <strong>${target > 0 ? Math.max(0, round3(target - s.grams)).toFixed(3) + " g" : "-"}</strong>
+          </div>
+
+          <div class="mt-2">
+            <div class="d-flex justify-content-between mb-1 small">
+              <span class="text-muted">Progress target</span>
+              <span>${target > 0 ? progress.toFixed(1) + "%" : "Tiada target"}</span>
+            </div>
+            <div class="progress">
+              <div class="progress-bar" role="progressbar" style="width:${progress}%"></div>
+            </div>
+          </div>
+        </div>
+      `;
+    }).join("");
+
+    wrap.innerHTML = html || `<div class="empty-note">Belum ada rekod untuk dianalisis.</div>`;
+  }
+
+  function renderTargets(rows){
+    const wrap = $("targetList");
+    if (!rows.length){
+      wrap.innerHTML = `
+        <div class="col-12">
+          <div class="empty-note">Belum ada target disimpan.</div>
+        </div>
+      `;
+      return;
+    }
+
+    const summaryMap = getTypeSummaryMap(ALL_ASSETS);
+
+    wrap.innerHTML = rows.map(r => {
+      const gt = String(r.gold_type || "").toUpperCase();
+      const cur = num(summaryMap.get(gt)?.grams || 0);
+      const tgt = num(r.target_weight_g || 0);
+
+      const pct = tgt > 0 ? Math.min(100, (cur / tgt) * 100) : 0;
+
+const tDate = r.target_date;
+
+let needPerMonth = null;
+let needClass = "";
+
+if (tDate && tgt > cur) {
+  const today = new Date();
+  const target = new Date(tDate);
+
+  const daysLeft = (target - today) / (1000 * 60 * 60 * 24);
+  const monthsLeft = daysLeft / 30;
+
+  if (monthsLeft > 0) {
+    needPerMonth = (tgt - cur) / monthsLeft;
+    needClass = needPerMonth > 5 ? "text-danger" : "text-success";
+  }
+}
+      return `
+        <div class="col-md-6 col-lg-4">
+          <div class="type-card">
+           <div class="type-head">
+            <div class="type-name">${gt}</div>
+            <div class="type-tools">
+              <span class="type-badge">Target</span>
+              <button
+                type="button"
+                class="btn-edit-target"
+                data-edit-target="${gt}"
+              >Edit</button>
+            </div>
+          </div>
+
+            <div class="type-stat">
+              <span>Semasa</span>
+              <strong>${round3(cur).toFixed(3)} g</strong>
+            </div>
+
+            <div class="type-stat">
+              <span>Target</span>
+              <strong>${round3(tgt).toFixed(3)} g</strong>
+            </div>
+
+<div class="type-stat">
+  <span>Tarikh Target</span>
+  <strong>${tDate ? fmtDate(tDate) : "-"}</strong>
+</div>
+
+<div class="type-stat">
+  <span>Perlu Simpan / Bulan</span>
+  <strong class="${needClass}">
+    ${
+      needPerMonth && needPerMonth > 0
+        ? round3(needPerMonth).toFixed(3) + " g"
+        : "-"
+    }
+  </strong>
+</div>
+            <div class="type-stat">
+              <span>Baki</span>
+              <strong>${Math.max(0, round3(tgt - cur)).toFixed(3)} g</strong>
+            </div>
+
+            <div class="mt-2">
+              <div class="d-flex justify-content-between mb-1 small">
+                <span class="text-muted">Progress</span>
+                <span>${pct.toFixed(1)}%</span>
+              </div>
+              <div class="progress">
+                <div class="progress-bar" role="progressbar" style="width:${pct}%"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      `;
+    }).join("");
+  }
+
+function bindEditTargetButtons(){
+    document.querySelectorAll("[data-edit-target]").forEach(btn => {
+      btn.addEventListener("click", () => {
+        const goldType = String(btn.getAttribute("data-edit-target") || "").toUpperCase();
+        const row = TARGETS.find(x => String(x.gold_type || "").toUpperCase() === goldType);
+        if (!row) return;
+
+        $("targetGoldType").value = goldType;
+        $("targetWeight").value = num(row.target_weight_g || 0) || "";
+        if ($("targetDate")) {
+          $("targetDate").value = row.target_date || "";
+        }
+
+        const saveBtn = $("btnSaveTarget");
+        if (saveBtn) saveBtn.textContent = "Kemaskini Target";
+
+        const statusEl = $("targetStatus");
+        if (statusEl) {
+          statusEl.className = "muted";
+          statusEl.textContent = `Mode edit untuk target ${goldType}`;
+        }
+
+        const panelEl = document.getElementById("panelTarget");
+        if (panelEl) {
+          try{
+            const inst = bootstrap.Collapse.getOrCreateInstance(panelEl, { toggle:false });
+            inst.show();
+          }catch{}
+        }
+
+        setTimeout(() => {
+          try{
+            $("targetGoldType").scrollIntoView({ behavior:"smooth", block:"center" });
+          }catch{}
+        }, 120);
+      });
+    });
+  }
+
+
+ function getFilteredAssets(){
+  const ft = String($("fltType").value || "ALL").toUpperCase();
+  const fs = String($("fltSource").value || "ALL").toUpperCase();
+
+  const removedIds = new Set(
+    ALL_ASSETS
+      .filter(r => String(r.asset_origin || "").toUpperCase() === "ADJUSTMENT")
+      .map(r => String(r.adjust_source_system_id || r.source_system_id || ""))
+      .filter(Boolean)
+  );
+
+  return ALL_ASSETS.filter(r => {
+    const isAdjustment = String(r.asset_origin || "").toUpperCase() === "ADJUSTMENT";
+    const isRemovedBase = !isAdjustment && removedIds.has(String(r.source_system_id || ""));
+    if (isRemovedBase) return false;
+
+    const okType = ft === "ALL" ? true : String(r.gold_type || "").toUpperCase() === ft;
+    const okSource = fs === "ALL" ? true : String(r.source || "").toUpperCase() === fs;
+    return okType && okSource;
+  }).sort((a, b) => {
+    const ad = a.buy_date || a.created_at || "";
+    const bd = b.buy_date || b.created_at || "";
+    return new Date(bd) - new Date(ad);
+  });
+}
+
+  function renderHistory(){
+    const rows = getFilteredAssets();
+    const tb = $("histTbody");
+    const pager = $("histPager");
+    const info = $("histInfo");
+
+    if (!rows.length){
+      tb.innerHTML = `<tr><td colspan="7" class="text-muted py-4">Tiada rekod.</td></tr>`;
+      pager.innerHTML = "";
+      info.textContent = "0 rekod";
+      return;
+    }
+
+    const pages = Math.max(1, Math.ceil(rows.length / GOLD_ORDER_PAGE_SIZE));
+    if (HIST_PAGE > pages) HIST_PAGE = pages;
+
+    const start = (HIST_PAGE - 1) * GOLD_ORDER_PAGE_SIZE;
+    const items = rows.slice(start, start + GOLD_ORDER_PAGE_SIZE);
+
+    tb.innerHTML = items.map(r => {
+      const buyDate = r.buy_date || r.created_at;
+     const detailParts = [];
+      if (r.note) detailParts.push(r.note);
+      if (r.asset_origin === "AUTO" && r.display_ref) detailParts.push("Ref: " + r.display_ref);
+      if (r.asset_origin === "MANUAL") detailParts.push("Manual");
+      if (r.asset_origin === "ADJUSTMENT") detailParts.push("Pelarasan");
+
+      return `
+        <tr>
+          <td>${fmtDate(buyDate)}</td>
+          <td><strong>${String(r.gold_type || "-").toUpperCase()}</strong></td>
+          <td>${mapCategoryLabel(r.category)}</td>
+          <td class="text-end">${round3(r.weight_g).toFixed(3)}</td>
+          <td class="text-end">${num(r.buy_price_rm) > 0 ? money(r.buy_price_rm) : "-"}</td>
+          <td>
+            <span class="tag-source ${mapSourceClass(r.source)}">${mapSourceLabel(r.source)}</span>
+          </td>
+          <td>
+            <div>${detailParts.join(" • ") || "-"}</div>
+            ${r.created_at ? `<div class="small text-muted">Direkod: ${fmtDateTime(r.created_at)}</div>` : ""}
+          </td>
+        </tr>
+      `;
+    }).join("");
+
+    pager.innerHTML = "";
+
+    const addBtn = (label, page, active=false, disabled=false) => {
+      const li = document.createElement("li");
+      li.className = `page-item ${active ? "active" : ""} ${disabled ? "disabled" : ""}`;
+
+      const a = document.createElement("a");
+      a.className = "page-link";
+      a.href = "#";
+      a.textContent = label;
+      a.onclick = e => {
+        e.preventDefault();
+        if (disabled || active) return;
+        HIST_PAGE = page;
+        renderHistory();
+      };
+
+      li.appendChild(a);
+      pager.appendChild(li);
+    };
+
+    addBtn("«", Math.max(1, HIST_PAGE - 1), false, HIST_PAGE === 1);
+
+    const windowSize = 3;
+    const startPage = Math.max(1, HIST_PAGE - windowSize);
+    const endPage = Math.min(pages, HIST_PAGE + windowSize);
+
+    for (let p = startPage; p <= endPage; p++){
+      addBtn(String(p), p, p === HIST_PAGE, false);
+    }
+
+    addBtn("»", Math.min(pages, HIST_PAGE + 1), false, HIST_PAGE === pages);
+
+    info.textContent = `${rows.length} rekod`;
+  }
+
+
+function getVisibleBaseAssetsForZakat(){
+  const removedIds = new Set(
+    ALL_ASSETS
+      .filter(r => String(r.asset_origin || "").toUpperCase() === "ADJUSTMENT")
+      .map(r => String(r.adjust_source_system_id || r.source_system_id || ""))
+      .filter(Boolean)
+  );
+
+  return ALL_ASSETS
+    .filter(r => String(r.asset_origin || "").toUpperCase() !== "ADJUSTMENT")
+    .filter(r => !removedIds.has(String(r.source_system_id || "")))
+    .sort((a, b) => new Date(a.buy_date || a.created_at || 0) - new Date(b.buy_date || b.created_at || 0));
+}
+
+
+async function fetchCustomerProfile(){
+  try{
+    const raw = ses.phone || "";
+    const [p60, p0] = bothPhones(raw);
+    const plain = onlyDigits(raw);
+
+    const phones = [p60, p0, plain]
+      .map(x => String(x || "").trim())
+      .filter(Boolean);
+
+    if (!phones.length) return null;
+
+    let q = sb.from("customers").select("*").limit(1);
+
+    if (phones.length === 1){
+      q = q.eq("phone", phones[0]);
+    } else {
+      q = q.or(phones.map(p => `phone.eq.${p}`).join(","));
+    }
+
+    const { data, error } = await q;
+    if (error) throw error;
+
+    return data?.[0] || null;
+  }catch(e){
+    console.warn("[gold-wallet] fetchCustomerProfile:", e);
+    return null;
+  }
+}
+
+function detectStateFromCustomer(cust){
+  if (!cust) return null;
+
+  const stateText = String(cust.state || "").trim().toUpperCase();
+  const cityText  = String(cust.city || "").trim().toUpperCase();
+  const addrText  = String(cust.alamat || "").trim().toUpperCase();
+  const fullText  = `${stateText} ${cityText} ${addrText}`;
+
+  if (fullText.includes("JOHOR")) return "JOHOR";
+  if (fullText.includes("KEDAH")) return "KEDAH";
+  if (fullText.includes("KELANTAN")) return "KELANTAN";
+  if (fullText.includes("MELAKA") || fullText.includes("MALACCA")) return "MELAKA";
+  if (fullText.includes("NEGERI SEMBILAN")) return "NEGERI_SEMBILAN";
+  if (fullText.includes("PAHANG")) return "PAHANG";
+  if (fullText.includes("PERAK")) return "PERAK";
+  if (fullText.includes("PERLIS")) return "PERLIS";
+  if (fullText.includes("PULAU PINANG") || fullText.includes("PENANG")) return "PULAU_PINANG";
+  if (fullText.includes("SABAH")) return "SABAH";
+  if (fullText.includes("SARAWAK")) return "SARAWAK";
+  if (fullText.includes("SELANGOR")) return "SELANGOR";
+  if (fullText.includes("TERENGGANU")) return "TERENGGANU";
+  if (
+    fullText.includes("KUALA LUMPUR") ||
+    fullText.includes("PUTRAJAYA") ||
+    fullText.includes("LABUAN") ||
+    fullText.includes("WILAYAH PERSEKUTUAN")
+  ) return "WILAYAH_PERSEKUTUAN";
+
+  return null;
+}
+
+
+
+async function renderZakatPanel(){
+  const checkDate = $("zakatAsOfDate")?.value || todayStr();
+  const state = String($("zakatState")?.value || "SELANGOR").toUpperCase();
+  const stateLabel = state.replaceAll("_", " ");
+toggleZakatNoDataNotice(state);
+  
+  const setting = await fetchZakatStateSetting(state);
+
+ const hargaRujukanG = num(
+    setting?.gold_price_per_gram ??
+    setting?.gold_price_per_gram_rm ??
+    setting?.reference_gold_price_rm_per_g ??
+    setting?.harga_emas_rujukan_g ??
+    setting?.harga_emas_rujukan_per_g ??
+    setting?.harga_rujukan_g ??
+    setting?.harga_per_gram ??
+    setting?.price_per_gram ??
+    setting?.gold_price_rm ??
+    0
+  );
+
+  const nisabRm = num(
+    setting?.nisab_rm ??
+    setting?.official_nisab_rm ??
+    setting?.nisab_value_rm ??
+    setting?.nilai_nisab_rm ??
+    0
+  );
+
+  const kadarZakatPct = num(
+    setting?.zakat_rate ??
+    setting?.zakat_rate_pct ??
+    setting?.zakat_rate_percent ??
+    setting?.kadar_zakat ??
+    setting?.kadar_zakat_pct ??
+    2.5
+  );
+
+  const urufPerhiasanG = num(
+    setting?.uruf_gram ??
+    setting?.uruf_perhiasan_g ??
+    setting?.uruf_g ??
+    0
+  );
+
+
+  const rows = getVisibleBaseAssetsForZakat();
+
+  const cukupHaul = [];
+  const belumHaul = [];
+
+  rows.forEach(r => {
+    const buyDate = r.buy_date || r.created_at;
+    if (!buyDate) return;
+
+    const zakatCategory = getZakatCategoryLabel(r);
+    const heldDays = diffDays(buyDate, checkDate);
+    const purityFactor = getPurityFactor(r.gold_type);
+    const pureWeight = round3(num(r.weight_g) * purityFactor);
+
+    const item = {
+      ...r,
+      held_days: heldDays,
+      zakat_category_label: zakatCategory,
+      purity_factor: purityFactor,
+      pure_weight_g: pureWeight,
+      purity_formula: `(${round3(r.weight_g).toFixed(3)} × ${purityFactor.toFixed(3)})`
+    };
+
+    if (heldDays >= 354) {
+      cukupHaul.push(item);
+    } else {
+      belumHaul.push(item);
+    }
+  });
+
+  const cukupHaulSimpanan = cukupHaul.filter(r =>
+    r.zakat_category_label === "Simpanan" && num(r.pure_weight_g) > 0
+  );
+
+  const cukupHaulPerhiasan = cukupHaul.filter(r =>
+    r.zakat_category_label === "Perhiasan" && num(r.pure_weight_g) > 0
+  );
+
+  const totalSimpananPureWeight = cukupHaulSimpanan.reduce((a, b) => a + num(b.pure_weight_g), 0);
+  const totalSimpananValueRm = totalSimpananPureWeight * hargaRujukanG;
+  const cukupNisabSimpanan = nisabRm > 0 ? totalSimpananValueRm >= nisabRm : false;
+  const zakatSimpananRm = cukupNisabSimpanan ? (totalSimpananValueRm * (kadarZakatPct / 100)) : 0;
+
+  const totalPerhiasanPureWeight = cukupHaulPerhiasan.reduce((a, b) => a + num(b.pure_weight_g), 0);
+  const chargeablePerhiasanWeight = Math.max(0, totalPerhiasanPureWeight - urufPerhiasanG);
+  const totalPerhiasanValueRm = chargeablePerhiasanWeight * hargaRujukanG;
+  const zakatPerhiasanRm = chargeablePerhiasanWeight > 0
+    ? (totalPerhiasanValueRm * (kadarZakatPct / 100))
+    : 0;
+
+  const grandTotalValueRm = totalSimpananValueRm + totalPerhiasanValueRm;
+  const grandTotalZakatRm = zakatSimpananRm + zakatPerhiasanRm;
+
+  const totalPureWeightAll = totalSimpananPureWeight + totalPerhiasanPureWeight;
+
+  $("zakatHaulItems").textContent = cukupHaul.length;
+  $("zakatPureGrams").textContent = round3(totalPureWeightAll).toFixed(3) + " g";
+  $("zakatValueRm").textContent = money(grandTotalValueRm);
+  $("zakatEstimateRm").textContent = money(grandTotalZakatRm);
+  $("zakatNisab").textContent = nisabRm > 0 ? money(nisabRm) : "-";
+
+  let statusText = "Semakan awal";
+  if (zakatSimpananRm > 0 && zakatPerhiasanRm > 0) {
+    statusText = "Layak zakat simpanan & perhiasan";
+  } else if (zakatSimpananRm > 0) {
+    statusText = "Layak zakat simpanan";
+  } else if (zakatPerhiasanRm > 0) {
+    statusText = "Layak zakat perhiasan";
+  } else if (cukupHaul.length > 0) {
+    statusText = "Cukup haul, semakan lanjut diperlukan";
+  }
+  $("zakatStatus").textContent = statusText;
+
+  $("zakatSummaryBox").innerHTML = `
+    <div><strong>Negeri rujukan:</strong> ${stateLabel}</div>
+    <div><strong>Tarikh semakan:</strong> ${fmtDate(checkDate)}</div>
+    <div><strong>Harga emas rujukan / g:</strong> ${hargaRujukanG > 0 ? money(hargaRujukanG) : "-"}</div>
+    <div><strong>Nisab negeri (simpanan):</strong> ${nisabRm > 0 ? money(nisabRm) : "-"}</div>
+    <div><strong>Uruf negeri (perhiasan):</strong> ${urufPerhiasanG > 0 ? round3(urufPerhiasanG).toFixed(3) + " g" : "-"}</div>
+    <div><strong>Kadar zakat:</strong> ${kadarZakatPct.toFixed(2)}%</div>
+
+    <div class="mt-2"><strong>Zakat Simpanan:</strong> ${money(zakatSimpananRm)}</div>
+    <div><strong>Zakat Perhiasan:</strong> ${money(zakatPerhiasanRm)}</div>
+    <div><strong>Jumlah Keseluruhan:</strong> ${money(grandTotalZakatRm)}</div>
+
+   <div class="mini-note mt-3">
+  <strong>Nota penting:</strong> Kiraan ini adalah anggaran awal untuk rujukan anda. Data nisab negeri, uruf perhiasan dan harga emas rujukan dirujuk daripada sumber rasmi zakat negeri. Nilai akhir dan bayaran sebenar adalah tertakluk kepada semakan serta pengesahan pihak institusi zakat negeri. Untuk pengesahan lanjut, sila rujuk ke pusat zakat berhampiran atau laman web rasmi pusat zakat negeri anda.
+</div>
+
+  `;
+
+  $("zakatSimpananPureWeightBox").textContent = round3(totalSimpananPureWeight).toFixed(3) + " g";
+  $("zakatSimpananValueBox").textContent = money(totalSimpananValueRm);
+  $("zakatSimpananRateBox").textContent = kadarZakatPct.toFixed(2) + "%";
+  $("zakatSimpananPayableBox").textContent = money(zakatSimpananRm);
+
+  $("zakatPerhiasanPureWeightBox").textContent = round3(totalPerhiasanPureWeight).toFixed(3) + " g";
+  $("zakatPerhiasanUrufBox").textContent = round3(urufPerhiasanG).toFixed(3) + " g";
+  $("zakatPerhiasanChargeableWeightBox").textContent = round3(chargeablePerhiasanWeight).toFixed(3) + " g";
+  $("zakatPerhiasanValueBox").textContent = money(totalPerhiasanValueRm);
+  $("zakatPerhiasanRateBox").textContent = kadarZakatPct.toFixed(2) + "%";
+  $("zakatPerhiasanPayableBox").textContent = money(zakatPerhiasanRm);
+
+  $("zakatGrandValueBox").textContent = money(grandTotalValueRm);
+  $("zakatGrandPayableBox").textContent = money(grandTotalZakatRm);
+
+  if (!cukupHaul.length) {
+    $("zakatCukupHaulTbody").innerHTML = `<tr><td colspan="7" class="text-muted py-4">Belum ada rekod yang cukup haul pada tarikh semakan ini.</td></tr>`;
+  } else {
+    $("zakatCukupHaulTbody").innerHTML = cukupHaul.map(r => `
+      <tr>
+        <td>${fmtDate(r.buy_date || r.created_at)}</td>
+        <td>${formatTempohHaul(r.buy_date || r.created_at, checkDate)}</td>
+        <td><strong>${String(r.gold_type || "-").toUpperCase()}</strong></td>
+        <td>${mapCategoryLabel(r.category)}</td>
+        <td>${r.zakat_category_label}</td>
+        <td class="text-end">${round3(r.weight_g).toFixed(3)}</td>
+        <td class="text-end">
+          <div>${round3(r.pure_weight_g).toFixed(3)}</div>
+          <div class="small text-muted">${r.purity_formula}</div>
+        </td>
+      </tr>
+    `).join("");
+  }
+
+  $("zakatCukupHaulInfo").textContent = `${cukupHaul.length} rekod`;
+
+  if (!belumHaul.length) {
+    $("zakatBelumHaulTbody").innerHTML = `<tr><td colspan="7" class="text-muted py-4">Semua rekod sedia ada sudah cukup haul.</td></tr>`;
+  } else {
+    $("zakatBelumHaulTbody").innerHTML = belumHaul.map(r => `
+      <tr>
+        <td>${fmtDate(r.buy_date || r.created_at)}</td>
+        <td>${formatTempohBelumHaul(r.buy_date || r.created_at, checkDate)}</td>
+        <td><strong>${String(r.gold_type || "-").toUpperCase()}</strong></td>
+        <td>${mapCategoryLabel(r.category)}</td>
+        <td>${r.zakat_category_label}</td>
+        <td class="text-end">${round3(r.weight_g).toFixed(3)}</td>
+        <td class="text-end">
+          <div>${round3(r.pure_weight_g).toFixed(3)}</div>
+          <div class="small text-muted">${r.purity_formula}</div>
+        </td>
+      </tr>
+    `).join("");
+  }
+
+  $("zakatBelumHaulInfo").textContent = `${belumHaul.length} rekod`;
+}
+async function reloadAll(){
+    const [goldbar, j916, tabung, manual, targets] = await Promise.all([
+      fetchGoldbarAssets(),
+      fetch916Assets(),
+      fetchTabungAssets(),
+      fetchManualAssets(),
+      fetchTargets()
+    ]);
+
+    TARGETS = targets;
+    ALL_ASSETS = [...goldbar, ...j916, ...tabung, ...manual];
+
+    renderSummary(ALL_ASSETS);
+    renderTypeCards(ALL_ASSETS);
+    renderTargets(TARGETS);
+    bindEditTargetButtons();
+    renderHistory();
+    fillAdjustAssetOptions();
+    renderAdjustPreview();
+    renderAdjustHistory();
+    renderZakatPanel();
+  }
+  async function saveManualAsset(){
+    const statusEl = $("saveManualStatus");
+    statusEl.className = "muted";
+    statusEl.textContent = "Menyimpan...";
+
+    try{
+      const uid = await getUidGabungan();
+      if (!uid) throw new Error("Sesi tidak sah.");
+
+      const goldType = String($("fGoldType").value || "LAIN").toUpperCase();
+      const category = String($("fCategory").value || "LAIN").toUpperCase();
+      const weight = num($("fWeight").value);
+      const buyPrice = num($("fBuyPrice").value);
+      const buyDate = $("fBuyDate").value || null;
+     const source = String($("fSource").value || "OTHER").toUpperCase();
+      const zakatCategory = String($("fZakatCategory").value || "SIMPANAN").toUpperCase();
+      const note = $("fNote").value.trim();
+
+      if (!weight || weight <= 0) throw new Error("Sila isi berat yang sah.");
+
+      const finalNote = [`[ZAKAT:${zakatCategory}]`, note].filter(Boolean).join(" ");
+
+      const payload = {
+        user_id: uid,
+        gold_type: goldType,
+        category: category,
+        weight_g: weight,
+        buy_price_rm: buyPrice || 0,
+        buy_date: buyDate,
+        source: source,
+        note: finalNote || null
+      };
+
+      const { error } = await sb.from("user_gold_assets").insert(payload);
+      if (error) throw error;
+
+    $("fWeight").value = "";
+      $("fBuyPrice").value = "";
+      $("fNote").value = "";
+      $("fSource").value = "OTHER";
+      if ($("fZakatCategory")) $("fZakatCategory").value = "SIMPANAN";
+      $("fBuyDate").value = todayStr();
+
+      statusEl.className = "ok";
+      statusEl.textContent = "Rekod berjaya disimpan.";
+
+      await reloadAll();
+    }catch(e){
+      console.warn("[gold-wallet] saveManualAsset:", e);
+      statusEl.className = "err";
+      statusEl.textContent = "Gagal simpan: " + (e.message || e);
+    }
+  }
+
+  async function saveTarget(){
+    const statusEl = $("targetStatus");
+    statusEl.className = "muted";
+    statusEl.textContent = "Menyimpan target...";
+
+    try{
+      const uid = await getUidGabungan();
+      if (!uid) throw new Error("Sesi tidak sah.");
+
+      const goldType = String($("targetGoldType").value || "LAIN").toUpperCase();
+      const targetWeight = num($("targetWeight").value);
+const targetDate = $("targetDate").value || null;
+
+      if (!targetWeight || targetWeight <= 0) throw new Error("Sila isi target yang sah.");
+
+     const payload = {
+  user_id: uid,
+  gold_type: goldType,
+  target_weight_g: targetWeight,
+  target_date: targetDate
+};
+
+      const { data: existing, error: chkErr } = await sb
+        .from("user_gold_targets")
+        .select("id")
+        .eq("user_id", uid)
+        .eq("gold_type", goldType)
+        .limit(1);
+
+      if (chkErr) throw chkErr;
+
+      if (existing && existing.length){
+        const { error } = await sb
+          .from("user_gold_targets")
+          .update({ 
+  target_weight_g: targetWeight,
+  target_date: targetDate
+})
+          .eq("id", existing[0].id);
+        if (error) throw error;
+      } else {
+        const { error } = await sb
+          .from("user_gold_targets")
+          .insert(payload);
+        if (error) throw error;
+      }
+
+      $("targetWeight").value = "";
+      if ($("targetDate")) $("targetDate").value = "";
+      const saveBtn = $("btnSaveTarget");
+      if (saveBtn) {
+        saveBtn.textContent = "Simpan Target";
+        saveBtn.dataset.mode = "";
+      }
+
+      statusEl.className = "ok";
+      statusEl.textContent = "Target berjaya disimpan.";
+
+      TARGETS = await fetchTargets();
+      renderTypeCards(ALL_ASSETS);
+      renderTargets(TARGETS);
+      bindEditTargetButtons();
+    }catch(e){
+      console.warn("[gold-wallet] saveTarget:", e);
+      statusEl.className = "err";
+      statusEl.textContent = "Gagal simpan target: " + (e.message || e);
+    }
+  }
+
+  // PANELS
+ const panels = {
+  panelAdd: document.getElementById("panelAdd"),
+  panelTarget: document.getElementById("panelTarget"),
+  panelAnalytics: document.getElementById("panelAnalytics"),
+  panelZakat: document.getElementById("panelZakat"),
+  panelAdjust: document.getElementById("panelAdjust"),
+  panelHistory: document.getElementById("panelHistory")
+};
+
+async function saveAdjustment(){
+  const statusEl = $("adjustStatus");
+  statusEl.className = "muted";
+  statusEl.textContent = "Menyimpan pelarasan...";
+
+  try{
+    const uid = await getUidGabungan();
+    if (!uid) throw new Error("Sesi tidak sah.");
+
+    const pickedId = String($("adjAssetId").value || "");
+    const reason = String($("adjReason").value || "JUAL").toUpperCase();
+    const sellPrice = num($("adjSellPrice")?.value || 0);
+    const note = $("adjNote").value.trim();
+
+    if (!pickedId) throw new Error("Sila pilih rekod dahulu.");
+
+    const base = getAdjustableAssets().find(x => String(x.source_system_id) === pickedId);
+    if (!base) throw new Error("Rekod asal tidak dijumpai.");
+
+    if (reason === "JUAL" && sellPrice <= 0) {
+      throw new Error("Sila isi harga jual yang sah.");
+    }
+
+    const ok = confirm(
+      `Sahkan keluarkan rekod ini?\n\n` +
+      `Jenis: ${String(base.gold_type || "").toUpperCase()}\n` +
+      `Kategori: ${mapCategoryLabel(base.category)}\n` +
+      `Berat asal: ${round3(base.weight_g).toFixed(3)} g\n` +
+      `Harga beli asal: ${money(base.buy_price_rm)}\n` +
+      `Tindakan: ${reason === "JUAL" ? "Jual" : "Salah rekod"}` +
+      `${reason === "JUAL" ? `\nHarga jual: ${money(sellPrice)}` : ""}`
+    );
+
+    if (!ok){
+      statusEl.className = "muted";
+      statusEl.textContent = "Dibatalkan.";
+      return;
+    }
+
+  const payload = {
+      user_id: uid,
+      gold_type: String(base.gold_type || "LAIN").toUpperCase(),
+      category: String(base.category || "LAIN").toUpperCase(),
+      weight_g: -Math.abs(num(base.weight_g)),
+      buy_price_rm: -Math.abs(num(base.buy_price_rm)),
+      buy_date: todayStr(),
+      source: String(base.source || "OTHER").toUpperCase(),
+      note: note || null,
+      asset_origin: "ADJUSTMENT",
+      source_system_id: String(base.source_system_id),
+      adjust_reason: reason,
+      sell_price_rm: reason === "JUAL" ? sellPrice : null
+    };
+
+    const { error } = await sb.from("user_gold_assets").insert(payload);
+    if (error) throw error;
+
+    $("adjAssetId").value = "";
+    $("adjReason").value = "JUAL";
+    $("adjSellPrice").value = "";
+    $("adjNote").value = "";
+    $("adjPreview").innerHTML = `Sila pilih rekod untuk lihat ringkasan.`;
+
+    statusEl.className = "ok";
+    statusEl.textContent = "Rekod berjaya dikeluarkan.";
+
+    await reloadAll();
+    fillAdjustAssetOptions();
+    syncAdjustReasonUI();
+  }catch(e){
+    console.warn("[gold-wallet] saveAdjustment:", e);
+    statusEl.className = "err";
+    statusEl.textContent = "Gagal simpan pelarasan: " + (e.message || e);
+  }
+}
+  function openPanel(id){
+    Object.keys(panels).forEach(pid => {
+      if (pid !== id){
+        try{
+          const inst = bootstrap.Collapse.getOrCreateInstance(panels[pid], { toggle:false });
+          inst.hide();
+        }catch{}
+      }
+    });
+
+    const el = panels[id];
+    if (!el) return;
+
+    try{
+      const inst = bootstrap.Collapse.getOrCreateInstance(el, { toggle:false });
+      inst.show();
+    }catch{
+      el.classList.add("show");
+    }
+
+    setTimeout(() => {
+      try{ el.scrollIntoView({ behavior:"smooth", block:"start" }); }catch{}
+    }, 150);
+  }
+
+  document.querySelectorAll(".action-item[data-open]").forEach(el => {
+    el.addEventListener("click", () => {
+      openPanel(el.getAttribute("data-open"));
+    });
+  });
+
+$("btnPrintAction").addEventListener("click", () => window.print());
+$("btnSaveManual").addEventListener("click", saveManualAsset);
+$("btnSaveTarget").addEventListener("click", saveTarget);
+$("btnSaveAdjust").addEventListener("click", saveAdjustment);
+$("btnRefreshAll").addEventListener("click", async () => {
+  HIST_PAGE = 1;
+  await reloadAll();
+});
+
+$("adjAssetId").addEventListener("change", renderAdjustPreview);
+$("adjReason").addEventListener("change", syncAdjustReasonUI);
+
+$("targetGoldType").addEventListener("change", () => {
+  const saveBtn = $("btnSaveTarget");
+  if (saveBtn) saveBtn.textContent = "Simpan Target";
+});
+
+if ($("btnRefreshZakat")) {
+  $("btnRefreshZakat").addEventListener("click", renderZakatPanel);
+}
+
+if ($("zakatState")) {
+  $("zakatState").addEventListener("change", renderZakatPanel);
+}
+
+$("fltType").addEventListener("change", () => {
+  HIST_PAGE = 1;
+  renderHistory();
+});
+
+$("fltSource").addEventListener("change", () => {
+  HIST_PAGE = 1;
+  renderHistory();
+}); 
+ (async () => {
+  try{
+    if ($("zakatAsOfDate")) $("zakatAsOfDate").value = todayStr();
+
+    const cust = await fetchCustomerProfile();
+    const autoState = detectStateFromCustomer(cust);
+
+    if (autoState && $("zakatState")) {
+      $("zakatState").value = autoState;
+    }
+
+    await reloadAll();
+    syncAdjustReasonUI();
+    renderZakatPanel();
+  }catch(e){
+    console.warn("[gold-wallet] init:", e);
+    $("histTbody").innerHTML = `<tr><td colspan="7" class="text-danger py-4">Ralat memuat data: ${e.message || e}</td></tr>`;
+    $("typeCards").innerHTML = `<div class="empty-note">Ralat memuat analitik.</div>`;
+  }
+})();
+})();
+</script>
+
+<script>
+/* =========================
+   iPhone-style swipe back
+   ========================= */
+(function(){
+  const page = document.querySelector('.page-shell');
+  if (!page) return;
+
+  let startX = 0;
+  let startY = 0;
+  let currentX = 0;
+  let tracking = false;
+  let dragging = false;
+  let blocked = false;
+
+  const EDGE_ZONE = 24;
+  const MAX_DY = 70;
+  const TRIGGER_RATIO = 0.33;
+
+  function getOpenModalEl(){
+    const modals = Array.from(document.querySelectorAll('.modal.show'));
+    return modals.length ? modals[modals.length - 1] : null;
+  }
+
+  function getOpenOffcanvasEl(){
+    const panels = Array.from(document.querySelectorAll('.offcanvas.show'));
+    return panels.length ? panels[panels.length - 1] : null;
+  }
+
+  function closeTopModal(){
+    const el = getOpenModalEl();
+    if (!el) return false;
+
+    try{
+      const inst = bootstrap.Modal.getInstance(el) || bootstrap.Modal.getOrCreateInstance(el);
+      inst.hide();
+      return true;
+    }catch(_){
+      el.classList.remove('show');
+      el.style.display = 'none';
+      document.body.classList.remove('modal-open');
+      document.querySelectorAll('.modal-backdrop').forEach(x => x.remove());
+      return true;
+    }
+  }
+
+  function closeOffcanvas(){
+    const el = getOpenOffcanvasEl();
+    if (!el) return false;
+
+    try{
+      const inst = bootstrap.Offcanvas.getInstance(el) || bootstrap.Offcanvas.getOrCreateInstance(el);
+      inst.hide();
+      return true;
+    }catch(_){
+      el.classList.remove('show');
+      el.style.visibility = 'hidden';
+      document.body.classList.remove('offcanvas-open');
+      document.querySelectorAll('.offcanvas-backdrop').forEach(x => x.remove());
+      return true;
+    }
+  }
+
+  function goBackPage(){
+    if (window.history.length > 1){
+      history.back();
+    }else{
+      location.href = 'account.html';
+    }
+  }
+
+  function isBlockedTarget(target){
+    if (!target) return false;
+
+    return !!target.closest(
+      'input, textarea, select, button, a, label, [contenteditable="true"]'
+    );
+  }
+
+  function resetPage(){
+    page.classList.remove('dragging');
+    page.style.transform = 'translateX(0)';
+    setTimeout(() => {
+      document.body.classList.remove('swipe-peek');
+    }, 220);
+  }
+
+  document.addEventListener('touchstart', function(e){
+    if (!e.touches || !e.touches.length) return;
+
+    const t = e.touches[0];
+    startX = t.clientX;
+    startY = t.clientY;
+    currentX = 0;
+    dragging = false;
+
+    blocked = isBlockedTarget(e.target);
+    tracking = (startX <= EDGE_ZONE) && !blocked;
+  }, { passive:true });
+
+  document.addEventListener('touchmove', function(e){
+    if (!tracking || blocked || !e.touches || !e.touches.length) return;
+
+    const t = e.touches[0];
+    const dx = t.clientX - startX;
+    const dy = Math.abs(t.clientY - startY);
+
+    if (dy > MAX_DY) return;
+    if (dx <= 0) return;
+
+    currentX = dx;
+    dragging = true;
+
+    document.body.classList.add('swipe-peek');
+    page.classList.add('dragging');
+    page.style.transform = `translateX(${dx}px)`;
+  }, { passive:true });
+
+  document.addEventListener('touchend', function(){
+    if (!tracking) return;
+
+    tracking = false;
+    page.classList.remove('dragging');
+
+    if (!dragging || blocked){
+      blocked = false;
+      document.body.classList.remove('swipe-peek');
+      return;
+    }
+
+    const threshold = window.innerWidth * TRIGGER_RATIO;
+
+    if (currentX >= threshold){
+      page.style.transform = `translateX(${window.innerWidth}px)`;
+
+      setTimeout(() => {
+        if (closeTopModal()){
+          page.style.transition = 'none';
+          page.style.transform = 'translateX(0)';
+          void page.offsetHeight;
+          page.style.transition = '';
+          document.body.classList.remove('swipe-peek');
+          blocked = false;
+          return;
+        }
+
+        if (closeOffcanvas()){
+          page.style.transition = 'none';
+          page.style.transform = 'translateX(0)';
+          void page.offsetHeight;
+          page.style.transition = '';
+          document.body.classList.remove('swipe-peek');
+          blocked = false;
+          return;
+        }
+
+        blocked = false;
+        goBackPage();
+      }, 180);
+    } else {
+      blocked = false;
+      resetPage();
+    }
+
+    dragging = false;
+    currentX = 0;
+  }, { passive:true });
+})();
+</script>
+</body>
+</html>

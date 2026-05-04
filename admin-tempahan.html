@@ -1,0 +1,1469 @@
+<!doctype html>
+<html lang="ms">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <link rel="stylesheet" href="/global.css">
+  <title>Admin Tempahan — Loket Nama Custom • Emas Amir</title>
+
+  <!-- Libs (ORDER matters) -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="auth.js?v=13.1"></script>
+  <script src="admin-guard.js?v=1"></script>
+
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+
+  <style>
+    body{background:#fff}
+    .container-narrow{max-width:1280px}
+    .auth-pill{border:1px solid #e5e7eb;border-radius:999px;padding:.2rem .6rem;background:#fafafa;color:#555}
+    .btn-chip{border:1px solid #e5e7eb;background:#f8fafc;padding:6px 10px;border-radius:999px;font-size:.9rem}
+    .mono{font-family:ui-monospace,SFMono-Regular,Menlo,monospace}
+    .table-sticky thead th{position:sticky;top:0;background:#fff;z-index:5}
+    .toast-wrap{position:fixed;right:16px;bottom:16px;z-index:1080}
+    .preview-mini{
+      width:92px;
+      height:54px;
+      border:1px solid #e5e7eb;
+      border-radius:10px;
+      background:
+        linear-gradient(rgba(0,0,0,.03) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(0,0,0,.03) 1px, transparent 1px),
+        #fff;
+      background-size:12px 12px, 12px 12px;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      overflow:hidden;
+    }
+    .preview-mini-text{
+      font-size:16px;
+      line-height:1;
+      color:#111827;
+      white-space:nowrap;
+      transform-origin:center center;
+    }
+    .status-pill{
+      display:inline-block;
+      border:1px solid #e5e7eb;
+      border-radius:999px;
+      padding:.12rem .5rem;
+      font-size:12px;
+      background:#f8fafc;
+      color:#444;
+    }
+    .note-box{
+      white-space:pre-wrap;
+      line-height:1.45;
+    }
+    .action-stack{
+      display:flex;
+      flex-wrap:wrap;
+      gap:6px;
+      justify-content:flex-end;
+    }
+    .prod-badge{
+      display:inline-block;
+      margin-top:4px;
+    }
+    .small-kv{
+      display:grid;
+      grid-template-columns:120px 1fr;
+      gap:6px 10px;
+      font-size:14px;
+    }
+    .small-kv .k{color:#6b7280}
+    .small-kv .v{font-weight:600;color:#111827}
+    .modal-lg-2{max-width:980px}
+    .job-preview-box{
+      border:1px solid #e5e7eb;
+      border-radius:16px;
+      background:#fff;
+      padding:14px;
+    }
+    .job-preview-stage{
+      min-height:360px;
+      border:1px solid #e5e7eb;
+      border-radius:14px;
+      background:
+        linear-gradient(rgba(0,0,0,.03) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(0,0,0,.03) 1px, transparent 1px),
+        #fff;
+      background-size:20px 20px, 20px 20px;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      overflow:hidden;
+      position:relative;
+    }
+    .job-preview-inner{
+      text-align:center;
+      transform-origin:center center;
+      max-width:100%;
+    }
+    .job-preview-name{
+      display:inline-block;
+      font-size:64px;
+      line-height:1;
+      color:#111827;
+      white-space:nowrap;
+      position:relative;
+      padding:24px 34px;
+    }
+    .job-ring{
+      position:absolute;
+      width:14px;
+      height:14px;
+      border:2px solid #111827;
+      border-radius:999px;
+      background:#fff;
+    }
+    .job-orn{
+      position:absolute;
+      font-size:18px;
+      line-height:1;
+      color:#111827;
+    }
+    .filter-active{
+      background:#111827 !important;
+      color:#fff !important;
+      border-color:#111827 !important;
+    }
+  </style>
+</head>
+<body>
+<div class="container container-narrow py-3">
+  <!-- TOP BAR -->
+  <div class="d-flex justify-content-between align-items-center mb-2 flex-wrap gap-2">
+    <div class="small auth-pill" id="authStatus">Memuatkan…</div>
+    <div class="d-flex flex-wrap gap-2">
+      <a class="btn btn-outline-secondary btn-chip" href="index.html">Halaman Utama</a>
+      <a class="btn btn-outline-secondary btn-chip" href="admin.html">Admin</a>
+      <a class="btn btn-outline-secondary btn-chip" href="admin-j916.html">Admin 916</a>
+      <a class="btn btn-outline-secondary btn-chip" href="admin-j999.html">Admin J999</a>
+      <a class="btn btn-outline-secondary btn-chip" href="admintabung-simpan.html">Admin Tabung</a>
+      <a class="btn btn-outline-secondary btn-chip" href="account.html">Akaun</a>
+      <button id="btnLogin"  class="btn btn-outline-secondary btn-chip" type="button">Log masuk</button>
+      <button id="btnLogout" class="btn btn-outline-secondary btn-chip" type="button" style="display:none">Log keluar</button>
+    </div>
+  </div>
+  <hr class="mb-3">
+
+  <!-- HEADER + FILTER ORDER -->
+  <div class="d-flex align-items-center justify-content-between gap-2 flex-wrap">
+    <h1 class="h4 m-0">Admin Tempahan — Senarai Order Loket Nama Custom</h1>
+    <div class="d-flex gap-2 flex-wrap" id="orderFilterRow">
+      <button class="btn-chip filter-active" data-filter="ALL">Semua</button>
+      <button class="btn-chip" data-filter="PENDING">Menunggu</button>
+      <button class="btn-chip" data-filter="PAID">Dah Bayar</button>
+      <button class="btn-chip" data-filter="COMPLETED">Selesai</button>
+      <button class="btn-chip" data-filter="CANCELLED">Dibatalkan</button>
+    </div>
+  </div>
+
+  <!-- HEADER + FILTER PRODUCTION -->
+  <div class="d-flex align-items-center justify-content-between gap-2 flex-wrap mt-2">
+    <div class="small text-muted">Filter production</div>
+    <div class="d-flex gap-2 flex-wrap" id="productionFilterRow">
+      <button class="btn-chip filter-active" data-pfilter="ALL">Semua</button>
+      <button class="btn-chip" data-pfilter="DRAFT">Draft</button>
+      <button class="btn-chip" data-pfilter="REVIEW">Review</button>
+      <button class="btn-chip" data-pfilter="APPROVED">Approved</button>
+      <button class="btn-chip" data-pfilter="PLT_READY">PLT Ready</button>
+      <button class="btn-chip" data-pfilter="QUEUED">Dah Hantar</button>
+      <button class="btn-chip" data-pfilter="LASER_DONE">Laser Siap</button>
+    </div>
+  </div>
+
+  <div class="input-group my-3" style="max-width:760px">
+    <span class="input-group-text">Cari</span>
+    <input id="searchBox" class="form-control" placeholder="Cari ref / phone / nama customer / nama loket / material / font">
+    <button id="refreshBtn" class="btn btn-outline-secondary">Refresh</button>
+  </div>
+
+  <!-- TABLE -->
+  <div class="table-responsive">
+    <table class="table table-sm align-middle table-sticky">
+      <thead>
+        <tr>
+          <th style="width:130px">Tarikh</th>
+          <th style="width:150px">Order</th>
+          <th style="width:170px">Pelanggan</th>
+          <th style="width:350px">Rekaan</th>
+          <th style="width:180px">Production</th>
+          <th class="text-end" style="width:120px">Jumlah</th>
+          <th style="width:120px">Status</th>
+          <th class="text-end" style="width:360px">Tindakan</th>
+        </tr>
+      </thead>
+      <tbody id="ordersTbody">
+        <tr><td colspan="8" class="text-muted py-4">Memuatkan…</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="d-flex justify-content-between align-items-center">
+    <small class="text-muted" id="resultInfo">0 rekod</small>
+    <div class="d-flex gap-2">
+      <button class="btn btn-outline-secondary btn-sm" id="prevPageBtn">Sebelumnya</button>
+      <button class="btn btn-outline-secondary btn-sm" id="nextPageBtn">Seterusnya</button>
+    </div>
+  </div>
+</div>
+
+<!-- Toast -->
+<div class="toast-wrap">
+  <div class="toast align-items-center text-bg-dark border-0" id="mainToast" role="status" aria-live="polite" aria-atomic="true">
+    <div class="d-flex">
+      <div class="toast-body" id="toastMsg">OK.</div>
+      <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Tutup"></button>
+    </div>
+  </div>
+</div>
+
+<!-- Confirm modal -->
+<div class="modal fade" id="confirmModal" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Sahkan Tindakan</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Tutup"></button>
+      </div>
+      <div class="modal-body">
+        <p class="mb-0" id="confirmText">Anda pasti?</p>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-light" data-bs-dismiss="modal">Batal</button>
+        <button type="button" class="btn btn-primary" id="confirmYesBtn">Teruskan</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL DETAIL / PRODUCTION -->
+<div class="modal fade" id="productionModal" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-xl modal-dialog-scrollable modal-lg-2">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">
+          Production Tempahan Loket
+          <span class="text-muted small ms-2" id="pm_ref">-</span>
+        </h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Tutup"></button>
+      </div>
+
+      <div class="modal-body">
+        <div class="row g-3">
+          <div class="col-lg-4">
+            <div class="job-preview-box h-100">
+              <h6 class="mb-3">Maklumat Tempahan</h6>
+              <div class="small-kv mb-3">
+                <div class="k">Pelanggan</div><div class="v" id="pm_customer">-</div>
+                <div class="k">Telefon</div><div class="v" id="pm_phone">-</div>
+                <div class="k">Nama Loket</div><div class="v" id="pm_name">-</div>
+                <div class="k">Material</div><div class="v" id="pm_material">-</div>
+                <div class="k">Font</div><div class="v" id="pm_font">-</div>
+                <div class="k">Ring</div><div class="v" id="pm_ring">-</div>
+                <div class="k">Simbol</div><div class="v" id="pm_orn">-</div>
+                <div class="k">Tebal</div><div class="v" id="pm_thickness">-</div>
+                <div class="k">Anggaran Berat</div><div class="v" id="pm_weight">-</div>
+                <div class="k">Jumlah</div><div class="v" id="pm_total">-</div>
+                <div class="k">Order Status</div><div class="v" id="pm_status">-</div>
+                <div class="k">Production</div><div class="v" id="pm_pstatus">-</div>
+              </div>
+
+              <div class="mb-2">
+                <label class="form-label">Nota Production</label>
+                <textarea id="pm_notes" class="form-control" rows="6" placeholder="Contoh: ring rapat sikit, simbol lock atas kanan, final saiz ikut 36mm."></textarea>
+              </div>
+
+              <div class="d-grid gap-2 mt-3">
+                <button class="btn btn-outline-primary" type="button" id="pm_save_note_btn">Simpan Nota</button>
+                <button class="btn btn-outline-info" type="button" id="pm_approve_btn">Approve Design</button>
+                <button class="btn btn-outline-dark" type="button" id="pm_plt_btn">Tanda PLT Ready</button>
+                <button class="btn btn-outline-warning" type="button" id="pm_queue_btn">Hantar ke Production</button>
+                <button class="btn btn-outline-success" type="button" id="pm_done_btn">Tanda Laser Siap</button>
+              </div>
+            </div>
+          </div>
+
+          <div class="col-lg-8">
+            <div class="job-preview-box">
+              <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
+                <h6 class="mb-0">Preview Production</h6>
+                <div class="d-flex gap-2 flex-wrap">
+                  <span class="status-pill">Nama: <span id="pm_size_name">-</span></span>
+                  <span class="status-pill">Overall: <span id="pm_size_overall">-</span></span>
+                  <span class="status-pill">Final Tebal: <span id="pm_size_thick">-</span></span>
+                </div>
+              </div>
+
+              <div class="job-preview-stage">
+                <div class="job-preview-inner" id="jobPreviewInner">
+                  <div class="job-preview-name" id="jobPreviewName">
+                    <span id="jobPreviewText">Atiqah</span>
+                    <span class="job-ring" id="jobRingLeft" style="display:none"></span>
+                    <span class="job-ring" id="jobRingRight" style="display:none"></span>
+                    <span class="job-ring" id="jobRingTopCenter" style="display:none"></span>
+                    <span class="job-ring" id="jobRingTopLeft" style="display:none"></span>
+                    <span class="job-ring" id="jobRingTopRight" style="display:none"></span>
+                    <span class="job-orn" id="jobOrnLeft" style="display:none"></span>
+                    <span class="job-orn" id="jobOrnRight" style="display:none"></span>
+                  </div>
+                </div>
+              </div>
+
+              <div class="row g-3 mt-1">
+                <div class="col-md-4">
+                  <label class="form-label">Final Lebar (mm)</label>
+                  <input id="pm_final_width" type="number" step="0.01" class="form-control" placeholder="Contoh 36">
+                </div>
+                <div class="col-md-4">
+                  <label class="form-label">Final Tinggi (mm)</label>
+                  <input id="pm_final_height" type="number" step="0.01" class="form-control" placeholder="Auto / manual">
+                </div>
+                <div class="col-md-4">
+                  <label class="form-label">Final Tebal (mm)</label>
+                  <input id="pm_final_thickness" type="number" step="0.01" class="form-control" placeholder="Contoh 0.80">
+                </div>
+
+                <div class="col-md-4">
+                  <label class="form-label">Link SVG Production</label>
+                  <input id="pm_svg_url" type="text" class="form-control" placeholder="https://...svg">
+                </div>
+                <div class="col-md-4">
+                  <label class="form-label">Link PLT</label>
+                  <input id="pm_plt_url" type="text" class="form-control" placeholder="https://...plt">
+                </div>
+                <div class="col-md-4 d-flex align-items-end">
+                  <div class="d-grid w-100 gap-2">
+                    <button class="btn btn-primary" type="button" id="pm_save_production_btn">Simpan Production</button>
+                  </div>
+                </div>
+              </div>
+
+              <div class="d-flex gap-2 flex-wrap mt-3">
+                <button class="btn btn-outline-secondary" type="button" id="pm_open_svg_btn">Buka SVG</button>
+                <button class="btn btn-outline-secondary" type="button" id="pm_open_plt_btn">Buka PLT</button>
+                <button class="btn btn-outline-dark" type="button" id="pm_print_sheet_btn">Print Job Sheet</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="modal-footer">
+        <button class="btn btn-light" data-bs-dismiss="modal">Tutup</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL BAYAR MANUAL -->
+<div class="modal fade" id="manualPayModal" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered modal-sm">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Bayar Manual</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Tutup"></button>
+      </div>
+
+      <div class="modal-body">
+        <div class="small text-muted mb-2" id="mp_info"></div>
+        <input id="mp_order_id" type="hidden">
+
+        <div class="mb-2">
+          <label class="form-label">Jumlah Bayaran (RM)</label>
+          <input id="mp_amount_rm" class="form-control" type="number" step="0.01" placeholder="contoh 380.00">
+        </div>
+
+        <div class="small text-muted">
+          Guna untuk tanda order custom ini sebagai <strong>PAID</strong>.
+        </div>
+      </div>
+
+      <div class="modal-footer">
+        <button type="button" class="btn btn-light" data-bs-dismiss="modal">Batal</button>
+        <button type="button" class="btn btn-primary" id="mp_confirm_btn">Sahkan</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Bootstrap JS -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+
+<script>
+/* =========================
+   Config & helpers
+   ========================= */
+const SB_URL = "https://dduizetstqqjrpsezbpi.supabase.co";
+const SB_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRkdWl6ZXRzdHFxanJwc2V6YnBpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTg3MzI0ODQsImV4cCI6MjA3NDMwODQ4NH0.CrlHXrmHtKgR9qc2192U6quRb5lpFEeOSgwG0Lb8KRM";
+
+window.sb = window.sb || window.supabase.createClient(SB_URL, SB_KEY);
+const sb = window.sb;
+
+const TABLE_NAME = 'tempahan_loket_orders';
+const ORD_PAGE_SIZE = 10;
+const REFRESH_MS = 5000;
+
+let ORD_CURRENT_PAGE = 1;
+let ORD_FILTER = 'ALL';
+let PROD_FILTER = 'ALL';
+let _tick = null;
+let _isRefreshing = false;
+let _pendingAction = null;
+let _pendingId = null;
+let _rowsCache = {};
+let _prevPaidTempahan = new Set();
+let _currentProductionOrderId = null;
+
+const $ = id => document.getElementById(id);
+
+function startAutoRefresh(){
+  if (_tick) return;
+  _tick = setInterval(safeRefresh, REFRESH_MS);
+  document.addEventListener('visibilitychange', ()=>{
+    if (!document.hidden) safeRefresh();
+  });
+}
+function stopAutoRefresh(){
+  if (_tick){ clearInterval(_tick); _tick = null; }
+}
+window.addEventListener('beforeunload', stopAutoRefresh);
+
+async function safeRefresh(){
+  if (_isRefreshing) return;
+  _isRefreshing = true;
+  try{ await refreshOrders(); }finally{ _isRefreshing = false; }
+}
+
+function showToast(msg){
+  const el = $('mainToast');
+  $('toastMsg').textContent = msg || 'OK';
+  new bootstrap.Toast(el,{delay:2200}).show();
+}
+
+function fmtMY(s){
+  if (!s) return '-';
+  const d = new Date(s);
+  if (Number.isNaN(d.getTime())) return '-';
+  return d.toLocaleString('ms-MY',{hour12:false});
+}
+function money(n){
+  return 'RM ' + Number(n || 0).toFixed(2);
+}
+function safeUpper(s){
+  return String(s || '').trim().toUpperCase();
+}
+function fmt2(v){
+  const n = Number(v || 0);
+  return Number.isFinite(n) ? n.toFixed(2) : '0.00';
+}
+function escapeHtml(s){
+  return String(s || '')
+    .replace(/&/g,'&amp;')
+    .replace(/</g,'&lt;')
+    .replace(/>/g,'&gt;')
+    .replace(/"/g,'&quot;')
+    .replace(/'/g,'&#039;');
+}
+function fontCssFamily(fontName){
+  const f = String(fontName || '').trim();
+  if (!f) return "'Poppins', sans-serif";
+  if (f === 'Poppins') return "'Poppins', sans-serif";
+  return `'${f}', cursive`;
+}
+function ornamentIcon(name){
+  const m = {
+    'NONE':'',
+    'TIADA':'',
+    'HEART':'❤',
+    'LOVE':'❤',
+    'DOUBLE-HEART':'❤❤',
+    'LOVE BERGANDA':'❤❤',
+    'FLOWER':'✿',
+    'BUNGA':'✿',
+    'STAR':'★',
+    'BINTANG':'★',
+    'CROWN':'♛',
+    'BUTTERFLY':'🦋',
+    'LEAF':'❦',
+    'DAUN':'❦'
+  };
+  return m[safeUpper(name)] || '';
+}
+function ringLabel(v){
+  const m = {
+    'NONE':'Tiada Ring',
+    'LEFT':'Ring Kiri',
+    'RIGHT':'Ring Kanan',
+    'BOTH':'Kiri + Kanan',
+    'TOP-CENTER':'Tengah Atas',
+    'TOP-LEFT':'Atas Kiri',
+    'TOP-RIGHT':'Atas Kanan',
+    'TOP-BOTH':'Atas Kiri + Kanan'
+  };
+  return m[safeUpper(v)] || (v || '-');
+}
+function prodBadgeHtml(p){
+  const s = safeUpper(p);
+  if (s === 'DRAFT') return `<span class="badge text-bg-secondary prod-badge">Draft</span>`;
+  if (s === 'REVIEW') return `<span class="badge text-bg-warning prod-badge">Review</span>`;
+  if (s === 'APPROVED') return `<span class="badge text-bg-info prod-badge">Approved</span>`;
+  if (s === 'PLT_READY') return `<span class="badge text-bg-primary prod-badge">PLT Ready</span>`;
+  if (s === 'QUEUED') return `<span class="badge text-bg-warning prod-badge">Dah Hantar</span>`;
+  if (s === 'LASER_DONE') return `<span class="badge text-bg-success prod-badge">Laser Siap</span>`;
+  return `<span class="badge text-bg-light text-dark prod-badge">${escapeHtml(s || '-')}</span>`;
+}
+function orderBadgeClass(status){
+  const s = safeUpper(status);
+  if (s === 'PAID') return 'bg-success';
+  if (s === 'PENDING') return 'bg-warning text-dark';
+  if (s === 'COMPLETED') return 'bg-primary';
+  if (s === 'CANCELLED') return 'bg-danger';
+  return 'bg-secondary';
+}
+function guessHeightFromWidthAndName(widthMm, fontName, name){
+  const len = Math.max(1, String(name || '').trim().length);
+  const fontFactor = safeUpper(fontName) === 'POPPINS' ? 1.08 : 1;
+  const ratio = 0.34 + Math.min(0.06, len * 0.002);
+  return Number(widthMm || 0) * ratio * fontFactor;
+}
+function previewScaleByWidth(widthMm){
+  const base = Number(widthMm || 36);
+  return Math.max(0.68, Math.min(1.30, base / 36));
+}
+
+/* =========================
+   Topbar auth pill
+   ========================= */
+(function initTopbar(){
+  const status = $('authStatus');
+  const btnLogin = $('btnLogin');
+  const btnLogout = $('btnLogout');
+  try{
+    const a = (window.auth_get && window.auth_get()) || null;
+    if (a){
+      status.textContent = 'Log masuk (admin) — ' + (a.name || a.phone || 'pengguna');
+      btnLogin.style.display = 'none';
+      btnLogout.style.display = '';
+      btnLogout.onclick = ()=>{
+        window.auth_clear && window.auth_clear();
+        location.href = 'login.html#login';
+      };
+    }else{
+      status.textContent = 'Tidak log masuk';
+      btnLogin.style.display = '';
+      btnLogout.style.display = 'none';
+      btnLogin.onclick = ()=> location.href = 'login.html#login';
+    }
+  }catch(_e){}
+})();
+
+/* =========================
+   Query list
+   ========================= */
+async function rpcList(page, pageSize, filter, productionFilter, q){
+  let query = sb
+    .from(TABLE_NAME)
+    .select('*', { count:'exact' })
+    .order('created_at', { ascending:false });
+
+  if (filter && filter !== 'ALL'){
+    query = query.eq('status', filter);
+  }
+
+  if (productionFilter && productionFilter !== 'ALL'){
+    query = query.eq('production_status', productionFilter);
+  }
+
+  if (q && q.trim()){
+    const s = q.trim();
+    const like = `%${s}%`;
+    query = query.or([
+      `reference_1.ilike.${like}`,
+      `customer_name.ilike.${like}`,
+      `customer_phone.ilike.${like}`,
+      `loket_name.ilike.${like}`,
+      `material.ilike.${like}`,
+      `font_name.ilike.${like}`,
+      `ornament.ilike.${like}`
+    ].join(','));
+  }
+
+  const from = (page - 1) * pageSize;
+  const to = from + pageSize - 1;
+  const { data, error, count } = await query.range(from, to);
+  if (error) throw error;
+
+  const rows = Array.isArray(data) ? data : [];
+  const items = rows.map(r => ({
+    id: r.id,
+    reference: r.reference_1 || r.id,
+    created_at: r.created_at,
+    customer_name: r.customer_name || '-',
+    phone: r.customer_phone || '',
+    loket_name: r.loket_name || 'Tanpa Nama',
+    material: r.material || '-',
+    font_name: r.font_name || 'Poppins',
+    ring_position: r.ring_position || 'none',
+    ornament: r.ornament || 'none',
+    thickness_mm: Number(r.thickness_mm || 0),
+    custom_width_mm: Number(r.custom_width_mm || 0),
+    final_width_mm: Number(r.final_width_mm || 0),
+    final_height_mm: Number(r.final_height_mm || 0),
+    final_thickness_mm: Number(r.final_thickness_mm || 0),
+    estimated_weight_g: Number(r.estimated_weight_g || 0),
+    total_rm: Number(r.total_rm || 0),
+    status: safeUpper(r.status || 'PENDING'),
+    production_status: safeUpper(r.production_status || 'DRAFT'),
+    production_notes: r.production_notes || '',
+    svg_file_url: r.svg_file_url || '',
+    plt_file_url: r.plt_file_url || '',
+    paid_at: r.paid_at || null,
+    approved_at: r.approved_at || null,
+    production_sent_at: r.production_sent_at || null,
+    production_done_at: r.production_done_at || null
+  }));
+
+  const total = count ?? items.length;
+  const hasPrev = from > 0;
+  const hasNext = to + 1 < (total || 0);
+  return { items, total, hasPrev, hasNext };
+}
+
+/* =========================
+   Render mini preview
+   ========================= */
+function miniPreviewHtml(row){
+  const text = escapeHtml(row.loket_name || 'Loket');
+  const font = fontCssFamily(row.font_name);
+  const scale = previewScaleByWidth(row.final_width_mm || row.custom_width_mm || 36);
+
+  return `
+    <div class="preview-mini">
+      <div class="preview-mini-text"
+           style="font-family:${font};transform:scale(${scale});">
+        ${text}
+      </div>
+    </div>
+  `;
+}
+
+</script>
+
+<script>
+/* =========================
+   Render list
+   ========================= */
+async function refreshOrders(){
+  const q = ($('searchBox')?.value || '').trim();
+  const { items, total, hasPrev, hasNext } = await rpcList(
+    ORD_CURRENT_PAGE,
+    ORD_PAGE_SIZE,
+    ORD_FILTER,
+    PROD_FILTER,
+    q
+  );
+
+  const currentPaid = new Set((items || []).filter(x => x.status === 'PAID').map(x => x.id));
+  if (_prevPaidTempahan.size > 0){
+    let hasNew = false;
+    for (const id of currentPaid){
+      if (!_prevPaidTempahan.has(id)){ hasNew = true; break; }
+    }
+    if (hasNew) playCash();
+  }
+  _prevPaidTempahan = currentPaid;
+
+  _rowsCache = Object.fromEntries(items.map(x => [x.id, x]));
+
+  const tb = $('ordersTbody');
+  if (!items.length){
+    tb.innerHTML = `<tr><td colspan="8" class="text-muted py-4">0 rekod</td></tr>`;
+    $('resultInfo').textContent = '0 rekod';
+    $('prevPageBtn').disabled = !hasPrev;
+    $('nextPageBtn').disabled = !hasNext;
+    return;
+  }
+
+  tb.innerHTML = items.map(r => {
+    const canManualPaid = r.status === 'PENDING';
+    const canCancel = r.status === 'PENDING' || r.status === 'PAID';
+    const canComplete = r.status === 'PAID' || r.production_status === 'LASER_DONE';
+    const canOpenProduction = r.status === 'PAID' || r.status === 'PENDING' || r.status === 'COMPLETED';
+
+    const sizeW = r.final_width_mm || r.custom_width_mm || 36;
+    const sizeH = r.final_height_mm || guessHeightFromWidthAndName(sizeW, r.font_name, r.loket_name);
+
+    return `
+      <tr id="row-${r.id}">
+        <td>${fmtMY(r.created_at)}</td>
+
+        <td>
+          <div class="fw-semibold mono">${escapeHtml(r.reference)}</div>
+          <div class="text-muted small">ID: ${escapeHtml(String(r.id).slice(0, 8))}</div>
+          ${r.paid_at ? `<div class="text-muted small">Paid: ${fmtMY(r.paid_at)}</div>` : ``}
+        </td>
+
+        <td>
+          <div>${escapeHtml(r.customer_name)}</div>
+          <div class="text-muted small">${escapeHtml(r.phone || '-')}</div>
+        </td>
+
+        <td>
+          <div class="d-flex gap-2 align-items-start">
+            ${miniPreviewHtml(r)}
+            <div>
+              <div class="fw-semibold">${escapeHtml(r.loket_name)}</div>
+              <div class="text-muted small">
+                ${escapeHtml(r.material)} • ${escapeHtml(r.font_name)}
+              </div>
+              <div class="text-muted small">
+                Ring: ${escapeHtml(ringLabel(r.ring_position))} • Simbol: ${escapeHtml(r.ornament || 'Tiada')}
+              </div>
+              <div class="text-muted small">
+                Tebal: ${fmt2(r.final_thickness_mm || r.thickness_mm)} mm •
+                Saiz: ${fmt2(sizeW)} × ${fmt2(sizeH)} mm
+              </div>
+              <div class="text-muted small">
+                Anggaran berat: ${fmt2(r.estimated_weight_g)} g
+              </div>
+            </div>
+          </div>
+        </td>
+
+        <td>
+          ${prodBadgeHtml(r.production_status)}
+          ${r.approved_at ? `<div class="text-muted small mt-1">Approved: ${fmtMY(r.approved_at)}</div>` : ``}
+          ${r.production_sent_at ? `<div class="text-muted small">Hantar: ${fmtMY(r.production_sent_at)}</div>` : ``}
+          ${r.production_done_at ? `<div class="text-muted small">Laser siap: ${fmtMY(r.production_done_at)}</div>` : ``}
+        </td>
+
+        <td class="text-end fw-semibold">${money(r.total_rm)}</td>
+
+        <td>
+          <span class="badge ${orderBadgeClass(r.status)}">${escapeHtml(r.status)}</span>
+        </td>
+
+        <td class="text-end">
+          <div class="action-stack">
+            <button class="btn btn-outline-dark btn-sm"
+                    type="button"
+                    ${canOpenProduction ? '' : 'disabled'}
+                    onclick="openProductionModal('${r.id}')">
+              Production
+            </button>
+
+            <button class="btn btn-outline-success btn-sm"
+                    type="button"
+                    ${canManualPaid ? '' : 'disabled'}
+                    onclick="askManualPaid('${r.id}')">
+              Bayar Manual
+            </button>
+
+            <button class="btn btn-outline-danger btn-sm"
+                    type="button"
+                    ${canCancel ? '' : 'disabled'}
+                    onclick="askCancel('${r.id}')">
+              Cancel
+            </button>
+
+            <button class="btn btn-success btn-sm"
+                    type="button"
+                    ${canComplete ? '' : 'disabled'}
+                    onclick="askComplete('${r.id}')">
+              Tanda Selesai
+            </button>
+          </div>
+        </td>
+      </tr>
+    `;
+  }).join('');
+
+  $('resultInfo').textContent = `${total} rekod`;
+  $('prevPageBtn').disabled = !hasPrev;
+  $('nextPageBtn').disabled = !hasNext;
+}
+
+/* =========================
+   Confirm action
+   ========================= */
+function askComplete(id){
+  const row = _rowsCache[id];
+  if (!row) return;
+  _pendingId = id;
+  _pendingAction = 'complete';
+  $('confirmText').textContent = `Sahkan tanda order ${row.reference} sebagai SELESAI?`;
+  new bootstrap.Modal($('confirmModal')).show();
+}
+
+function askCancel(id){
+  const row = _rowsCache[id];
+  if (!row) return;
+  _pendingId = id;
+  _pendingAction = 'cancel';
+  $('confirmText').textContent = `Sahkan batal order ${row.reference}?`;
+  new bootstrap.Modal($('confirmModal')).show();
+}
+
+$('confirmYesBtn')?.addEventListener('click', async ()=>{
+  const id = _pendingId;
+  const action = _pendingAction;
+  if (!id || !action) return;
+
+  const btn = $('confirmYesBtn');
+  btn.disabled = true;
+
+  try{
+    if (action === 'complete'){
+      const { error } = await sb
+        .from(TABLE_NAME)
+        .update({
+          status: 'COMPLETED'
+        })
+        .eq('id', id);
+      if (error) throw error;
+      showToast('Order ditandakan selesai.');
+    }
+
+    if (action === 'cancel'){
+      const { error } = await sb
+        .from(TABLE_NAME)
+        .update({
+          status: 'CANCELLED'
+        })
+        .eq('id', id);
+      if (error) throw error;
+      showToast('Order dibatalkan.');
+    }
+
+    bootstrap.Modal.getInstance($('confirmModal'))?.hide();
+    _pendingId = null;
+    _pendingAction = null;
+    await refreshOrders();
+  }catch(e){
+    alert('Ralat: ' + (e?.message || e));
+  }finally{
+    btn.disabled = false;
+  }
+});
+
+/* =========================
+   Bayar manual
+   ========================= */
+function askManualPaid(id){
+  const row = _rowsCache[id];
+  if (!row) return;
+  if (row.status !== 'PENDING'){
+    showToast('Order bukan status PENDING.');
+    return;
+  }
+
+  $('mp_order_id').value = id;
+  $('mp_amount_rm').value = Number(row.total_rm || 0).toFixed(2);
+  $('mp_info').textContent = `Order: ${row.reference} • Jumlah: ${money(row.total_rm)} • Pelanggan: ${row.customer_name}`;
+
+  new bootstrap.Modal($('manualPayModal')).show();
+}
+
+$('mp_confirm_btn')?.addEventListener('click', async ()=>{
+  const id = ($('mp_order_id').value || '').trim();
+  const amount = Number($('mp_amount_rm').value || 0);
+
+  if (!id){
+    alert('Order ID kosong.');
+    return;
+  }
+  if (!Number.isFinite(amount) || amount <= 0){
+    alert('Jumlah tidak sah.');
+    return;
+  }
+
+  try{
+    const { error } = await sb
+      .from(TABLE_NAME)
+      .update({
+        status: 'PAID',
+        total_rm: amount,
+        paid_at: new Date().toISOString(),
+        production_status: 'REVIEW'
+      })
+      .eq('id', id)
+      .eq('status', 'PENDING');
+
+    if (error) throw error;
+
+    bootstrap.Modal.getInstance($('manualPayModal'))?.hide();
+    showToast('Order ditanda sebagai PAID.');
+    await refreshOrders();
+  }catch(e){
+    alert('Ralat semasa bayar manual: ' + (e?.message || e));
+  }
+});
+
+/* =========================
+   Production modal
+   ========================= */
+function applyJobPreview(row){
+  const nameEl = $('jobPreviewName');
+  const textEl = $('jobPreviewText');
+  const ringLeft = $('jobRingLeft');
+  const ringRight = $('jobRingRight');
+  const ringTopCenter = $('jobRingTopCenter');
+  const ringTopLeft = $('jobRingTopLeft');
+  const ringTopRight = $('jobRingTopRight');
+  const ornLeft = $('jobOrnLeft');
+  const ornRight = $('jobOrnRight');
+
+  const name = row.loket_name || 'Loket';
+  const font = fontCssFamily(row.font_name);
+  const ring = safeUpper(row.ring_position);
+  const ornRaw = ornamentIcon(row.ornament);
+  const widthMm = row.final_width_mm || row.custom_width_mm || 36;
+  const heightMm = row.final_height_mm || guessHeightFromWidthAndName(widthMm, row.font_name, row.loket_name);
+  const scale = previewScaleByWidth(widthMm);
+
+  textEl.textContent = name;
+  nameEl.style.fontFamily = font;
+  nameEl.style.transform = `scale(${scale})`;
+
+  ringLeft.style.display = 'none';
+  ringRight.style.display = 'none';
+  ringTopCenter.style.display = 'none';
+  ringTopLeft.style.display = 'none';
+  ringTopRight.style.display = 'none';
+
+  ornLeft.style.display = 'none';
+  ornRight.style.display = 'none';
+  ornLeft.textContent = '';
+  ornRight.textContent = '';
+
+  if (ring === 'LEFT') ringLeft.style.display = '';
+  if (ring === 'RIGHT') ringRight.style.display = '';
+  if (ring === 'BOTH'){
+    ringLeft.style.display = '';
+    ringRight.style.display = '';
+  }
+  if (ring === 'TOP-CENTER') ringTopCenter.style.display = '';
+  if (ring === 'TOP-LEFT') ringTopLeft.style.display = '';
+  if (ring === 'TOP-RIGHT') ringTopRight.style.display = '';
+  if (ring === 'TOP-BOTH'){
+    ringTopLeft.style.display = '';
+    ringTopRight.style.display = '';
+  }
+
+  ringLeft.style.left = '4px';
+  ringLeft.style.top = '50%';
+  ringLeft.style.transform = 'translateY(-50%)';
+
+  ringRight.style.right = '4px';
+  ringRight.style.top = '50%';
+  ringRight.style.transform = 'translateY(-50%)';
+
+  ringTopCenter.style.left = '50%';
+  ringTopCenter.style.top = '4px';
+  ringTopCenter.style.transform = 'translateX(-50%)';
+
+  ringTopLeft.style.left = '18%';
+  ringTopLeft.style.top = '4px';
+  ringTopLeft.style.transform = 'translateX(-50%)';
+
+  ringTopRight.style.left = '82%';
+  ringTopRight.style.top = '4px';
+  ringTopRight.style.transform = 'translateX(-50%)';
+
+  if (ornRaw){
+    if (ornRaw.length > 1){
+      ornLeft.textContent = ornRaw.charAt(0);
+      ornRight.textContent = ornRaw.charAt(ornRaw.length - 1);
+      ornLeft.style.display = '';
+      ornRight.style.display = '';
+      ornLeft.style.left = '20%';
+      ornLeft.style.top = '0px';
+      ornRight.style.right = '20%';
+      ornRight.style.top = '0px';
+    } else {
+      ornLeft.textContent = ornRaw;
+      ornLeft.style.display = '';
+      ornLeft.style.left = '12%';
+      ornLeft.style.top = '0px';
+    }
+  }
+
+  $('pm_size_name').textContent = `${fmt2(widthMm)} × ${fmt2(heightMm)} mm`;
+  $('pm_size_overall').textContent = `${fmt2(widthMm)} × ${fmt2(heightMm)} mm`;
+  $('pm_size_thick').textContent = `${fmt2(row.final_thickness_mm || row.thickness_mm)} mm`;
+}
+
+function fillProductionModal(row){
+  _currentProductionOrderId = row.id;
+
+  $('pm_ref').textContent = row.reference;
+  $('pm_customer').textContent = row.customer_name || '-';
+  $('pm_phone').textContent = row.phone || '-';
+  $('pm_name').textContent = row.loket_name || '-';
+  $('pm_material').textContent = row.material || '-';
+  $('pm_font').textContent = row.font_name || '-';
+  $('pm_ring').textContent = ringLabel(row.ring_position);
+  $('pm_orn').textContent = row.ornament || 'Tiada';
+  $('pm_thickness').textContent = `${fmt2(row.thickness_mm)} mm`;
+  $('pm_weight').textContent = `${fmt2(row.estimated_weight_g)} g`;
+  $('pm_total').textContent = money(row.total_rm);
+  $('pm_status').textContent = row.status;
+  $('pm_pstatus').textContent = row.production_status;
+  $('pm_notes').value = row.production_notes || '';
+
+  $('pm_final_width').value = row.final_width_mm ? fmt2(row.final_width_mm) : fmt2(row.custom_width_mm || 36);
+  $('pm_final_height').value = row.final_height_mm ? fmt2(row.final_height_mm) : fmt2(guessHeightFromWidthAndName((row.final_width_mm || row.custom_width_mm || 36), row.font_name, row.loket_name));
+  $('pm_final_thickness').value = fmt2(row.final_thickness_mm || row.thickness_mm || 0.8);
+  $('pm_svg_url').value = row.svg_file_url || '';
+  $('pm_plt_url').value = row.plt_file_url || '';
+
+  applyJobPreview(row);
+}
+
+window.openProductionModal = function(id){
+  const row = _rowsCache[id];
+  if (!row){
+    showToast('Order tidak dijumpai.');
+    return;
+  }
+  fillProductionModal(row);
+  new bootstrap.Modal($('productionModal')).show();
+};
+
+async function saveProductionFields(id, patch, successMsg){
+  const { error } = await sb
+    .from(TABLE_NAME)
+    .update(patch)
+    .eq('id', id);
+  if (error) throw error;
+
+  showToast(successMsg || 'Berjaya disimpan.');
+  await refreshOrders();
+
+  const updated = _rowsCache[id];
+  if (updated){
+    fillProductionModal(updated);
+  }
+}
+
+$('pm_save_note_btn')?.addEventListener('click', async ()=>{
+  const id = _currentProductionOrderId;
+  if (!id) return;
+
+  try{
+    await saveProductionFields(id, {
+      production_notes: $('pm_notes').value.trim()
+    }, 'Nota production disimpan.');
+  }catch(e){
+    alert('Ralat simpan nota: ' + (e?.message || e));
+  }
+});
+
+$('pm_save_production_btn')?.addEventListener('click', async ()=>{
+  const id = _currentProductionOrderId;
+  if (!id) return;
+
+  const width = Number($('pm_final_width').value || 0);
+  const height = Number($('pm_final_height').value || 0);
+  const thick = Number($('pm_final_thickness').value || 0);
+  const svgUrl = $('pm_svg_url').value.trim();
+  const pltUrl = $('pm_plt_url').value.trim();
+  const notes = $('pm_notes').value.trim();
+
+  if (!Number.isFinite(width) || width <= 0){
+    alert('Final lebar tidak sah.');
+    return;
+  }
+  if (!Number.isFinite(height) || height <= 0){
+    alert('Final tinggi tidak sah.');
+    return;
+  }
+  if (!Number.isFinite(thick) || thick <= 0){
+    alert('Final tebal tidak sah.');
+    return;
+  }
+
+  try{
+    await saveProductionFields(id, {
+      final_width_mm: width,
+      final_height_mm: height,
+      final_thickness_mm: thick,
+      svg_file_url: svgUrl,
+      plt_file_url: pltUrl,
+      production_notes: notes
+    }, 'Maklumat production disimpan.');
+  }catch(e){
+    alert('Ralat simpan production: ' + (e?.message || e));
+  }
+});
+
+$('pm_approve_btn')?.addEventListener('click', async ()=>{
+  const id = _currentProductionOrderId;
+  if (!id) return;
+
+  try{
+    await saveProductionFields(id, {
+      production_status: 'APPROVED',
+      approved_at: new Date().toISOString(),
+      production_notes: $('pm_notes').value.trim(),
+      final_width_mm: Number($('pm_final_width').value || 0),
+      final_height_mm: Number($('pm_final_height').value || 0),
+      final_thickness_mm: Number($('pm_final_thickness').value || 0),
+      svg_file_url: $('pm_svg_url').value.trim(),
+      plt_file_url: $('pm_plt_url').value.trim()
+    }, 'Design diapprove.');
+  }catch(e){
+    alert('Ralat approve design: ' + (e?.message || e));
+  }
+});
+
+$('pm_plt_btn')?.addEventListener('click', async ()=>{
+  const id = _currentProductionOrderId;
+  if (!id) return;
+
+  try{
+    await saveProductionFields(id, {
+      production_status: 'PLT_READY',
+      production_notes: $('pm_notes').value.trim(),
+      final_width_mm: Number($('pm_final_width').value || 0),
+      final_height_mm: Number($('pm_final_height').value || 0),
+      final_thickness_mm: Number($('pm_final_thickness').value || 0),
+      svg_file_url: $('pm_svg_url').value.trim(),
+      plt_file_url: $('pm_plt_url').value.trim()
+    }, 'Status production: PLT Ready.');
+  }catch(e){
+    alert('Ralat tanda PLT Ready: ' + (e?.message || e));
+  }
+});
+
+$('pm_queue_btn')?.addEventListener('click', async ()=>{
+  const id = _currentProductionOrderId;
+  if (!id) return;
+
+  try{
+    await saveProductionFields(id, {
+      production_status: 'QUEUED',
+      production_sent_at: new Date().toISOString(),
+      production_notes: $('pm_notes').value.trim()
+    }, 'Dihantar ke production.');
+  }catch(e){
+    alert('Ralat hantar ke production: ' + (e?.message || e));
+  }
+});
+
+$('pm_done_btn')?.addEventListener('click', async ()=>{
+  const id = _currentProductionOrderId;
+  if (!id) return;
+
+  try{
+    await saveProductionFields(id, {
+      production_status: 'LASER_DONE',
+      production_done_at: new Date().toISOString(),
+      production_notes: $('pm_notes').value.trim()
+    }, 'Laser siap direkod.');
+  }catch(e){
+    alert('Ralat tanda laser siap: ' + (e?.message || e));
+  }
+});
+
+$('pm_open_svg_btn')?.addEventListener('click', ()=>{
+  const url = $('pm_svg_url').value.trim();
+  if (!url){
+    showToast('Link SVG kosong.');
+    return;
+  }
+  window.open(url, '_blank');
+});
+
+$('pm_open_plt_btn')?.addEventListener('click', ()=>{
+  const url = $('pm_plt_url').value.trim();
+  if (!url){
+    showToast('Link PLT kosong.');
+    return;
+  }
+  window.open(url, '_blank');
+});
+
+$('pm_print_sheet_btn')?.addEventListener('click', ()=>{
+  const id = _currentProductionOrderId;
+  const row = _rowsCache[id];
+  if (!row){
+    showToast('Order tidak dijumpai.');
+    return;
+  }
+
+  const width = $('pm_final_width').value || fmt2(row.final_width_mm || row.custom_width_mm || 36);
+  const height = $('pm_final_height').value || fmt2(row.final_height_mm || guessHeightFromWidthAndName((row.final_width_mm || row.custom_width_mm || 36), row.font_name, row.loket_name));
+  const thick = $('pm_final_thickness').value || fmt2(row.final_thickness_mm || row.thickness_mm || 0.8);
+  const notes = $('pm_notes').value || row.production_notes || '';
+
+  const w = window.open('', '_blank');
+  if (!w) return;
+
+  w.document.write(`
+    <html lang="ms">
+    <head>
+      <meta charset="utf-8">
+      <title>Job Sheet ${escapeHtml(row.reference)}</title>
+      <style>
+        body{font-family:Arial,sans-serif;padding:22px;color:#111}
+        h2{margin:0 0 16px}
+        .box{border:1px solid #ddd;border-radius:12px;padding:14px;margin-bottom:14px}
+        .kv{display:grid;grid-template-columns:170px 1fr;gap:8px 10px}
+        .k{color:#666}
+        .v{font-weight:700}
+        .big{
+          margin-top:8px;
+          border:1px solid #ddd;
+          border-radius:12px;
+          min-height:140px;
+          display:flex;
+          align-items:center;
+          justify-content:center;
+          font-size:46px;
+        }
+      </style>
+    </head>
+    <body>
+      <h2>Job Sheet — Tempahan Loket</h2>
+
+      <div class="box">
+        <div class="kv">
+          <div class="k">Rujukan</div><div class="v">${escapeHtml(row.reference)}</div>
+          <div class="k">Pelanggan</div><div class="v">${escapeHtml(row.customer_name)}</div>
+          <div class="k">Telefon</div><div class="v">${escapeHtml(row.phone || '-')}</div>
+          <div class="k">Nama Loket</div><div class="v">${escapeHtml(row.loket_name)}</div>
+          <div class="k">Material</div><div class="v">${escapeHtml(row.material || '-')}</div>
+          <div class="k">Font</div><div class="v">${escapeHtml(row.font_name || '-')}</div>
+          <div class="k">Ring</div><div class="v">${escapeHtml(ringLabel(row.ring_position))}</div>
+          <div class="k">Simbol</div><div class="v">${escapeHtml(row.ornament || 'Tiada')}</div>
+          <div class="k">Final Saiz</div><div class="v">${escapeHtml(width)} mm × ${escapeHtml(height)} mm</div>
+          <div class="k">Final Tebal</div><div class="v">${escapeHtml(thick)} mm</div>
+          <div class="k">Anggaran Berat</div><div class="v">${fmt2(row.estimated_weight_g)} g</div>
+          <div class="k">Status Production</div><div class="v">${escapeHtml(row.production_status || '-')}</div>
+        </div>
+      </div>
+
+      <div class="box">
+        <div style="font-weight:700;margin-bottom:8px">Preview</div>
+        <div class="big" style="font-family:${fontCssFamily(row.font_name)}">${escapeHtml(row.loket_name)}</div>
+      </div>
+
+      <div class="box">
+        <div style="font-weight:700;margin-bottom:8px">Nota</div>
+        <div>${escapeHtml(notes).replace(/\n/g,'<br>') || '-'}</div>
+      </div>
+
+      <script>window.onload = () => window.print();<\/script>
+    </body>
+    </html>
+  `);
+  w.document.close();
+});
+
+/* =========================
+   Events
+   ========================= */
+$('refreshBtn')?.addEventListener('click', async ()=>{
+  ORD_CURRENT_PAGE = 1;
+  await refreshOrders();
+  startAutoRefresh();
+});
+
+$('searchBox')?.addEventListener('keydown', async (e)=>{
+  if (e.key === 'Enter'){
+    ORD_CURRENT_PAGE = 1;
+    await refreshOrders();
+    startAutoRefresh();
+  }
+});
+
+$('prevPageBtn')?.addEventListener('click', async ()=>{
+  if (ORD_CURRENT_PAGE > 1){
+    ORD_CURRENT_PAGE--;
+    await refreshOrders();
+  }
+});
+
+$('nextPageBtn')?.addEventListener('click', async ()=>{
+  ORD_CURRENT_PAGE++;
+  await refreshOrders();
+});
+
+document.addEventListener('click', async (e)=>{
+  const of = e.target?.closest?.('[data-filter]');
+  if (of){
+    e.preventDefault();
+    ORD_FILTER = of.getAttribute('data-filter') || 'ALL';
+    ORD_CURRENT_PAGE = 1;
+    document.querySelectorAll('#orderFilterRow [data-filter]').forEach(b => b.classList.remove('filter-active'));
+    of.classList.add('filter-active');
+    await refreshOrders();
+    return;
+  }
+
+  const pf = e.target?.closest?.('[data-pfilter]');
+  if (pf){
+    e.preventDefault();
+    PROD_FILTER = pf.getAttribute('data-pfilter') || 'ALL';
+    ORD_CURRENT_PAGE = 1;
+    document.querySelectorAll('#productionFilterRow [data-pfilter]').forEach(b => b.classList.remove('filter-active'));
+    pf.classList.add('filter-active');
+    await refreshOrders();
+  }
+});
+
+/* =========================
+   Audio unlock + ka-ching
+   ========================= */
+function __tryUnlockAudio(){
+  const a = document.getElementById('soundCash');
+  if (!a) return Promise.resolve(false);
+  a.volume = 1.0;
+  a.muted = false;
+  return a.play().then(()=>{
+    a.pause();
+    a.currentTime = 0;
+    window.__cashUnlocked = true;
+    return true;
+  }).catch(()=>false);
+}
+
+function __showHint(show){
+  const h = document.getElementById('audioHint');
+  if (h) h.style.display = show ? '' : 'none';
+}
+
+(function setupAudioUnlock(){
+  if (window.__audioUnlockReady) return;
+  window.__audioUnlockReady = true;
+
+  const handler = async ()=>{
+    if (window.__cashUnlocked) return cleanup();
+    const ok = await __tryUnlockAudio();
+    if (ok){
+      cleanup();
+      __showHint(false);
+    }
+  };
+
+  function cleanup(){
+    window.removeEventListener('click', handler, true);
+    window.removeEventListener('touchstart', handler, true);
+    window.removeEventListener('keydown', handler, true);
+  }
+
+  window.addEventListener('click', handler, true);
+  window.addEventListener('touchstart', handler, true);
+  window.addEventListener('keydown', handler, true);
+
+  setTimeout(()=>{
+    if (!window.__cashUnlocked) __showHint(true);
+  }, 1000);
+
+  document.getElementById('btnUnlockAudio')?.addEventListener('click', handler);
+})();
+
+function playCash(){
+  const a = document.getElementById('soundCash');
+  if (!a) return;
+
+  const doPlay = ()=>{
+    a.currentTime = 0;
+    a.play().catch(()=>{});
+  };
+
+  if (!window.__cashUnlocked){
+    const once = async ()=>{
+      const ok = await __tryUnlockAudio();
+      if (ok) doPlay();
+      cleanup();
+    };
+    function cleanup(){
+      window.removeEventListener('click', once, true);
+      window.removeEventListener('touchstart', once, true);
+      window.removeEventListener('keydown', once, true);
+    }
+    window.addEventListener('click', once, true);
+    window.addEventListener('touchstart', once, true);
+    window.addEventListener('keydown', once, true);
+    return;
+  }
+
+  doPlay();
+}
+
+/* =========================
+   Boot
+   ========================= */
+(async ()=>{
+  const pill = $('authStatus');
+  const set = t => pill && (pill.textContent = t);
+
+  let ok = false;
+  if (window.adminGuard && typeof adminGuard.require === 'function'){
+    ok = await adminGuard.require({
+      onChecking: ()=> set('Mengesahkan akses…'),
+      onDenied: ()=> set('Akses ditolak'),
+      onAllowed: (phone)=> set('Log masuk (admin) — ' + phone)
+    });
+  } else {
+    const a = (window.auth_get && window.auth_get()) || null;
+    if (!a){
+      location.href = 'login.html#login';
+      return;
+    }
+    ok = true;
+  }
+  if (!ok) return;
+
+  await refreshOrders();
+  startAutoRefresh();
+})();
+</script>
+
+<!-- 🔊 Ka-ching audio -->
+<audio id="soundCash" preload="auto">
+  <source src="https://dduizetstqqjrpsezbpi.supabase.co/storage/v1/object/public/cash-emas/cashier-quotka-chingquot-sound-effect-129698.mp3?v=1" type="audio/mpeg">
+</audio>
+
+<div id="audioHint" class="small text-muted"
+     style="position:fixed;right:16px;bottom:72px;background:#fff;border:1px solid #e5e7eb;
+            border-radius:10px;padding:6px 10px;display:none;z-index:9999">
+  Bunyi dikunci — klik <button id="btnUnlockAudio" class="btn btn-sm btn-outline-dark">Aktifkan</button>
+</div>
+
+<script>
+window.addEventListener('load', ()=>{
+  const a = document.getElementById('soundCash');
+  if (!a) return;
+  setTimeout(()=>{
+    a.volume = 0.0;
+    a.play().then(()=>{
+      a.pause();
+      a.currentTime = 0;
+      a.volume = 1.0;
+    }).catch(()=>{});
+  }, 1000);
+});
+</script>
+
+<script>
+document.addEventListener('DOMContentLoaded', ()=>{
+  const bar = document.querySelector('.d-flex.justify-content-between.align-items-center.mb-2.flex-wrap.gap-2 .d-flex.flex-wrap.gap-2');
+  if (!bar || document.getElementById('btnTestSound')) return;
+
+  const btn = document.createElement('button');
+  btn.id = 'btnTestSound';
+  btn.className = 'btn btn-outline-dark btn-sm';
+  btn.textContent = 'Uji Bunyi 🔊';
+  btn.onclick = ()=>playCash();
+  bar.appendChild(btn);
+});
+</script>
+</body>
+</html>

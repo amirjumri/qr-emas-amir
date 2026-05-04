@@ -2,7 +2,8 @@
 <html lang="ms">
 <head>
   <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width,initial-scale=1">
+ <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<link rel="stylesheet" href="/global.css">
   <title>Admin Tabung — Simpan Transaksi • Emas Amir</title>
 
   <!-- Libs (ORDER matters) -->
@@ -236,6 +237,19 @@ window.playCash = function playCash(){
       <button id="btnAdjStock" class="btn btn-outline-dark btn-sm" type="button">Ubah Stok…</button>
     </div>
   </div>
+
+<div class="stats-pill mb-3">
+  <div class="h6">🔴 Live Tabung</div>
+  <small>ON = card beli Tabung muncul dekat comment.html</small>
+  <div class="form-check form-switch mt-2">
+    <input id="showTabungLiveInput" class="form-check-input" type="checkbox">
+    <label class="form-check-label" for="showTabungLiveInput">
+      Papar Tabung Live
+    </label>
+  </div>
+<button id="btnSaveTabungLive" class="btn btn-primary btn-sm" type="button">
+  Simpan Live Tabung
+</button></div>
 
   <!-- TABLE -->
   <div class="table-responsive">
@@ -853,8 +867,8 @@ function mapRow(r){
     reference: r.reference_1 || r.reference || null,
 
     // cuba keluarkan nama/phone kalau RPC dah bagi
-    name:  r.name  || r.customer_name || r.user_name  || null,
-    phone: r.phone || r.customer_phone|| r.user_phone || null,
+    name:  r.cust_name || r.user_name || r.customer_name || r.name || null,
+phone: r.cust_phone || r.user_phone || r.customer_phone || r.phone || null,
 
     tracking_no: r.tracking_no || r.awb_no || r.awb || null
   };
@@ -960,78 +974,215 @@ async function enrichCustomers(rows){
 
   if (!rawIds.length) return;
 
-  // ✅ pastikan hanya UUID masuk untuk lookup v_auth_identity / customers.id
   const uuidIds = rawIds.filter(isUuid);
 
-  let mappedCustomerIds = [];
-  if (uuidIds.length){
-    try{
-      const { data: maps, error } = await sb
-        .from('v_auth_identity')
+  // A) cuba direct customers.id = user_id / created_by
+  try{
+    const notCachedCustomerIds = uuidIds.filter(id => !window._custCache[id]);
+
+    if (notCachedCustomerIds.length){
+      const { data, error } = await sb
+        .from('customers')
+        .select('id, name, phone, alamat, postcode, city, state')
+        .in('id', notCachedCustomerIds);
+
+      if (!error && Array.isArray(data)){
+        data.forEach(c=>{
+          window._custCache[String(c.id)] = {
+            name: c.name || null,
+            phone: norm60(c.phone),
+            alamat: c.alamat || null,
+            postcode: c.postcode || null,
+            city: c.city || null,
+            state: c.state || null
+          };
+        });
+      }
+    }
+  }catch(e){
+    console.warn('direct customers lookup fail', e?.message || e);
+  }
+
+  // B) cuba auth_customer_map: auth_uid -> customer_id
+  let maps = [];
+  try{
+    if (uuidIds.length){
+      const { data, error } = await sb
+        .from('auth_customer_map')
         .select('auth_uid, customer_id')
         .in('auth_uid', uuidIds);
 
-      if (error) throw error;
-
-      mappedCustomerIds = (maps||[])
-        .map(m => m.customer_id)
-        .filter(Boolean)
-        .map(String);
-    }catch(e){
-      console.warn('v_auth_identity lookup fail', e?.message || e);
+      if (!error && Array.isArray(data)) maps = data;
     }
+  }catch(e){
+    console.warn('auth_customer_map lookup fail', e?.message || e);
   }
 
-  const candidateCustomerIds = [...new Set([...uuidIds, ...mappedCustomerIds])]
-    .filter(id => !(id in window._custCache));
+  const customerIds = [...new Set(
+    maps.map(m => m.customer_id).filter(Boolean).map(String)
+  )];
 
-  if (!candidateCustomerIds.length) return;
+  if (customerIds.length){
+    try{
+      const missing = customerIds.filter(id => !window._custCache[id]);
 
-  try{
-    const { data, error } = await sb
-      .from('customers')
-      .select('id, name, phone, alamat, postcode, city, state')
-      .in('id', candidateCustomerIds);
+      if (missing.length){
+        const { data, error } = await sb
+          .from('customers')
+          .select('id, name, phone, alamat, postcode, city, state')
+          .in('id', missing);
 
-    if (error) throw error;
+        if (!error && Array.isArray(data)){
+          data.forEach(c=>{
+            window._custCache[String(c.id)] = {
+              name: c.name || null,
+              phone: norm60(c.phone),
+              alamat: c.alamat || null,
+              postcode: c.postcode || null,
+              city: c.city || null,
+              state: c.state || null
+            };
+          });
+        }
+      }
 
-    (data||[]).forEach(c=>{
-      window._custCache[c.id] = {
-        name:  c.name || null,
-        phone: norm60(c.phone),
-        alamat: c.alamat || null,
-        postcode: c.postcode || null,
-        city: c.city || null,
-        state: c.state || null
-      };
-    });
-  }catch(e){
-    console.warn('enrich customers -> customers lookup fail', e?.message || e);
+      maps.forEach(m=>{
+        const c = window._custCache[String(m.customer_id)];
+        if (c) window._custCache[String(m.auth_uid)] = c;
+      });
+
+    }catch(e){
+      console.warn('customers mapped lookup fail', e?.message || e);
+    }
   }
 }
 async function resolveCustomer(row){
-  // 1) kalau row dah ada
-  if (row.phone || row.name){
-    return { phone: row.phone || '', name: row.name || '-' };
+  // 1) Kalau RPC memang dah bawak nama / phone
+  const rowName = String(row?.name || '').trim();
+  const rowPhone = String(row?.phone || '').trim();
+
+  if ((rowName && rowName !== '-') || rowPhone){
+    return {
+      name: rowName || '-',
+      phone: rowPhone ? norm60(rowPhone) : ''
+    };
   }
 
-  // 2) cache ikut created_by / user_id / user_auth_id (UUID sahaja biasanya)
-  const keys = [row.created_by, row.user_id, row.user_auth_id].filter(Boolean);
+  // 2) Cuba cache customers ikut semua id yang mungkin
+  const keys = [
+    row?.created_by,
+    row?.user_id,
+    row?.user_auth_id
+  ].filter(Boolean).map(String);
+
   for (const k of keys){
-    if (window._custCache[k]){
-      const c = window._custCache[k];
-      if (c.phone || c.name) return { phone: c.phone || '', name: c.name || '-' };
+    const c = window._custCache?.[k];
+    if (c && (c.name || c.phone)){
+      return {
+        name: c.name || '-',
+        phone: c.phone ? norm60(c.phone) : ''
+      };
     }
   }
 
-  // 3) fallback: fetch tabung_txn secara "SAFE" (elak 400 bila column tak wujud)
-  if (row.id && isUuid(row.id)){
-    const x = await safeFetchTabungTxnCustomer(row.id);
-    if (x.phone || (x.name && x.name !== '-')) return x;
+  // 3) Direct ambil dari tabung_txn ikut transaksi id
+  let txn = null;
+
+  if (row?.id){
+    try{
+      const { data, error } = await sb
+        .from('tabung_txn')
+        .select('*')
+        .eq('id', row.id)
+        .maybeSingle();
+
+      if (!error && data) txn = data;
+    }catch(e){
+      console.warn('[resolveCustomer tabung_txn select * fail]', e?.message || e);
+    }
   }
 
-  return { phone:'', name:'-' };
+  const txnName = String(
+    txn?.user_name ||
+    txn?.customer_name ||
+    txn?.name ||
+    ''
+  ).trim();
+
+  const txnPhone = String(
+    txn?.user_phone ||
+    txn?.customer_phone ||
+    txn?.phone ||
+    ''
+  ).trim();
+
+  if (txnName || txnPhone){
+    return {
+      name: txnName || '-',
+      phone: txnPhone ? norm60(txnPhone) : ''
+    };
+  }
+
+  // 4) Kalau ada phone, cari pula dekat customers
+  if (txnPhone){
+    try{
+      const variants = normalizePhoneVariants(txnPhone);
+
+      if (variants.length){
+        const { data, error } = await sb
+          .from('customers')
+          .select('id,name,phone,alamat,postcode,city,state')
+          .in('phone', variants)
+          .limit(1);
+
+        if (!error && data && data.length){
+          const c = data[0];
+
+          return {
+            name: c.name || '-',
+            phone: c.phone ? norm60(c.phone) : norm60(txnPhone)
+          };
+        }
+      }
+    }catch(e){
+      console.warn('[resolveCustomer customers by phone fail]', e?.message || e);
+    }
+  }
+
+  // 5) Last fallback: cuba customer id dari txn
+  const possibleCustomerIds = [
+    txn?.created_by,
+    txn?.user_id,
+    txn?.user_auth_id,
+    row?.created_by,
+    row?.user_id,
+    row?.user_auth_id
+  ].filter(Boolean).map(String).filter(isUuid);
+
+  if (possibleCustomerIds.length){
+    try{
+      const { data, error } = await sb
+        .from('customers')
+        .select('id,name,phone,alamat,postcode,city,state')
+        .in('id', possibleCustomerIds)
+        .limit(1);
+
+      if (!error && data && data.length){
+        const c = data[0];
+
+        return {
+          name: c.name || '-',
+          phone: c.phone ? norm60(c.phone) : ''
+        };
+      }
+    }catch(e){
+      console.warn('[resolveCustomer customers by id fail]', e?.message || e);
+    }
+  }
+
+  return { name:'-', phone:'' };
 }
+
 async function fetchAddressForRow(row){
   // default fallback (kalau belum lengkap)
   const result = {
@@ -2079,6 +2230,38 @@ $('btnTestSound')?.addEventListener('click', ()=> { if (typeof window.playCash =
   startAutoRefresh();
 })();
 </script>
+<script>
+document.addEventListener("DOMContentLoaded", () => {
+  const btn = document.getElementById("btnSaveTabungLive");
+  const chk = document.getElementById("showTabungLiveInput");
 
+  if (!btn) {
+    console.log("❌ btnSaveTabungLive TAK jumpa");
+    return;
+  }
+
+  btn.addEventListener("click", async () => {
+    console.log("✅ Klik Simpan Live Tabung");
+
+    try{
+      const on = chk?.checked === true;
+
+      const { error } = await sb
+        .from("live_config")
+        .upsert({
+          id: 1,
+          show_tabung_live: on
+        }, { onConflict: "id" });
+
+      if (error) throw error;
+
+      alert("✅ Berjaya simpan!");
+    }catch(e){
+      console.error(e);
+      alert("❌ Error: " + (e.message || e));
+    }
+  });
+});
+</script>
 </body>
 </html>

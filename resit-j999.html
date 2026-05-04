@@ -68,6 +68,10 @@
           <th colspan="5" class="text-end">Penghantaran (RM)</th>
           <th class="text-end" id="tvShipping">RM 0.00</th>
         </tr>
+        <tr id="rowAppStorePromo" style="display:none">
+          <th colspan="5" class="text-end">Promo App Store (RM)</th>
+          <th class="text-end" id="tvAppStorePromo">RM 0.00</th>
+        </tr>
         <tr>
           <th colspan="5" class="text-end">Diskaun (RM)</th>
           <th class="text-end" id="tvDiscount">RM 0.00</th>
@@ -144,7 +148,6 @@ function getKey(){
       if(mOrder) order = decodeURIComponent(mOrder[1]||'');
     }
 
-    // (optional) fallback localStorage — kalau Amir nak
     if(!group && !id && !ref && !bill && !order){
       try{
         const last = JSON.parse(localStorage.getItem('j999_last_key')||'{}');
@@ -166,10 +169,6 @@ function getKey(){
   }
 }
 
-/**
- * Normalise row fields dari table goldbar_order.
- * Kita cuba handle pelbagai nama kolum (sebab schema boleh evolve).
- */
 function pick(obj, keys, def=''){
   for(const k of keys){
     if(obj && obj[k] != null && obj[k] !== '') return obj[k];
@@ -181,13 +180,24 @@ function normStatus(s){
   return String(s||'').toUpperCase();
 }
 
+function getRmOrCents(row, rmKeys = [], centsKeys = []){
+  for(const k of rmKeys){
+    const v = Number(row?.[k]);
+    if(Number.isFinite(v) && v !== 0) return v;
+  }
+  for(const k of centsKeys){
+    const v = Number(row?.[k]);
+    if(Number.isFinite(v) && v !== 0) return centsToRm(v);
+  }
+  return 0;
+}
+
 // kira harga baris
 function getLineGross(row){
   const qty = Math.max(1, Number(pick(row, ['qty','quantity'], 1)));
   const unit = Number(pick(row, ['unit_price_rm','unit_rm','unit','price_rm'], 0));
   const total_rm = Number(pick(row, ['total_rm','amount_rm'], 0));
 
-  // kalau ada total_rm yang valid, guna total_rm; kalau tak, unit*qty
   if (Number.isFinite(total_rm) && total_rm > 0) return total_rm;
   return (Number.isFinite(unit) ? unit : 0) * qty;
 }
@@ -201,7 +211,6 @@ function buildTitle(row){
   const cardTxt = card ? card : '';
   const kindTxt = kind ? kind : '';
 
-  // contoh: COIN • READY • 0.10g — Rose
   return [kindTxt, cardTxt].filter(Boolean).join(' • ')
     + (weightTxt ? (' • ' + weightTxt) : '')
     + (design ? (' — ' + design) : '');
@@ -227,7 +236,6 @@ function buildTitle(row){
   let rows = [];
   let qErr = null;
 
-  // Helper query
   async function qBy(col, val){
     const q = await sb.from('goldbar_order')
       .select('*')
@@ -238,30 +246,17 @@ function buildTitle(row){
     return q.data || [];
   }
 
-  // 1) cuba ikut group terus
   if (group) rows = await qBy('checkout_group', group);
-
-  // 2) cuba ikut id
   if (!rows.length && id) rows = await qBy('id', id);
-
-  // 3) cuba ikut reference_1
   if (!rows.length && ref) rows = await qBy('reference_1', ref);
-
-  // 4) legacy bill_id_text (kalau masih ada)
   if (!rows.length && bill) rows = await qBy('bill_id_text', bill);
 
-  // 5) LEGACY: ?order=... (ini yang Amir guna)
-  //    Kadang order tu sebenarnya UUID id, kadang reference_1.
   if (!rows.length && order){
-    // cuba id dulu
     rows = await qBy('id', order);
-    // kalau kosong, cuba reference_1
     if (!rows.length) rows = await qBy('reference_1', order);
-    // kalau kosong, cuba bill_id_text (legacy)
     if (!rows.length) rows = await qBy('bill_id_text', order);
   }
 
-  // Kalau masih kosong
   if(!rows.length){
     $('tbBody').innerHTML =
       `<tr><td colspan="6" class="text-danger">
@@ -273,11 +268,6 @@ function buildTitle(row){
     return;
   }
 
-  // ===========================
-  // ✅ Expand ke checkout_group automatik
-  //    Kalau user buka item single (?id / ?order / ?ref), tapi row ada checkout_group,
-  //    kita tarik SEMUA item dalam group.
-  // ===========================
   let headRow = rows[0];
   const grp = pick(headRow, ['checkout_group'], null);
 
@@ -290,7 +280,6 @@ function buildTitle(row){
     if (!g.error && Array.isArray(g.data) && g.data.length){
       rows = g.data;
 
-      // headRow: pilih row yang ada grand/amount (meta) kalau wujud
       const candidate =
         rows.find(r => Number(pick(r,['amount_cents'],0)) > 0) ||
         rows.find(r => Number(pick(r,['grand_total_rm'],0)) > 0) ||
@@ -301,22 +290,14 @@ function buildTitle(row){
     }
   }
 
-  // ===========================
-  // ✅ Filter status: paparkan PAID sahaja kalau ada,
-  //    tapi kalau tiada PAID (contoh testing), paparkan semua (agar nampak data)
-  // ===========================
   const paidRows = rows.filter(r => normStatus(r.status) === 'PAID');
   if (paidRows.length) rows = paidRows;
 
-  // headRow refresh lepas filter
   headRow =
     rows.find(r => Number(pick(r,['amount_cents'],0)) > 0) ||
     rows.find(r => Number(pick(r,['grand_total_rm'],0)) > 0) ||
     rows[0];
 
-  // ===========================
-  // ✅ Header customer details (ikut style J916)
-  // ===========================
   const custName  = pick(headRow, ['customer_name','name'], '-') || '-';
   const custPhone = pick(headRow, ['customer_phone','phone'], '-') || '-';
 
@@ -324,7 +305,6 @@ function buildTitle(row){
   let custAddr  = pick(headRow, ['alamat','address'], '');
   let custIC    = pick(headRow, ['customer_ic','ic','ic_no','no_ic'], '');
 
-  // fallback ke customers table (ikut phone)
   if ((!custEmail || !custAddr || !custIC) && custPhone && custPhone !== '-'){
     try{
       const [p60, p0] = bothPhones(custPhone);
@@ -348,36 +328,22 @@ function buildTitle(row){
   $('custAddr').textContent  = custAddr || '-';
   $('custIC').textContent    = custIC || '-';
 
-  // tarikh
   $('resitDate').textContent = 'Tarikh: ' + new Date(pick(headRow,['created_at'], new Date().toISOString()))
     .toLocaleString('ms-MY',{dateStyle:'medium',timeStyle:'short'});
 
-  // rujukan & group
   const headRef = pick(headRow, ['reference_1','id','bill_id_text'], '') || '';
   const headGroup = pick(headRow, ['checkout_group'], '') || '';
 
   $('resitRef').textContent   = 'Rujukan: ' + (group || headGroup || id || ref || bill || order || headRef || '-');
   $('resitGroup').textContent = 'Group ID: ' + (headGroup || (group||'-'));
-
-  // no resit: guna group kalau ada, kalau tak guna reference/id
   $('resitNo').textContent = 'No. Resit: ' + resitNo(headGroup || headRef || id || ref || order || bill);
 
-  // ===========================
-  // ✅ Kiraan subtotal / shipping / discount / grand
-  //    ikut cara “meta” dari JS goldcoin bar:
-  //      - shipping_rm
-  //      - payment_disc_rm
-  //      - coupon_disc_rm
-  //      - grand_total_rm
-  //    dan fallback infer kalau kosong.
-  // ===========================
   let subtotalGross = 0;
 
   const items = rows.map(r=>{
     const qty = Math.max(1, Number(pick(r,['qty','quantity'],1)));
     let unit = Number(pick(r,['unit_price_rm','unit_rm','unit','price_rm'],0));
     if (!Number.isFinite(unit) || unit<=0){
-      // fallback: total_rm / qty
       const t = Number(pick(r,['total_rm','amount_rm'],0));
       if (Number.isFinite(t) && t>0) unit = t/qty;
     }
@@ -388,58 +354,87 @@ function buildTitle(row){
 
   const subRM = Number(subtotalGross.toFixed(2));
 
-  let shipRM = Number(pick(headRow, ['shipping_rm'], 0));
-  if (!(shipRM > 0)){
-    // kadang simpan dalam cents
-    const sc = Number(pick(headRow, ['shipping_cents'], 0));
-    if (Number.isFinite(sc) && sc>0) shipRM = centsToRm(sc);
+  let shipRM = 0;
+  let payDRM = 0;
+  let coupDRM = 0;
+  let appStoreDRM = 0;
+
+  for (const r of rows){
+    const shippingVal = getRmOrCents(
+      r,
+      ['shipping_rm'],
+      ['shipping_cents']
+    );
+    if (shippingVal > 0) shipRM += shippingVal;
+
+    const paymentDiscVal = getRmOrCents(
+      r,
+      ['payment_disc_rm','pay_disc_rm'],
+      ['payment_disc_cents','pay_disc_cents']
+    );
+    if (paymentDiscVal > 0) payDRM += paymentDiscVal;
+
+    const couponDiscVal = getRmOrCents(
+      r,
+      ['coupon_disc_rm'],
+      ['coupon_disc_cents']
+    );
+    if (couponDiscVal > 0) coupDRM += couponDiscVal;
+
+    const appStoreDiscVal = getRmOrCents(
+      r,
+      [
+        'app_store_disc_rm',
+        'appstore_disc_rm',
+        'promo_app_store_rm',
+        'promo_appstore_rm',
+        'app_store_promo_rm',
+        'appstore_promo_rm',
+        'promo_apple_rm',
+        'promo_ios_rm',
+        'app_promo_rm',
+        'app_discount_rm'
+      ],
+      [
+        'app_store_disc_cents',
+        'appstore_disc_cents',
+        'promo_app_store_cents',
+        'promo_appstore_cents',
+        'app_store_promo_cents',
+        'appstore_promo_cents',
+        'promo_apple_cents',
+        'promo_ios_cents',
+        'app_promo_cents',
+        'app_discount_cents'
+      ]
+    );
+    if (appStoreDiscVal > 0) appStoreDRM += appStoreDiscVal;
   }
 
-  let payDRM  = Number(pick(headRow, ['payment_disc_rm','pay_disc_rm'], 0)) || 0;
-  let coupDRM = Number(pick(headRow, ['coupon_disc_rm'], 0)) || 0;
-  let discRM  = Number((payDRM + coupDRM).toFixed(2));
+  shipRM = Number(shipRM.toFixed(2));
+  payDRM = Number(payDRM.toFixed(2));
+  coupDRM = Number(coupDRM.toFixed(2));
+  appStoreDRM = Number(appStoreDRM.toFixed(2));
 
-  // grand: utamakan amount_cents kalau ada (macam J916)
-  let grandRM = 0;
-  const amountCents = Number(pick(headRow, ['amount_cents'], 0));
-  const grandStored = Number(pick(headRow, ['grand_total_rm'], 0));
-  const totalRMRow  = Number(pick(headRow, ['total_rm'], 0));
+  let discRM = Number((payDRM + coupDRM + appStoreDRM).toFixed(2));
 
-  if (Number.isFinite(amountCents) && amountCents > 0){
-    grandRM = centsToRm(amountCents);
-  } else if (Number.isFinite(grandStored) && grandStored > 0){
-    grandRM = grandStored;
-  } else if (Number.isFinite(totalRMRow) && totalRMRow > 0){
-    // ada juga schema simpan total_rm sebagai grand
-    grandRM = totalRMRow;
+  let grandRM = Number(pick(headRow, ['total_rm'], 0));
+  if (!(grandRM > 0)) {
+    grandRM = Number((subRM + shipRM - discRM).toFixed(2));
   } else {
-    grandRM = 0;
+    grandRM = Number(grandRM.toFixed(2));
   }
 
-  // infer shipping kalau shipping kosong tapi grand ada
-  if (!(shipRM > 0) && (grandRM > 0)){
-    const inferShip = Number((grandRM - subRM + discRM).toFixed(2));
-    if (inferShip > 0) shipRM = inferShip;
+  if (!(shipRM > 0) && (grandRM > 0)) {
+    shipRM = Number((grandRM - subRM + discRM).toFixed(2));
+    if (shipRM < 0) shipRM = 0;
   }
 
-  // ✅ FIX: kalau diskaun dalam DB kosong, kita infer dari beza subtotal+shipping vs grand
-  // contoh: Subtotal 13975.20, Grand 12936.31 => diskaun 1038.89
-  if (!(discRM > 0) && (grandRM > 0)) {
-    const inferredDisc = Number((subRM + shipRM - grandRM).toFixed(2));
-    if (inferredDisc > 0) {
-      discRM = inferredDisc;
-
-      // optional: kalau nak juga pecahkan pay/coupon, letak semua masuk payDRM
-      // supaya nanti senang debug:
-      payDRM = inferredDisc;
-      coupDRM = 0;
-    }
+  const inferredDisc = Number((subRM + shipRM - grandRM).toFixed(2));
+  if (inferredDisc >= 0) {
+    discRM = inferredDisc;
   }
 
-  // ===========================
-  // ✅ Render table items (macam J916)
-  //    - Diskaun per item kita kekalkan 0 (jangan agih)
-  // ===========================
   const bodyHtml = items.map((it,i)=>{
     const r = it.r;
 
@@ -463,12 +458,15 @@ function buildTitle(row){
 
   $('tbBody').innerHTML = bodyHtml || `<tr><td colspan="6" class="text-muted">Tiada item.</td></tr>`;
 
-  // footer totals
   $('tvSubtotal').textContent = money(subRM);
   $('tvShipping').textContent = money(shipRM);
   $('tvDiscount').textContent = money(discRM);
   $('tvGrand').textContent    = money(grandRM);
 
+  if (appStoreDRM > 0){
+    $('rowAppStorePromo').style.display = '';
+    $('tvAppStorePromo').textContent = money(appStoreDRM);
+  }
 })();
 </script>
 </body>

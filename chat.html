@@ -2,7 +2,8 @@
 <html lang="ms">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<link rel="stylesheet" href="/global.css">
 <title>Chat – Emas Amir</title>
 <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
 <style>
@@ -18,32 +19,1112 @@
   .meta{font-size:12px;color:#6b7280;margin-top:2px}
   .pill{display:inline-flex;align-items:center;gap:8px;padding:6px 10px;border-radius:999px;background:#eef1f4;font-size:12px;color:#495057}
   .mono{font-family:ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace}
-
-  /* attachment UI */
   .attach-bar{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
   .attach-pill{display:inline-flex;align-items:center;gap:8px;padding:8px 10px;border-radius:999px;background:#eef1f4;font-size:13px;color:#111;border:1px solid #e5e7eb}
   .attach-pill .name{max-width:340px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
   .attach-thumb{width:140px;height:140px;border-radius:12px;object-fit:cover;border:1px solid #e5e7eb;background:#fff}
   .bubble a{color:inherit;text-decoration:underline}
   .me .bubble a{color:#fff}
+
+.msg-reacts{
+  display:flex;
+  gap:6px;
+  flex-wrap:wrap;
+  margin-top:8px;
+}
+
+.msg-react-pill{
+  display:inline-flex;
+  align-items:center;
+  gap:6px;
+  padding:3px 8px;
+  border-radius:999px;
+  background:#fff;
+  border:1px solid #e5e7eb;
+  font-size:12px;
+}
+
+.me .msg-react-pill{
+  background:rgba(255,255,255,.14);
+  border-color:rgba(255,255,255,.2);
+  color:#fff;
+}
+
+  .msg-rich{
+    display:flex;
+    flex-direction:column;
+    gap:10px;
+  }
+
+  .msg-text{
+    white-space:pre-wrap;
+    word-break:break-word;
+  }
+
+  .msg-text a{
+    color:inherit;
+    text-decoration:underline;
+    font-weight:600;
+  }
+
+  .link-preview-list{
+    display:flex;
+    flex-direction:column;
+    gap:10px;
+    margin-top:2px;
+  }
+
+  .link-card{
+    display:flex;
+    align-items:stretch;
+    gap:0;
+    border:1px solid #dbe2ea;
+    border-radius:14px;
+    overflow:hidden;
+    background:#fff;
+    text-decoration:none;
+    color:#111827;
+    max-width:100%;
+  }
+
+  .me .link-card{
+    background:rgba(255,255,255,.08);
+    border-color:rgba(255,255,255,.18);
+    color:#fff;
+  }
+
+  .link-thumb{
+    width:96px;
+    min-width:96px;
+    height:96px;
+    object-fit:cover;
+    background:#f3f4f6;
+    border-right:1px solid #e5e7eb;
+  }
+
+  .me .link-thumb{
+    border-right-color:rgba(255,255,255,.15);
+  }
+
+  .link-card-body{
+    min-width:0;
+    padding:10px 12px;
+    display:flex;
+    flex-direction:column;
+    justify-content:center;
+    gap:4px;
+  }
+
+  .link-card-title{
+    font-size:14px;
+    font-weight:800;
+    line-height:1.25;
+    white-space:nowrap;
+    overflow:hidden;
+    text-overflow:ellipsis;
+  }
+
+  .link-card-desc{
+    font-size:12px;
+    color:#6b7280;
+    line-height:1.35;
+    display:-webkit-box;
+    -webkit-line-clamp:2;
+    -webkit-box-orient:vertical;
+    overflow:hidden;
+  }
+
+  .me .link-card-desc{
+    color:rgba(255,255,255,.82);
+  }
+
+  .link-card-url{
+    font-size:12px;
+    color:#374151;
+    white-space:nowrap;
+    overflow:hidden;
+    text-overflow:ellipsis;
+  }
+
+  .me .link-card-url{
+    color:rgba(255,255,255,.88);
+  }
+
+  .qr-hint{
+    margin-top:8px;
+    font-size:12px;
+    color:#6b7280;
+  }
+
+  /* ===== DESIGN CARD DALAM CHAT ===== */
+  .design-grid{
+    margin-top:10px;
+    display:grid;
+    grid-template-columns:repeat(2,minmax(0,1fr));
+    gap:10px;
+  }
+  @media (min-width: 700px){
+    .design-grid{
+      grid-template-columns:repeat(3,minmax(0,1fr));
+    }
+  }
+  .design-card{
+    border:1px solid #dbe2ea;
+    background:#fff;
+    border-radius:14px;
+    overflow:hidden;
+    padding:10px;
+    display:flex;
+    flex-direction:column;
+    gap:8px;
+  }
+  .design-card-img{
+    width:100%;
+    aspect-ratio:1/1;
+    object-fit:cover;
+    border-radius:12px;
+    border:1px solid #e5e7eb;
+    background:#fff;
+  }
+  .design-card-name{
+    font-size:13px;
+    font-weight:700;
+    color:#111827;
+    text-align:center;
+    line-height:1.25;
+    min-height:32px;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+  }
+  .design-card .btn{
+    width:100%;
+  }
+
+  .modal-overlay{
+    position:fixed; inset:0;
+    background:rgba(0,0,0,.55);
+    display:none;
+    align-items:center; justify-content:center;
+    z-index:9999;
+    padding:12px;
+  }
+  .modal-overlay.show{display:flex}
+  .modal-box{
+    background:#fff;
+    width:min(980px, 96vw);
+    height:min(760px, 92vh);
+    border-radius:14px;
+    overflow:hidden;
+    box-shadow:0 18px 55px rgba(0,0,0,.28);
+    display:flex; flex-direction:column;
+    border:1px solid #e5e7eb;
+  }
+  .modal-topbar{
+    display:flex; align-items:center; justify-content:space-between;
+    padding:10px 12px;
+    background:#f8fafc;
+    border-bottom:1px solid #e5e7eb;
+    gap:10px;
+  }
+  .modal-title{font-weight:700; font-size:14px; color:#111827}
+  .modal-actions{display:flex; gap:8px; align-items:center}
+  .btn-mini{
+    padding:6px 10px;
+    border-radius:10px;
+    border:1px solid #e5e7eb;
+    background:#fff;
+    font-size:13px;
+    font-weight:700;
+  }
+  .btn-mini:hover{background:#f3f4f6}
+  .modal-body{
+    flex:1;
+    background:#fff;
+  }
+  .modal-iframe{
+    width:100%;
+    height:100%;
+    border:0;
+    display:block;
+    background:#fff;
+  }
+.chatbox-wrap{
+    position:relative;
+  }
+
+  .scroll-bottom-btn{
+    position:absolute;
+    right:14px;
+    bottom:14px;
+    z-index:20;
+    border:none;
+    border-radius:999px;
+    padding:10px 12px;
+    background:#111827;
+    color:#fff;
+    font-size:18px;
+    line-height:1;
+    box-shadow:0 8px 24px rgba(0,0,0,.18);
+    display:none;
+  }
+
+  .scroll-bottom-btn.show{
+    display:inline-flex;
+    align-items:center;
+    justify-content:center;
+  }
+
+.msg-reacts{
+  display:flex;
+  gap:6px;
+  flex-wrap:wrap;
+  margin-top:8px;
+}
+
+.msg-react-pill{
+  display:inline-flex;
+  align-items:center;
+  gap:6px;
+  padding:3px 8px;
+  border-radius:999px;
+  background:#fff;
+  border:1px solid #e5e7eb;
+  font-size:12px;
+}
+
+.me .msg-react-pill{
+  background:rgba(255,255,255,.14);
+  border-color:rgba(255,255,255,.2);
+  color:#fff;
+}
+
+.reply-quote{
+  border-left:3px solid #94a3b8;
+  padding-left:8px;
+  margin-bottom:8px;
+  font-size:12px;
+  opacity:.9;
+}
+
+.reply-quote{
+  cursor:pointer;
+}
+
+.reply-quote:hover{
+  background:rgba(148,163,184,.08);
+  border-radius:8px;
+  padding-top:4px;
+  padding-bottom:4px;
+}
+
+.msg-target-flash{
+  animation:msgTargetFlash 1.2s ease;
+}
+
+@keyframes msgTargetFlash{
+  0%   { box-shadow:0 0 0 0 rgba(59,130,246,.45); }
+  40%  { box-shadow:0 0 0 8px rgba(59,130,246,.18); }
+  100% { box-shadow:0 0 0 0 rgba(59,130,246,0); }
+}
+
+.reply-quote-name{
+  font-weight:700;
+  margin-bottom:2px;
+}
+
+.me .reply-quote{
+  border-left-color:rgba(255,255,255,.45);
+}
+
+.msg-comment{
+  margin-top:8px;
+  padding:8px 10px;
+  border-radius:10px;
+  background:#fff;
+  border:1px solid #e5e7eb;
+  font-size:12px;
+  color:#374151;
+}
+
+.me .msg-comment{
+  background:rgba(255,255,255,.10);
+  border-color:rgba(255,255,255,.18);
+  color:#fff;
+}
+
+/* ===== CONFIG CARD DALAM CHAT ===== */
+  .config-card{
+    margin-top:10px;
+    border:1px solid #dbe2ea;
+    background:#fff;
+    border-radius:16px;
+    padding:12px;
+    display:flex;
+    flex-direction:column;
+    gap:12px;
+  }
+
+  .config-card-head{
+    display:flex;
+    gap:12px;
+    align-items:flex-start;
+  }
+
+  .config-card-img{
+    width:92px;
+    height:92px;
+    min-width:92px;
+    object-fit:cover;
+    border-radius:12px;
+    border:1px solid #e5e7eb;
+    background:#fff;
+  }
+
+  .config-card-head-text{
+    min-width:0;
+    flex:1;
+  }
+
+  .config-card-title{
+    font-size:15px;
+    font-weight:800;
+    color:#111827;
+    line-height:1.25;
+  }
+
+  .config-card-sub{
+    font-size:12px;
+    color:#6b7280;
+    margin-top:2px;
+  }
+
+  .config-price-box{
+    display:grid;
+    grid-template-columns:1fr;
+    gap:6px;
+    background:#f8fafc;
+    border:1px solid #e5e7eb;
+    border-radius:12px;
+    padding:10px;
+  }
+
+  .config-price-row{
+    display:flex;
+    justify-content:space-between;
+    gap:10px;
+    font-size:13px;
+    line-height:1.35;
+  }
+
+  .config-price-row .label{
+    color:#6b7280;
+  }
+
+  .config-price-row .value{
+    font-weight:700;
+    color:#111827;
+  }
+
+  .config-price-row.final .label,
+  .config-price-row.final .value{
+    font-weight:800;
+    color:#111827;
+  }
+
+  .config-section{
+    display:flex;
+    flex-direction:column;
+    gap:8px;
+  }
+
+  .config-label{
+    font-size:12px;
+    font-weight:800;
+    color:#374151;
+    text-transform:uppercase;
+    letter-spacing:.03em;
+  }
+
+  .config-select{
+    width:100%;
+    border:1px solid #d1d5db;
+    border-radius:12px;
+    padding:10px 12px;
+    font-size:14px;
+    background:#fff;
+    color:#111827;
+  }
+
+  .config-toggle-row{
+    display:flex;
+    gap:8px;
+    flex-wrap:wrap;
+  }
+
+  .config-toggle-btn{
+    flex:1;
+    min-width:110px;
+    border:1px solid #d1d5db;
+    background:#fff;
+    color:#111827;
+    border-radius:12px;
+    padding:10px 12px;
+    font-size:14px;
+    font-weight:700;
+  }
+
+  .config-toggle-btn.active{
+    background:#111827;
+    color:#fff;
+    border-color:#111827;
+  }
+
+  .config-qty-row{
+    display:flex;
+    align-items:center;
+    gap:10px;
+  }
+
+  .config-qty-btn{
+    width:42px;
+    height:42px;
+    border-radius:12px;
+    border:1px solid #d1d5db;
+    background:#fff;
+    font-size:20px;
+    line-height:1;
+    display:inline-flex;
+    align-items:center;
+    justify-content:center;
+    color:#111827;
+  }
+
+  .config-qty-value{
+    min-width:48px;
+    text-align:center;
+    font-size:18px;
+    font-weight:800;
+    color:#111827;
+  }
+
+  .config-submit{
+    width:100%;
+    border:none;
+    border-radius:12px;
+    padding:12px 14px;
+    background:#111827;
+    color:#fff;
+    font-size:14px;
+    font-weight:800;
+  }
+
+  .config-hint{
+    font-size:12px;
+    color:#6b7280;
+    margin-top:2px;
+  }
+
+/* ===== BUILDER CARD DALAM CHAT ===== */
+  .builder-card{
+    margin-top:10px;
+    border:1px solid #dbe2ea;
+    background:#fff;
+    border-radius:18px;
+    padding:12px;
+    display:flex;
+    flex-direction:column;
+    gap:12px;
+  }
+
+.builder-cart-item-actions{
+  margin-top:8px;
+  display:flex;
+  justify-content:flex-end;
+}
+
+.builder-cart-remove-btn{
+  border:1px solid #dc3545;
+  background:#fff;
+  color:#dc3545;
+  border-radius:10px;
+  padding:6px 10px;
+  font-size:12px;
+  font-weight:700;
+}
+
+.builder-cart-remove-btn:hover{
+  background:#fff5f5;
+}
+
+  .builder-head{
+    display:flex;
+    gap:12px;
+    align-items:flex-start;
+  }
+
+  .builder-head-img{
+    width:92px;
+    height:92px;
+    min-width:92px;
+    object-fit:cover;
+    border-radius:14px;
+    border:1px solid #e5e7eb;
+    background:#fff;
+  }
+
+  .builder-head-text{
+    min-width:0;
+    flex:1;
+  }
+
+  .builder-title{
+    font-size:15px;
+    font-weight:800;
+    color:#111827;
+    line-height:1.2;
+  }
+
+  .builder-sub{
+    font-size:12px;
+    color:#6b7280;
+    margin-top:3px;
+  }
+
+  .builder-kind-row{
+    display:grid;
+    grid-template-columns:repeat(3,minmax(0,1fr));
+    gap:8px;
+  }
+
+  .builder-kind-btn{
+    border:1px solid #d1d5db;
+    background:#fff;
+    color:#111827;
+    border-radius:12px;
+    padding:10px 8px;
+    font-size:13px;
+    font-weight:700;
+    text-align:center;
+  }
+
+  .builder-kind-btn.active{
+    background:#111827;
+    color:#fff;
+    border-color:#111827;
+  }
+
+  .builder-price-box{
+    display:grid;
+    grid-template-columns:1fr;
+    gap:6px;
+    background:#f8fafc;
+    border:1px solid #e5e7eb;
+    border-radius:12px;
+    padding:10px;
+  }
+
+  .builder-price-row{
+    display:flex;
+    justify-content:space-between;
+    gap:10px;
+    font-size:13px;
+    line-height:1.35;
+  }
+
+  .builder-price-row .label{
+    color:#6b7280;
+  }
+
+  .builder-price-row .value{
+    font-weight:700;
+    color:#111827;
+  }
+
+  .builder-price-row.final .label,
+  .builder-price-row.final .value{
+    font-weight:800;
+    color:#111827;
+  }
+
+  .builder-section{
+    display:flex;
+    flex-direction:column;
+    gap:8px;
+  }
+
+  .builder-label{
+    font-size:12px;
+    font-weight:800;
+    color:#374151;
+    text-transform:uppercase;
+    letter-spacing:.03em;
+  }
+
+  .builder-select{
+    width:100%;
+    border:1px solid #d1d5db;
+    border-radius:12px;
+    padding:10px 12px;
+    font-size:14px;
+    background:#fff;
+    color:#111827;
+  }
+
+  .builder-toggle-row{
+    display:flex;
+    gap:8px;
+    flex-wrap:wrap;
+  }
+
+  .builder-toggle-btn{
+    flex:1;
+    min-width:110px;
+    border:1px solid #d1d5db;
+    background:#fff;
+    color:#111827;
+    border-radius:12px;
+    padding:10px 12px;
+    font-size:14px;
+    font-weight:700;
+  }
+
+  .builder-toggle-btn.active{
+    background:#111827;
+    color:#fff;
+    border-color:#111827;
+  }
+
+  .builder-qty-row{
+    display:flex;
+    align-items:center;
+    gap:10px;
+  }
+
+  .builder-qty-btn{
+    width:42px;
+    height:42px;
+    border-radius:12px;
+    border:1px solid #d1d5db;
+    background:#fff;
+    font-size:20px;
+    line-height:1;
+    display:inline-flex;
+    align-items:center;
+    justify-content:center;
+    color:#111827;
+  }
+
+  .builder-qty-value{
+    min-width:48px;
+    text-align:center;
+    font-size:18px;
+    font-weight:800;
+    color:#111827;
+  }
+
+  .builder-cart-box{
+    border:1px solid #e5e7eb;
+    background:#fafafa;
+    border-radius:12px;
+    padding:10px;
+    display:flex;
+    flex-direction:column;
+    gap:8px;
+  }
+
+  .builder-cart-title{
+    font-size:12px;
+    font-weight:800;
+    color:#374151;
+    text-transform:uppercase;
+    letter-spacing:.03em;
+  }
+
+  .builder-cart-empty{
+    font-size:13px;
+    color:#6b7280;
+  }
+
+  .builder-cart-item{
+    border:1px solid #e5e7eb;
+    background:#fff;
+    border-radius:10px;
+    padding:8px 10px;
+  }
+
+  .builder-cart-item-top{
+    display:flex;
+    justify-content:space-between;
+    gap:10px;
+    font-size:13px;
+    font-weight:700;
+    color:#111827;
+  }
+
+  .builder-cart-item-sub{
+    margin-top:2px;
+    font-size:12px;
+    color:#6b7280;
+    line-height:1.35;
+  }
+
+  .builder-cart-total{
+    display:flex;
+    justify-content:space-between;
+    gap:10px;
+    font-size:13px;
+    font-weight:800;
+    color:#111827;
+    padding-top:2px;
+  }
+
+  .builder-action-row{
+    display:flex;
+    flex-direction:column;
+    gap:8px;
+  }
+
+  .builder-btn-dark{
+    width:100%;
+    border:none;
+    border-radius:12px;
+    padding:12px 14px;
+    background:#111827;
+    color:#fff;
+    font-size:14px;
+    font-weight:800;
+  }
+
+  .builder-btn-light{
+    width:100%;
+    border:1px solid #d1d5db;
+    border-radius:12px;
+    padding:12px 14px;
+    background:#fff;
+    color:#111827;
+    font-size:14px;
+    font-weight:800;
+  }
+
+  .builder-hint{
+    font-size:12px;
+    color:#6b7280;
+    margin-top:2px;
+  }
+
+.page-shell{
+  min-height:100vh;
+  background:#f6f7f9;
+  transform:translateX(0);
+  transition:transform .22s ease-out;
+  will-change:transform;
+}
+
+.page-shell.dragging{
+  transition:none;
+}
+
+body.swipe-peek{
+  background:#e5e7eb;
+}
+
+.notif-coachmark{
+  position:fixed;
+  inset:0;
+  z-index:100000;
+}
+
+.notif-coachmark-overlay{
+  position:absolute;
+  inset:0;
+  background:rgba(0,0,0,.35);
+}
+
+.notif-coachmark-card{
+  position:absolute;
+  width:min(340px, calc(100vw - 24px));
+  background:#fff;
+  border-radius:22px;
+  padding:16px;
+  box-shadow:0 18px 50px rgba(0,0,0,.18);
+  border:1px solid #e5e7eb;
+}
+
+.notif-coachmark-arrow{
+  position:absolute;
+  top:-10px;
+  width:20px;
+  height:20px;
+  background:#fff;
+  transform:rotate(45deg);
+  border-left:1px solid #e5e7eb;
+  border-top:1px solid #e5e7eb;
+}
+
+.notif-coachmark-title{
+  font-size:18px;
+  font-weight:800;
+  color:#111827;
+  margin-bottom:8px;
+}
+
+.notif-coachmark-text{
+  font-size:14px;
+  line-height:1.5;
+  color:#111827;
+}
+
+.notif-coachmark-sub{
+  margin-top:6px;
+  font-size:12px;
+  color:#6b7280;
+}
+
+.notif-coachmark-hint{
+  margin-top:10px;
+  font-size:13px;
+  font-weight:700;
+  color:#111827;
+}
+
+.bubble.notification{
+  background:#fff7ed !important;
+  border:1px solid #fdba74 !important;
+  color:#7c2d12 !important;
+}
+
+
+/* ===== MOBILE FIX UNTUK ANDROID PLAY STORE ===== */
+*{
+  box-sizing:border-box;
+}
+
+body{
+  overflow-x:hidden;
+  font-size:15px;
+}
+
+.wrap{
+  max-width:980px;
+  margin:0 auto;
+  padding:12px;
+}
+
+@media (max-width: 576px){
+  .wrap{
+    padding:12px 10px 18px;
+  }
+
+  .card{
+    border-radius:18px;
+    padding:12px !important;
+  }
+
+  .chat-top{
+    display:flex;
+    flex-direction:column;
+    gap:10px;
+    align-items:stretch !important;
+  }
+
+  .chat-title-row{
+    display:flex;
+    justify-content:space-between;
+    align-items:flex-start;
+    gap:10px;
+  }
+
+  .chat-title-row .h4{
+    font-size:22px;
+    line-height:1.15;
+  }
+
+  .chat-title-row .text-muted{
+    font-size:14px;
+    line-height:1.25;
+  }
+
+  .chat-actions{
+    display:flex;
+    gap:6px;
+    flex-wrap:wrap;
+    justify-content:flex-end;
+    min-width:118px;
+  }
+
+  .chat-actions .btn{
+    font-size:12px;
+    padding:6px 8px;
+    border-radius:10px;
+  }
+
+  .chat-status-row{
+    display:flex;
+    flex-direction:column;
+    align-items:stretch !important;
+    gap:8px;
+  }
+
+  .chat-meta-line{
+    width:100%;
+    font-size:12px;
+    line-height:1.45;
+    overflow-wrap:anywhere;
+    word-break:break-word;
+  }
+
+  .chat-notif-box{
+    width:100%;
+    display:flex;
+    flex-direction:column;
+    align-items:stretch !important;
+    gap:6px;
+  }
+
+  #btnEnableNotif{
+    width:100%;
+    min-height:44px;
+    border-radius:14px;
+    font-weight:800;
+  }
+
+  #notifState{
+    display:block;
+    width:100%;
+    font-size:12px;
+    line-height:1.35;
+  }
+
+  #loginBox{
+    width:100%;
+    font-size:12px;
+    line-height:1.35;
+    overflow-wrap:anywhere;
+  }
+
+  .chatbox{
+    height:58vh;
+    border-radius:18px;
+    padding:10px;
+  }
+
+  .bubble{
+    max-width:92%;
+    font-size:14px;
+    line-height:1.45;
+  }
+
+  #flowBanner .p-3{
+    padding:12px !important;
+    border-radius:18px !important;
+  }
+
+  #flowBanner .d-flex{
+    flex-direction:column;
+    align-items:stretch !important;
+  }
+
+  #btnFlowRefresh{
+    width:100%;
+    min-height:40px;
+    border-radius:12px;
+  }
+
+  .attach-bar{
+    flex-direction:column;
+    align-items:stretch;
+  }
+
+  .attach-bar input{
+    max-width:100% !important;
+  }
+
+  .mt-3.d-flex.gap-2{
+    align-items:stretch;
+  }
+
+  #txt{
+    min-width:0;
+    font-size:15px;
+    border-radius:14px;
+  }
+
+  #btnSend{
+    border-radius:14px;
+    padding-left:14px;
+    padding-right:14px;
+  }
+
+  .builder-kind-row{
+    grid-template-columns:1fr;
+  }
+
+  .design-grid{
+    grid-template-columns:1fr 1fr;
+  }
+}
+.live-checkout-sync{
+  margin:10px 0 12px;
+  padding:12px 14px;
+  border-radius:16px;
+  background:#fff7ed;
+  border:1px solid #fed7aa;
+  color:#7c2d12;
+  font-size:14px;
+}
+
+.live-checkout-sync b{
+  color:#111827;
+}
+
+.parcel-box{
+  margin:10px 0 12px;
+  padding:14px;
+  border-radius:18px;
+  background:#ecfeff;
+  border:1px solid #a5f3fc;
+  color:#164e63;
+  font-size:14px;
+}
+.parcel-title{font-weight:900;color:#111827;margin-bottom:8px}
+.parcel-item{
+  background:#fff;
+  border:1px solid #dbeafe;
+  border-radius:14px;
+  padding:10px;
+  margin-top:8px;
+}
+.parcel-status{
+  display:inline-flex;
+  padding:4px 9px;
+  border-radius:999px;
+  background:#eff6ff;
+  color:#1d4ed8;
+  font-size:12px;
+  font-weight:800;
+}
+.parcel-actions{margin-top:8px;display:flex;gap:8px;flex-wrap:wrap}
+
 </style>
 </head>
 <body>
+<div class="page-shell">
 <div class="wrap">
-  <div class="d-flex align-items-center justify-content-between mb-2">
-    <div>
-      <div class="h4 mb-0">Chat Emas Amir</div>
-      <div class="text-muted">Pembantu sistem (AI)</div>
-    </div>
-    <div class="d-flex gap-2">
-      <button id="btnReset" class="btn btn-outline-secondary btn-sm">Reset</button>
-      <a href="index.html" class="btn btn-outline-secondary btn-sm">Home</a>
-    </div>
+  <div class="chat-title-row mb-2">
+  <div>
+    <div class="h4 mb-0">Chat Emas Amir</div>
+    <div class="text-muted">Pembantu sistem lock live (AI-DAN)</div>
   </div>
+  <div class="chat-actions">
+    <button id="btnReset" class="btn btn-outline-secondary btn-sm">Reset</button>
+    <button id="btnClearHistory" class="btn btn-outline-secondary btn-sm">Clear</button>
+    <a href="index.html" class="btn btn-outline-secondary btn-sm">Home</a>
+  </div>
+</div>
 
   <div class="card p-3">
 
-    <!-- STEP: PHONE -->
     <div id="stepPhone" class="mb-3">
       <div class="p-3 bg-white border rounded-4">
         <div class="d-flex align-items-center justify-content-between">
@@ -51,7 +1132,7 @@
             <div class="fw-bold">Masukkan nombor WhatsApp</div>
             <div class="text-muted">Malaysia & Singapore disokong</div>
           </div>
-          <span class="pill">Contoh: 0134456002 / +60134456002 / +6591234567</span>
+          <span class="pill">Contoh: 0168055916 / +60168055916 / +6591234567</span>
         </div>
         <div class="mt-3 d-flex gap-2">
           <input id="inPhone" class="form-control form-control-lg" placeholder="01XXXXXXXX atau +65XXXXXXXX" inputmode="tel">
@@ -61,18 +1142,24 @@
       </div>
     </div>
 
-    <!-- STEP: CHAT -->
     <div id="stepChat" style="display:none">
-      <div class="d-flex align-items-center justify-content-between mb-2">
-        <div class="meta">
-          Nombor: <span id="lblPhone" class="mono"></span>
-          <span class="mx-2">•</span>
-          Thread: <span id="lblThread" class="mono"></span>
-        </div>
-        <div id="loginBox" class="meta"></div>
-      </div>
+     <div class="chat-status-row mb-2">
+  <div class="chat-meta-line meta">
+    Nombor: <span id="lblPhone" class="mono"></span><br>
+    Thread: <span id="lblThread" class="mono"></span>
+  </div>
 
-      <!-- ✅ FLOW BANNER (LOCK STATUS) -->
+  <div class="chat-notif-box">
+    <button id="btnEnableNotif" type="button" class="btn btn-outline-primary btn-sm">
+      Aktifkan Notifikasi
+    </button>
+    <span id="notifState" class="meta"></span>
+  </div>
+
+  <div id="loginBox" class="meta"></div>
+</div>
+
+<div id="activeParcelBox" class="parcel-box" style="display:none"></div>
       <div id="flowBanner" class="mt-2" style="display:none">
         <div class="p-3 bg-white border rounded-4">
           <div class="d-flex align-items-start justify-content-between gap-2">
@@ -86,20 +1173,22 @@
         </div>
       </div>
 
-      <div id="chatbox" class="chatbox"></div>
+      <div class="chatbox-wrap">
+        <div id="chatbox" class="chatbox"></div>
+        <button id="btnScrollBottom" class="scroll-bottom-btn" type="button">↓</button>
+      </div>
 
       <div id="ctaRegister" class="mt-3" style="display:none">
         <div class="p-3 bg-white border rounded-4">
           <div class="fw-bold">Untuk LOCK LIVE / LOCK BARANG, perlu daftar akaun</div>
-          <div class="text-muted">Lepas daftar, anda akan kembali ke chat yang sama.</div>
+          <div class="text-muted">Lepas daftar(Jika anda pernah daftar sila log masuk/Jika belum pernah daftar sila Daftar baru),anda akan kembali ke chat yang sama (tanpa hilang mesej).</div>
           <div class="mt-2 d-flex gap-2">
-            <a id="btnDaftar" class="btn btn-danger" href="login.html">Daftar / Log masuk untuk Lock</a>
+            <button id="btnDaftar" class="btn btn-danger" type="button">Daftar / Log masuk untuk Lock</button>
             <button id="btnHideCta" class="btn btn-outline-secondary" type="button">Nanti dulu</button>
           </div>
         </div>
       </div>
 
-      <!-- ✅ ATTACHMENTS BAR -->
       <div class="mt-3">
         <div class="attach-bar">
           <input id="file" type="file" class="form-control"
@@ -133,51 +1222,968 @@
 
   </div>
 </div>
+</div>
+
+
+<div id="loginModal" class="modal-overlay" aria-hidden="true">
+  <div class="modal-box">
+    <div class="modal-topbar">
+      <div class="modal-title">Log masuk / Daftar – Emas Amir</div>
+      <div class="modal-actions">
+        <button id="btnModalBack" class="btn-mini" type="button">Back</button>
+        <button id="btnModalReload" class="btn-mini" type="button">Reload</button>
+      </div>
+    </div>
+    <div class="modal-body">
+      <iframe id="loginFrame" class="modal-iframe" src="about:blank"></iframe>
+    </div>
+  </div>
+</div>
+
+<div id="parcelTrackModal" class="modal-overlay" aria-hidden="true">
+  <div class="modal-box">
+    <div class="modal-topbar">
+      <div>
+        <div class="modal-title">Tracking GDEX</div>
+        <div id="parcelTrackCn" class="meta mono">-</div>
+      </div>
+      <div class="modal-actions">
+        <button id="btnParcelTrackClose" class="btn-mini" type="button">Tutup</button>
+      </div>
+    </div>
+    <div class="modal-body" style="padding:14px;overflow:auto">
+      <div id="parcelTrackStatus" class="mb-3"></div>
+      <div id="parcelTrackList"></div>
+    </div>
+  </div>
+</div>
+
+<div id="notifCoachmark" class="notif-coachmark" style="display:none;">
+  <div class="notif-coachmark-overlay"></div>
+
+  <div id="notifCoachmarkCard" class="notif-coachmark-card">
+    <div id="notifCoachmarkArrow" class="notif-coachmark-arrow"></div>
+
+    <div class="notif-coachmark-title">🔔 Aktifkan Notifikasi</div>
+    <div class="notif-coachmark-text">
+      Supaya walaupun cik tutup app, cik tetap akan dapat mesej dari admin 😊
+    </div>
+    <div class="notif-coachmark-sub">
+      (update lock, bayaran & info penting)
+    </div>
+    <div class="notif-coachmark-hint">
+      👉 Tekan “Aktifkan Notifikasi” di atas tu ya
+    </div>
+
+   <div class="mt-3 d-flex gap-2 flex-wrap">
+  <button id="btnNotifCoachmarkClose" type="button" class="btn btn-outline-secondary btn-sm">
+    Nanti dulu
+  </button>
+  <button id="btnNotifCoachmarkEnable" type="button" class="btn btn-primary btn-sm">
+    Aktifkan sekarang
+  </button>
+</div>
+  </div>
+</div>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="auth.js?v=13.1"></script>
+<script src="https://cdn.socket.io/4.7.5/socket.io.min.js"></script>
 
 <script>
 (function(){
+  const APP_VER = "2026-05-02-parcel-01";
+  const KEY_APP_VER = "ea_chat_app_ver";
+
   const $ = (id) => document.getElementById(id);
 
   const KEY_PHONE  = "ea_chat_phone";
   const KEY_THREAD = "ea_chat_thread";
 
+  function keyChatHistory(phone, thread){
+    const p = phone || "no_phone";
+    const t = thread || "no_thread";
+    return "ea_chat_history::" + p + "::" + t;
+  }
+
   const stepPhone = $("stepPhone");
   const stepChat  = $("stepChat");
   const chatbox   = $("chatbox");
+const btnScrollBottom = $("btnScrollBottom");
   const inPhone   = $("inPhone");
   const phoneErr  = $("phoneErr");
   const lblPhone  = $("lblPhone");
   const lblThread = $("lblThread");
   const statusEl  = $("status");
+  const btnEnableNotif = $("btnEnableNotif");
+  const notifState = $("notifState");
+const notifCoachmark = $("notifCoachmark");
+  const notifCoachmarkCard = $("notifCoachmarkCard");
+  const notifCoachmarkArrow = $("notifCoachmarkArrow");
+  const btnNotifCoachmarkClose = $("btnNotifCoachmarkClose");
+const btnNotifCoachmarkEnable = $("btnNotifCoachmarkEnable");
   const txt       = $("txt");
   const btnSend   = $("btnSend");
   const btnStart  = $("btnStart");
   const btnReset  = $("btnReset");
+  const btnClearHistory = $("btnClearHistory");
 
   const ctaRegister = $("ctaRegister");
   const btnDaftar   = $("btnDaftar");
   const btnHideCta  = $("btnHideCta");
 
-  // ✅ attachment elements
-  const fileInput    = $("file");
-  const filePreview  = $("filePreview");
-  const fileNameEl   = $("fileName");
-  const fileTypeEl   = $("fileType");
-  const btnRemoveFile= $("btnRemoveFile");
-  const fileThumbWrap= $("fileThumbWrap");
-  const fileThumb    = $("fileThumb");
+  const fileInput     = $("file");
+  const filePreview   = $("filePreview");
+  const fileNameEl    = $("fileName");
+  const fileTypeEl    = $("fileType");
+  const btnRemoveFile = $("btnRemoveFile");
+  const fileThumbWrap = $("fileThumbWrap");
+  const fileThumb     = $("fileThumb");
 
-  // ✅ flow banner elements
   const flowBanner = $("flowBanner");
   const flowTitle  = $("flowTitle");
   const flowDesc   = $("flowDesc");
   const flowItems  = $("flowItems");
   const btnFlowRefresh = $("btnFlowRefresh");
 
+  const loginModal = $("loginModal");
+  const loginFrame = $("loginFrame");
+  const btnModalReload = $("btnModalReload");
+  const btnModalBack   = $("btnModalBack");
+
   let pendingFile = null;
+const __linkPreviewCache = new Map();
+let __threadSyncTimer = null;
+let __activeChatChannel = null; // legacy realtime lama
+let chatSocket = null;
+let currentSocketThreadId = "";
+const SOCKET_URL = "https://qr-emas-amir-production.up.railway.app";
+let __lastServerHash = "";
+let __forceStayBottomOnce = false;
+let __firstRenderDone = false;
+
+  const PUBLIC_VAPID_KEY = "BMMXmGbbPAViMlfDr2VX7QepyMHJBhKslnKexlObvNeGbT7s9La8WVgJA-YNd4SKft2vIm5dv6XYkHP-zP2trHg";
+
+  let __notifReady = false;
+  let __lastAdminNotifyKey = "";
+  let __lastMarkedReadThreadId = "";
+  let __lastMarkedReadAt = 0;
+
+  function makePreviewSvgDataUrl(title, subtitle, emoji){
+    const svg = `
+      <svg xmlns="http://www.w3.org/2000/svg" width="600" height="600" viewBox="0 0 600 600">
+        <defs>
+          <linearGradient id="g" x1="0" x2="1" y1="0" y2="1">
+            <stop offset="0%" stop-color="#fff7ed"/>
+            <stop offset="100%" stop-color="#fde68a"/>
+          </linearGradient>
+        </defs>
+        <rect width="600" height="600" rx="36" fill="url(#g)"/>
+        <rect x="28" y="28" width="544" height="544" rx="30" fill="#ffffff" stroke="#e5e7eb" stroke-width="2"/>
+        <text x="64" y="128" font-size="72">${emoji || "🔗"}</text>
+        <text x="64" y="210" font-size="40" font-family="Arial, Helvetica, sans-serif" font-weight="700" fill="#111827">
+          ${String(title || "").replace(/[<&>]/g, "")}
+        </text>
+        <text x="64" y="260" font-size="24" font-family="Arial, Helvetica, sans-serif" fill="#6b7280">
+          ${String(subtitle || "").replace(/[<&>]/g, "")}
+        </text>
+        <rect x="64" y="320" width="472" height="120" rx="18" fill="#f3f4f6" stroke="#e5e7eb"/>
+        <text x="88" y="390" font-size="28" font-family="Arial, Helvetica, sans-serif" font-weight="700" fill="#111827">
+          Emas Amir
+        </text>
+        <text x="88" y="425" font-size="22" font-family="Arial, Helvetica, sans-serif" fill="#6b7280">
+          Premium Trusted Since 2016
+        </text>
+      </svg>
+    `;
+    return "data:image/svg+xml;charset=UTF-8," + encodeURIComponent(svg);
+  }
+
+  const __manualPreviewMap = {
+    "https://emasamir.app/qr-maybank.html": {
+      title: "QR Maybank — Emas Amir",
+      desc: "Bayaran QR DuitNow / QR Transfer untuk order Emas Amir.",
+      image: makePreviewSvgDataUrl("QR Maybank", "Bayaran QR / Transfer", "🏦")
+    },
+    "https://emasamir.app/qr-atome.html": {
+      title: "Atome — Emas Amir",
+      desc: "Teruskan bayaran ansuran Atome untuk order Emas Amir.",
+      image: makePreviewSvgDataUrl("Atome", "Bayaran ansuran", "💳")
+    }
+  };
+
+  function setStatus(s){ statusEl.textContent = s || ""; }
+
+function isNearBottom(el, gap = 120){
+    return (el.scrollHeight - el.scrollTop - el.clientHeight) < gap;
+  }
+
+  function scrollChatToBottom(force = false){
+  if (!chatbox) return;
+
+  if (!(force || isNearBottom(chatbox, 220))) return;
+
+  const goBottom = () => {
+    chatbox.scrollTop = chatbox.scrollHeight;
+  };
+
+  goBottom();
+  requestAnimationFrame(goBottom);
+  setTimeout(goBottom, 80);
+  setTimeout(goBottom, 220);
+}
+
+  function updateScrollBottomBtn(){
+    if (!chatbox || !btnScrollBottom) return;
+    if (isNearBottom(chatbox, 160)) {
+      btnScrollBottom.classList.remove("show");
+    } else {
+      btnScrollBottom.classList.add("show");
+    }
+  }
+
+  async function initLocalAdminNotification(){
+    if (__notifReady) return;
+    __notifReady = true;
+
+    try{
+      if (!("Notification" in window)) return;
+
+      if (Notification.permission === "default") {
+        await Notification.requestPermission();
+      }
+    }catch(e){
+      console.error("[notif init error]", e);
+    }
+  }
+
+  function base64ToUint8Array(base64String) {
+    const padding = "=".repeat((4 - (base64String.length % 4)) % 4);
+    const base64 = (base64String + padding).replace(/-/g, "+").replace(/_/g, "/");
+    const rawData = window.atob(base64);
+    const outputArray = new Uint8Array(rawData.length);
+
+    for (let i = 0; i < rawData.length; ++i) {
+      outputArray[i] = rawData.charCodeAt(i);
+    }
+    return outputArray;
+  }
+
+  async function subscribePushForCurrentChat() {
+    try {
+      const phone = localStorage.getItem(KEY_PHONE) || "";
+      const threadId = localStorage.getItem(KEY_THREAD) || "";
+
+      if (!phone) return;
+      if (!("serviceWorker" in navigator)) return;
+      if (!("PushManager" in window)) return;
+      if (!("Notification" in window)) return;
+      if (Notification.permission !== "granted") return;
+      if (!PUBLIC_VAPID_KEY || PUBLIC_VAPID_KEY.includes("PASTE_PUBLIC_VAPID_KEY")) return;
+
+      const reg = await navigator.serviceWorker.ready;
+
+      let sub = await reg.pushManager.getSubscription();
+      if (!sub) {
+        sub = await reg.pushManager.subscribe({
+          userVisibleOnly: true,
+          applicationServerKey: base64ToUint8Array(PUBLIC_VAPID_KEY)
+        });
+      }
+
+      await fetch("/.netlify/functions/chat-push-subscribe", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          phone,
+          thread_id: threadId || null,
+          subscription: sub,
+          user_agent: navigator.userAgent || ""
+        })
+      });
+    } catch (e) {
+      console.error("[push subscribe error]", e);
+    }
+  }
+
+ function isNativeCapacitorApp(){
+    try{
+      return !!(
+        window.Capacitor &&
+        typeof window.Capacitor.isNativePlatform === "function" &&
+        window.Capacitor.isNativePlatform()
+      );
+    }catch{
+      return false;
+    }
+  }
+
+  function getNativePushPlugin(){
+    try{
+      return window.Capacitor?.Plugins?.PushNotifications || null;
+    }catch{
+      return null;
+    }
+  }
+
+  function getNativePlatform(){
+    try{
+      return String(window.Capacitor?.getPlatform?.() || "").toLowerCase();
+    }catch{
+      return "";
+    }
+  }
+
+
+  async function refreshNotifButtonState() {
+  try {
+    if (!btnEnableNotif || !notifState) return;
+
+
+
+    // ===== MODE 1: APP NATIVE (IOS / ANDROID) =====
+    if (isNativeCapacitorApp()) {
+      const PushNotifications = getNativePushPlugin();
+      const nativePlatform = getNativePlatform();
+
+      if (!PushNotifications) {
+        btnEnableNotif.disabled = true;
+        btnEnableNotif.textContent = "Notifikasi Belum Siap";
+        notifState.textContent = "Plugin push native belum tersedia dalam app.";
+        return;
+      }
+
+      let permState = "prompt";
+
+      try {
+        const perm = await PushNotifications.checkPermissions();
+        permState = String(perm?.receive || "prompt");
+      } catch {}
+
+    if (permState === "granted") {
+  btnEnableNotif.disabled = false;
+
+  try {
+    const phone = localStorage.getItem(KEY_PHONE) || "";
+    const threadId = localStorage.getItem(KEY_THREAD) || "";
+
+    const r = await fetch("/.netlify/functions/push-device-status", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        phone,
+        thread_id: threadId || null,
+        platform: nativePlatform
+      })
+    });
+
+    const j = await r.json().catch(() => ({}));
+
+    if (r.ok && j.ok === true && j.active === true) {
+      btnEnableNotif.textContent = "Notifikasi Aktif ✅";
+      notifState.textContent = "Push notification sudah aktif.";
+      return;
+    }
+  } catch (e) {
+    console.warn("[push-device-status error]", e);
+  }
+
+  btnEnableNotif.textContent = "Aktifkan Notifikasi";
+  notifState.textContent =
+    nativePlatform === "android"
+      ? "App Android menyokong notifikasi. Tekan untuk daftar peranti ini."
+      : "App iPhone menyokong notifikasi. Tekan untuk daftar peranti ini.";
+  return;
+}
+
+      if (permState === "denied") {
+        btnEnableNotif.disabled = false;
+        btnEnableNotif.textContent = "Buka Tetapan Notifikasi";
+        notifState.textContent =
+          nativePlatform === "android"
+            ? "Permission notifikasi belum dibenarkan pada Android ini."
+            : "Permission notifikasi belum dibenarkan pada iPhone ini.";
+        return;
+      }
+
+      btnEnableNotif.disabled = false;
+      btnEnableNotif.textContent = "Aktifkan Notifikasi";
+      notifState.textContent =
+        nativePlatform === "android"
+          ? "Tekan untuk benarkan notifikasi pada app Android ini."
+          : "Tekan untuk benarkan notifikasi pada app iPhone ini.";
+      return;
+    }
+
+    // ===== MODE 2: BROWSER / WEB PUSH =====
+    if (!("Notification" in window) || !("serviceWorker" in navigator) || !("PushManager" in window)) {
+      btnEnableNotif.disabled = true;
+      btnEnableNotif.textContent = "Notifikasi Tak Disokong";
+      notifState.textContent = "Peranti/browser ini tak sokong push notification.";
+      return;
+    }
+
+    const perm = Notification.permission;
+
+    if (perm === "denied") {
+      btnEnableNotif.disabled = true;
+      btnEnableNotif.textContent = "Notifikasi Dihalang";
+      notifState.textContent = "Permission notification telah di-block.";
+      return;
+    }
+
+    const reg = await navigator.serviceWorker.ready;
+    const sub = await reg.pushManager.getSubscription();
+
+    if (sub) {
+      btnEnableNotif.disabled = false;
+      btnEnableNotif.textContent = "Notifikasi Aktif ✅";
+      notifState.textContent = "Push notification sudah aktif.";
+      return;
+    }
+
+    btnEnableNotif.disabled = false;
+    btnEnableNotif.textContent = "Aktifkan Notifikasi";
+    notifState.textContent = perm === "granted"
+      ? "Tekan untuk sambung push notification."
+      : "Tekan untuk benarkan notification.";
+  } catch (e) {
+    console.error("[refresh notif state error]", e);
+  }
+}
+
+
+
+ async function handleEnableNotifClick() {
+  try {
+    // ===== MODE 1: APP NATIVE (IOS / ANDROID) =====
+    if (isNativeCapacitorApp()) {
+      const PushNotifications = getNativePushPlugin();
+      const nativePlatform = getNativePlatform() || "unknown";
+
+      if (!PushNotifications) {
+        notifState.textContent = "Plugin push native belum tersedia.";
+        return;
+      }
+
+      let perm = "prompt";
+
+      try {
+        const checked = await PushNotifications.checkPermissions();
+        perm = String(checked?.receive || "prompt");
+      } catch (e) {
+        console.warn("[native push check permission error]", e);
+      }
+
+      if (perm !== "granted") {
+        const requested = await PushNotifications.requestPermissions();
+        perm = String(requested?.receive || "prompt");
+      }
+
+      if (perm !== "granted") {
+        notifState.textContent =
+          nativePlatform === "android"
+            ? "Notification belum dibenarkan pada app Android ini."
+            : "Notification belum dibenarkan pada app ini.";
+
+        await refreshNotifButtonState();
+        return;
+      }
+
+      PushNotifications.removeAllListeners();
+
+      PushNotifications.addListener("registration", async (token) => {
+        try {
+          const phone = localStorage.getItem(KEY_PHONE) || "";
+          const threadId = localStorage.getItem(KEY_THREAD) || "";
+
+          console.log("[native push token]", nativePlatform, token?.value || "");
+
+          const res = await fetch("/.netlify/functions/save-device-token", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              token: token?.value || "",
+              platform: nativePlatform,
+              phone,
+              thread_id: threadId || null,
+              user_agent: navigator.userAgent || ""
+            })
+          });
+
+          const jsonRes = await res.json().catch(() => ({}));
+
+          console.log("SAVE TOKEN RESULT:", jsonRes);
+
+          if (res.ok && jsonRes.ok === true) {
+            notifState.textContent = "Notifikasi berjaya diaktifkan ✅";
+            markSeenNotifCoachmark();
+            closeNotifCoachmark();
+          } else {
+            notifState.textContent = "❌ Gagal simpan token";
+            console.error("SAVE TOKEN FAIL:", jsonRes);
+          }
+
+          await refreshNotifButtonState();
+
+        } catch (err) {
+          console.error("[save native token error]", err);
+          notifState.textContent = "Token dapat, tapi gagal simpan ke server.";
+        }
+      });
+
+      PushNotifications.addListener("registrationError", (err) => {
+        console.error("[native push registration error]", err);
+        notifState.textContent = "Gagal daftar notifikasi peranti.";
+      });
+
+      PushNotifications.addListener("pushNotificationReceived", (notification) => {
+        console.log("[native push received]", notification);
+      });
+
+      PushNotifications.addListener("pushNotificationActionPerformed", (action) => {
+        console.log("[native push action]", action);
+
+        try {
+          const data = action?.notification?.data || {};
+          const url = data.url || data.target_url || "";
+
+          if (url) {
+            window.location.href = url;
+          }
+        } catch (e) {
+          console.warn("[native push action url error]", e);
+        }
+      });
+
+      notifState.textContent =
+        nativePlatform === "android"
+          ? "Sedang daftar notifikasi Android..."
+          : "Sedang daftar notifikasi iPhone...";
+
+      await PushNotifications.register();
+      return;
+    }
+
+    // ===== MODE 2: BROWSER / WEB PUSH =====
+    if (!("Notification" in window)) {
+      alert("Browser/peranti ini tak sokong notification.");
+      return;
+    }
+
+    let perm = Notification.permission;
+
+    if (perm !== "granted") {
+      perm = await Notification.requestPermission();
+    }
+
+    if (perm !== "granted") {
+      notifState.textContent = "Notification belum dibenarkan.";
+      await refreshNotifButtonState();
+      return;
+    }
+
+    await subscribePushForCurrentChat();
+    await refreshNotifButtonState();
+
+    notifState.textContent = "Notifikasi berjaya diaktifkan ✅";
+    markSeenNotifCoachmark();
+    closeNotifCoachmark();
+
+  } catch (e) {
+    console.error("[enable notif click error]", e);
+    notifState.textContent = "Gagal aktifkan notifikasi.";
+  }
+}
+
+const KEY_NOTIF_COACHMARK_SEEN = "ea_notif_coachmark_seen";
+
+  function hasSeenNotifCoachmark(){
+    return localStorage.getItem(KEY_NOTIF_COACHMARK_SEEN) === "1";
+  }
+
+  function markSeenNotifCoachmark(){
+    localStorage.setItem(KEY_NOTIF_COACHMARK_SEEN, "1");
+  }
+
+  function closeNotifCoachmark(){
+    if (notifCoachmark) notifCoachmark.style.display = "none";
+  }
+
+  function showNotifCoachmark(){
+    if (!notifCoachmark || !notifCoachmarkCard || !btnEnableNotif) return;
+    if (stepChat.style.display === "none") return;
+
+    notifCoachmark.style.display = "block";
+
+    requestAnimationFrame(() => {
+      const btnRect = btnEnableNotif.getBoundingClientRect();
+      const cardWidth = Math.min(340, window.innerWidth - 24);
+
+      let left = btnRect.left + (btnRect.width / 2) - (cardWidth / 2);
+      if (left < 12) left = 12;
+      if ((left + cardWidth) > (window.innerWidth - 12)) {
+        left = window.innerWidth - cardWidth - 12;
+      }
+
+      let top = btnRect.bottom + 14;
+      notifCoachmarkCard.style.width = cardWidth + "px";
+      notifCoachmarkCard.style.left = left + "px";
+      notifCoachmarkCard.style.top = top + "px";
+
+      if (notifCoachmarkArrow) {
+        const arrowLeft = (btnRect.left + btnRect.width / 2) - left - 10;
+        notifCoachmarkArrow.style.left = Math.max(18, Math.min(cardWidth - 28, arrowLeft)) + "px";
+      }
+
+      const cardRect = notifCoachmarkCard.getBoundingClientRect();
+      if (cardRect.bottom > window.innerHeight - 12) {
+        const upTop = Math.max(12, btnRect.top - cardRect.height - 14);
+        notifCoachmarkCard.style.top = upTop + "px";
+      }
+    });
+  }
+
+  async function maybeShowNotifCoachmark(){
+    try{
+      if (!btnEnableNotif || !notifState) return;
+      if (stepChat.style.display === "none") return;
+      if (hasSeenNotifCoachmark()) return;
+
+      const label = String(btnEnableNotif.textContent || "").toLowerCase();
+      const stateText = String(notifState.textContent || "").toLowerCase();
+
+      const alreadyActive =
+        label.includes("aktif") && label.includes("✅") ||
+        stateText.includes("sudah aktif") ||
+        stateText.includes("berjaya diaktifkan");
+
+      if (alreadyActive) return;
+
+      setTimeout(() => {
+        if (!hasSeenNotifCoachmark()) showNotifCoachmark();
+      }, 500);
+    }catch(e){
+      console.error("[coachmark error]", e);
+    }
+  }
+
+  function isAdminDbMessage(m){
+    const role = String(m?.role || "").toLowerCase();
+    const meta = m?.meta || {};
+    return role !== "customer" && meta.admin_reply === true;
+  }
+
+  function buildAdminNotifyKey(m){
+    return [
+      m?.id || "",
+      m?.created_at || "",
+      m?.text || ""
+    ].join("|");
+  }
+
+  function maybeNotifyNewAdminMessage(messages, force){
+    try{
+      const arr = Array.isArray(messages) ? messages : [];
+      let lastAdmin = null;
+
+      for (let i = arr.length - 1; i >= 0; i--){
+        if (isAdminDbMessage(arr[i])) {
+          lastAdmin = arr[i];
+          break;
+        }
+      }
+
+      if (!lastAdmin) return;
+
+      const key = buildAdminNotifyKey(lastAdmin);
+      if (!key) return;
+
+      if (force || !__lastAdminNotifyKey) {
+        __lastAdminNotifyKey = key;
+        return;
+      }
+
+      if (__lastAdminNotifyKey === key) return;
+      __lastAdminNotifyKey = key;
+
+      if (!("Notification" in window)) return;
+      if (Notification.permission !== "granted") return;
+
+      const rawText = String(lastAdmin.text || "Admin balas chat anda").trim();
+      const bodyText = rawText.length > 120 ? (rawText.slice(0, 117) + "...") : rawText;
+
+      const n = new Notification("Emas Amir", {
+        body: bodyText || "Admin balas chat anda",
+        tag: "ea-admin-reply",
+        renotify: true
+      });
+
+      n.onclick = () => {
+        try{ window.focus(); }catch(_){}
+        try{ n.close(); }catch(_){}
+      };
+    }catch(e){
+      console.error("[local notify error]", e);
+    }
+  }
+
+  function escapeHtml(s){
+    return String(s || "")
+      .replaceAll("&", "&amp;")
+      .replaceAll("<", "&lt;")
+      .replaceAll(">", "&gt;")
+      .replaceAll('"', "&quot;")
+      .replaceAll("'", "&#39;");
+  }
+
+  function htmlWithLineBreaks(s){
+    return escapeHtml(s).replace(/\n/g, "<br>");
+  }
+
+  function linkifyTextToHtml(text){
+    const src = String(text || "");
+    const escaped = htmlWithLineBreaks(src);
+    return escaped.replace(
+      /(https?:\/\/[^\s<]+)/g,
+      (url) => `<a href="${url}" target="_blank" rel="noopener noreferrer">${url}</a>`
+    );
+  }
+
+  function extractUrls(text){
+    const src = String(text || "");
+    const urls = src.match(/https?:\/\/[^\s]+/g) || [];
+    return Array.from(new Set(urls.map(u => String(u).trim())));
+  }
+
+  function absoluteUrlMaybe(raw, baseUrl){
+    try{
+      return new URL(raw, baseUrl).toString();
+    }catch{
+      return String(raw || "");
+    }
+  }
+
+  function isSameOriginUrl(url){
+    try{
+      const u = new URL(url, location.origin);
+      return u.origin === location.origin;
+    }catch{
+      return false;
+    }
+  }
+
+  function getDomainLabel(url){
+    try{
+      return new URL(url).hostname.replace(/^www\./i, "");
+    }catch{
+      return url;
+    }
+  }
+
+  function parsePreviewMetaFromHtml(html, pageUrl){
+    try{
+      const doc = new DOMParser().parseFromString(html, "text/html");
+
+      const ogTitle =
+        doc.querySelector('meta[property="og:title"]')?.getAttribute("content") ||
+        doc.querySelector('meta[name="twitter:title"]')?.getAttribute("content") ||
+        doc.title ||
+        "";
+
+      const ogDesc =
+        doc.querySelector('meta[property="og:description"]')?.getAttribute("content") ||
+        doc.querySelector('meta[name="description"]')?.getAttribute("content") ||
+        doc.querySelector('meta[name="twitter:description"]')?.getAttribute("content") ||
+        "";
+
+      const ogImageRaw =
+        doc.querySelector('meta[property="og:image"]')?.getAttribute("content") ||
+        doc.querySelector('meta[name="twitter:image"]')?.getAttribute("content") ||
+        doc.querySelector("img")?.getAttribute("src") ||
+        "";
+
+      const image = ogImageRaw ? absoluteUrlMaybe(ogImageRaw, pageUrl) : "";
+
+      return {
+        title: String(ogTitle || "").trim(),
+        desc: String(ogDesc || "").trim(),
+        image: String(image || "").trim()
+      };
+    }catch{
+      return { title:"", desc:"", image:"" };
+    }
+  }
+
+  async function fetchPreviewMeta(url){
+    const key = String(url || "").trim();
+    if (!key) return null;
+
+    if (__linkPreviewCache.has(key)) {
+      return __linkPreviewCache.get(key);
+    }
+
+    const pending = (async () => {
+      if (__manualPreviewMap[key]) {
+        return {
+          title: __manualPreviewMap[key].title || "",
+          desc: __manualPreviewMap[key].desc || "",
+          image: __manualPreviewMap[key].image || "",
+          url: key,
+          domain: getDomainLabel(key),
+          ok: true
+        };
+      }
+
+      if (!isSameOriginUrl(key)) {
+        return {
+          title: "",
+          desc: "",
+          image: "",
+          url: key,
+          domain: getDomainLabel(key),
+          ok: false
+        };
+      }
+
+      try{
+        const r = await fetch(key, {
+          method: "GET",
+          credentials: "same-origin",
+          cache: "force-cache"
+        });
+
+        if (!r.ok) {
+          return {
+            title: "",
+            desc: "",
+            image: "",
+            url: key,
+            domain: getDomainLabel(key),
+            ok: false
+          };
+        }
+
+        const html = await r.text();
+        const meta = parsePreviewMetaFromHtml(html, key);
+
+        return {
+          title: meta.title || "",
+          desc: meta.desc || "",
+          image: meta.image || "",
+          url: key,
+          domain: getDomainLabel(key),
+          ok: true
+        };
+      }catch{
+        return {
+          title: "",
+          desc: "",
+          image: "",
+          url: key,
+          domain: getDomainLabel(key),
+          ok: false
+        };
+      }
+    })();
+
+    __linkPreviewCache.set(key, pending);
+    return pending;
+  }
+
+  function buildPreviewCardEl(meta){
+    const a = document.createElement("a");
+    a.className = "link-card";
+    a.href = meta.url || "#";
+    a.target = "_blank";
+    a.rel = "noopener noreferrer";
+
+    const hasImage = !!(meta.image && /^(https?:\/\/|data:image\/)/i.test(meta.image));
+
+    const title =
+      String(meta.title || "").trim() ||
+      String(meta.domain || "").trim() ||
+      "Buka link";
+
+    const desc =
+      String(meta.desc || "").trim();
+
+    const urlText =
+      String(meta.url || "").replace(/^https?:\/\//i, "");
+
+    if (hasImage){
+      const img = document.createElement("img");
+      img.className = "link-thumb";
+      img.src = meta.image;
+      img.alt = title;
+      img.loading = "lazy";
+      img.onerror = () => {
+        img.src = makePreviewSvgDataUrl(title, meta.domain || "Link Preview", "🔗");
+      };
+      a.appendChild(img);
+    }
+
+    const body = document.createElement("div");
+    body.className = "link-card-body";
+
+    const ttl = document.createElement("div");
+    ttl.className = "link-card-title";
+    ttl.textContent = title;
+    body.appendChild(ttl);
+
+    if (desc){
+      const d = document.createElement("div");
+      d.className = "link-card-desc";
+      d.textContent = desc;
+      body.appendChild(d);
+    }
+
+    const u = document.createElement("div");
+    u.className = "link-card-url";
+    u.textContent = urlText;
+    body.appendChild(u);
+
+    a.appendChild(body);
+    return a;
+  }
+
+  function renderRichMessageContent(bubble, text){
+    const wrap = document.createElement("div");
+    wrap.className = "msg-rich";
+
+    const msgText = document.createElement("div");
+    msgText.className = "msg-text";
+    msgText.innerHTML = linkifyTextToHtml(text || "");
+    wrap.appendChild(msgText);
+
+    const urls = extractUrls(text || "").slice(0, 2);
+    if (urls.length){
+      const list = document.createElement("div");
+      list.className = "link-preview-list";
+      wrap.appendChild(list);
+
+      urls.forEach(async (url) => {
+        try{
+          const meta = await fetchPreviewMeta(url);
+          if (!meta) return;
+
+          const showCard =
+            !!(meta.title || meta.desc || meta.image || isSameOriginUrl(url));
+
+          if (!showCard) return;
+
+          list.appendChild(buildPreviewCardEl(meta));
+        }catch{}
+      });
+    }
+
+    bubble.appendChild(wrap);
+  }
+
+  function now(){
+    const d = new Date();
+    return d.toLocaleTimeString("ms-MY", {hour:"2-digit", minute:"2-digit"});
+  }
 
   function normalizePhone(raw){
     let d = String(raw||"").replace(/\D+/g,"");
@@ -196,92 +2202,14 @@
     return {ok:true, e164:d, country: isMY?"MY":"SG"};
   }
 
-  function now(){
-    const d = new Date();
-    return d.toLocaleTimeString("ms-MY", {hour:"2-digit", minute:"2-digit"});
-  }
-
-  function escapeText(s){
-    return String(s||"");
-  }
-
-  function addMsg(role, text, time, attachment){
-    const row = document.createElement("div");
-    row.className = "msg " + (role==="me" ? "me" : "ai");
-    const bubble = document.createElement("div");
-    bubble.className = "bubble";
-
-    // text
-    if (text && String(text).trim()){
-      bubble.appendChild(document.createTextNode(escapeText(text)));
-    }
-
-    // attachment display
-    if (attachment && attachment.url){
-      const block = document.createElement("div");
-      block.style.marginTop = (text && String(text).trim()) ? "10px" : "0";
-
-      const isImg = /^image\//i.test(attachment.mime || "");
-      const isPdf = (attachment.mime || "").toLowerCase() === "application/pdf";
-
-      // clickable thumbnail for image
-      if (isImg){
-        const linkImg = document.createElement("a");
-        linkImg.href = attachment.url;
-        linkImg.target = "_blank";
-        linkImg.rel = "noopener";
-        linkImg.dataset.kind = "thumb"; // ✅ penting
-
-        const img = document.createElement("img");
-        img.src = attachment.url;
-        img.alt = attachment.name || "gambar";
-        img.className = "attach-thumb";
-
-        linkImg.appendChild(img);
-        block.appendChild(linkImg);
-      }
-
-      // file link
-      const fileLink = document.createElement("a");
-      fileLink.href = attachment.url;
-      fileLink.target = "_blank";
-      fileLink.rel = "noopener";
-      fileLink.dataset.kind = "file"; // ✅ penting
-      fileLink.textContent = attachment.name
-        ? ("Buka " + (isPdf ? "PDF" : "fail") + ": " + attachment.name)
-        : (isPdf ? "Buka PDF" : "Buka fail");
-
-      const p = document.createElement("div");
-      p.style.marginTop = isImg ? "8px" : "0";
-      p.appendChild(fileLink);
-
-      block.appendChild(p);
-      bubble.appendChild(block);
-    }
-
-    row.appendChild(bubble);
-
-    const meta = document.createElement("div");
-    meta.className = "meta";
-    meta.textContent = (role==="me" ? "Anda" : "Emas Amir") + " • " + (time||now());
-
-    const wrap = document.createElement("div");
-    wrap.appendChild(row);
-    wrap.appendChild(meta);
-
-    chatbox.appendChild(wrap);
-    chatbox.scrollTop = chatbox.scrollHeight;
-    return wrap;
-  }
-
-  function setStatus(s){ statusEl.textContent = s || ""; }
-
   function getAuthUser(){
     try{
       if (typeof window.auth_get === "function") return window.auth_get();
       const raw = localStorage.getItem("ea_user");
       return raw ? JSON.parse(raw) : null;
-    }catch{ return null }
+    }catch{
+      return null;
+    }
   }
 
   function isLoggedIn(){
@@ -289,55 +2217,2045 @@
     return !!(u && u.phone);
   }
 
+  function renderLoginBox(){
+    const loginBox = $("loginBox");
+    const u = getAuthUser();
+    if (u && u.phone){
+      loginBox.innerHTML = "Status: <b>Logged in</b>" + (u.name ? (" • " + String(u.name)) : "");
+      ctaRegister.style.display = "none";
+    } else {
+      loginBox.innerHTML = "Status: <b>Guest</b>";
+    }
+  }
+
+  function getCurrentPhoneThread(){
+    const phone = localStorage.getItem(KEY_PHONE) || "";
+    const thread = localStorage.getItem(KEY_THREAD) || "";
+    return { phone, thread };
+  }
+
+  function readHistory(){
+    try{
+      const { phone, thread } = getCurrentPhoneThread();
+      const k = keyChatHistory(phone, thread);
+      const raw = localStorage.getItem(k);
+      const arr = raw ? JSON.parse(raw) : [];
+      return Array.isArray(arr) ? arr : [];
+    }catch{
+      return [];
+    }
+  }
+
+  function writeHistory(arr){
+    try{
+      const { phone, thread } = getCurrentPhoneThread();
+      const k = keyChatHistory(phone, thread);
+      localStorage.setItem(k, JSON.stringify(arr || []));
+    }catch{}
+  }
+
+  function pushHistory(msg){
+    const arr = readHistory();
+    arr.push(msg);
+    if (arr.length > 300) arr.splice(0, arr.length - 300);
+    writeHistory(arr);
+  }
+
+  function clearHistory(){
+    try{
+      const { phone, thread } = getCurrentPhoneThread();
+      const k = keyChatHistory(phone, thread);
+      localStorage.removeItem(k);
+    }catch{}
+  }
+
+  function clearAllHistoryForPhone(phone){
+    try{
+      if (!phone) return;
+      const prefix = "ea_chat_history::" + phone + "::";
+      const keys = [];
+      for (let i = 0; i < localStorage.length; i++){
+        const k = localStorage.key(i);
+        if (k && k.startsWith(prefix)) keys.push(k);
+      }
+      keys.forEach(k => localStorage.removeItem(k));
+    }catch{}
+  }
+
+  function __extractQuickRepliesFromText(t){
+    const text = String(t || "");
+
+    const m = text.match(/Balas\s+nombor\s+sahaja\s*:\s*([0-9\s\/,]+)/i);
+    if (m && m[1]){
+      const raw = m[1].trim();
+      const parts = raw.split(/[\s\/,]+/).map(x => x.trim()).filter(Boolean);
+      const nums = parts.filter(x => /^\d+$/.test(x));
+      if (nums.length){
+        return nums.map(n => ({ label: n, send: n }));
+      }
+    }
+
+    const quoteMatches = text.match(/“([^”]+)”/g);
+    if (quoteMatches && quoteMatches.length){
+      return quoteMatches
+        .map(q => q.replace(/[“”]/g, "").trim())
+        .filter(v => {
+          const low = v.toLowerCase();
+          if (low === "lock live") return false;
+          if (low === "nak lock") return false;
+          return true;
+        })
+        .map(v => ({ label: v, send: v }));
+    }
+
+    return [];
+  }
+
+  function setInputLocked(locked, hintText){
+    if (window.__qr_active && locked === false) return;
+    txt.disabled = !!locked;
+    btnSend.disabled = !!locked;
+    if (locked){
+      txt.placeholder = hintText || "Sila tekan pilihan di bawah 👇";
+    } else {
+      txt.placeholder = "Taip mesej…";
+    }
+  }
+
+  function normalizeQuickReplies(quicks){
+    if (!Array.isArray(quicks)) return [];
+    return quicks
+      .map(q => ({
+        label: String(q?.label || q?.send || "").trim(),
+        send: String(q?.send || q?.label || "").trim()
+      }))
+      .filter(q => q.label && q.send);
+  }
+
+  function normalizeDesignCards(cards){
+    if (!Array.isArray(cards)) return [];
+    return cards.map((c, idx) => ({
+      label: String(c?.label || c?.name || c?.send || "").trim(),
+      send: String(c?.send || c?.label || c?.name || "").trim(),
+      image_url: String(c?.image_url || c?.img || c?.image || "").trim(),
+      idx
+    })).filter(c => c.label && c.send);
+  }
+
+  function extractDesignCards(meta){
+    if (!meta || typeof meta !== "object") return [];
+    if (Array.isArray(meta.design_cards)) return normalizeDesignCards(meta.design_cards);
+    if (meta.gold999 && Array.isArray(meta.gold999.design_cards)) return normalizeDesignCards(meta.gold999.design_cards);
+    return [];
+  }
+
+  function buildQuickReplyButtons(quicks){
+    const clean = normalizeQuickReplies(quicks);
+    if (!clean.length) return null;
+
+    const wrap = document.createElement("div");
+    wrap.style.marginTop = "8px";
+    wrap.style.display = "flex";
+    wrap.style.flexWrap = "wrap";
+    wrap.style.gap = "8px";
+
+    clean.forEach(q => {
+      const b = document.createElement("button");
+      b.className = "btn btn-outline-dark btn-sm";
+      b.type = "button";
+      b.textContent = q.label || q.send || "";
+      b.onclick = () => {
+  window.__qr_active = false;
+  txt.disabled = false;
+  btnSend.disabled = false;
+  txt.placeholder = "Taip mesej…";
+  txt.value = q.send || q.label || "";
+
+  __forceStayBottomOnce = true;
+  scrollChatToBottom(true);
+
+  sendMsg();
+
+  requestAnimationFrame(() => scrollChatToBottom(true));
+  setTimeout(() => scrollChatToBottom(true), 120);
+};
+      wrap.appendChild(b);
+    });
+
+    return wrap;
+  }
+
+  function buildDesignCardsUI(cards){
+    const clean = normalizeDesignCards(cards);
+    if (!clean.length) return null;
+
+    const grid = document.createElement("div");
+    grid.className = "design-grid";
+
+    clean.forEach(card => {
+      const item = document.createElement("div");
+      item.className = "design-card";
+
+      if (card.image_url){
+        const img = document.createElement("img");
+        img.className = "design-card-img";
+        img.src = card.image_url;
+        img.alt = card.label || "design";
+        item.appendChild(img);
+      }
+
+      const name = document.createElement("div");
+      name.className = "design-card-name";
+      name.textContent = card.label || "";
+      item.appendChild(name);
+
+      const btn = document.createElement("button");
+      btn.type = "button";
+      btn.className = "btn btn-outline-dark btn-sm";
+      btn.textContent = "Pilih " + (card.label || "");
+      btn.onclick = () => {
+        window.__qr_active = false;
+        txt.disabled = false;
+        btnSend.disabled = false;
+        txt.placeholder = "Taip mesej…";
+        txt.value = card.send || card.label || "";
+        sendMsg();
+      };
+      item.appendChild(btn);
+
+      grid.appendChild(item);
+    });
+
+    return grid;
+  }
+
+function extractConfigCard(meta){
+    if (!meta || typeof meta !== "object") return null;
+    if (meta.config_card && typeof meta.config_card === "object") return meta.config_card;
+    return null;
+  }
+
+function extractBuilderCard(meta){
+    if (!meta || typeof meta !== "object") return null;
+    if (meta.builder_card && typeof meta.builder_card === "object") return meta.builder_card;
+    return null;
+  }
+
+  function moneyPlain(n){
+    const x = Number(n || 0);
+    if (!isFinite(x)) return "RM 0.00";
+    return "RM " + x.toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+  }
+
+ function buildConfigCardUI(card){
+    if (!card || typeof card !== "object") return null;
+
+    const wrap = document.createElement("div");
+    wrap.className = "config-card";
+
+    const designs = Array.isArray(card.designs) ? card.designs : [];
+
+    const selectedDesignId = String(card.selected_design_id || designs[0]?.id || "");
+    const selectedCardType =
+      String(card.default_card_type || "READY").toUpperCase() === "CUSTOM" ? "CUSTOM" : "READY";
+
+    const defaultQtyNum = Number(card.default_qty || 1);
+    const defaultQty =
+      Number.isFinite(defaultQtyNum) && defaultQtyNum > 0
+        ? Math.min(99, Math.floor(defaultQtyNum))
+        : 1;
+
+    let state = {
+      designId: selectedDesignId,
+      cardType: selectedCardType,
+      qty: defaultQty
+    };
+
+
+
+
+    function findDesignById(id){
+      return designs.find(d => String(d?.id || "") === String(id || "")) || null;
+    }
+
+    function unitMarketPrice(){
+      const ready = Number(card.ready_market_price_rm ?? card.market_price_rm ?? 0);
+      const custom = Number(card.custom_market_price_rm ?? card.market_price_rm ?? ready);
+      return state.cardType === "CUSTOM" ? custom : ready;
+    }
+
+    function unitFinalPrice(){
+      const ready = Number(card.ready_final_price_rm ?? card.final_price_rm ?? 0);
+      const custom = Number(card.custom_final_price_rm ?? card.final_price_rm ?? ready);
+      return state.cardType === "CUSTOM" ? custom : ready;
+    }
+
+    function totalMarketPrice(){
+      return unitMarketPrice() * Number(state.qty || 1);
+    }
+
+    function totalFinalPrice(){
+      return unitFinalPrice() * Number(state.qty || 1);
+    }
+
+    function totalJimat(){
+      return Math.max(0, totalMarketPrice() - totalFinalPrice());
+    }
+
+    const head = document.createElement("div");
+    head.className = "config-card-head";
+
+    const img = document.createElement("img");
+    img.className = "config-card-img";
+    img.src = String(card.selected_design_image_url || "");
+    img.alt = String(card.selected_design_name || card.kind_label || "Pilihan");
+    head.appendChild(img);
+
+    const headText = document.createElement("div");
+    headText.className = "config-card-head-text";
+
+    const ttl = document.createElement("div");
+    ttl.className = "config-card-title";
+    headText.appendChild(ttl);
+
+    const sub = document.createElement("div");
+    sub.className = "config-card-sub";
+    sub.textContent = [
+      String(card.kind_label || "").trim(),
+      String(card.weight_label || "").trim()
+    ].filter(Boolean).join(" • ");
+    headText.appendChild(sub);
+
+    head.appendChild(headText);
+    wrap.appendChild(head);
+
+    const priceBox = document.createElement("div");
+    priceBox.className = "config-price-box";
+
+    const rowMarket = document.createElement("div");
+    rowMarket.className = "config-price-row";
+    rowMarket.innerHTML = `
+      <span class="label">Harga pasaran</span>
+      <span class="value"></span>
+    `;
+
+    const rowFinal = document.createElement("div");
+    rowFinal.className = "config-price-row final";
+    rowFinal.innerHTML = `
+      <span class="label">Harga akhir</span>
+      <span class="value"></span>
+    `;
+
+    const rowJimat = document.createElement("div");
+    rowJimat.className = "config-price-row";
+    rowJimat.innerHTML = `
+      <span class="label">Jimat</span>
+      <span class="value"></span>
+    `;
+
+    priceBox.appendChild(rowMarket);
+    priceBox.appendChild(rowFinal);
+    priceBox.appendChild(rowJimat);
+    wrap.appendChild(priceBox);
+
+    const designSec = document.createElement("div");
+    designSec.className = "config-section";
+
+    const designLbl = document.createElement("div");
+    designLbl.className = "config-label";
+    designLbl.textContent = "Design";
+    designSec.appendChild(designLbl);
+
+    const select = document.createElement("select");
+    select.className = "config-select";
+
+    designs.forEach(d => {
+      const opt = document.createElement("option");
+      opt.value = String(d?.id || "");
+      opt.textContent = String(d?.name || "Design");
+      if (String(d?.id || "") === state.designId) opt.selected = true;
+      select.appendChild(opt);
+    });
+
+    designSec.appendChild(select);
+
+    const designHint = document.createElement("div");
+    designHint.className = "config-hint";
+    designHint.textContent = "Pilih design yang cik nak.";
+    designSec.appendChild(designHint);
+
+    wrap.appendChild(designSec);
+
+    const cardSec = document.createElement("div");
+    cardSec.className = "config-section";
+
+    const cardLbl = document.createElement("div");
+    cardLbl.className = "config-label";
+    cardLbl.textContent = "Kad";
+    cardSec.appendChild(cardLbl);
+
+    const toggleRow = document.createElement("div");
+    toggleRow.className = "config-toggle-row";
+
+    const btnReady = document.createElement("button");
+    btnReady.type = "button";
+    btnReady.className = "config-toggle-btn";
+    btnReady.textContent = "Ready";
+
+    const btnCustom = document.createElement("button");
+    btnCustom.type = "button";
+    btnCustom.className = "config-toggle-btn";
+    btnCustom.textContent = "Custom";
+
+    toggleRow.appendChild(btnReady);
+    toggleRow.appendChild(btnCustom);
+    cardSec.appendChild(toggleRow);
+    wrap.appendChild(cardSec);
+
+    const qtySec = document.createElement("div");
+    qtySec.className = "config-section";
+
+    const qtyLbl = document.createElement("div");
+    qtyLbl.className = "config-label";
+    qtyLbl.textContent = "Kuantiti";
+    qtySec.appendChild(qtyLbl);
+
+    const qtyRow = document.createElement("div");
+    qtyRow.className = "config-qty-row";
+
+    const btnMinus = document.createElement("button");
+    btnMinus.type = "button";
+    btnMinus.className = "config-qty-btn";
+    btnMinus.textContent = "−";
+
+    const qtyValue = document.createElement("div");
+    qtyValue.className = "config-qty-value";
+
+    const btnPlus = document.createElement("button");
+    btnPlus.type = "button";
+    btnPlus.className = "config-qty-btn";
+    btnPlus.textContent = "+";
+
+    qtyRow.appendChild(btnMinus);
+    qtyRow.appendChild(qtyValue);
+    qtyRow.appendChild(btnPlus);
+    qtySec.appendChild(qtyRow);
+    wrap.appendChild(qtySec);
+
+    const btnSubmit = document.createElement("button");
+    btnSubmit.type = "button";
+    btnSubmit.className = "config-submit";
+    btnSubmit.textContent = "Teruskan";
+    wrap.appendChild(btnSubmit);
+
+    function syncCardToggle(){
+      btnReady.classList.toggle("active", state.cardType === "READY");
+      btnCustom.classList.toggle("active", state.cardType === "CUSTOM");
+    }
+
+    function renderState(){
+      const picked = findDesignById(state.designId) || designs[0] || null;
+
+      ttl.textContent = String(
+        picked?.name ||
+        card.selected_design_name ||
+        card.kind_label ||
+        "Pilihan"
+      );
+
+      const nextImg =
+        String(
+          picked?.image_url ||
+          picked?.selected_design_image_url ||
+          card.selected_design_image_url ||
+          ""
+        ).trim();
+
+      if (nextImg) {
+        img.src = nextImg;
+      }
+
+      img.alt = ttl.textContent;
+      qtyValue.textContent = String(state.qty);
+
+      rowMarket.querySelector(".value").textContent = moneyPlain(totalMarketPrice());
+      rowFinal.querySelector(".value").textContent = moneyPlain(totalFinalPrice());
+      rowJimat.querySelector(".value").textContent = moneyPlain(totalJimat());
+
+      syncCardToggle();
+    }
+
+    select.onchange = () => {
+      state.designId = String(select.value || "");
+      renderState();
+    };
+
+    btnReady.onclick = () => {
+      state.cardType = "READY";
+      renderState();
+    };
+
+    btnCustom.onclick = () => {
+      state.cardType = "CUSTOM";
+      renderState();
+    };
+
+    btnMinus.onclick = () => {
+      state.qty = Math.max(1, Number(state.qty || 1) - 1);
+      renderState();
+    };
+
+    btnPlus.onclick = () => {
+      state.qty = Math.min(99, Number(state.qty || 1) + 1);
+      renderState();
+    };
+
+    btnSubmit.onclick = () => {
+      const payload =
+        "CONFIG|design_id=" + encodeURIComponent(String(state.designId || "")) +
+        "|card=" + encodeURIComponent(String(state.cardType || "READY")) +
+        "|qty=" + encodeURIComponent(String(state.qty || 1));
+
+      window.__qr_active = false;
+      txt.disabled = false;
+      btnSend.disabled = false;
+      txt.placeholder = "Taip mesej…";
+      txt.value = payload;
+
+      __forceStayBottomOnce = true;
+      scrollChatToBottom(true);
+
+      sendMsg();
+
+      requestAnimationFrame(() => scrollChatToBottom(true));
+      setTimeout(() => scrollChatToBottom(true), 120);
+    };
+
+    renderState();
+    return wrap;
+  }
+
+function buildBuilderCardUI(card){
+  if (!card || typeof card !== "object") return null;
+
+  const wrap = document.createElement("div");
+  wrap.className = "builder-card";
+
+  const kinds = Array.isArray(card.kinds) ? card.kinds : [];
+  const cartItems = Array.isArray(card.cart_items) ? card.cart_items : [];
+
+  const catalogRaw = (card.catalog && typeof card.catalog === "object") ? card.catalog : {};
+  const hasCatalog = Object.keys(catalogRaw).length > 0;
+
+  const fallbackWeights = Array.isArray(card.weights) ? card.weights : [];
+  const fallbackDesigns = Array.isArray(card.designs) ? card.designs : [];
+
+  let state = {
+    kind: String(card.selected_kind || ""),
+    weightG: String(card.selected_weight_g ?? ""),
+    designId: String(card.selected_design_id || ""),
+    cardType: String(card.selected_card_type || "READY").toUpperCase() === "CUSTOM" ? "CUSTOM" : "READY",
+    qty: Math.max(1, Math.min(99, Math.floor(Number(card.selected_qty || 1) || 1)))
+  };
+
+  function moneyPlain2(n){
+    const x = Number(n || 0);
+    if (!isFinite(x)) return "RM 0.00";
+    return "RM " + x.toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+  }
+
+  function getKindCatalog(kind){
+    const k = String(kind || "");
+    const raw = catalogRaw[k];
+    if (!raw || typeof raw !== "object") {
+      return { weights: [] };
+    }
+    return {
+      weights: Array.isArray(raw.weights) ? raw.weights : []
+    };
+  }
+
+  function currentWeightsByKind(kind){
+    if (hasCatalog && kind) {
+      return getKindCatalog(kind).weights || [];
+    }
+    return fallbackWeights;
+  }
+
+  function currentWeights(){
+    return currentWeightsByKind(state.kind);
+  }
+
+  function findWeightRow(weightG){
+    const rows = currentWeights();
+    return rows.find(w => String(w?.weight_g ?? "") === String(weightG ?? "")) || null;
+  }
+
+  function currentWeightRow(){
+    return findWeightRow(state.weightG) || currentWeights()[0] || null;
+  }
+
+  function currentDesignsByWeight(weightG){
+    const row = findWeightRow(weightG) || currentWeights()[0] || null;
+
+    if (hasCatalog) {
+      return Array.isArray(row?.designs) ? row.designs : [];
+    }
+
+    return fallbackDesigns;
+  }
+
+  function currentDesigns(){
+    return currentDesignsByWeight(state.weightG);
+  }
+
+  function selectedDesign(){
+    const ds = currentDesigns();
+    return ds.find(d => String(d?.id || "") === String(state.designId || "")) || ds[0] || null;
+  }
+
+  function getSelectedKindLabel(){
+    const hit = kinds.find(k => String(k?.code || "") === String(state.kind || ""));
+    return String(hit?.label || card.selected_kind_label || "");
+  }
+
+  function getSelectedWeightLabel(){
+    const row = currentWeightRow();
+    return String(row?.weight_label || "");
+  }
+
+  function getSelectedImage(){
+    const picked = selectedDesign();
+    return String(
+      picked?.image_url ||
+      card.selected_design_image_url ||
+      ""
+    ).trim();
+  }
+
+  function getReadyUnitMarket(){
+    const row = currentWeightRow();
+    if (row && row.ready_market_price_rm != null) return Number(row.ready_market_price_rm || 0);
+    return Number(card.ready_market_price_rm || 0);
+  }
+
+  function getReadyUnitFinal(){
+    const row = currentWeightRow();
+    if (row && row.ready_final_price_rm != null) return Number(row.ready_final_price_rm || 0);
+    return Number(card.ready_final_price_rm || 0);
+  }
+
+  function getReadyUnitJimat(){
+    const row = currentWeightRow();
+    if (row && row.ready_jimat_rm != null) return Number(row.ready_jimat_rm || 0);
+    return Number(card.ready_jimat_rm || 0);
+  }
+
+  function getCustomUnitMarket(){
+    const picked = selectedDesign();
+    if (picked && picked.custom_market_price_rm != null) return Number(picked.custom_market_price_rm || 0);
+
+    const row = currentWeightRow();
+    if (row && row.custom_market_price_rm != null) return Number(row.custom_market_price_rm || 0);
+
+    return Number(card.custom_market_price_rm || 0);
+  }
+
+  function getCustomUnitFinal(){
+    const picked = selectedDesign();
+    if (picked && picked.custom_final_price_rm != null) return Number(picked.custom_final_price_rm || 0);
+
+    const row = currentWeightRow();
+    if (row && row.custom_final_price_rm != null) return Number(row.custom_final_price_rm || 0);
+
+    return Number(card.custom_final_price_rm || 0);
+  }
+
+  function getCustomUnitJimat(){
+    const picked = selectedDesign();
+    if (picked && picked.custom_jimat_rm != null) return Number(picked.custom_jimat_rm || 0);
+
+    const row = currentWeightRow();
+    if (row && row.custom_jimat_rm != null) return Number(row.custom_jimat_rm || 0);
+
+    return Number(card.custom_jimat_rm || 0);
+  }
+
+  function currentUnitMarket(){
+    return state.cardType === "CUSTOM"
+      ? getCustomUnitMarket()
+      : getReadyUnitMarket();
+  }
+
+  function currentUnitFinal(){
+    return state.cardType === "CUSTOM"
+      ? getCustomUnitFinal()
+      : getReadyUnitFinal();
+  }
+
+  function currentUnitJimat(){
+    return state.cardType === "CUSTOM"
+      ? getCustomUnitJimat()
+      : getReadyUnitJimat();
+  }
+
+  function currentTotalMarket(){
+    return currentUnitMarket() * Number(state.qty || 1);
+  }
+
+  function currentTotalFinal(){
+    return currentUnitFinal() * Number(state.qty || 1);
+  }
+
+  function currentTotalJimat(){
+    return Math.max(0, currentTotalMarket() - currentTotalFinal());
+  }
+
+  function normalizeState(){
+    if (!state.kind && kinds.length) {
+      state.kind = String(kinds[0]?.code || "");
+    }
+
+    const rows = currentWeights();
+    if (!rows.length) {
+      state.weightG = "";
+      state.designId = "";
+      state.cardType = "READY";
+      state.qty = 1;
+      return;
+    }
+
+    const hasWeight = rows.some(w => String(w?.weight_g ?? "") === String(state.weightG || ""));
+    if (!hasWeight) {
+      state.weightG = String(rows[0]?.weight_g ?? "");
+    }
+
+    const ds = currentDesigns();
+    if (!ds.length) {
+      state.designId = "";
+    } else {
+      const hasDesign = ds.some(d => String(d?.id || "") === String(state.designId || ""));
+      if (!hasDesign) {
+        state.designId = String(ds[0]?.id || "");
+      }
+    }
+
+    state.cardType = String(state.cardType || "READY").toUpperCase() === "CUSTOM" ? "CUSTOM" : "READY";
+    state.qty = Math.max(1, Math.min(99, Math.floor(Number(state.qty || 1) || 1)));
+  }
+
+  function updateState(patch = {}, opts = {}){
+    state = { ...state, ...patch };
+    normalizeState();
+
+    if (opts.resetQty === true) {
+      state.qty = 1;
+    }
+    if (opts.resetCard === true) {
+      state.cardType = "READY";
+    }
+
+    normalizeState();
+    syncAllUI();
+  }
+
+  function buildPayload(action){
+    return [
+      "BUILDER",
+      "action=" + encodeURIComponent(String(action || "")),
+      "kind=" + encodeURIComponent(String(state.kind || "")),
+      "weight_g=" + encodeURIComponent(String(state.weightG || "")),
+      "design_id=" + encodeURIComponent(String(state.designId || "")),
+      "card=" + encodeURIComponent(String(state.cardType || "READY")),
+      "qty=" + encodeURIComponent(String(state.qty || 1))
+    ].join("|");
+  }
+
+  function submitPayload(payload){
+    window.__qr_active = false;
+    txt.disabled = false;
+    btnSend.disabled = false;
+    txt.placeholder = "Taip mesej…";
+    txt.value = payload;
+
+    __forceStayBottomOnce = true;
+    scrollChatToBottom(true);
+
+    sendMsg();
+
+    requestAnimationFrame(() => scrollChatToBottom(true));
+    setTimeout(() => scrollChatToBottom(true), 120);
+  }
+
+  const head = document.createElement("div");
+  head.className = "builder-head";
+
+  const img = document.createElement("img");
+  img.className = "builder-head-img";
+  img.src = String(card.selected_design_image_url || "");
+  img.alt = String(card.selected_design_name || card.selected_kind_label || "Pilihan");
+  head.appendChild(img);
+
+  const headText = document.createElement("div");
+  headText.className = "builder-head-text";
+
+  const title = document.createElement("div");
+  title.className = "builder-title";
+  headText.appendChild(title);
+
+  const sub = document.createElement("div");
+  sub.className = "builder-sub";
+  headText.appendChild(sub);
+
+  head.appendChild(headText);
+  wrap.appendChild(head);
+
+  const kindSec = document.createElement("div");
+  kindSec.className = "builder-section";
+
+  const kindLbl = document.createElement("div");
+  kindLbl.className = "builder-label";
+  kindLbl.textContent = "Jenis";
+  kindSec.appendChild(kindLbl);
+
+  const kindRow = document.createElement("div");
+  kindRow.className = "builder-kind-row";
+
+  kinds.forEach(k => {
+    const b = document.createElement("button");
+    b.type = "button";
+    b.className = "builder-kind-btn";
+    b.textContent = String(k?.label || "");
+    b.dataset.kind = String(k?.code || "");
+    b.onclick = () => {
+      const nextKind = String(k?.code || "");
+      const nextWeights = currentWeightsByKind(nextKind);
+      const nextWeightG = String(nextWeights[0]?.weight_g ?? "");
+      const nextDesigns = currentDesignsByWeight(nextWeightG);
+      const nextDesignId = String(nextDesigns[0]?.id || "");
+
+      updateState({
+        kind: nextKind,
+        weightG: nextWeightG,
+        designId: nextDesignId,
+        cardType: "READY",
+        qty: 1
+      });
+    };
+    kindRow.appendChild(b);
+  });
+
+  kindSec.appendChild(kindRow);
+  wrap.appendChild(kindSec);
+
+  const priceBox = document.createElement("div");
+  priceBox.className = "builder-price-box";
+
+  const rowMarket = document.createElement("div");
+  rowMarket.className = "builder-price-row";
+  rowMarket.innerHTML = `
+    <span class="label">Harga pasaran</span>
+    <span class="value"></span>
+  `;
+
+  const rowFinal = document.createElement("div");
+  rowFinal.className = "builder-price-row final";
+  rowFinal.innerHTML = `
+    <span class="label">Harga akhir</span>
+    <span class="value"></span>
+  `;
+
+  const rowJimat = document.createElement("div");
+  rowJimat.className = "builder-price-row";
+  rowJimat.innerHTML = `
+    <span class="label">Jimat</span>
+    <span class="value"></span>
+  `;
+
+  priceBox.appendChild(rowMarket);
+  priceBox.appendChild(rowFinal);
+  priceBox.appendChild(rowJimat);
+  wrap.appendChild(priceBox);
+
+  const weightSec = document.createElement("div");
+  weightSec.className = "builder-section";
+
+  const weightLbl = document.createElement("div");
+  weightLbl.className = "builder-label";
+  weightLbl.textContent = "Berat";
+  weightSec.appendChild(weightLbl);
+
+  const weightSelect = document.createElement("select");
+  weightSelect.className = "builder-select";
+  weightSec.appendChild(weightSelect);
+  wrap.appendChild(weightSec);
+
+  const designSec = document.createElement("div");
+  designSec.className = "builder-section";
+
+  const designLbl = document.createElement("div");
+  designLbl.className = "builder-label";
+  designLbl.textContent = "Design";
+  designSec.appendChild(designLbl);
+
+  const designSelect = document.createElement("select");
+  designSelect.className = "builder-select";
+  designSec.appendChild(designSelect);
+
+  const designHint = document.createElement("div");
+  designHint.className = "builder-hint";
+  designHint.textContent = "Pilih design yang cik nak.";
+  designSec.appendChild(designHint);
+
+  wrap.appendChild(designSec);
+
+  const cardSec = document.createElement("div");
+  cardSec.className = "builder-section";
+
+  const cardLbl = document.createElement("div");
+  cardLbl.className = "builder-label";
+  cardLbl.textContent = "Kad";
+  cardSec.appendChild(cardLbl);
+
+  const toggleRow = document.createElement("div");
+  toggleRow.className = "builder-toggle-row";
+
+  const btnReady = document.createElement("button");
+  btnReady.type = "button";
+  btnReady.className = "builder-toggle-btn";
+  btnReady.textContent = "Ready";
+
+  const btnCustom = document.createElement("button");
+  btnCustom.type = "button";
+  btnCustom.className = "builder-toggle-btn";
+  btnCustom.textContent = "Custom";
+
+  toggleRow.appendChild(btnReady);
+  toggleRow.appendChild(btnCustom);
+  cardSec.appendChild(toggleRow);
+
+  wrap.appendChild(cardSec);
+
+  const qtySec = document.createElement("div");
+  qtySec.className = "builder-section";
+
+  const qtyLbl = document.createElement("div");
+  qtyLbl.className = "builder-label";
+  qtyLbl.textContent = "Kuantiti";
+  qtySec.appendChild(qtyLbl);
+
+  const qtyRow = document.createElement("div");
+  qtyRow.className = "builder-qty-row";
+
+  const btnMinus = document.createElement("button");
+  btnMinus.type = "button";
+  btnMinus.className = "builder-qty-btn";
+  btnMinus.textContent = "−";
+
+  const qtyValue = document.createElement("div");
+  qtyValue.className = "builder-qty-value";
+
+  const btnPlus = document.createElement("button");
+  btnPlus.type = "button";
+  btnPlus.className = "builder-qty-btn";
+  btnPlus.textContent = "+";
+
+  qtyRow.appendChild(btnMinus);
+  qtyRow.appendChild(qtyValue);
+  qtyRow.appendChild(btnPlus);
+  qtySec.appendChild(qtyRow);
+  wrap.appendChild(qtySec);
+
+  const cartSec = document.createElement("div");
+  cartSec.className = "builder-cart-box";
+
+  const cartTitle = document.createElement("div");
+  cartTitle.className = "builder-cart-title";
+  cartTitle.textContent = "Ringkasan order";
+  cartSec.appendChild(cartTitle);
+
+ if (!cartItems.length) {
+  const empty = document.createElement("div");
+  empty.className = "builder-cart-empty";
+  empty.textContent = "Belum ada item dalam senarai.";
+  cartSec.appendChild(empty);
+} else {
+  cartItems.forEach(it => {
+    const row = document.createElement("div");
+    row.className = "builder-cart-item";
+
+    row.innerHTML = `
+      <div class="builder-cart-item-top">
+        <span>${escapeHtml(String(it?.kind_label || ""))} — ${escapeHtml(String(it?.weight_label || ""))}</span>
+        <span>${moneyPlain2(Number(it?.total_rm || 0))}</span>
+      </div>
+      <div class="builder-cart-item-sub">
+        ${escapeHtml(String(it?.design_name || ""))} •
+        ${escapeHtml(String(it?.card_type === "CUSTOM" ? "Custom Card" : "Ready Card"))} •
+        Qty ${escapeHtml(String(it?.qty || 1))}
+      </div>
+    `;
+
+    const actions = document.createElement("div");
+    actions.className = "builder-cart-item-actions";
+
+    const btnRemove = document.createElement("button");
+    btnRemove.type = "button";
+    btnRemove.className = "builder-cart-remove-btn";
+    btnRemove.textContent = "Buang";
+    btnRemove.onclick = () => {
+      submitPayload(
+        [
+          "BUILDER",
+          "action=remove_item",
+          "remove_index=" + encodeURIComponent(String(it?.index || 0))
+        ].join("|")
+      );
+    };
+
+    actions.appendChild(btnRemove);
+    row.appendChild(actions);
+    cartSec.appendChild(row);
+  });
+}
+
+  const cartTotal = document.createElement("div");
+  cartTotal.className = "builder-cart-total";
+  cartTotal.innerHTML = `
+  <span>Jumlah item dalam senarai</span>
+  <span>${moneyPlain2(Number(card.cart_subtotal_rm||0))}</span>
+`;
+  cartSec.appendChild(cartTotal);
+
+const currentNow = document.createElement("div");
+currentNow.className = "builder-cart-total";
+currentNow.innerHTML = `
+  <div style="display:flex;justify-content:space-between;">
+    <span>Pilihan semasa</span>
+    <span>${moneyPlain2(currentTotalFinal())}</span>
+  </div>
+`;
+
+if (!card.cart_items || card.cart_items.length === 0) {
+  currentNow.style.display = "";
+} else {
+  currentNow.style.display = "none";
+}
+
+cartSec.appendChild(currentNow);
+  wrap.appendChild(cartSec);
+
+  const actionRow = document.createElement("div");
+  actionRow.className = "builder-action-row";
+
+  const btnAddItem = document.createElement("button");
+  btnAddItem.type = "button";
+  btnAddItem.className = "builder-btn-light";
+  btnAddItem.textContent = "Tambah item lagi";
+
+  const btnCheckoutNow = document.createElement("button");
+  btnCheckoutNow.type = "button";
+  btnCheckoutNow.className = "builder-btn-dark";
+  btnCheckoutNow.textContent = cartItems.length ? "Teruskan checkout" : "Teruskan";
+
+  actionRow.appendChild(btnAddItem);
+  actionRow.appendChild(btnCheckoutNow);
+
+  wrap.appendChild(actionRow);
+
+  function syncKindButtons(){
+    const buttons = kindRow.querySelectorAll(".builder-kind-btn");
+    buttons.forEach(btn => {
+      btn.classList.toggle("active", String(btn.dataset.kind || "") === String(state.kind || ""));
+    });
+  }
+
+  function syncCardButtons(){
+    btnReady.classList.toggle("active", state.cardType === "READY");
+    btnCustom.classList.toggle("active", state.cardType === "CUSTOM");
+  }
+
+  function syncWeightOptions(){
+    const rows = currentWeights();
+    const prev = String(state.weightG || "");
+
+    weightSelect.innerHTML = "";
+
+    if (!rows.length) {
+      const opt = document.createElement("option");
+      opt.value = "";
+      opt.textContent = "Pilih jenis dahulu";
+      weightSelect.appendChild(opt);
+      weightSelect.disabled = true;
+      weightSelect.value = "";
+      return;
+    }
+
+    weightSelect.disabled = false;
+
+    rows.forEach(w => {
+      const opt = document.createElement("option");
+      opt.value = String(w?.weight_g ?? "");
+      opt.textContent = String(w?.weight_label || "");
+      weightSelect.appendChild(opt);
+    });
+
+    weightSelect.value = prev;
+    if (weightSelect.value !== prev) {
+      weightSelect.value = String(state.weightG || rows[0]?.weight_g || "");
+    }
+  }
+
+  function syncDesignOptions(){
+    const ds = currentDesigns();
+    const prev = String(state.designId || "");
+
+    designSelect.innerHTML = "";
+
+    if (!ds.length) {
+      const opt = document.createElement("option");
+      opt.value = "";
+      opt.textContent = "Pilih berat dahulu";
+      designSelect.appendChild(opt);
+      designSelect.disabled = true;
+      designSelect.value = "";
+      return;
+    }
+
+    designSelect.disabled = false;
+
+    ds.forEach(d => {
+      const opt = document.createElement("option");
+      opt.value = String(d?.id || "");
+      opt.textContent = String(d?.name || "Design");
+      designSelect.appendChild(opt);
+    });
+
+    designSelect.value = prev;
+    if (designSelect.value !== prev) {
+      designSelect.value = String(state.designId || ds[0]?.id || "");
+    }
+  }
+
+  function syncAllUI(){
+    normalizeState();
+
+    syncKindButtons();
+    syncWeightOptions();
+    syncDesignOptions();
+    syncCardButtons();
+
+    const picked = selectedDesign();
+
+    title.textContent = String(
+      picked?.name ||
+      card.selected_design_name ||
+      getSelectedKindLabel() ||
+      "Pilihan"
+    );
+
+    sub.textContent = [
+      getSelectedKindLabel(),
+      getSelectedWeightLabel()
+    ].filter(Boolean).join(" • ");
+
+    const nextImg = getSelectedImage();
+    if (nextImg) {
+      img.src = nextImg;
+    }
+
+    img.alt = title.textContent;
+    qtyValue.textContent = String(state.qty);
+
+    rowMarket.querySelector(".value").textContent = moneyPlain2(currentTotalMarket());
+    rowFinal.querySelector(".value").textContent = moneyPlain2(currentTotalFinal());
+    rowJimat.querySelector(".value").textContent = moneyPlain2(currentTotalJimat());
+
+    const currentNowPriceEl = currentNow.querySelector("span:last-child");
+if (currentNowPriceEl) {
+  currentNowPriceEl.textContent = moneyPlain2(currentTotalFinal());
+}
+
+if (!cartItems || cartItems.length === 0) {
+  currentNow.style.display = "";
+} else {
+  currentNow.style.display = "none";
+}
+  }
+
+  weightSelect.onchange = () => {
+    const nextWeightG = String(weightSelect.value || "");
+    const nextDesigns = currentDesignsByWeight(nextWeightG);
+    const nextDesignId = String(nextDesigns[0]?.id || "");
+
+    updateState({
+      weightG: nextWeightG,
+      designId: nextDesignId,
+      cardType: "READY",
+      qty: 1
+    });
+  };
+
+  designSelect.onchange = () => {
+    updateState({
+      designId: String(designSelect.value || "")
+    });
+  };
+
+  btnReady.onclick = () => {
+    updateState({
+      cardType: "READY"
+    });
+  };
+
+  btnCustom.onclick = () => {
+    updateState({
+      cardType: "CUSTOM"
+    });
+  };
+
+  btnMinus.onclick = () => {
+    updateState({
+      qty: Number(state.qty || 1) - 1
+    });
+  };
+
+  btnPlus.onclick = () => {
+    updateState({
+      qty: Number(state.qty || 1) + 1
+    });
+  };
+
+  btnAddItem.onclick = () => {
+    submitPayload(buildPayload("add_item"));
+  };
+
+  btnCheckoutNow.onclick = () => {
+    submitPayload(buildPayload("checkout_now"));
+  };
+
+  normalizeState();
+  syncAllUI();
+
+  return wrap;
+}
+
+function addMsgUI(role, text, time, attachment, fromHistory, meta){
+  const isNotification = role === "notification";
+  const targetUrl = String(meta?.target_url || "").trim();
+
+  const wrap = document.createElement("div");
+
+  const row = document.createElement("div");
+ row.className = "msg " + (role === "me" ? "me" : (isNotification ? "notification" : "ai"));
+
+  const bubble = document.createElement("div");
+  bubble.className = "bubble" + (isNotification ? " notification" : "");
+
+  const thisMsgId = String(meta?.message_id || meta?.id || "").trim();
+  if (thisMsgId) {
+    wrap.dataset.msgId = thisMsgId;
+  }
+
+  // ===== REPLY PREVIEW =====
+  const replyPreviewMeta = meta?.reply_preview || null;
+  if (replyPreviewMeta){
+    const replyWho = String(replyPreviewMeta.role_label || replyPreviewMeta.role || "Mesej");
+    const replyTxtRaw = String(replyPreviewMeta.text || "(lampiran)").trim() || "(lampiran)";
+    const replyTxt = replyTxtRaw.length > 120 ? (replyTxtRaw.slice(0, 117) + "...") : replyTxtRaw;
+    const replyTargetId = String(
+      replyPreviewMeta.id ||
+      replyPreviewMeta.message_id ||
+      replyPreviewMeta.reply_to ||
+      ""
+    ).trim();
+
+    const replyWrap = document.createElement("div");
+    replyWrap.className = "reply-quote";
+    if (replyTargetId) {
+      replyWrap.dataset.replyTargetId = replyTargetId;
+      replyWrap.title = "Tekan untuk pergi ke mesej asal";
+    }
+
+    replyWrap.innerHTML = `
+      <div class="reply-quote-name">${escapeHtml(replyWho)}</div>
+      <div>${escapeHtml(replyTxt)}</div>
+    `;
+
+    if (replyTargetId){
+      replyWrap.onclick = () => {
+        const target = chatbox.querySelector(`[data-msg-id="${replyTargetId}"]`);
+        if (!target) return;
+
+        target.scrollIntoView({ behavior: "smooth", block: "center" });
+        target.classList.remove("msg-target-flash");
+        void target.offsetWidth;
+        target.classList.add("msg-target-flash");
+      };
+    }
+
+    bubble.appendChild(replyWrap);
+  }
+
+
+
+  if (text && String(text).trim()){
+    renderRichMessageContent(bubble, String(text));
+  }
+
+ if (attachment && attachment.url){
+  const block = document.createElement("div");
+  block.style.marginTop = (text && String(text).trim()) ? "10px" : "0";
+
+  const isImg = /^image\//i.test(attachment.mime || "");
+  const isPdf = (attachment.mime || "").toLowerCase() === "application/pdf";
+
+  if (isImg){
+    const linkImg = document.createElement("a");
+    linkImg.href = attachment.url;
+    linkImg.target = "_blank";
+    linkImg.rel = "noopener";
+    linkImg.dataset.kind = "thumb";
+
+    const img = document.createElement("img");
+    img.src = attachment.url;
+    img.alt = attachment.name || "gambar";
+    img.className = "attach-thumb";
+    linkImg.appendChild(img);
+    block.appendChild(linkImg);
+  }
+
+  const fileLink = document.createElement("a");
+  fileLink.href = attachment.url;
+  fileLink.target = "_blank";
+  fileLink.rel = "noopener";
+  fileLink.dataset.kind = "file";
+  fileLink.textContent = attachment.name
+    ? ("Buka " + (isPdf ? "PDF" : "fail") + ": " + attachment.name)
+    : (isPdf ? "Buka PDF" : "Buka fail");
+
+  const p = document.createElement("div");
+  p.style.marginTop = isImg ? "8px" : "0";
+  p.appendChild(fileLink);
+
+  block.appendChild(p);
+  bubble.appendChild(block);
+}
+
+// ✅ LIVE BUTTON (LUAR attachment block)
+const notificationType = String(meta?.campaign_type || meta?.type || "").toUpperCase();
+
+const isLiveNotification =
+  notificationType === "LIVE_NOW" ||
+  targetUrl.includes("comment.html") ||
+  targetUrl.includes("live=1");
+
+if (isNotification && targetUrl && isLiveNotification){
+  const liveBtnWrap = document.createElement("div");
+  liveBtnWrap.style.marginTop = "10px";
+
+  const btn = document.createElement("a");
+  btn.href = targetUrl;
+  btn.className = "btn btn-danger btn-sm w-100";
+  btn.style.borderRadius = "999px";
+  btn.style.fontWeight = "800";
+  btn.textContent = "🔴 MASUK LIVE SEKARANG";
+
+  btn.onclick = (e) => {
+    e.preventDefault();
+    window.location.href = targetUrl;
+  };
+
+  liveBtnWrap.appendChild(btn);
+  bubble.appendChild(liveBtnWrap);
+}
+
+// ===== REACT =====
+  const reacts = Array.isArray(meta?.admin_reactions)
+    ? meta.admin_reactions.map(x => String(x || "").trim()).filter(Boolean)
+    : [];
+
+  if (reacts.length){
+    const reactsWrap = document.createElement("div");
+    reactsWrap.className = "msg-reacts";
+    reactsWrap.innerHTML = reacts
+      .map(x => `<span class="msg-react-pill">${escapeHtml(x)}</span>`)
+      .join("");
+    bubble.appendChild(reactsWrap);
+  }
+
+  // ===== KOMEN =====
+  const adminComment = String(meta?.admin_comment || "").trim();
+  if (adminComment){
+    const commentWrap = document.createElement("div");
+    commentWrap.className = "msg-comment";
+    commentWrap.textContent = "📝 " + adminComment;
+    bubble.appendChild(commentWrap);
+  }
+
+const designCards = (role === "ai") ? extractDesignCards(meta) : [];
+  const configCard = (role === "ai") ? extractConfigCard(meta) : null;
+  const builderCard = (role === "ai") ? extractBuilderCard(meta) : null;
+
+  let quicks = [];
+  if (role === "ai" && meta && Array.isArray(meta.quick_replies) && meta.quick_replies.length){
+    quicks = normalizeQuickReplies(meta.quick_replies);
+  } else if (role === "ai") {
+    quicks = normalizeQuickReplies(__extractQuickRepliesFromText(text));
+  }
+
+ if (role === "ai" && builderCard){
+    const hint = document.createElement("div");
+    hint.className = "qr-hint";
+    hint.textContent = "👇 Lengkapkan pilihan di bawah";
+    bubble.appendChild(hint);
+
+    const builderUI = buildBuilderCardUI(builderCard);
+    if (builderUI) bubble.appendChild(builderUI);
+
+    window.__qr_active = true;
+    setInputLocked(true, "Sila lengkapkan pilihan di bawah 👇");
+  } else if (role === "ai" && configCard){
+    const hint = document.createElement("div");
+    hint.className = "qr-hint";
+    hint.textContent = "👇 Lengkapkan pilihan di bawah";
+    bubble.appendChild(hint);
+
+    const configUI = buildConfigCardUI(configCard);
+    if (configUI) bubble.appendChild(configUI);
+
+    window.__qr_active = true;
+    setInputLocked(true, "Sila lengkapkan pilihan di bawah 👇");
+  } else if (role === "ai" && designCards.length){
+    const hint = document.createElement("div");
+    hint.className = "qr-hint";
+    hint.textContent = "👇 Tekan design di bawah";
+    bubble.appendChild(hint);
+
+    const cardsUI = buildDesignCardsUI(designCards);
+    if (cardsUI) bubble.appendChild(cardsUI);
+
+    window.__qr_active = true;
+    setInputLocked(true, "Sila tekan design di bawah 👇");
+  } else if (role === "ai" && quicks.length){
+    const hint = document.createElement("div");
+    hint.className = "qr-hint";
+    hint.textContent = "👇 Tekan pilihan di bawah";
+    bubble.appendChild(hint);
+
+    const btnWrap = buildQuickReplyButtons(quicks);
+    if (btnWrap) bubble.appendChild(btnWrap);
+
+    window.__qr_active = true;
+    setInputLocked(true, "Sila tekan pilihan di bawah 👇");
+  } else {
+    if (!fromHistory){
+      window.__qr_active = false;
+      txt.disabled = false;
+      btnSend.disabled = false;
+      txt.placeholder = "Taip mesej…";
+    }
+  }
+
+  row.appendChild(bubble);
+
+ const metaDiv = document.createElement("div");
+metaDiv.className = "meta";
+
+const isAdminReply = !!(meta && meta.admin_reply === true);
+const isAgentReply = !!(meta && meta.agent_reply === true);
+
+const agentName =
+  String(
+    meta?.sent_by_agent_name ||
+    meta?.agent_name ||
+    "Agen"
+  ).trim() || "Agen";
+
+const whoLabel =
+  role === "me"
+    ? "Anda"
+    : isAgentReply
+      ? agentName
+      : isAdminReply
+        ? "Admin"
+        : "Emas Amir";
+
+metaDiv.textContent = whoLabel + " • " + (time || now());
+
+  wrap.appendChild(row);
+  wrap.appendChild(metaDiv);
+
+  const wasNearBottom = isNearBottom(chatbox, 120);
+
+  chatbox.appendChild(wrap);
+
+  if (!fromHistory && wasNearBottom) {
+    scrollChatToBottom(true);
+  }
+
+  updateScrollBottomBtn();
+  return wrap;
+}
+
+  function addMsg(role, text, time, attachment, meta){
+    const t = time || now();
+
+    let att = null;
+    if (attachment && attachment.url){
+      const u = String(attachment.url);
+      if (!u.startsWith("blob:")) {
+        att = { url: u, mime: attachment.mime || "", name: attachment.name || "" };
+      }
+    }
+
+    addMsgUI(role, text, t, attachment || null, false, meta || null);
+
+    pushHistory({
+      role: role,
+      text: text || "",
+      time: t,
+      attachment: att,
+      meta: meta || null
+    });
+  }
+
+  function renderHistoryToUI(){
+    chatbox.innerHTML = "";
+    const arr = readHistory();
+
+    for (const m of arr){
+      addMsgUI(m.role, m.text, m.time, m.attachment || null, true, m.meta || null);
+    }
+
+    try{
+      let lastAi = null;
+      for (let i = arr.length - 1; i >= 0; i--){
+        if (arr[i] && arr[i].role === "ai"){
+          lastAi = arr[i];
+          break;
+        }
+      }
+
+   let hasQR = false;
+      if (lastAi){
+        const builderCard = extractBuilderCard(lastAi.meta || null);
+        const configCard = extractConfigCard(lastAi.meta || null);
+        const designCards = extractDesignCards(lastAi.meta || null);
+
+        if (builderCard){
+          hasQR = true;
+        } else if (configCard){
+          hasQR = true;
+        } else if (designCards.length){
+          hasQR = true;
+        } else if (lastAi.meta && Array.isArray(lastAi.meta.quick_replies) && lastAi.meta.quick_replies.length){
+          hasQR = true;
+        } else {
+          const quicks = __extractQuickRepliesFromText(lastAi.text || "");
+          hasQR = !!(quicks && quicks.length);
+        }
+      }
+
+      if (hasQR){
+        window.__qr_active = true;
+        setInputLocked(true, "Sila tekan pilihan di bawah 👇");
+      } else {
+        window.__qr_active = false;
+        txt.disabled = false;
+        btnSend.disabled = false;
+        txt.placeholder = "Taip mesej…";
+      }
+    }catch(e){}
+
+
+    if (!__firstRenderDone) {
+    scrollChatToBottom(true);
+    __firstRenderDone = true;
+  }
+
+  updateScrollBottomBtn();
+}
+
+function reactionsFromMeta(meta){
+  const arr = Array.isArray(meta?.admin_reactions) ? meta.admin_reactions : [];
+  return arr.map(x => String(x || "").trim()).filter(Boolean);
+}
+  function attachmentFromMeta(meta){
+    if (!meta || typeof meta !== "object") return null;
+    if (!meta.attachment || !meta.attachment.url) return null;
+
+    return {
+      url: String(meta.attachment.url || ""),
+      mime: String(meta.attachment.mime || ""),
+      name: String(meta.attachment.name || "")
+    };
+  }
+
+function isSilentBuilderPayloadText(text){
+  const t = String(text || "").trim();
+  return t.startsWith("BUILDER|") || t.startsWith("CONFIG|");
+}
+
+ function roleFromDbMessage(m){
+  const role = String(m?.role || "").toLowerCase();
+
+  if (role === "customer") return "me";
+  if (role === "agent") return "ai";
+
+  if (role === "notification") return "notification"; // ✅ TAMBAH NI
+
+  return "ai";
+}
+
+  function buildServerHash(messages){
+  try{
+    return JSON.stringify(
+      (messages || []).map(m => [
+        m.id || "",
+        m.role || "",
+        m.text || "",
+        m.created_at || "",
+        m.meta?.admin_reply === true ? 1 : 0,
+        m.meta?.agent_reply === true ? 1 : 0,
+        String(m.meta?.sent_by_agent_name || ""),
+        m.meta?.attachment?.url || "",
+
+        JSON.stringify(
+          Array.isArray(m.meta?.admin_reactions)
+            ? m.meta.admin_reactions
+            : []
+        ),
+
+        String(m.meta?.admin_comment || ""),
+        String(m.meta?.reply_to || ""),
+        String(m.meta?.reply_preview?.text || ""),
+        String(m.meta?.reply_preview?.role || ""),
+        String(m.meta?.reply_preview?.role_label || "")
+      ])
+    );
+  }catch{
+    return "";
+  }
+}
+
+function replaceHistoryFromServer(messages){
+  const wasNearBottom = isNearBottom(chatbox, 120);
+
+  const prevScrollTop = chatbox.scrollTop;
+  const prevScrollHeight = chatbox.scrollHeight;
+  const prevClientHeight = chatbox.clientHeight;
+  const prevDistanceFromBottom = prevScrollHeight - prevScrollTop - prevClientHeight;
+
+  const filtered = (messages || []).filter(m => {
+    const role = String(m?.role || "").toLowerCase();
+    const txt = String(m?.text || "").trim();
+
+    if (role === "customer" && isSilentBuilderPayloadText(txt)) {
+      return false;
+    }
+    return true;
+  });
+
+  const arr = filtered.map(m => ({
+    role: roleFromDbMessage(m),
+    text: String(m?.text || ""),
+    time: m?.created_at
+      ? new Date(m.created_at).toLocaleTimeString("ms-MY", { hour:"2-digit", minute:"2-digit" })
+      : now(),
+    attachment: attachmentFromMeta(m?.meta || null),
+    meta: m?.meta || null
+  }));
+
+arr.forEach(x => {
+  x.isNotification = x.role === "notification";
+  x.targetUrl = String(x.meta?.target_url || "");
+});
+
+  writeHistory(arr);
+  renderHistoryToUI();
+
+  if (__forceStayBottomOnce || wasNearBottom) {
+    scrollChatToBottom(true);
+    __forceStayBottomOnce = false;
+
+    requestAnimationFrame(() => scrollChatToBottom(true));
+    setTimeout(() => scrollChatToBottom(true), 120);
+    setTimeout(() => scrollChatToBottom(true), 260);
+  } else {
+    const restoreScroll = () => {
+      const newScrollHeight = chatbox.scrollHeight;
+      const targetScrollTop = Math.max(
+        0,
+        newScrollHeight - chatbox.clientHeight - prevDistanceFromBottom
+      );
+      chatbox.scrollTop = targetScrollTop;
+    };
+
+    restoreScroll();
+    requestAnimationFrame(restoreScroll);
+  }
+
+  updateScrollBottomBtn();
+}
+ async function fetchThreadMessages(){
+    const phone = localStorage.getItem(KEY_PHONE) || "";
+    const threadId = localStorage.getItem(KEY_THREAD) || "";
+
+    if (!phone) return null;
+
+    const r = await fetch("/.netlify/functions/chat-thread", {
+      method: "POST",
+      cache: "no-store",
+      headers: { "Content-Type":"application/json" },
+      body: JSON.stringify({
+        phone,
+        thread_id: threadId || null
+      })
+    });
+
+    const j = await r.json().catch(() => ({}));
+    if (!r.ok || j.ok !== true) {
+      throw new Error(j.error || ("HTTP " + r.status));
+    }
+    return j;
+  }
+
+  async function markThreadRead(reason = "open") {
+    try{
+      const phone = localStorage.getItem(KEY_PHONE) || "";
+      const threadId = localStorage.getItem(KEY_THREAD) || "";
+
+      if (!phone || !threadId) return;
+      if (document.visibilityState === "hidden") return;
+
+      const nowTs = Date.now();
+      if (__lastMarkedReadThreadId === threadId && (nowTs - __lastMarkedReadAt) < 10000) {
+  return;
+}
+
+      __lastMarkedReadThreadId = threadId;
+      __lastMarkedReadAt = nowTs;
+
+      const r = await fetch("/.netlify/functions/chat-mark-read", {
+        method: "POST",
+        headers: { "Content-Type":"application/json" },
+        body: JSON.stringify({
+          phone,
+          thread_id: threadId,
+          source: reason || "open"
+        })
+      });
+
+      const j = await r.json().catch(() => ({}));
+      if (!r.ok || j.ok !== true) {
+        console.warn("[chat-mark-read] fail", j);
+      }
+    }catch(e){
+      console.error("[chat-mark-read error]", e);
+    }
+  }
+
+  async function syncThreadMessages(force = false){
+    try{
+      const phone = localStorage.getItem(KEY_PHONE) || "";
+      const threadIdBefore = localStorage.getItem(KEY_THREAD) || "";
+
+      console.log("[syncThreadMessages] start", {
+        force,
+        phone,
+        threadIdBefore
+      });
+
+      const j = await fetchThreadMessages();
+
+      console.log("[syncThreadMessages] response", j);
+
+      if (!j || !j.thread) {
+        console.log("[syncThreadMessages] no thread returned");
+        return;
+      }
+
+      if (j.thread.id) {
+        const oldThread = localStorage.getItem(KEY_THREAD) || "";
+        const newThread = j.thread.id;
+
+        console.log("[syncThreadMessages] thread compare", {
+          oldThread,
+          newThread
+        });
+
+        if (newThread && newThread !== oldThread) {
+          try{
+            const phone = localStorage.getItem(KEY_PHONE) || "";
+            const oldKey = keyChatHistory(phone, oldThread);
+            const newKey = keyChatHistory(phone, newThread);
+            const oldRaw = localStorage.getItem(oldKey);
+            if (oldRaw && !localStorage.getItem(newKey)) {
+              localStorage.setItem(newKey, oldRaw);
+            }
+            localStorage.removeItem(oldKey);
+          }catch{}
+
+          localStorage.setItem(KEY_THREAD, newThread);
+lblThread.textContent = newThread;
+
+subscribeChatRealtime(newThread).catch(()=>{});
+subscribePushForCurrentChat().catch(()=>{});
+refreshNotifButtonState().catch(()=>{});
+        } else if (newThread) {
+          localStorage.setItem(KEY_THREAD, newThread);
+          lblThread.textContent = newThread;
+          subscribePushForCurrentChat().catch(()=>{});
+          refreshNotifButtonState().catch(()=>{});
+        }
+      }
+
+      const messages = Array.isArray(j.messages) ? j.messages : [];
+      const newHash = buildServerHash(messages);
+
+      maybeNotifyNewAdminMessage(messages, force);
+
+      console.log("[syncThreadMessages] messages", {
+        count: messages.length,
+        hashChanged: __lastServerHash !== newHash,
+        first: messages[0] || null,
+        last: messages[messages.length - 1] || null
+      });
+
+      const hasChanged = (__lastServerHash !== newHash);
+
+if (force || hasChanged) {
+  __lastServerHash = newHash;
+  replaceHistoryFromServer(messages);
+  console.log("[syncThreadMessages] UI UPDATED");
+}
+
+if (document.visibilityState === "visible" && (force || hasChanged)) {
+  await markThreadRead(force ? "sync_force" : "sync_changed");
+}
+    }catch(e){
+      console.error("[syncThreadMessages] ERROR", e);
+    }
+  }
+
+async function unsubscribeChatRealtime(){
+  try{
+    if (chatSocket && currentSocketThreadId){
+      chatSocket.emit("customer_leave_thread", {
+        thread_id: currentSocketThreadId,
+        phone: localStorage.getItem(KEY_PHONE) || ""
+      });
+    }
+    currentSocketThreadId = "";
+  }catch(e){
+    console.warn("[chat socket unsubscribe error]", e);
+  }
+}
+
+async function subscribeChatRealtime(threadId){
+  const tid = String(threadId || "").trim();
+  if (!tid) return;
+
+  currentSocketThreadId = tid;
+
+  connectCustomerChatSocket();
+
+  if (chatSocket && chatSocket.connected){
+    chatSocket.emit("customer_join_thread", {
+      thread_id: tid,
+      phone: localStorage.getItem(KEY_PHONE) || ""
+    });
+  }
+}
+
+function connectCustomerChatSocket(){
+  try{
+    if (chatSocket) return;
+
+    chatSocket = io(SOCKET_URL, {
+      transports: ["websocket", "polling"]
+    });
+
+    chatSocket.on("connect", ()=>{
+      console.log("[customer chat socket] connected:", chatSocket.id);
+
+      const phone = localStorage.getItem(KEY_PHONE) || "";
+      const threadId = localStorage.getItem(KEY_THREAD) || "";
+
+      chatSocket.emit("customer_join", {
+        phone,
+        thread_id: threadId || null
+      });
+
+      if (threadId){
+        currentSocketThreadId = threadId;
+        chatSocket.emit("customer_join_thread", {
+          thread_id: threadId,
+          phone
+        });
+      }
+    });
+
+    chatSocket.on("disconnect", ()=>{
+      console.warn("[customer chat socket] disconnected");
+    });
+
+    function handleChatRefresh(payload){
+      const tid = String(payload?.thread_id || payload?.threadId || "").trim();
+      const currentTid = localStorage.getItem(KEY_THREAD) || "";
+
+      if (tid && currentTid && tid !== currentTid) return;
+      if (document.visibilityState !== "visible") return;
+
+      syncThreadMessages(false).catch(()=>{});
+      markThreadRead("socket").catch(()=>{});
+    }
+
+    chatSocket.on("customer_chat_updated", handleChatRefresh);
+    chatSocket.on("chat_thread_updated", handleChatRefresh);
+    chatSocket.on("chat_message_new", handleChatRefresh);
+    chatSocket.on("admin_message_new", handleChatRefresh);
+    chatSocket.on("message:new", handleChatRefresh);
+
+    chatSocket.on("connect_error", (err)=>{
+      console.warn("[customer chat socket] connect_error:", err?.message || err);
+    });
+
+  }catch(e){
+    console.warn("connectCustomerChatSocket error:", e);
+  }
+}
+  function startThreadSync(){
+  if (__threadSyncTimer) {
+    clearInterval(__threadSyncTimer);
+    __threadSyncTimer = null;
+  }
+
+  // Chat sekarang guna realtime.
+  // Backup sync cuma setiap 60s untuk safety kalau realtime terputus.
+  __threadSyncTimer = setInterval(() => {
+    if (document.visibilityState !== "visible") return;
+    syncThreadMessages(false).catch(()=>{});
+  }, 60000);
+}
+
   function buildDaftarLink(phone, thread){
-    const url = new URL("login.html", location.origin + location.pathname);
-    url.searchParams.set("next", "/chat");
-    url.searchParams.set("phone", phone);
-    url.searchParams.set("thread", thread);
-    return url.toString();
+    const base = new URL("login.html", location.origin + location.pathname);
+    base.searchParams.set("next", "/chat");
+    if (phone) base.searchParams.set("phone", phone);
+    if (thread) base.searchParams.set("thread", thread);
+    base.searchParams.set("popup", "1");
+    return base.toString();
   }
 
   function showRegisterCTA(phone, thread){
-    btnDaftar.href = buildDaftarLink(phone, thread);
     ctaRegister.style.display = "block";
+    btnDaftar.dataset.href = buildDaftarLink(phone, thread);
   }
 
   function hideRegisterCTA(){
     ctaRegister.style.display = "none";
   }
 
-  function loadFromUrlOrStorage(){
-    const qs = new URLSearchParams(location.search);
-    const uPhone = qs.get("phone");
-    const uThread = qs.get("thread");
-
-    if (uPhone) localStorage.setItem(KEY_PHONE, uPhone);
-    if (uThread) localStorage.setItem(KEY_THREAD, uThread);
-
-    const sPhone = localStorage.getItem(KEY_PHONE);
-    const sThread = localStorage.getItem(KEY_THREAD);
-
-    return { phone: sPhone || "", thread: sThread || "" };
+  function openLoginModal(){
+    const href = btnDaftar.dataset.href || buildDaftarLink(localStorage.getItem(KEY_PHONE)||"", localStorage.getItem(KEY_THREAD)||"");
+    loginFrame.src = href;
+    loginModal.classList.add("show");
+    loginModal.setAttribute("aria-hidden","false");
   }
 
-  function openChat(phone, thread){
-    lblPhone.textContent = phone;
-    lblThread.textContent = thread || "-";
-    stepPhone.style.display = "none";
-    stepChat.style.display = "block";
+  function closeLoginModal(){
+    loginModal.classList.remove("show");
+    loginModal.setAttribute("aria-hidden","true");
+  }
 
-    const loginBox = $("loginBox");
-    if (isLoggedIn()){
-      loginBox.innerHTML = "Status: <b>Logged in</b>";
-    } else {
-      loginBox.innerHTML = "Status: <b>Guest</b> (Daftar bila nak lock)";
+  function requireLoginGate(){
+    if (!isLoggedIn()){
+      setInputLocked(true, "Sila log masuk / daftar dahulu 👇");
+      openLoginModal();
+      return false;
     }
 
-    // ✅ refresh flow banner bila buka chat
-    refreshFlowSnapshot().catch(()=>{});
+    if (!window.__qr_active){
+      txt.disabled = false;
+      btnSend.disabled = false;
+      txt.placeholder = "Taip mesej…";
+    }
+
+    if (loginModal.classList.contains("show")) closeLoginModal();
+    return true;
   }
 
-  // ===== FLOW SNAPSHOT (banner) =====
+  function goBackToPhone(){
+unsubscribeChatRealtime();
+    try{ closeLoginModal(); }catch(e){}
+    stepChat.style.display = "none";
+    stepPhone.style.display = "block";
+    localStorage.removeItem(KEY_PHONE);
+    localStorage.removeItem(KEY_THREAD);
+    phoneErr.textContent = "";
+    setStatus("");
+    window.__qr_active = false;
+    txt.disabled = false;
+    btnSend.disabled = false;
+    txt.placeholder = "Taip mesej…";
+    try{ inPhone.focus(); }catch(e){}
+  }
+
+  btnDaftar.addEventListener("click", openLoginModal);
+  btnHideCta.onclick = hideRegisterCTA;
+
+  if (btnModalBack){
+    btnModalBack.onclick = goBackToPhone;
+  }
+
+  btnModalReload.onclick = () => {
+    try{
+      loginFrame.contentWindow.location.reload();
+    }catch{
+      loginFrame.src = loginFrame.src;
+    }
+  };
+
+  window.addEventListener("storage", (e)=>{
+    if (e && e.key === "ea_user"){
+      renderLoginBox();
+
+      if (isLoggedIn()){
+        if (loginModal.classList.contains("show")) closeLoginModal();
+        if (!window.__qr_active){
+          txt.disabled = false;
+          btnSend.disabled = false;
+          txt.placeholder = "Taip mesej…";
+        }
+        refreshFlowSnapshot().catch(()=>{});
+      } else {
+        setInputLocked(true, "Sila log masuk / daftar dahulu 👇");
+        openLoginModal();
+      }
+    }
+  });
+
+  setInterval(()=>{
+  if (!loginModal.classList.contains("show")) return;
+  if (document.visibilityState !== "visible") return;
+
+  renderLoginBox();
+
+  if (isLoggedIn()){
+    closeLoginModal();
+    if (!window.__qr_active){
+      txt.disabled = false;
+      btnSend.disabled = false;
+      txt.placeholder = "Taip mesej…";
+    }
+    refreshFlowSnapshot().catch(()=>{});
+  } else {
+    setInputLocked(true, "Sila log masuk / daftar dahulu 👇");
+  }
+}, 4000);
+
   function stepLabelFromStatus(status){
     const s = String(status||"").toUpperCase();
     if (s === "LOCK_WAIT_TAG") return "LOCK: Tunggu gambar/tag";
@@ -369,12 +4287,373 @@
 
     const r = await fetch("/.netlify/functions/chat-snapshot", {
       method: "POST",
+      cache:"no-store",
       headers: { "Content-Type":"application/json" },
       body: JSON.stringify({ phone, thread_id: threadId || null })
     });
     const j = await r.json().catch(()=>({}));
     if (!r.ok || j.ok !== true) return null;
     return j;
+  }
+
+const activeParcelBox = $("activeParcelBox");
+const parcelTrackModal = $("parcelTrackModal");
+const parcelTrackCn = $("parcelTrackCn");
+const parcelTrackStatus = $("parcelTrackStatus");
+const parcelTrackList = $("parcelTrackList");
+const btnParcelTrackClose = $("btnParcelTrackClose");
+
+const GDEX_TRACK_URL = "/.netlify/functions/gdex-track";
+
+if (btnParcelTrackClose){
+  btnParcelTrackClose.onclick = () => {
+    parcelTrackModal.classList.remove("show");
+    parcelTrackModal.setAttribute("aria-hidden","true");
+  };
+}
+
+function phoneVariants(raw){
+  const d = String(raw || "").replace(/\D/g,"");
+  if (!d) return { exact: [], last9: "" };
+
+  const set = new Set();
+  set.add(d);
+
+  if (d.startsWith("60")) {
+    set.add("0" + d.slice(2));
+    set.add("+" + d);
+  }
+
+  if (d.startsWith("0")) {
+    set.add("60" + d.slice(1));
+    set.add("+60" + d.slice(1));
+  }
+
+  return {
+    exact: Array.from(set).filter(Boolean),
+    last9: d.slice(-9)
+  };
+}
+
+function gdexStatusLabel(n){
+  const map = {
+    0: "Pending",
+    1: "Pickup",
+    2: "In Transit",
+    3: "Out For Delivery",
+    4: "Delivered",
+    5: "Returned",
+    6: "Claim"
+  };
+  return map[Number(n)] || "-";
+}
+
+async function fetchGdexTracking(awb){
+  const res = await fetch(GDEX_TRACK_URL + "?consignmentNumber=" + encodeURIComponent(awb), {
+    cache: "no-store"
+  });
+  const json = await res.json().catch(()=>({}));
+
+  if (!res.ok || !json.ok){
+    throw new Error(json.message || json.error || "Gagal semak tracking.");
+  }
+
+  return json.data || {};
+}
+
+function getDeliveredAtFromGdex(data){
+  const list = Array.isArray(data?.cnDetailStatusList) ? data.cnDetailStatusList : [];
+  const delivered = list.find(x =>
+    String(x?.consignmentNoteStatus || "").toLowerCase().includes("delivered") ||
+    Number(x?.enumStatus) === 4
+  );
+
+  if (!delivered || !delivered.dateScan) return null;
+
+  const d = new Date(delivered.dateScan);
+  return isNaN(d) ? null : d;
+}
+
+function shouldHideDelivered(data){
+  const latest = String(data?.latestConsignmentNoteStatus || "").toLowerCase();
+  const enumStatus = Number(data?.latestEnumStatus);
+
+  const isDelivered = latest.includes("delivered") || enumStatus === 4;
+  if (!isDelivered) return false;
+
+  const deliveredAt = getDeliveredAtFromGdex(data);
+  if (!deliveredAt) return false;
+
+  return (Date.now() - deliveredAt.getTime()) > (24 * 60 * 60 * 1000);
+}
+
+async function fetchActiveParcels(){
+  const phone = localStorage.getItem(KEY_PHONE) || "";
+  const pv = phoneVariants(phone);
+  const variants = pv.exact || [];
+  const last9 = pv.last9 || "";
+
+  if (!window.sb || (!variants.length && !last9)) return [];
+
+  const parcels = [];
+
+  console.log("[parcel] phone check", { phone, variants, last9 });
+
+  try{
+    let q = window.sb
+      .from("j916_orders")
+      .select("order_code,code,name,status,tracking_no,created_at,phone")
+      .not("tracking_no","is",null)
+      .order("created_at",{ ascending:false })
+      .limit(5);
+
+    if (last9){
+      q = q.ilike("phone", "%" + last9 + "%");
+    } else {
+      q = q.or(variants.map(p => `phone.eq.${p}`).join(","));
+    }
+
+    const { data, error } = await q;
+
+    if (error) console.warn("[parcel j916 error]", error);
+    console.log("[parcel j916 result]", data);
+
+    (data || []).forEach(r => {
+      if (!r.tracking_no) return;
+      parcels.push({
+        source: "916",
+        title: r.code || r.order_code || "Order 916",
+        sub: r.name || "Barang kemas 916",
+        status: String(r.status || "").toUpperCase(),
+        awb: r.tracking_no
+      });
+    });
+  }catch(e){
+    console.warn("[parcel j916]", e);
+  }
+
+  try{
+    let q = window.sb
+      .from("goldbar_order")
+      .select("reference_1,kind,design_name,status,tracking_no,created_at,customer_phone")
+      .not("tracking_no","is",null)
+      .order("created_at",{ ascending:false })
+      .limit(5);
+
+    if (last9){
+      q = q.ilike("customer_phone", "%" + last9 + "%");
+    } else {
+      q = q.or(variants.map(p => `customer_phone.eq.${p}`).join(","));
+    }
+
+    const { data, error } = await q;
+
+    if (error) console.warn("[parcel goldbar error]", error);
+    console.log("[parcel goldbar result]", data);
+
+    (data || []).forEach(r => {
+      if (!r.tracking_no) return;
+      parcels.push({
+        source: "GoldBar/Coin",
+        title: r.reference_1 || "Order GoldBar/Coin",
+        sub: [r.kind, r.design_name].filter(Boolean).join(" • "),
+        status: String(r.status || "").toUpperCase(),
+        awb: r.tracking_no
+      });
+    });
+  }catch(e){
+    console.warn("[parcel goldbar]", e);
+  }
+
+  console.log("[parcel final]", parcels);
+  return parcels.slice(0, 5);
+}
+
+async function refreshActiveParcelBox(){
+  if (!activeParcelBox) return;
+
+  const parcels = await fetchActiveParcels();
+
+  if (!parcels.length){
+    activeParcelBox.style.display = "none";
+    activeParcelBox.innerHTML = "";
+    return;
+  }
+
+  const enriched = [];
+
+  for (const p of parcels){
+    try{
+      const track = await fetchGdexTracking(p.awb);
+
+      if (shouldHideDelivered(track)) continue;
+
+      enriched.push({
+        ...p,
+        gdexStatus: track.latestConsignmentNoteStatus || gdexStatusLabel(track.latestEnumStatus) || "Pending"
+      });
+    }catch(_){
+      enriched.push({
+        ...p,
+        gdexStatus: "Status belum dapat disemak"
+      });
+    }
+  }
+
+  if (!enriched.length){
+    activeParcelBox.style.display = "none";
+    activeParcelBox.innerHTML = "";
+    return;
+  }
+
+  activeParcelBox.innerHTML = `
+    <div class="parcel-title">📦 Parcel Saya</div>
+    <div class="text-muted small">Status penghantaran aktif untuk order anda.</div>
+    ${enriched.map(p => `
+      <div class="parcel-item">
+        <div class="fw-bold">${escapeHtml(p.title)}</div>
+        <div class="small text-muted">${escapeHtml(p.sub || p.source)}</div>
+        <div class="mt-1">
+          <span class="parcel-status">${escapeHtml(p.gdexStatus)}</span>
+        </div>
+        <div class="small mt-1">
+          GDEX: <span class="mono">${escapeHtml(p.awb)}</span>
+        </div>
+        <div class="parcel-actions">
+          <button class="btn btn-sm btn-outline-primary"
+                  type="button"
+                  onclick="openParcelTrackingModal('${escapeHtml(p.awb)}')">
+            Jejak parcel
+          </button>
+        </div>
+      </div>
+    `).join("")}
+  `;
+
+  activeParcelBox.style.display = "block";
+}
+
+window.openParcelTrackingModal = async function(awb){
+  awb = String(awb || "").trim();
+  if (!awb) return;
+
+  parcelTrackCn.textContent = "CN: " + awb;
+  parcelTrackStatus.innerHTML = "Memuatkan status GDEX…";
+  parcelTrackList.innerHTML = "";
+
+  parcelTrackModal.classList.add("show");
+  parcelTrackModal.setAttribute("aria-hidden","false");
+
+  try{
+    const data = await fetchGdexTracking(awb);
+    const latest = data.latestConsignmentNoteStatus || gdexStatusLabel(data.latestEnumStatus);
+    const list = Array.isArray(data.cnDetailStatusList) ? data.cnDetailStatusList : [];
+
+    parcelTrackStatus.innerHTML = `
+      <div class="p-3 rounded-4 border bg-light">
+        <div class="small text-muted">Status terkini</div>
+        <div class="fw-bold">${escapeHtml(latest || "-")}</div>
+      </div>
+    `;
+
+    if (!list.length){
+      parcelTrackList.innerHTML = `
+        <div class="text-muted small">
+          Belum ada timeline penghantaran daripada GDEX.
+        </div>
+      `;
+      return;
+    }
+
+    parcelTrackList.innerHTML = list.map(x => `
+      <div class="border rounded-4 p-3 mb-2">
+        <div class="fw-semibold">
+          ${escapeHtml(x.consignmentNoteStatus || gdexStatusLabel(x.enumStatus))}
+        </div>
+        <div class="small text-muted">${escapeHtml(x.statusDetail || "")}</div>
+        <div class="small mt-1">📍 ${escapeHtml(x.location || "-")}</div>
+        <div class="small text-muted">${x.dateScan ? new Date(x.dateScan).toLocaleString("ms-MY",{hour12:false}) : "-"}</div>
+      </div>
+    `).join("");
+  }catch(e){
+    parcelTrackStatus.innerHTML = `<span class="text-danger fw-semibold">${escapeHtml(e.message || e)}</span>`;
+    parcelTrackList.innerHTML = "";
+  }
+};
+  function __pickCodeFromItem(it){
+    const raw =
+      String(it?.tag_raw || it?.code || it?.stock_code || it?.sku || "").trim();
+    const m = raw.match(/[A-Z]{1,3}\d{4,}/i);
+    return (m ? m[0] : raw).trim();
+  }
+
+  async function __tryFetchDesignNamesByIds(sb, ids){
+    const uniq = Array.from(new Set((ids || []).filter(Boolean)));
+    if (!uniq.length) return { byId:{}, ok:false };
+
+    let r = await sb.from("j916_designs").select("id,name").in("id", uniq);
+    if (!r.error && Array.isArray(r.data)){
+      const byId = {};
+      r.data.forEach(d => { if (d && d.id) byId[d.id] = d.name || ""; });
+      return { byId, ok:true };
+    }
+
+    r = await sb.from("designs").select("id,name").in("id", uniq);
+    if (!r.error && Array.isArray(r.data)){
+      const byId = {};
+      r.data.forEach(d => { if (d && d.id) byId[d.id] = d.name || ""; });
+      return { byId, ok:true };
+    }
+
+    return { byId:{}, ok:false };
+  }
+
+  async function __enrichLockItems(items){
+    try{
+      const sb = window.sb;
+      if (!sb) return items || [];
+
+      const arr = Array.isArray(items) ? items : [];
+      if (!arr.length) return arr;
+
+      const codes = Array.from(new Set(arr.map(__pickCodeFromItem).filter(Boolean)));
+      if (!codes.length) return arr;
+
+      const rItems = await sb
+        .from("j916_items")
+        .select("code,design_id,weight_g,length_cm,width_cm")
+        .in("code", codes);
+
+      if (rItems.error || !Array.isArray(rItems.data)) return arr;
+
+      const byCode = {};
+      const designIds = [];
+      rItems.data.forEach(row => {
+        if (!row || !row.code) return;
+        byCode[String(row.code).trim()] = row;
+        if (row.design_id) designIds.push(row.design_id);
+      });
+
+      const rDesign = await __tryFetchDesignNamesByIds(sb, designIds);
+      const byId = rDesign.byId || {};
+
+      return arr.map(it => {
+        const code = __pickCodeFromItem(it);
+        const db = byCode[code] || null;
+        const designName = db && db.design_id ? (byId[db.design_id] || "") : "";
+
+        return {
+          ...it,
+          __code: code,
+          __design_name: designName || "",
+          __weight_g: (db && db.weight_g != null) ? db.weight_g : null,
+          __length_cm: (db && db.length_cm != null) ? db.length_cm : null,
+          __width_cm: (db && db.width_cm != null) ? db.width_cm : null
+        };
+      });
+    }catch(e){
+      return items || [];
+    }
   }
 
   async function refreshFlowSnapshot(){
@@ -388,8 +4667,25 @@
     }
 
     if (snap.thread.id){
-      localStorage.setItem(KEY_THREAD, snap.thread.id);
-      lblThread.textContent = snap.thread.id;
+      const oldThread = localStorage.getItem(KEY_THREAD) || "";
+      const newThread = snap.thread.id;
+
+      if (newThread && newThread !== oldThread){
+        try{
+          const oldKey = keyChatHistory(phone, oldThread);
+          const newKey = keyChatHistory(phone, newThread);
+          const oldRaw = localStorage.getItem(oldKey);
+          if (oldRaw && !localStorage.getItem(newKey)){
+            localStorage.setItem(newKey, oldRaw);
+          }
+          localStorage.removeItem(oldKey);
+        }catch{}
+        localStorage.setItem(KEY_THREAD, newThread);
+        lblThread.textContent = newThread;
+      } else {
+        localStorage.setItem(KEY_THREAD, snap.thread.id);
+        lblThread.textContent = snap.thread.id;
+      }
     }
 
     const st = String(snap.thread.status || "OPEN").toUpperCase();
@@ -405,19 +4701,74 @@
     }
 
     const lock = snap.lock || {};
-    const items = lock.items || [];
+    let items = lock.items || [];
+    items = await __enrichLockItems(items);
+
+    function fmtRM(v){
+      const n = Number(v);
+      if (!isFinite(n)) return "";
+      return "RM " + n.toFixed(2);
+    }
+    function fmtG(v){
+      const n = Number(v);
+      if (!isFinite(n) || n <= 0) return "";
+      return (Math.round(n * 100) / 100).toString().replace(/(\.\d)0$/, "$1") + "g";
+    }
+    function fmtCm(v){
+      const n = Number(v);
+      if (!isFinite(n) || n <= 0) return "";
+      return String(Math.round(n)) + "cm";
+    }
+    function cleanTxt(v){
+      return String(v || "").trim();
+    }
+
     const lines = (items || []).map(it => {
-      const p = (it.price_rm != null) ? ("RM " + Number(it.price_rm).toFixed(2)) : "(harga belum set)";
-      const tag = it.tag_raw || [it.size_text ? ("S:" + it.size_text) : "", it.weight_g ? ("W:" + it.weight_g + "gm") : ""].filter(Boolean).join(" / ");
-      const cut = it.wants_cut ? (" • POTONG → " + (it.cut_to_cm ? (it.cut_to_cm + "cm") : "?")) : "";
-      return `• Item ${it.seq}: ${p}${tag ? " (" + tag + ")" : ""}${cut}`;
+      const seq = it.seq ?? "-";
+
+      const price = (it.price_rm != null)
+        ? fmtRM(it.price_rm)
+        : "(harga belum set)";
+
+      const code =
+        cleanTxt(it.__code) ||
+        cleanTxt(it.tag_raw) ||
+        cleanTxt(it.code) ||
+        cleanTxt(it.stock_code) ||
+        cleanTxt(it.sku) ||
+        "";
+
+      const name =
+        cleanTxt(it.__design_name) ||
+        cleanTxt(it.design_name) ||
+        cleanTxt(it.item_name) ||
+        cleanTxt(it.name) ||
+        "";
+
+      const weight = fmtG(it.__weight_g ?? it.weight_g ?? it.weight ?? it.berat_g);
+      const len    = fmtCm(it.__length_cm ?? it.current_length_cm ?? it.length_cm ?? it.panjang_cm);
+      const width  = fmtCm(it.__width_cm ?? it.width_cm ?? it.lebar_cm ?? it.width);
+
+      const detailParts = [];
+      if (name) detailParts.push(name);
+      if (weight) detailParts.push("Berat " + weight);
+      if (len) detailParts.push("Panjang " + len);
+      if (width) detailParts.push("Lebar " + width);
+
+      const detailText = detailParts.length ? (" " + detailParts.join(" • ")) : "";
+
+      const cut = (it.wants_cut === true)
+        ? (" • POTONG → " + (it.cut_to_cm ? fmtCm(it.cut_to_cm) : "?"))
+        : "";
+
+      return `• Item ${seq}: ${price}${code ? " (" + code + ")" : ""}${detailText}${cut}`;
     }).join("\n");
 
     const shipLine = lock.ship_label ? `• ${lock.ship_label}: RM ${Number(lock.ship_fee || 0).toFixed(2)}` : "";
     const totalLine = (lock.total != null) ? `✅ Total: RM ${Number(lock.total).toFixed(2)}` : "";
 
     const desc =
-      `Anda sedang dalam proses LOCK.\n` +
+      `Anda sedang dalam proses LOCK(untuk keluar dari proses lock anda taip BATAL/CANCEL).\n` +
       `Step sekarang: ${label}\n\n` +
       `Tip: Kalau anda nak sambung, ikut soalan terakhir yang sistem tanya ya.`;
 
@@ -433,44 +4784,29 @@
   if (btnFlowRefresh){
     btnFlowRefresh.onclick = () => {
       refreshFlowSnapshot().catch(()=>{});
+refreshActiveParcelBox().catch(()=>{});
     };
   }
 
-  btnReset.onclick = ()=>{
-    localStorage.removeItem(KEY_PHONE);
-    localStorage.removeItem(KEY_THREAD);
-    location.href = "/chat";
-  };
-
-  btnHideCta.onclick = hideRegisterCTA;
-
-  btnStart.onclick = ()=>{
-    phoneErr.textContent = "";
-    const p = normalizePhone(inPhone.value);
-    if(!p.ok){ phoneErr.textContent = p.error; return; }
-    localStorage.setItem(KEY_PHONE, p.e164);
-    localStorage.removeItem(KEY_THREAD);
-    openChat(p.e164, "");
-    addMsg("ai", "Assalamualaikum 🙂 Boleh saya bantu? (Contoh: “916 berapa”, “nak lock live”)");
-    refreshFlowSnapshot().catch(()=>{});
-  };
-
-  // ✅ attachment preview handlers
   function clearPendingFile(){
     pendingFile = null;
     fileInput.value = "";
     filePreview.style.display = "none";
     fileThumbWrap.style.display = "none";
-    try{ fileThumb.src = ""; }catch{}
+    try{
+      fileThumb.src = "";
+    }catch{}
   }
 
   btnRemoveFile.onclick = clearPendingFile;
 
   fileInput.addEventListener("change", () => {
     const f = fileInput.files && fileInput.files[0] ? fileInput.files[0] : null;
-    if (!f){ clearPendingFile(); return; }
+    if (!f){
+      clearPendingFile();
+      return;
+    }
 
-    // allow only image/pdf
     const okImg = /^image\//i.test(f.type);
     const okPdf = (f.type === "application/pdf");
     if (!okImg && !okPdf){
@@ -502,12 +4838,11 @@
       .slice(0, 120);
   }
 
-  // ✅ upload to Supabase Storage (bucket: chat-media)
   async function uploadAttachment(phoneE164, threadId, file){
-    const sb = window.sb; // from auth.js
+    const sb = window.sb;
     if (!sb || !sb.storage) throw new Error("Supabase client (sb) belum sedia.");
 
-    const bucket = "chat-media"; // ✅ pastikan bucket ini wujud & public
+    const bucket = "chat-media";
     const tid = threadId || "new";
     const ts = Date.now();
     const path = `chat/${phoneE164}/${tid}/${ts}_${safeName(file.name)}`;
@@ -521,92 +4856,142 @@
 
     const pub = sb.storage.from(bucket).getPublicUrl(path);
     const url = pub?.data?.publicUrl || "";
-
     if (!url) throw new Error("Gagal dapat public URL (bucket kena public).");
 
-    return {
-      url,
-      mime: file.type || "",
-      name: file.name || ""
-    };
+    return { url, mime: file.type || "", name: file.name || "" };
   }
+
+function isSilentBuilderPayload(message){
+  const t = String(message || "").trim();
+  return t.startsWith("BUILDER|") || t.startsWith("CONFIG|");
+}
+
+function hasInteractiveMeta(meta){
+  if (!meta || typeof meta !== "object") return false;
+  if (meta.builder_card && typeof meta.builder_card === "object") return true;
+  if (meta.config_card && typeof meta.config_card === "object") return true;
+  if (Array.isArray(meta.design_cards) && meta.design_cards.length) return true;
+  if (Array.isArray(meta.quick_replies) && meta.quick_replies.length) return true;
+  return false;
+}
+
+function removeLastInteractiveAiBubble(){
+  const items = Array.from(chatbox.children || []);
+  for (let i = items.length - 1; i >= 0; i--) {
+    const node = items[i];
+    const hasBuilder = !!node.querySelector(".builder-card");
+    const hasConfig = !!node.querySelector(".config-card");
+    const hasDesign = !!node.querySelector(".design-grid");
+    const hasQuicks = !!node.querySelector(".qr-hint");
+    if (hasBuilder || hasConfig || hasDesign || hasQuicks) {
+      node.remove();
+      break;
+    }
+  }
+}
 
   async function sendMsg(){
     const rawPhone = localStorage.getItem(KEY_PHONE) || "";
     const threadId = localStorage.getItem(KEY_THREAD) || "";
-    const message = String(txt.value||"").trim();
 
-    // allow send if message OR attachment exists
-    if (!message && !pendingFile) return;
+    if (!requireLoginGate()) return;
+
+   const message = String(txt.value||"").trim();
+if (!message && !pendingFile) return;
+
+const silentBuilder = isSilentBuilderPayload(message);
+
+__forceStayBottomOnce = true;
+
+    window.__qr_active = false;
+    txt.disabled = false;
+    btnSend.disabled = false;
+    txt.placeholder = "Taip mesej…";
 
     txt.value = "";
     hideRegisterCTA();
 
-    // show in UI (optimistic)
     let optimisticAttachment = null;
+let optimisticWrap = null;
 
-    if (pendingFile) {
-      const blobUrl = URL.createObjectURL(pendingFile); // ✅ bagi URL sementara untuk preview
-      optimisticAttachment = { url: blobUrl, mime: pendingFile.type, name: pendingFile.name };
-    }
+if (pendingFile) {
+  const blobUrl = URL.createObjectURL(pendingFile);
+  optimisticAttachment = { url: blobUrl, mime: pendingFile.type, name: pendingFile.name };
+}
 
-    const optimisticWrap = addMsg(
-      "me",
-      message || "(lampiran)",
-      null,
-      optimisticAttachment
-    );
+if (!silentBuilder) {
+  optimisticWrap = addMsgUI("me", message || "(lampiran)", null, optimisticAttachment, false, null);
+
+  pushHistory({
+    role:"me",
+    text: message || "(lampiran)",
+    time: now(),
+    attachment: null,
+    meta: null
+  });
+
+  scrollChatToBottom(true);
+  updateScrollBottomBtn();
+}
+
     setStatus("Sedang proses…");
 
     let attachment = null;
 
     try{
-      // upload first if any
       if (pendingFile){
         setStatus("Upload fail…");
-        const phone = rawPhone;
-        attachment = await uploadAttachment(phone, threadId, pendingFile);
+        attachment = await uploadAttachment(rawPhone, threadId, pendingFile);
         clearPendingFile();
-      }
 
-      // ✅ update bubble optimistic supaya guna public URL (bukan blob)
-      try {
-        if (optimisticWrap && attachment && attachment.url) {
-
-          // update thumbnail img (kalau image)
+        try {
           const img = optimisticWrap.querySelector("img.attach-thumb");
-          if (img && /^image\//i.test(attachment.mime || "")) {
-            img.src = attachment.url;
-            try { URL.revokeObjectURL(optimisticAttachment.url); } catch(e) {}
-          }
+          if (img && /^image\//i.test(attachment.mime || "")) img.src = attachment.url;
 
-          // update link thumbnail (a[data-kind="thumb"])
           const aThumb = optimisticWrap.querySelector('a[data-kind="thumb"]');
           if (aThumb) aThumb.href = attachment.url;
 
-          // update file link text (a[data-kind="file"])
           const aFile = optimisticWrap.querySelector('a[data-kind="file"]');
           if (aFile) {
             aFile.href = attachment.url;
-            aFile.textContent = attachment.name
-              ? ("Buka fail: " + attachment.name)
-              : "Buka fail";
+            aFile.textContent = attachment.name ? ("Buka fail: " + attachment.name) : "Buka fail";
           }
-        }
-      } catch(e) {}
+        } catch(e) {}
 
-      setStatus("Sedang proses…");
+        try{
+          const arr = readHistory();
+          const last = arr[arr.length-1];
+          if (last && last.role === "me"){
+            last.attachment = { url: attachment.url, mime: attachment.mime || "", name: attachment.name || "" };
+            writeHistory(arr);
+          }
+        }catch{}
+      }
 
-      const payload = {
-        phone: rawPhone,
-        thread_id: threadId || null,
-        message: message || "",
-        attachment: attachment, // ✅ new
-        is_logged_in: isLoggedIn()
-      };
+     let appPlatform = "";
+
+if (window.Capacitor) {
+  const ua = navigator.userAgent || "";
+  if (/iPhone|iPad|iPod/i.test(ua)) {
+    appPlatform = "APPSTORE";
+  } else if (/Android/i.test(ua)) {
+    appPlatform = "PLAYSTORE";
+  }
+}
+
+const payload = {
+  phone: rawPhone,
+  thread_id: threadId || null,
+  message: message || "",
+  attachment: attachment,
+  is_logged_in: isLoggedIn(),
+  is_real_app: !!window.Capacitor,
+  app_platform: appPlatform
+};
 
       const r = await fetch("/.netlify/functions/chat-send", {
         method:"POST",
+        cache:"no-store",
         headers:{ "Content-Type":"application/json" },
         body: JSON.stringify(payload)
       });
@@ -619,24 +5004,55 @@
       }
 
       if (j.thread_id){
+        const oldThread = localStorage.getItem(KEY_THREAD) || "";
+        const newThread = j.thread_id;
+
+        if (newThread && newThread !== oldThread){
+          try{
+            const phone = localStorage.getItem(KEY_PHONE) || rawPhone;
+            const oldKey = keyChatHistory(phone, oldThread);
+            const newKey = keyChatHistory(phone, newThread);
+            const oldRaw = localStorage.getItem(oldKey);
+            if (oldRaw && !localStorage.getItem(newKey)){
+              localStorage.setItem(newKey, oldRaw);
+            }
+            localStorage.removeItem(oldKey);
+          }catch{}
+        }
+
         localStorage.setItem(KEY_THREAD, j.thread_id);
         lblThread.textContent = j.thread_id;
       }
 
-      // AI reply
-      addMsg("ai", j.reply || "OK.");
+      const replyText = String(j.reply || "").trim();
+const replyMeta = j.meta || null;
 
-      // ✅ refresh flow banner (supaya step/total sentiasa betul)
+if (silentBuilder) {
+  removeLastInteractiveAiBubble();
+
+  if (replyText || hasInteractiveMeta(replyMeta)) {
+    addMsg("ai", replyText || "", null, null, replyMeta);
+    scrollChatToBottom(true);
+    requestAnimationFrame(() => scrollChatToBottom(true));
+    setTimeout(() => scrollChatToBottom(true), 120);
+  }
+} else {
+  if (replyText || hasInteractiveMeta(replyMeta)) {
+    addMsg("ai", replyText || "", null, null, replyMeta);
+    scrollChatToBottom(true);
+    requestAnimationFrame(() => scrollChatToBottom(true));
+    setTimeout(() => scrollChatToBottom(true), 120);
+  }
+}
+
+      setTimeout(() => {
+        syncThreadMessages(false).catch(()=>{});
+      }, 1200);
+
       refreshFlowSnapshot().catch(()=>{});
-
-      if (j.action === "require_login"){
-        const phone = localStorage.getItem(KEY_PHONE) || rawPhone;
-        const th = localStorage.getItem(KEY_THREAD) || j.thread_id || "";
-        showRegisterCTA(phone, th);
-      }
-
+      renderLoginBox();
+refreshActiveParcelBox().catch(()=>{});
       setStatus("");
-
     }catch(e){
       setStatus("Ralat: " + (e.message||e));
       addMsg("ai", "Maaf, connection bermasalah. Cuba lagi ya.");
@@ -644,53 +5060,737 @@
   }
 
   btnSend.onclick = sendMsg;
-  txt.addEventListener("keydown", (e)=>{
-    if(e.key==="Enter") sendMsg();
-  });
 
-  // auto open jika ada dalam storage (atau balik dari login dengan params)
-const st = loadFromUrlOrStorage();
-
-if (st.phone){
-  openChat(st.phone, st.thread);
-
-  addMsg("ai", "Assalamualaikum 🙂 Boleh saya bantu? (Contoh: “916 berapa”, “nak lock live”)");
-
-  refreshFlowSnapshot().catch(()=>{});
-
-  // ✅ AUTO REFRESH setiap 15 saat (start sekali sahaja)
-  if (!window.__ea_flow_interval_started) {
-    window.__ea_flow_interval_started = true;
-    setInterval(() => {
-      refreshFlowSnapshot().catch(()=>{});
-    }, 15000);
+  if (btnEnableNotif) {
+    btnEnableNotif.onclick = handleEnableNotifClick;
   }
 
-} else {
+if (btnNotifCoachmarkClose) {
+    btnNotifCoachmarkClose.onclick = () => {
+      markSeenNotifCoachmark();
+      closeNotifCoachmark();
+    };
+  }
 
-  // cuba auto-fill jika user dah login
-  const u = getAuthUser();
-  if (u && u.phone){
-    const p = normalizePhone(u.phone);
-    if (p.ok){
+if (btnNotifCoachmarkEnable) {
+    btnNotifCoachmarkEnable.onclick = async () => {
+      closeNotifCoachmark();
+      try{
+        await handleEnableNotifClick();
+      }catch(e){
+        console.error("[coachmark enable notif error]", e);
+      }
+    };
+  }
+
+  txt.addEventListener("keydown", (e)=>{
+    if(e.key==="Enter" && !txt.disabled) sendMsg();
+  });
+
+  async function precheckBeforeChat(phoneE164, threadId){
+    const r = await fetch("/.netlify/functions/chat-precheck", {
+      method: "POST",
+      cache:"no-store",
+      headers: { "Content-Type":"application/json" },
+      body: JSON.stringify({ phone: phoneE164, thread_id: threadId || null })
+    });
+
+    const j = await r.json().catch(()=>({}));
+    if (!r.ok) {
+      return { ok:false, error: (j && j.error) ? j.error : ("HTTP " + r.status) };
+    }
+    return j;
+  }
+
+  btnReset.onclick = async ()=>{
+    try{
+      if (!requireLoginGate()) return;
+
+      hideRegisterCTA();
+
+      window.__qr_active = false;
+      txt.disabled = false;
+      btnSend.disabled = false;
+      txt.placeholder = "Taip mesej…";
+
+      txt.value = "batal";
+      await sendMsg();
+    }catch(e){
+      setStatus("Ralat reset: " + (e.message || e));
+      addMsg("ai", "Maaf, reset tak berjaya. Cuba lagi ya.");
+    }
+  };
+
+  btnClearHistory.onclick = ()=>{
+unsubscribeChatRealtime();
+    const phone = localStorage.getItem(KEY_PHONE) || "";
+
+    try{
+      if (phone){
+        clearAllHistoryForPhone(phone);
+      } else {
+        clearHistory();
+      }
+    }catch(e){
+      try{ clearHistory(); }catch(e2){}
+    }
+
+    localStorage.removeItem(KEY_THREAD);
+    try{ lblThread.textContent = "-"; }catch(e){}
+
+    chatbox.innerHTML = "";
+    window.__qr_active = false;
+    txt.disabled = false;
+    btnSend.disabled = false;
+    txt.placeholder = "Taip mesej…";
+    setStatus("Chat telah dikosongkan ✅ (session baru)");
+
+    try{
+      const u = new URL(location.href);
+      u.searchParams.set("v", APP_VER);
+      location.replace(u.toString());
+    }catch(e){
+      location.reload();
+    }
+  };
+
+  (function ensureLatestBuild(){
+    try{
+      const prev = localStorage.getItem(KEY_APP_VER) || "";
+      if (prev !== APP_VER){
+        localStorage.setItem(KEY_APP_VER, APP_VER);
+
+        try{ localStorage.removeItem(KEY_THREAD); }catch(e){}
+
+        try{
+          const keys = [];
+          for (let i = 0; i < localStorage.length; i++){
+            const k = localStorage.key(i);
+            if (!k) continue;
+            if (k.startsWith("ea_chat_history::")) keys.push(k);
+          }
+          keys.forEach(k => localStorage.removeItem(k));
+        }catch(e){}
+
+        const u = new URL(location.href);
+        u.searchParams.set("v", APP_VER);
+        u.searchParams.set("ts", String(Date.now()));
+        location.replace(u.toString());
+        return;
+      }
+    }catch(e){}
+  })();
+
+function isLiveCheckoutDoneLanding(){
+  const qs = new URLSearchParams(location.search);
+  return qs.get("live_checkout_done") === "1";
+}
+
+function showLiveCheckoutSyncNotice(){
+  if (!isLiveCheckoutDoneLanding()) return;
+  if (document.getElementById("liveCheckoutSyncNotice")) return;
+
+  const box = document.createElement("div");
+  box.id = "liveCheckoutSyncNotice";
+  box.className = "live-checkout-sync";
+  box.innerHTML =
+    `✅ <b>Lock LIVE berjaya dihantar.</b><br>` +
+    `Ai-Dan sedang paparkan detail belian, order code dan maklumat bayaran di bawah.`;
+
+  const chatWrap = document.querySelector(".chatbox-wrap");
+  if (chatWrap && chatWrap.parentNode){
+    chatWrap.parentNode.insertBefore(box, chatWrap);
+  }
+}
+
+function cleanLiveCheckoutUrl(){
+  if (!isLiveCheckoutDoneLanding()) return;
+
+  const u = new URL(location.href);
+  u.searchParams.delete("live_checkout_done");
+
+  history.replaceState({}, "", u.toString());
+}
+
+function getLiveLockParams(){
+  const qs = new URLSearchParams(location.search);
+
+  // ===== J999 LIVE LOCK =====
+  const isLive999Lock =
+    qs.get("live999_lock") === "1" ||
+    qs.get("source") === "comment_live_999";
+
+  if (isLive999Lock){
+    return {
+      live_lock: true,
+      live_type: "J999",
+      source: "comment_live_999",
+      action: "live999_lock",
+
+      live_code: String(qs.get("live_code") || "").trim(),
+      kind: String(qs.get("kind") || "").trim(),
+      weight_g: Number(qs.get("weight_g") || 0),
+      design_id: String(qs.get("design_id") || "").trim(),
+      design_name: String(qs.get("design_name") || "").trim(),
+      card_type: String(qs.get("card_type") || "READY").trim().toUpperCase(),
+      qty: Number(qs.get("qty") || 1),
+      price_rm: Number(qs.get("price_rm") || 0),
+      phone: String(qs.get("phone") || "").trim()
+    };
+  }
+
+  // ===== J916 LIVE LOCK — FLOW ASAL KEKAL =====
+  const isLiveLock =
+    qs.get("live_lock") === "1" ||
+    qs.get("source") === "comment_live";
+
+  if (!isLiveLock) return null;
+
+  return {
+    live_lock: true,
+    live_type: "J916",
+    source: "comment_live",
+    action: "live_lock",
+
+    code: String(qs.get("code") || "")
+      .toUpperCase()
+      .replace(/\s+/g,"")
+      .trim(),
+
+    price_rm: Number(qs.get("price_rm") || 0),
+    phone: String(qs.get("phone") || "").trim()
+  };
+}
+
+function liveLockKey(params){
+  return [
+    "ea_live_lock_done",
+    params?.live_type || "",
+    params?.live_code || params?.code || "",
+    params?.kind || "",
+    params?.weight_g || "",
+    params?.design_id || "",
+    params?.design_name || "",
+    params?.card_type || "",
+    params?.qty || "",
+    params?.price_rm || "",
+    params?.phone || ""
+  ].join("::");
+}
+  function loadFromUrlOrStorage(){
+    const qs = new URLSearchParams(location.search);
+    const uPhone = qs.get("phone");
+    const uThread = qs.get("thread");
+
+    if (uPhone) localStorage.setItem(KEY_PHONE, uPhone);
+    if (uThread) localStorage.setItem(KEY_THREAD, uThread);
+
+    const sPhone = localStorage.getItem(KEY_PHONE);
+    const sThread = localStorage.getItem(KEY_THREAD);
+
+    return { phone: sPhone || "", thread: sThread || "" };
+  }
+
+  function openChat(phone, thread){
+    lblPhone.textContent = phone;
+    lblThread.textContent = thread || "-";
+    stepPhone.style.display = "none";
+    stepChat.style.display = "block";
+
+   renderLoginBox();
+renderHistoryToUI();
+
+showLiveCheckoutSyncNotice();
+
+refreshFlowSnapshot().catch(()=>{});
+refreshActiveParcelBox().catch(()=>{});
+
+requireLoginGate();
+
+    initLocalAdminNotification()
+      .then(() => subscribePushForCurrentChat())
+      .catch(()=>{});
+
+   refreshNotifButtonState()
+  .then(() => maybeShowNotifCoachmark())
+  .catch(()=>{});
+
+markThreadRead("open_chat").catch(()=>{});
+
+   __forceStayBottomOnce = true;
+    __firstRenderDone = false;
+
+    syncThreadMessages(true)
+  .then(() => {
+    refreshActiveParcelBox().catch(()=>{});
+
+    if (isLiveCheckoutDoneLanding()){
+      scrollChatToBottom(true);
+      setTimeout(() => scrollChatToBottom(true), 250);
+      cleanLiveCheckoutUrl();
+    }
+  })
+  .catch(()=>{});
+
+connectCustomerChatSocket();
+
+if (thread){
+  subscribeChatRealtime(thread).catch(()=>{});
+}
+startThreadSync();
+
+    setTimeout(() => {
+      autoSendLiveLockIfNeeded().catch(()=>{});
+    }, 600);
+  }
+
+async function autoSendLiveLockIfNeeded(){
+  const params = getLiveLockParams();
+  if (!params || !params.live_lock) return;
+
+  const phone = localStorage.getItem(KEY_PHONE) || params.phone || "";
+  const threadId = localStorage.getItem(KEY_THREAD) || "";
+
+  if (!phone) return;
+
+  if (!isLoggedIn()) {
+    setStatus("Sila log masuk dulu untuk teruskan lock LIVE.");
+    openLoginModal();
+    return;
+  }
+
+  const key = liveLockKey(params);
+  if (sessionStorage.getItem(key) === "1") return;
+  sessionStorage.setItem(key, "1");
+
+  try {
+    setStatus("Sedang lock barang LIVE…");
+
+    let displayText = "";
+    let payload = null;
+
+    if (params.live_type === "J999"){
+      if (!params.kind || !params.weight_g || !params.design_name || !params.price_rm || params.price_rm <= 0) {
+        sessionStorage.removeItem(key);
+        setStatus("Data lock J999 tidak lengkap. Sila tekan Lock semula.");
+        return;
+      }
+
+      displayText = "Lock J999 " + params.kind + " " + params.weight_g + "g " + params.design_name + " " + params.card_type;
+
+const serverMessage =
+  "LIVE999_LOCK" +
+  "|kind=" + encodeURIComponent(params.kind || "") +
+  "|weight_g=" + encodeURIComponent(params.weight_g || "") +
+  "|design_id=" + encodeURIComponent(params.design_id || "") +
+  "|design_name=" + encodeURIComponent(params.design_name || "") +
+  "|card=" + encodeURIComponent(params.card_type || "READY") +
+  "|qty=" + encodeURIComponent(params.qty || 1);
+
+      addMsg("me", displayText, null, null, {
+        live999_lock: true,
+        live_code: params.live_code,
+        kind: params.kind,
+        weight_g: params.weight_g,
+        design_name: params.design_name,
+        card_type: params.card_type,
+        qty: params.qty,
+        price_rm: params.price_rm
+      });
+
+     payload = {
+  phone,
+  thread_id: threadId || null,
+  message: serverMessage,
+  action: "live999_lock",
+  source: "comment_live_999",
+  live999_lock: true,
+  live_code: params.live_code,
+  kind: params.kind,
+  weight_g: params.weight_g,
+  design_name: params.design_name,
+  card_type: params.card_type,
+  qty: params.qty || 1,
+  price_rm: params.price_rm,
+  is_logged_in: true
+};
+    }
+
+ else {
+      if (!params.code || !params.price_rm || params.price_rm <= 0) {
+        sessionStorage.removeItem(key);
+        setStatus("Data lock LIVE tidak lengkap. Sila tekan Lock semula.");
+        return;
+      }
+
+      displayText = "Lock LIVE " + params.code;
+
+      addMsg("me", displayText, null, null, {
+        live_lock: true,
+        code: params.code,
+        price_rm: params.price_rm
+      });
+
+      payload = {
+        phone,
+        thread_id: threadId || null,
+        message: "LOCK LIVE " + params.code,
+        action: "live_lock",
+        source: "comment_live",
+        live_lock: true,
+        code: params.code,
+        price_rm: params.price_rm,
+        is_logged_in: true
+      };
+    }
+
+    const r = await fetch("/.netlify/functions/chat-send", {
+      method: "POST",
+      cache: "no-store",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(payload)
+    });
+
+    const j = await r.json().catch(() => ({}));
+
+    if (!r.ok || j.ok !== true) {
+      sessionStorage.removeItem(key);
+      setStatus("Ralat lock LIVE: " + (j.error || ("HTTP " + r.status)));
+      addMsg("ai", "Maaf, lock LIVE gagal diproses. Sila cuba tekan Lock semula.");
+      return;
+    }
+
+try{
+  if (chatSocket && chatSocket.connected){
+    chatSocket.emit("customer_message_sent", {
+      phone: rawPhone,
+      thread_id: j.thread_id || threadId || null,
+      message: message || "",
+      has_attachment: !!attachment
+    });
+  }
+}catch(e){
+  console.warn("customer_message_sent emit error:", e);
+}
+
+    if (j.thread_id) {
+      localStorage.setItem(KEY_THREAD, j.thread_id);
+      lblThread.textContent = j.thread_id;
+    }
+
+    const replyText = String(j.reply || "").trim();
+    const replyMeta = j.meta || null;
+
+    if (replyText || hasInteractiveMeta(replyMeta)) {
+      addMsg("ai", replyText || "", null, null, replyMeta);
+    }
+
+    setStatus("");
+    refreshFlowSnapshot().catch(()=>{});
+    syncThreadMessages(true).catch(()=>{});
+
+    const cleanUrl = location.origin + location.pathname;
+    history.replaceState({}, "", cleanUrl);
+
+  } catch (e) {
+    sessionStorage.removeItem(key);
+    setStatus("Ralat lock LIVE: " + (e.message || e));
+    addMsg("ai", "Maaf, connection bermasalah masa lock LIVE. Cuba lagi ya.");
+  }
+}
+  btnStart.onclick = async ()=>{
+    phoneErr.textContent = "";
+    const p = normalizePhone(inPhone.value);
+    if(!p.ok){
+      phoneErr.textContent = p.error;
+      return;
+    }
+
+    btnStart.disabled = true;
+
+    try{
       localStorage.setItem(KEY_PHONE, p.e164);
+      localStorage.removeItem(KEY_THREAD);
+
       openChat(p.e164, "");
 
-      addMsg("ai", "Assalamualaikum 🙂 Boleh saya bantu? (Contoh: “916 berapa”, “nak lock live”)");
+      const chk = await precheckBeforeChat(p.e164, null);
+
+      if (!chk || chk.ok !== true){
+        phoneErr.textContent = (chk && chk.error) ? chk.error : "Ralat precheck. Cuba lagi.";
+        return;
+      }
+
+      if (chk.need_register === true){
+        addMsg(
+          "ai",
+          "Assalamualaikum cik 😊\n" +
+          "Saya Ai – Dan, pembantu untuk Paksu Emas Amir.\n\n" +
+          "Cik nak buat apa sekarang? Tekan butang di bawah 👇",
+          null,
+          null,
+          {
+            quick_replies: [
+              { label: "🔐 Ya, saya ada lock dalam LIVE", send: "Ya, saya ada lock dalam LIVE" },
+              { label: "🧾 Saya dah bayar (hantar slip)", send: "Saya dah buat bayaran, nak hantar slip" },
+              { label: "🪙 Saya berminat gold coin custom", send: "Ya, saya berminat gold coin custom" },
+              { label: "💬 Tiada lock (nak tanya AI-Dan)", send: "Tiada lock, saya nak tanya AI-Dan" }
+            ]
+          }
+        );
+      } else {
+        addMsg("ai",
+          "Assalamualaikum cik 😊\n" +
+          "Sila log masuk dahulu ya. Lepas log masuk, kita sambung chat 😊"
+        );
+      }
 
       refreshFlowSnapshot().catch(()=>{});
 
-      // ✅ AUTO REFRESH setiap 15 saat (start sekali sahaja)
-      if (!window.__ea_flow_interval_started) {
-        window.__ea_flow_interval_started = true;
-        setInterval(() => {
-          refreshFlowSnapshot().catch(()=>{});
-        }, 15000);
+    }catch(e){
+      phoneErr.textContent = "Ralat: " + (e.message||e);
+    }finally{
+      btnStart.disabled = false;
+    }
+  };
+
+  document.addEventListener("visibilitychange", () => {
+    if (document.visibilityState === "visible") {
+      syncThreadMessages(false).catch(()=>{});
+      markThreadRead("visibility").catch(()=>{});
+      refreshNotifButtonState()
+  .then(() => maybeShowNotifCoachmark())
+  .catch(()=>{});
+    }
+  });
+
+  window.addEventListener("focus", () => {
+    syncThreadMessages(false).catch(()=>{});
+    markThreadRead("focus").catch(()=>{});
+  });
+
+  const st = loadFromUrlOrStorage();
+
+  if (st.phone){
+    openChat(st.phone, st.thread);
+    requireLoginGate();
+    refreshFlowSnapshot().catch(()=>{});
+
+    if (!window.__ea_flow_interval_started) {
+      window.__ea_flow_interval_started = true;
+      setInterval(() => {
+  if (document.visibilityState !== "visible") return;
+  refreshFlowSnapshot().catch(()=>{});
+  refreshActiveParcelBox().catch(()=>{});
+  renderLoginBox();
+}, 30000);
+    }
+  } else {
+    const u = getAuthUser();
+    if (u && u.phone){
+      const p = normalizePhone(u.phone);
+      if (p.ok){
+        localStorage.setItem(KEY_PHONE, p.e164);
+        openChat(p.e164, "");
+        requireLoginGate();
+        refreshFlowSnapshot().catch(()=>{});
+
+        if (!window.__ea_flow_interval_started) {
+          window.__ea_flow_interval_started = true;
+          setInterval(() => {
+  refreshFlowSnapshot().catch(()=>{});
+  refreshActiveParcelBox().catch(()=>{});
+  renderLoginBox();
+}, 15000);
+        }
       }
     }
   }
+chatbox.addEventListener("scroll", updateScrollBottomBtn);
 
-}
+  btnScrollBottom.onclick = () => {
+    scrollChatToBottom(true);
+    updateScrollBottomBtn();
+  };
+})();
+</script>
+
+<script>
+/* =========================
+   iPhone-style swipe back (Chat) with drag animation
+   - mula dari tepi kiri
+   - page ikut jari
+   - tutup modal / offcanvas dulu
+   - elak ganggu input, gambar, carousel, composer
+   ========================= */
+(function(){
+  const page = document.querySelector('.page-shell');
+  if (!page) return;
+
+  let startX = 0;
+  let startY = 0;
+  let currentX = 0;
+  let tracking = false;
+  let dragging = false;
+  let blocked = false;
+
+  const EDGE_ZONE = 24;
+  const MAX_DY = 70;
+  const TRIGGER_RATIO = 0.33;
+
+  function getOpenModalEl(){
+    const modals = Array.from(document.querySelectorAll('.modal.show'));
+    return modals.length ? modals[modals.length - 1] : null;
+  }
+
+  function getOpenOffcanvasEl(){
+    const panels = Array.from(document.querySelectorAll('.offcanvas.show'));
+    return panels.length ? panels[panels.length - 1] : null;
+  }
+
+  function closeTopModal(){
+    const el = getOpenModalEl();
+    if (!el) return false;
+
+    try{
+      const inst = bootstrap.Modal.getInstance(el) || bootstrap.Modal.getOrCreateInstance(el);
+      inst.hide();
+      return true;
+    }catch(_){
+      el.classList.remove('show');
+      el.style.display = 'none';
+      document.body.classList.remove('modal-open');
+      document.querySelectorAll('.modal-backdrop').forEach(x => x.remove());
+      return true;
+    }
+  }
+
+  function closeOffcanvas(){
+    const el = getOpenOffcanvasEl();
+    if (!el) return false;
+
+    try{
+      const inst = bootstrap.Offcanvas.getInstance(el) || bootstrap.Offcanvas.getOrCreateInstance(el);
+      inst.hide();
+      return true;
+    }catch(_){
+      el.classList.remove('show');
+      el.style.visibility = 'hidden';
+      document.body.classList.remove('offcanvas-open');
+      document.querySelectorAll('.offcanvas-backdrop').forEach(x => x.remove());
+      return true;
+    }
+  }
+
+  function goBackPage(){
+    if (window.history.length > 1){
+      history.back();
+    }else{
+      location.href = 'index.html';
+    }
+  }
+
+  function isBlockedTarget(target){
+    if (!target) return false;
+
+    return !!target.closest(
+      'input, textarea, select, button, a, label, ' +
+      '[contenteditable="true"], ' +
+      '.composer, .chat-composer, .message-input, .reply-box, ' +
+      '.carousel, .carousel-inner, .carousel-item, ' +
+      '.attachment, .attachment-preview, .image-preview, .lightbox, ' +
+      '.quick-replies, .design-grid, .thumb-strip'
+    );
+  }
+
+  function resetPage(){
+    page.classList.remove('dragging');
+    page.style.transform = 'translateX(0)';
+    setTimeout(()=>{
+      document.body.classList.remove('swipe-peek');
+    }, 220);
+  }
+
+  document.addEventListener('touchstart', function(e){
+    if (!e.touches || !e.touches.length) return;
+
+    const t = e.touches[0];
+    startX = t.clientX;
+    startY = t.clientY;
+    currentX = 0;
+    dragging = false;
+
+    blocked = isBlockedTarget(e.target);
+    tracking = (startX <= EDGE_ZONE) && !blocked;
+  }, { passive:true });
+
+  document.addEventListener('touchmove', function(e){
+    if (!tracking || blocked || !e.touches || !e.touches.length) return;
+
+    const t = e.touches[0];
+    const dx = t.clientX - startX;
+    const dy = Math.abs(t.clientY - startY);
+
+    if (dy > MAX_DY) return;
+    if (dx <= 0) return;
+
+    currentX = dx;
+    dragging = true;
+
+    document.body.classList.add('swipe-peek');
+    page.classList.add('dragging');
+    page.style.transform = `translateX(${dx}px)`;
+  }, { passive:true });
+
+  document.addEventListener('touchend', function(){
+    if (!tracking) return;
+
+    tracking = false;
+    page.classList.remove('dragging');
+
+    if (!dragging || blocked){
+      blocked = false;
+      document.body.classList.remove('swipe-peek');
+      return;
+    }
+
+    const threshold = window.innerWidth * TRIGGER_RATIO;
+
+    if (currentX >= threshold){
+      page.style.transform = `translateX(${window.innerWidth}px)`;
+
+      setTimeout(()=>{
+        if (closeTopModal()){
+          page.style.transition = 'none';
+          page.style.transform = 'translateX(0)';
+          void page.offsetHeight;
+          page.style.transition = '';
+          document.body.classList.remove('swipe-peek');
+          blocked = false;
+          return;
+        }
+
+        if (closeOffcanvas()){
+          page.style.transition = 'none';
+          page.style.transform = 'translateX(0)';
+          void page.offsetHeight;
+          page.style.transition = '';
+          document.body.classList.remove('swipe-peek');
+          blocked = false;
+          return;
+        }
+
+        blocked = false;
+        goBackPage();
+      }, 180);
+    } else {
+      blocked = false;
+      resetPage();
+    }
+
+    dragging = false;
+    currentX = 0;
+  }, { passive:true });
 })();
 </script>
 </body>

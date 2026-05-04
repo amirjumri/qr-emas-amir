@@ -252,25 +252,28 @@ function showNotice(html, type="danger"){
 }
 
 function renderStatusBadge(status){
-  if (status === "ACTIVE"){
+  const s = String(status || "").toUpperCase();
+
+  if (s === "ACTIVE"){
     return `<span class="status-badge bg-success text-white">Aktif</span>`;
   }
-  if (status === "PENDING"){
+  if (s === "PENDING"){
     return `<span class="status-badge bg-warning text-dark">Menunggu</span>`;
   }
-  if (status === "SUSPENDED"){
+  if (s === "SUSPENDED"){
     return `<span class="status-badge bg-danger text-white">Digantung</span>`;
+  }
+  if (s === "CANCELLED"){
+    return `<span class="status-badge bg-secondary text-white">Dibatalkan</span>`;
   }
   return `<span class="status-badge bg-secondary text-white">${status||"-"}</span>`;
 }
-
 /* ==================== WhatsApp helper ==================== */
 async function sendApprovedWA(agent){
   if (!agent || !agent.phone) return;
   const nama  = agent.name || "agen";
-  const kod   = agent.code || "-";
+  const kod   = agent.agent_code || agent.code || "-";
   const now   = new Date().toLocaleString("ms-MY", { dateStyle:"medium", timeStyle:"short" });
-
   const lines = [
     `Assalamualaikum ${nama},`,
     "",
@@ -319,6 +322,30 @@ async function sendReceiptWA(agent){
   return await sendWA(agent.phone, lines.join("\n"));
 }
 
+
+async function approveAgentWithSlug(agent, firstSlug){
+  if (!agent || !agent.id) return;
+
+  let slug = String(firstSlug || "").trim().toLowerCase();
+  slug = slug
+    .replace(/[^a-z0-9-]+/g, "-")
+    .replace(/-+/g, "-")
+    .replace(/^-|-$/g, "");
+
+  if (!slug){
+    throw new Error("Slug tidak sah.");
+  }
+
+  const { data, error } = await sb.rpc("agent_approve_v1", {
+    p_agent_id: agent.id,
+    p_slug: slug
+  });
+
+  if (error) throw error;
+
+  return data || null;
+}
+
 /* ==================== Tukar status agen ==================== */
 async function updateAgentStatus(agent, newStatus){
   if (!agent || !agent.id || !newStatus) return;
@@ -365,9 +392,9 @@ async function loadAgents(){
     <tr><td colspan="7" class="text-muted">Memuatkan…</td></tr>
   `;
 
-  let q = sb
+ let q = sb
     .from("agents")
-    .select("id, created_at, name, phone, code, slug, status")
+    .select("id, created_at, name, phone, agent_code, slug, status")
     .order("created_at", { ascending:false });
 
   if (currentFilter === "PENDING")   q = q.eq("status","PENDING");
@@ -434,10 +461,13 @@ async function loadAgents(){
   // Tentukan butang tindakan ikut status
   let actionHtml = `<span class="small text-muted">—</span>`;
 
-  if (a.status === "PENDING") {
+if (a.status === "PENDING") {
     actionHtml = `
-      <button class="btn btn-sm btn-success btn-approve" data-id="${a.id}">
+      <button class="btn btn-sm btn-success btn-approve me-1" data-id="${a.id}">
         Lulus
+      </button>
+      <button class="btn btn-sm btn-outline-danger btn-cancel" data-id="${a.id}">
+        Cancel
       </button>
     `;
   } else if (a.status === "ACTIVE") {
@@ -461,7 +491,7 @@ async function loadAgents(){
     <td>${dtStr}</td>
     <td data-col="name">${nameHtml}</td>
     <td data-col="phone">${a.phone || "-"}</td>
-    <td data-col="code"><code>${a.code || "-"}</code></td>
+    <td data-col="code"><code>${a.agent_code || "-"}</code></td>
     <td>${slugHtml}</td>
     <td>${renderStatusBadge(a.status)}</td>
     <td class="text-end">
@@ -621,9 +651,58 @@ $("agentBody").addEventListener("click", async (ev)=>{
   const tr = btn.closest("tr");
   const agent = getAgentFromRow(tr, id);
 
-  if (btn.classList.contains("btn-approve")){
-    if (!confirm("Luluskan permohonan agen ini dan jadikan status AKTIF?")) return;
-    await updateAgentStatus(agent, "ACTIVE");
+if (btn.classList.contains("btn-approve")){
+    let slug = prompt(
+      "Masukkan first slug untuk agen ini.\n\nContoh: amir-jumri\n\nGunakan huruf kecil, nombor dan dash sahaja."
+    );
+
+    if (slug == null) return; // tekan cancel
+    slug = String(slug || "").trim().toLowerCase();
+
+    if (!slug){
+      alert("Slug wajib diisi.");
+      return;
+    }
+
+    slug = slug
+      .replace(/[^a-z0-9-]+/g, "-")
+      .replace(/-+/g, "-")
+      .replace(/^-|-$/g, "");
+
+    if (!slug){
+      alert("Slug tidak sah.");
+      return;
+    }
+
+    if (!confirm(
+      `Luluskan agen ini dengan slug:\n\n${slug}\n\nJika salah, perlu ubah di backend kemudian.`
+    )) return;
+
+    try{
+      await approveAgentWithSlug(agent, slug);
+
+      showNotice("Agen berjaya diluluskan.", "success");
+
+      try{
+        await sendApprovedWA({
+          ...agent,
+          code: "(akan reload)",
+          slug
+        });
+      }catch(e){
+        console.warn("WA lulus agen gagal:", e);
+      }
+
+      await loadAgents();
+    }catch(e){
+      console.error("approveAgentWithSlug error:", e);
+      alert("Gagal luluskan agen: " + (e.message || "ralat"));
+    }
+    return;
+  }
+  if (btn.classList.contains("btn-cancel")){
+    if (!confirm("Batalkan permohonan agen ini? Jika dibatalkan, page affiliate akan kembali seperti belum mohon.")) return;
+    await updateAgentStatus(agent, "CANCELLED");
     return;
   }
 

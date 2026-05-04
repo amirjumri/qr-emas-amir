@@ -35,7 +35,8 @@
 
     .tag-top{
       height:13mm;
-      padding-right:1mm;
+      padding-right:1.2mm;
+      padding-left:1.5mm;
       display:flex;
       flex-direction:column;
       justify-content:flex-start;
@@ -55,23 +56,25 @@
       display:flex;
       flex-direction:column;
       align-items:flex-start;
+      margin-top :1.5mm;
     }
 
     /* === BARCODE === */
     .barcode{
-      margin-top:1mm;
+      margin-top:2.2mm;
       margin-left:0.2mm;   /* posisi kanan sikit */
       display:block;
     }
 
     .code-text{
-      font-size:8pt;
-      margin-top:0.5mm;
-      width:20mm;
-      text-align:center;
-      letter-spacing:0.05em;
-      margin-left:1mm;
-    }
+  font-size:9pt;       /* besarkan sikit */
+  font-weight:800;     /* bagi bold */
+  margin-top:0.5mm;
+  width:20mm;
+  text-align:center;
+  letter-spacing:0.08em;
+  margin-left:1mm;
+}
 
     @media screen {
       body{
@@ -86,6 +89,49 @@
         border:1px solid #ccc;
       }
     }
+
+/* ✅ FIX: bila print banyak, paksa 1 tag = 1 page (elak bertindih) */
+  @media print {
+    body{
+      margin:0;
+      padding:0;
+      background:transparent;
+      display:block;
+    }
+
+    .tag-page{
+      break-after: page;
+      page-break-after: always;
+      break-inside: avoid;
+      page-break-inside: avoid;
+    }
+
+    .tag-page:last-child{
+      break-after: auto;
+      page-break-after: auto;
+    }
+  }
+.line-1{
+  font-weight:700;
+  font-size:9pt;
+  letter-spacing:0.02em;
+}
+
+.line-2{
+  font-weight:700;
+  font-size:9pt;
+}
+
+.lbl{
+  font-weight:800;
+  margin-left:1mm;
+}
+
+.lbl:first-child{
+  margin-left:0;
+}
+
+
   </style>
 </head>
 <body>
@@ -115,10 +161,18 @@
 
       div.innerHTML = `
         <div class="tag-top">
-          <div class="title">916 EMAS AMIR</div>
-          <div>S:${size}   L:${lebar}</div>
-          <div>W: ${weight}gm&nbsp;&nbsp;EA</div>
-        </div>
+  <div class="title">916 EMAS AMIR</div>
+
+  <div class="line-1">
+    <span class="lbl">S:</span>${size}
+    <span class="lbl">L:</span>${lebar}
+    <span class="lbl">U:</span>${it.upah_override_rm || 0}
+  </div>
+
+  <div class="line-2">
+    <span class="lbl">W:</span>${weight}gm&nbsp;&nbsp;EA
+  </div>
+</div>
 
         <div class="tag-bottom">
           <svg id="bc-${idx}" class="barcode"></svg>

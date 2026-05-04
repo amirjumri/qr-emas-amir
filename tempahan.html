@@ -1,0 +1,2760 @@
+<!doctype html>
+<html lang="ms">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
+  <title>Tempah Loket Nama — Emas Amir</title>
+
+  <link rel="stylesheet" href="/global.css">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="/auth.js?v=13.1"></script>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Dancing+Script:wght@700&family=Great+Vibes&family=Lobster&family=Pacifico&family=Poppins:wght@400;500;600;700;800&family=Satisfy&display=swap" rel="stylesheet">
+
+  <style>
+    :root{
+      --ea-bg:#f6f7f9;
+      --ea-card:#ffffff;
+      --ea-border:#e8ecf2;
+      --ea-text:#18212f;
+      --ea-muted:#6b7280;
+      --ea-gold-1:#fff5d6;
+      --ea-gold-2:#facc15;
+      --ea-gold-3:#d4a017;
+      --ea-gold-4:#9a6a00;
+      --ea-dark:#111827;
+      --ea-green:#16a34a;
+      --ea-red:#dc2626;
+      --ea-blue:#2563eb;
+      --shadow-sm:0 6px 18px rgba(17,24,39,.06);
+      --shadow-md:0 16px 40px rgba(17,24,39,.08);
+      --radius-xl:24px;
+      --radius-lg:18px;
+      --radius-md:14px;
+      --radius-sm:12px;
+    }
+
+    *{box-sizing:border-box}
+    html{scroll-behavior:smooth}
+    body{
+      margin:0;
+      background:
+        radial-gradient(circle at top left, rgba(250,204,21,.08), transparent 28%),
+        radial-gradient(circle at top right, rgba(245,158,11,.08), transparent 24%),
+        var(--ea-bg);
+      color:var(--ea-text);
+      font-family:"Poppins",system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;
+      -webkit-font-smoothing:antialiased;
+      text-rendering:optimizeLegibility;
+    }
+
+    .page-shell{
+  min-height:100vh;
+  background:#fff;
+  transform:translateX(0);
+  transition:transform .22s ease-out;
+  will-change:transform;
+}
+.page-shell.dragging{
+  transition:none;
+}
+body.swipe-peek{
+  background:#f3f4f6;
+}
+
+.container{
+  max-width:1180px;
+  margin:0 auto;
+  padding:16px 12px 34px;
+}
+
+.top-wrap{background:transparent}
+
+.home-btn{
+  width:64px;
+  height:64px;
+  border-radius:18px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  border:1px solid #e5e7eb;
+  background:#fff;
+  font-size:28px;
+  text-decoration:none;
+  color:#111;
+  flex:0 0 auto;
+}
+
+.page-title{
+  font-weight:800;
+  font-size:34px;
+  letter-spacing:-.5px;
+  line-height:1.02;
+}
+
+.page-sub{
+  color:#6b7280;
+  font-size:17px;
+  margin-top:-2px;
+}
+
+.login-as{
+  border:1px solid #e5e7eb;
+  border-radius:999px;
+  padding:.55rem .9rem;
+  background:#eef1f4;
+  color:#4b5563;
+  font-size:15px;
+  margin-bottom:14px;
+}
+
+.btn-tab{
+  border:2px solid #9ca3af;
+  border-radius:999px;
+  padding:.6rem 1.05rem;
+  background:transparent;
+  color:#4b5563;
+  font-weight:700;
+}
+.btn-tab:hover{
+  background:#fff;
+}
+
+.top-chip-row{
+  display:flex;
+  gap:10px;
+  flex-wrap:wrap;
+  margin-top:12px;
+}
+
+.head-chip{
+  background:#fff;
+  border:1px solid var(--ea-border);
+  border-radius:999px;
+  padding:10px 14px;
+  font-size:13px;
+  color:#374151;
+  box-shadow:var(--shadow-sm);
+  font-weight:600;
+}
+
+    .layout{
+      display:grid;
+      grid-template-columns:390px minmax(0,1fr);
+      gap:18px;
+      align-items:start;
+    }
+
+    .panel{
+      background:var(--ea-card);
+      border:1px solid var(--ea-border);
+      border-radius:var(--radius-xl);
+      box-shadow:var(--shadow-md);
+      overflow:hidden;
+    }
+
+    .panel-body{
+      padding:16px;
+    }
+
+    .section{
+      border:1px solid var(--ea-border);
+      border-radius:20px;
+      background:#fff;
+      padding:14px;
+      margin-bottom:14px;
+      box-shadow:0 6px 16px rgba(17,24,39,.03);
+    }
+
+    .section:last-child{margin-bottom:0}
+
+    .section-title{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:12px;
+      margin-bottom:12px;
+    }
+
+    .section-title h3{
+      margin:0;
+      font-size:15px;
+      font-weight:800;
+      display:flex;
+      align-items:center;
+      gap:8px;
+    }
+
+    .mini-note{
+      font-size:12px;
+      color:var(--ea-muted);
+      line-height:1.45;
+    }
+
+    .field{
+      display:flex;
+      flex-direction:column;
+      gap:8px;
+    }
+
+    .label{
+      font-size:13px;
+      font-weight:700;
+      color:#374151;
+    }
+
+    .name-wrap{
+      position:relative;
+    }
+
+    .name-input{
+      width:100%;
+      height:54px;
+      border-radius:16px;
+      border:1px solid var(--ea-border);
+      padding:0 52px 0 16px;
+      font-size:18px;
+      font-weight:700;
+      outline:none;
+      background:#fff;
+      transition:.2s ease;
+      color:var(--ea-text);
+    }
+
+    .name-input:focus{
+      border-color:#f5c842;
+      box-shadow:0 0 0 4px rgba(250,204,21,.15);
+    }
+
+    .name-tick{
+      position:absolute;
+      right:14px;
+      top:50%;
+      transform:translateY(-50%);
+      width:28px;
+      height:28px;
+      border-radius:999px;
+      display:grid;
+      place-items:center;
+      font-size:16px;
+      background:#ecfdf5;
+      color:var(--ea-green);
+      border:1px solid #bbf7d0;
+      font-weight:900;
+    }
+
+    .helper-row{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:10px;
+      margin-top:8px;
+      font-size:12px;
+      color:var(--ea-muted);
+    }
+
+    .cards-2{
+      display:grid;
+      grid-template-columns:1fr 1fr;
+      gap:10px;
+    }
+
+    .option-card{
+      position:relative;
+      border:1px solid var(--ea-border);
+      border-radius:18px;
+      background:#fff;
+      padding:12px;
+      cursor:pointer;
+      transition:.22s ease;
+      min-height:86px;
+      display:flex;
+      flex-direction:column;
+      justify-content:center;
+      gap:6px;
+      user-select:none;
+    }
+
+    .option-card:hover{
+      transform:translateY(-1px);
+      box-shadow:0 12px 20px rgba(17,24,39,.06);
+      border-color:#efd37b;
+    }
+
+    .option-card.active{
+      border-color:#e2b11b;
+      background:linear-gradient(180deg,#fffdf4 0%,#fff9e9 100%);
+      box-shadow:0 10px 24px rgba(212,160,23,.13);
+    }
+
+    .option-check{
+      position:absolute;
+      right:10px;
+      top:10px;
+      width:22px;
+      height:22px;
+      border-radius:999px;
+      background:#fff;
+      border:1px solid #e5d18b;
+      display:none;
+      place-items:center;
+      color:#a16207;
+      font-size:12px;
+      font-weight:900;
+    }
+
+    .option-card.active .option-check{display:grid}
+
+    .material-icon{
+      font-size:24px;
+      line-height:1;
+    }
+    .material-title{
+      font-size:24px;
+      font-weight:800;
+      line-height:1;
+      color:#9a6a00;
+    }
+    .material-sub{
+      font-size:12px;
+      color:#4b5563;
+      font-weight:700;
+    }
+
+    .scroll-x{
+      display:flex;
+      gap:10px;
+      overflow:auto hidden;
+      padding-bottom:2px;
+      scroll-snap-type:x proximity;
+      -webkit-overflow-scrolling:touch;
+    }
+
+    .scroll-x::-webkit-scrollbar{height:8px}
+    .scroll-x::-webkit-scrollbar-thumb{
+      background:#e5e7eb;
+      border-radius:999px;
+    }
+    .scroll-x::-webkit-scrollbar-track{background:transparent}
+
+    .font-card{
+      min-width:146px;
+      max-width:146px;
+      min-height:92px;
+      scroll-snap-align:start;
+      border:1px solid var(--ea-border);
+      border-radius:18px;
+      background:#fff;
+      padding:12px;
+      cursor:pointer;
+      position:relative;
+      transition:.22s ease;
+      display:flex;
+      flex-direction:column;
+      justify-content:center;
+      gap:8px;
+    }
+
+    .font-card:hover{
+      transform:translateY(-1px);
+      box-shadow:0 12px 20px rgba(17,24,39,.06);
+      border-color:#efd37b;
+    }
+
+    .font-card.active{
+      border-color:#e2b11b;
+      background:linear-gradient(180deg,#fffdf4 0%,#fff9e9 100%);
+      box-shadow:0 10px 24px rgba(212,160,23,.13);
+    }
+
+    .font-preview{
+      font-size:28px;
+      line-height:1.05;
+      white-space:nowrap;
+      overflow:hidden;
+      text-overflow:ellipsis;
+      color:#111827;
+    }
+
+    .font-name{
+      font-size:11px;
+      font-weight:700;
+      color:var(--ea-muted);
+    }
+
+    .choice-pill-row{
+      display:flex;
+      flex-wrap:wrap;
+      gap:10px;
+    }
+
+    .pill-option{
+      height:44px;
+      padding:0 14px;
+      border-radius:999px;
+      border:1px solid var(--ea-border);
+      background:#fff;
+      font-size:14px;
+      font-weight:700;
+      cursor:pointer;
+      display:inline-flex;
+      align-items:center;
+      gap:8px;
+      transition:.2s ease;
+    }
+
+    .pill-option:hover{
+      border-color:#efd37b;
+      box-shadow:0 8px 18px rgba(17,24,39,.05);
+    }
+
+    .pill-option.active{
+      border-color:#e2b11b;
+      background:linear-gradient(180deg,#fffdf4 0%,#fff9e9 100%);
+      color:#8a6200;
+    }
+
+    .ornament-card{
+      min-width:118px;
+      max-width:118px;
+      min-height:110px;
+      scroll-snap-align:start;
+      border:1px solid var(--ea-border);
+      border-radius:18px;
+      background:#fff;
+      padding:10px;
+      cursor:pointer;
+      position:relative;
+      transition:.22s ease;
+      text-align:center;
+      display:flex;
+      flex-direction:column;
+      justify-content:center;
+      gap:8px;
+    }
+
+    .ornament-card:hover{
+      transform:translateY(-1px);
+      box-shadow:0 12px 20px rgba(17,24,39,.06);
+      border-color:#efd37b;
+    }
+
+    .ornament-card.active{
+      border-color:#e2b11b;
+      background:linear-gradient(180deg,#fffdf4 0%,#fff9e9 100%);
+      box-shadow:0 10px 24px rgba(212,160,23,.13);
+    }
+
+    .ornament-icon{
+      font-size:32px;
+      line-height:1;
+    }
+
+    .ornament-name{
+      font-size:12px;
+      font-weight:700;
+      color:#4b5563;
+      line-height:1.2;
+    }
+
+    .preview-panel .head{
+      padding:16px 16px 0;
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:12px;
+      flex-wrap:wrap;
+    }
+
+    .preview-panel .head h2{
+      margin:0;
+      font-size:18px;
+      font-weight:800;
+      display:flex;
+      align-items:center;
+      gap:10px;
+    }
+
+    .view-toggle{
+      display:flex;
+      gap:8px;
+      align-items:center;
+      flex-wrap:wrap;
+    }
+
+    .view-chip{
+      height:38px;
+      padding:0 14px;
+      border-radius:999px;
+      border:1px solid var(--ea-border);
+      background:#fff;
+      font-size:13px;
+      font-weight:700;
+      color:#374151;
+      display:inline-flex;
+      align-items:center;
+      gap:8px;
+    }
+
+    .view-chip.active{
+      background:linear-gradient(180deg,#ffeeb2 0%,#facc15 100%);
+      border-color:#e4b61d;
+      color:#7a5500;
+    }
+
+    .preview-wrap{
+      padding:16px;
+      display:grid;
+      grid-template-columns:minmax(0,1fr) 340px;
+      gap:16px;
+      align-items:start;
+    }
+
+    .canvas-box{
+      position:relative;
+      border:1px solid var(--ea-border);
+      border-radius:24px;
+      min-height:510px;
+      overflow:hidden;
+      background:
+        linear-gradient(rgba(0,0,0,.03) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(0,0,0,.03) 1px, transparent 1px),
+        linear-gradient(rgba(0,0,0,.02) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(0,0,0,.02) 1px, transparent 1px),
+        #fff;
+      background-size:40px 40px, 40px 40px, 8px 8px, 8px 8px;
+      background-position:-1px -1px, -1px -1px, -1px -1px, -1px -1px;
+    }
+
+    .canvas-actions{
+      position:absolute;
+      left:14px;
+      right:14px;
+      bottom:14px;
+      display:flex;
+      flex-wrap:wrap;
+      justify-content:space-between;
+      gap:10px;
+      pointer-events:none;
+    }
+
+    .canvas-actions .btn{
+      pointer-events:auto;
+    }
+
+    .btn{
+      height:44px;
+      border:none;
+      border-radius:14px;
+      padding:0 16px;
+      font-size:14px;
+      font-weight:800;
+      cursor:pointer;
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+      gap:8px;
+      transition:.2s ease;
+    }
+
+    .btn:active{transform:translateY(1px)}
+    .btn-soft{
+      background:#fff;
+      color:#374151;
+      border:1px solid var(--ea-border);
+      box-shadow:var(--shadow-sm);
+    }
+    .btn-soft:hover{
+      border-color:#efd37b;
+      box-shadow:0 12px 20px rgba(17,24,39,.06);
+    }
+    .btn-gold{
+      background:linear-gradient(180deg,#f9d768 0%,#e5af16 100%);
+      color:#fff;
+      box-shadow:0 14px 24px rgba(212,160,23,.22);
+    }
+    .btn-gold:hover{filter:brightness(.98)}
+    .btn-green{
+      background:linear-gradient(180deg,#22c55e 0%,#16a34a 100%);
+      color:#fff;
+      box-shadow:0 14px 24px rgba(34,197,94,.22);
+    }
+    .btn-green:hover{filter:brightness(.98)}
+
+    .summary-box{
+      border:1px solid var(--ea-border);
+      border-radius:24px;
+      background:#fff;
+      overflow:hidden;
+      box-shadow:0 10px 24px rgba(17,24,39,.05);
+    }
+
+    .summary-head{
+      padding:16px;
+      border-bottom:1px solid var(--ea-border);
+      background:linear-gradient(180deg,#fffdfa 0%,#fff 100%);
+    }
+
+    .summary-head h3{
+      margin:0;
+      font-size:18px;
+      font-weight:800;
+    }
+
+    .spec-list{
+      padding:8px 16px 0;
+    }
+
+    .spec-row{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:12px;
+      padding:12px 0;
+      border-bottom:1px dashed #edf0f5;
+    }
+
+    .spec-row:last-child{border-bottom:none}
+
+    .spec-k{
+      font-size:14px;
+      color:#4b5563;
+      font-weight:600;
+    }
+
+    .spec-v{
+      font-size:15px;
+      color:#111827;
+      font-weight:800;
+      text-align:right;
+    }
+
+    .weight-box{
+      margin:14px 16px 0;
+      border:1px solid #f2e2aa;
+      background:linear-gradient(180deg,#fffdf5 0%,#fff8e8 100%);
+      border-radius:18px;
+      padding:14px;
+    }
+
+    .weight-title{
+      font-size:13px;
+      color:#8a6200;
+      font-weight:800;
+      margin-bottom:6px;
+    }
+
+    .weight-value{
+      font-size:28px;
+      line-height:1.05;
+      font-weight:900;
+      color:#9a6a00;
+      letter-spacing:.2px;
+    }
+
+    .weight-small{
+      margin-top:8px;
+      font-size:12px;
+      color:#8b7355;
+      line-height:1.45;
+    }
+
+    .price-box{
+      margin:14px 16px 16px;
+      border:1px solid var(--ea-border);
+      border-radius:20px;
+      padding:14px;
+      background:#fff;
+    }
+
+    .price-line{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:10px;
+      padding:8px 0;
+      font-size:14px;
+      border-bottom:1px dashed #edf0f5;
+    }
+
+    .price-line:last-of-type{border-bottom:none}
+
+    .price-line .k{
+      color:#4b5563;
+      font-weight:600;
+    }
+
+    .price-line .v{
+      color:#111827;
+      font-weight:800;
+      text-align:right;
+    }
+
+    .grand-total{
+      margin-top:10px;
+      padding-top:12px;
+      border-top:1px solid #edf0f5;
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:12px;
+    }
+
+    .grand-total .k{
+      font-size:15px;
+      font-weight:800;
+      color:#111827;
+    }
+
+    .grand-total .v{
+      font-size:32px;
+      line-height:1;
+      font-weight:900;
+      color:#b77900;
+    }
+
+    .price-note{
+      margin-top:8px;
+      font-size:12px;
+      color:var(--ea-muted);
+      line-height:1.45;
+    }
+
+    .cta-stack{
+      display:grid;
+      gap:10px;
+      margin-top:14px;
+    }
+
+    .bottom-grid{
+      margin-top:16px;
+      display:grid;
+      grid-template-columns:1.1fr .9fr;
+      gap:16px;
+    }
+
+    .info-card{
+      background:#fff;
+      border:1px solid var(--ea-border);
+      border-radius:24px;
+      box-shadow:0 10px 24px rgba(17,24,39,.05);
+      padding:16px;
+    }
+
+    .info-card h3{
+      margin:0 0 12px;
+      font-size:18px;
+      font-weight:800;
+    }
+
+    .bullet{
+      display:flex;
+      gap:10px;
+      margin-bottom:10px;
+      align-items:flex-start;
+    }
+
+    .bullet:last-child{margin-bottom:0}
+    .bullet .icon{
+      flex:0 0 28px;
+      width:28px;
+      height:28px;
+      border-radius:999px;
+      background:#fff8e3;
+      color:#a16207;
+      display:grid;
+      place-items:center;
+      font-weight:900;
+      border:1px solid #f2df9a;
+    }
+
+    .bullet .text{
+      font-size:14px;
+      line-height:1.55;
+      color:#374151;
+    }
+
+    .badge-inline{
+      display:inline-flex;
+      align-items:center;
+      gap:8px;
+      padding:8px 10px;
+      border-radius:999px;
+      background:#f8fafc;
+      border:1px solid var(--ea-border);
+      font-size:12px;
+      font-weight:700;
+      color:#4b5563;
+      margin-right:8px;
+      margin-bottom:8px;
+    }
+
+    .svg-stage{
+      width:100%;
+      height:100%;
+      display:block;
+    }
+
+    .svg-dim{
+      font-family:"Poppins", sans-serif;
+      fill:#111827;
+      font-weight:700;
+    }
+
+    .svg-measure{
+      stroke:#111827;
+      stroke-width:2.2;
+      fill:none;
+      marker-start:url(#arrow);
+      marker-end:url(#arrow);
+    }
+
+    .svg-label{
+      font-family:"Poppins", sans-serif;
+      font-size:20px;
+      font-weight:800;
+      fill:#111827;
+    }
+
+    .svg-side-label{
+      font-family:"Poppins", sans-serif;
+      font-size:18px;
+      font-weight:800;
+      fill:#111827;
+    }
+
+    .svg-outline{
+      paint-order:stroke fill;
+      stroke:#111827;
+      stroke-width:8px;
+      stroke-linejoin:round;
+      stroke-linecap:round;
+      fill:#fff;
+    }
+
+    .svg-ring{
+      fill:#fff;
+      stroke:#111827;
+      stroke-width:7px;
+    }
+
+    .svg-ornament{
+  font-size:28px;
+  dominant-baseline:middle;
+  text-anchor:middle;
+  fill:#111827;
+  paint-order:stroke fill;
+  stroke:#fff;
+  stroke-width:3px;
+  stroke-linejoin:round;
+}
+
+    .hint-box{
+      margin-top:12px;
+      padding:12px 14px;
+      border-radius:16px;
+      background:#f8fafc;
+      border:1px solid var(--ea-border);
+      font-size:13px;
+      color:#4b5563;
+      line-height:1.5;
+    }
+
+    .danger{
+      color:#b91c1c;
+      font-weight:700;
+    }
+
+    .good{
+      color:#15803d;
+      font-weight:700;
+    }
+
+.range-wrap{
+  display:flex;
+  flex-direction:column;
+  gap:10px;
+}
+
+.range-input{
+  width:100%;
+  accent-color:#e2b11b;
+}
+
+.inline-grid-2{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:10px;
+}
+
+.mini-field{
+  display:flex;
+  flex-direction:column;
+  gap:6px;
+}
+
+.mini-input{
+  width:100%;
+  height:44px;
+  border-radius:14px;
+  border:1px solid var(--ea-border);
+  padding:0 12px;
+  font-size:14px;
+  font-weight:700;
+  outline:none;
+  background:#fff;
+  color:var(--ea-text);
+}
+
+.mini-input:focus{
+  border-color:#f5c842;
+  box-shadow:0 0 0 4px rgba(250,204,21,.15);
+}
+
+.check-row{
+  display:flex;
+  align-items:center;
+  gap:10px;
+  flex-wrap:wrap;
+}
+
+.check-row input[type="checkbox"]{
+  width:18px;
+  height:18px;
+  accent-color:#d4a017;
+}
+
+.badge-budget{
+  display:inline-flex;
+  align-items:center;
+  gap:8px;
+  padding:8px 12px;
+  border-radius:999px;
+  background:#fff8e8;
+  border:1px solid #f2e2aa;
+  font-size:12px;
+  font-weight:800;
+  color:#8a6200;
+}
+
+.menu-btn{
+  border:1px solid #e5e7eb;
+  border-radius:14px;
+  padding:.85rem 1rem;
+  background:#fff;
+  font-weight:700;
+}
+.menu-btn:hover{background:#f8fafc}
+
+.menu-tip{
+  color:#6b7280;
+  font-size:14px;
+}
+
+.offcanvas .btn{
+  border-radius:12px;
+}
+
+.pay-option-card{
+  border:1px solid var(--ea-border);
+  border-radius:18px;
+  background:#fff;
+  padding:14px;
+  cursor:pointer;
+  transition:.2s ease;
+}
+.pay-option-card:hover{
+  border-color:#e2b11b;
+  box-shadow:0 10px 24px rgba(17,24,39,.06);
+}
+.pay-option-card.active{
+  border-color:#e2b11b;
+  background:linear-gradient(180deg,#fffdf4 0%,#fff9e9 100%);
+  box-shadow:0 10px 24px rgba(212,160,23,.12);
+}
+.pay-option-title{
+  font-size:16px;
+  font-weight:800;
+  color:#111827;
+}
+.pay-option-sub{
+  font-size:13px;
+  color:#6b7280;
+  margin-top:4px;
+}
+.pay-summary-box{
+  border:1px solid #f2e2aa;
+  background:linear-gradient(180deg,#fffdf5 0%,#fff8e8 100%);
+  border-radius:18px;
+  padding:14px;
+}
+.pay-summary-note{
+  margin-top:8px;
+  font-size:12px;
+  color:#8b7355;
+  line-height:1.55;
+}
+.pay-method-actions{
+  display:flex;
+  gap:10px;
+  flex-wrap:wrap;
+}
+.pay-method-actions .btn{
+  flex:1 1 220px;
+}
+
+.btn-wide{
+  min-width:220px;
+}
+
+    @media (max-width: 1100px){
+      .layout{
+        grid-template-columns:1fr;
+      }
+      .preview-wrap{
+        grid-template-columns:1fr;
+      }
+      .bottom-grid{
+        grid-template-columns:1fr;
+      }
+      .canvas-box{
+        min-height:450px;
+      }
+    }
+
+    @media (max-width: 640px){
+      .container{padding:12px 10px 26px}
+      .brand-text .title{font-size:20px}
+      .section{padding:12px}
+      .preview-panel .head{padding:14px 14px 0}
+      .preview-wrap{padding:14px}
+      .cards-2{grid-template-columns:1fr 1fr}
+      .font-card{min-width:132px;max-width:132px}
+      .ornament-card{min-width:108px;max-width:108px}
+      .canvas-box{min-height:400px}
+      .grand-total .v{font-size:28px}
+    }
+  </style>
+</head>
+<body>
+  <div class="page-shell">
+  <div class="container">
+
+    <div class="top-wrap">
+      <div class="d-flex gap-3 align-items-center mb-2">
+        <a class="home-btn" href="index.html" aria-label="Halaman Utama">🏠</a>
+
+        <div class="flex-grow-1">
+          <div class="page-title">Tempah Loket Nama</div>
+          <div class="page-sub">Preview live • Anggaran awal • Tempahan custom</div>
+        </div>
+      </div>
+
+      <div class="login-as" id="authStatus">Memuatkan…</div>
+
+      <div class="d-flex gap-3 mb-3 flex-wrap">
+        <button id="btnMenu" class="btn-tab" type="button"
+          data-bs-toggle="offcanvas" data-bs-target="#menuCanvas" aria-controls="menuCanvas">
+          ☰ Menu
+        </button>
+
+        <button id="btnLogin" class="btn-tab" type="button">Log masuk</button>
+        <button id="btnLogout" class="btn-tab" type="button" style="display:none">Log keluar</button>
+      </div>
+
+      <div class="top-chip-row mb-3">
+        <div class="head-chip">✨ Rekaan 2D live</div>
+        <div class="head-chip">⚖️ Anggaran berat terus keluar</div>
+        <div class="head-chip">💛 916 / Silver 925</div>
+      </div>
+    </div>
+
+    <div class="layout">      <!-- LEFT -->
+      <div class="panel">
+        <div class="panel-body">
+
+          <div class="section">
+            <div class="section-title">
+              <h3>✍️ 1. Masukkan Nama</h3>
+            </div>
+
+            <div class="field">
+              <label class="label" for="nameInput">Nama loket</label>
+              <div class="name-wrap">
+                <input id="nameInput" class="name-input" type="text" maxlength="12" value="Atiqah" placeholder="Contoh: Atiqah">
+                <div class="name-tick">✓</div>
+              </div>
+              <div class="helper-row">
+                <span>Maksimum 12 aksara</span>
+                <span id="charCount">6 / 12</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="section">
+            <div class="section-title">
+              <h3>🥇 2. Pilih Material</h3>
+            </div>
+
+            <div class="cards-2">
+              <div class="option-card active material-card" data-material="916">
+                <div class="option-check">✓</div>
+                <div class="material-icon">🪙</div>
+                <div class="material-title">916</div>
+                <div class="material-sub">Emas 22K</div>
+              </div>
+
+              <div class="option-card material-card" data-material="925">
+                <div class="option-check">✓</div>
+                <div class="material-icon">🩶</div>
+                <div class="material-title" style="color:#6b7280">925</div>
+                <div class="material-sub">Silver 925</div>
+              </div>
+            </div>
+
+            <div class="hint-box">
+              Material mempengaruhi <strong>density</strong>, warna preview, dan anggaran harga.
+            </div>
+          </div>
+
+          <div class="section">
+            <div class="section-title">
+              <h3>🔤 3. Pilih Font / Gaya</h3>
+            </div>
+
+            <div class="scroll-x" id="fontScroller">
+              <div class="font-card active" data-font="Pacifico">
+                <div class="option-check">✓</div>
+                <div class="font-preview" style="font-family:'Pacifico',cursive">Atiqah</div>
+                <div class="font-name">Pacifico</div>
+              </div>
+
+              <div class="font-card" data-font="Lobster">
+                <div class="option-check">✓</div>
+                <div class="font-preview" style="font-family:'Lobster',cursive">Atiqah</div>
+                <div class="font-name">Lobster</div>
+              </div>
+
+              <div class="font-card" data-font="Dancing Script">
+                <div class="option-check">✓</div>
+                <div class="font-preview" style="font-family:'Dancing Script',cursive">Atiqah</div>
+                <div class="font-name">Dancing Script</div>
+              </div>
+
+              <div class="font-card" data-font="Great Vibes">
+                <div class="option-check">✓</div>
+                <div class="font-preview" style="font-family:'Great Vibes',cursive">Atiqah</div>
+                <div class="font-name">Great Vibes</div>
+              </div>
+
+              <div class="font-card" data-font="Satisfy">
+                <div class="option-check">✓</div>
+                <div class="font-preview" style="font-family:'Satisfy',cursive">Atiqah</div>
+                <div class="font-name">Satisfy</div>
+              </div>
+
+              <div class="font-card" data-font="Poppins">
+                <div class="option-check">✓</div>
+                <div class="font-preview" style="font-family:'Poppins',sans-serif;font-weight:800">Atiqah</div>
+                <div class="font-name">Poppins Bold</div>
+              </div>
+            </div>
+          </div>
+
+          <div class="section">
+            <div class="section-title">
+              <h3>🔗 4. Posisi Ring</h3>
+            </div>
+
+           <div class="choice-pill-row" id="ringPositionRow">
+  <button type="button" class="pill-option" data-ring="none">Tiada Ring</button>
+  <button type="button" class="pill-option active" data-ring="left">Ring Kiri</button>
+  <button type="button" class="pill-option" data-ring="right">Ring Kanan</button>
+  <button type="button" class="pill-option" data-ring="both">Kiri + Kanan</button>
+  <button type="button" class="pill-option" data-ring="top-center">Tengah Atas</button>
+  <button type="button" class="pill-option" data-ring="top-left">Atas Kiri</button>
+  <button type="button" class="pill-option" data-ring="top-right">Atas Kanan</button>
+  <button type="button" class="pill-option" data-ring="top-both">Atas Kiri + Kanan</button>
+</div>
+
+            <div class="hint-box">
+              Untuk versi production, posisi ring preset macam ni lebih selamat dan kemas untuk laser.
+            </div>
+          </div>
+
+          <div class="section">
+            <div class="section-title">
+              <h3>💖 5. Simbol Hiasan</h3>
+              <div class="mini-note">Luncur untuk tengok lagi</div>
+            </div>
+
+            <div class="scroll-x" id="ornamentScroller">
+              <div class="ornament-card active" data-ornament="none">
+                <div class="option-check">✓</div>
+                <div class="ornament-icon">∅</div>
+                <div class="ornament-name">Tiada Simbol</div>
+              </div>
+
+              <div class="ornament-card" data-ornament="heart">
+                <div class="option-check">✓</div>
+                <div class="ornament-icon">❤</div>
+                <div class="ornament-name">Love</div>
+              </div>
+
+              <div class="ornament-card" data-ornament="double-heart">
+                <div class="option-check">✓</div>
+                <div class="ornament-icon">💕</div>
+                <div class="ornament-name">Love Berganda</div>
+              </div>
+
+              <div class="ornament-card" data-ornament="flower">
+                <div class="option-check">✓</div>
+                <div class="ornament-icon">✿</div>
+                <div class="ornament-name">Bunga</div>
+              </div>
+
+              <div class="ornament-card" data-ornament="star">
+                <div class="option-check">✓</div>
+                <div class="ornament-icon">★</div>
+                <div class="ornament-name">Bintang</div>
+              </div>
+
+              <div class="ornament-card" data-ornament="crown">
+                <div class="option-check">✓</div>
+                <div class="ornament-icon">♛</div>
+                <div class="ornament-name">Crown</div>
+              </div>
+
+              <div class="ornament-card" data-ornament="butterfly">
+                <div class="option-check">✓</div>
+                <div class="ornament-icon">🦋</div>
+                <div class="ornament-name">Butterfly</div>
+              </div>
+
+              <div class="ornament-card" data-ornament="leaf">
+                <div class="option-check">✓</div>
+                <div class="ornament-icon">❦</div>
+                <div class="ornament-name">Daun</div>
+              </div>
+            </div>
+          </div>
+
+          <div class="section">
+            <div class="section-title">
+              <h3>📏 6. Ketebalan</h3>
+            </div>
+
+            <div class="choice-pill-row" id="thicknessRow">
+
+              <button class="pill-option" data-thickness="0.4">0.4 mm</button>
+                                     <button class="pill-option" data-thickness="0.5">0.5 mm</button>
+              <button type="button" class="pill-option" data-thickness="0.6">0.6 mm</button>
+              <button type="button" class="pill-option" data-thickness="0.7">0.7 mm</button>
+              <button type="button" class="pill-option active" data-thickness="0.8">0.8 mm</button>
+              <button type="button" class="pill-option" data-thickness="1.0">1.0 mm</button>
+              <button type="button" class="pill-option" data-thickness="1.2">1.2 mm</button>
+            </div>
+
+            <div class="hint-box">
+              Lagi tebal, lagi berat. Untuk design halus, ketebalan terlalu nipis mungkin kurang sesuai.
+            </div>
+          </div>
+
+          <div class="section">
+  <div class="section-title">
+    <h3>⚙️ 7. Saiz Rekaan</h3>
+  </div>
+
+  <div class="choice-pill-row" id="sizeRow">
+    <button type="button" class="pill-option" data-size="small">Kecil</button>
+    <button type="button" class="pill-option active" data-size="medium">Sederhana</button>
+    <button type="button" class="pill-option" data-size="large">Besar</button>
+  </div>
+
+  <div class="hint-box" style="margin-bottom:12px;">
+    Saiz preset ini masih aktif. Kalau customer isi <strong>Lebar Custom</strong>, sistem akan ikut lebar tersebut dan tinggi akan auto scale.
+  </div>
+
+  <div class="range-wrap">
+    <div class="mini-field">
+      <label class="label" for="customWidthInput">Lebar Custom (mm)</label>
+      <input id="customWidthInput" class="mini-input" type="number" min="25" max="70" step="1" value="36" placeholder="Contoh 40">
+    </div>
+
+    <input id="customWidthRange" class="range-input" type="range" min="25" max="70" step="1" value="36">
+
+    <div class="helper-row">
+      <span>Minimum 25 mm</span>
+      <span id="customWidthLive">36 mm</span>
+    </div>
+  </div>
+</div>
+
+<div class="section">
+  <div class="section-title">
+    <h3>💰 8. Mode Bajet</h3>
+  </div>
+
+  <div class="choice-pill-row" id="modeRow">
+    <button type="button" class="pill-option active" data-mode="custom">Custom</button>
+    <button type="button" class="pill-option" data-mode="budget">Bajet</button>
+  </div>
+
+  <div class="inline-grid-2" style="margin-top:12px;">
+    <div class="mini-field">
+      <label class="label" for="budgetMinInput">Min Berat (g)</label>
+      <input id="budgetMinInput" class="mini-input" type="number" min="0.3" max="10" step="0.1" value="0.8">
+    </div>
+    <div class="mini-field">
+      <label class="label" for="budgetMaxInput">Max Berat (g)</label>
+      <input id="budgetMaxInput" class="mini-input" type="number" min="0.3" max="10" step="0.1" value="1.2">
+    </div>
+  </div>
+
+  <div class="check-row" style="margin-top:12px;">
+    <label class="check-row" style="cursor:pointer;">
+      <input id="keepInBudgetCheck" type="checkbox" checked>
+      <span class="mini-note" style="font-size:13px;color:#374151;font-weight:700;">
+        Kekalkan dalam bajet secara automatik
+      </span>
+    </label>
+  </div>
+
+  <div class="hint-box">
+    Bila mode <strong>Bajet</strong> aktif, sistem akan cuba kecilkan atau besarkan rekaan supaya anggaran berat kekal dalam range yang customer pilih.
+  </div>
+</div>
+        </div>
+      </div>
+
+      <!-- RIGHT -->
+      <div class="panel preview-panel">
+        <div class="head">
+          <h2>🖼️ Preview Loket Nama Anda</h2>
+
+          <div class="view-toggle">
+            <div class="view-chip active">2D</div>
+            <div class="view-chip">Grid</div>
+            <div class="view-chip">Anggaran Live</div>
+          </div>
+        </div>
+
+        <div class="preview-wrap">
+          <div class="canvas-box">
+            <svg id="stageSvg" class="svg-stage" viewBox="0 0 980 620" aria-label="Preview Loket Nama">
+              <defs>
+                <marker id="arrow" markerWidth="8" markerHeight="8" refX="4" refY="4" orient="auto">
+                  <path d="M0,0 L8,4 L0,8 z" fill="#111827"></path>
+                </marker>
+              </defs>
+
+              <rect x="0" y="0" width="980" height="620" fill="transparent"></rect>
+
+              <text id="nameSvgText"
+      x="490"
+      y="325"
+      text-anchor="middle"
+      class="svg-outline"
+      style="font-family:'Pacifico',cursive;font-size:138px;">
+  Atiqah
+</text>
+
+<g id="ringsGroup"></g>
+
+<text id="ornamentLeft" class="svg-ornament" x="190" y="200"></text>
+<text id="ornamentRight" class="svg-ornament" x="790" y="200"></text>
+
+              <line id="widthLine" class="svg-measure" x1="180" y1="96" x2="800" y2="96"></line>
+              <text id="widthLabel" class="svg-label" x="490" y="82" text-anchor="middle">36.00 mm</text>
+
+              <line id="heightLine" class="svg-measure" x1="872" y1="166" x2="872" y2="396"></line>
+              <text id="heightLabel" class="svg-side-label" x="900" y="286" transform="rotate(90 900 286)">18.00 mm</text>
+            </svg>
+
+            <div class="canvas-actions">
+              <button type="button" id="btnReset" class="btn btn-soft">↺ Reset</button>
+
+             <div style="display:flex;gap:10px;flex-wrap:wrap">
+  <button type="button" class="btn btn-soft" id="btnSaveConfig">💾 Simpan Rekaan</button>
+  <button type="button" class="btn btn-soft" id="btnDownloadSvg">⬇️ Muat Turun Preview</button>
+</div>
+            </div>
+          </div>
+
+          <div class="summary-box">
+            <div class="summary-head">
+              <h3>Spesifikasi & Anggaran</h3>
+            </div>
+
+            <div class="spec-list">
+              <div class="spec-row">
+                <div class="spec-k">Nama</div>
+                <div class="spec-v" id="specName">Atiqah</div>
+              </div>
+              <div class="spec-row">
+                <div class="spec-k">Material</div>
+                <div class="spec-v" id="specMaterial">Emas 22K (916)</div>
+              </div>
+              <div class="spec-row">
+                <div class="spec-k">Font</div>
+                <div class="spec-v" id="specFont">Pacifico</div>
+              </div>
+              <div class="spec-row">
+                <div class="spec-k">Posisi Ring</div>
+                <div class="spec-v" id="specRing">Ring Kiri</div>
+              </div>
+              <div class="spec-row">
+  <div class="spec-k">Simbol</div>
+  <div class="spec-v" id="specOrnament">Tiada</div>
+</div>
+<div class="spec-row">
+  <div class="spec-k">Mode</div>
+  <div class="spec-v" id="specMode">Custom</div>
+</div>
+<div class="spec-row">
+  <div class="spec-k">Sasaran Bajet</div>
+  <div class="spec-v" id="specBudgetRange">—</div>
+</div>
+<div class="spec-row">
+  <div class="spec-k">Lebar</div>
+  <div class="spec-v" id="specWidth">36.00 mm</div>
+</div>
+              <div class="spec-row">
+                <div class="spec-k">Tinggi</div>
+                <div class="spec-v" id="specHeight">18.00 mm</div>
+              </div>
+              <div class="spec-row">
+                <div class="spec-k">Tebal</div>
+                <div class="spec-v" id="specThickness">0.80 mm</div>
+              </div>
+              <div class="spec-row">
+                <div class="spec-k">Luas Anggaran</div>
+                <div class="spec-v" id="specArea">2.90 cm²</div>
+              </div>
+            </div>
+
+            <div class="weight-box">
+              <div class="weight-title">Anggaran Berat</div>
+              <div class="weight-value" id="specWeight">2.95 g – 3.15 g</div>
+              <div class="weight-small">
+                Ini adalah <strong>anggaran kasar</strong>. Berat sebenar boleh berubah sedikit bergantung pada finishing, sambungan, dan proses laser/polish.
+              </div>
+            </div>
+
+            <div class="price-box">
+              <div class="price-line">
+                <div class="k">Harga bahan rujukan</div>
+                <div class="v" id="priceBaseRef">RM 420.00 / g</div>
+              </div>
+              <div class="price-line">
+                <div class="k">Berat rujukan</div>
+                <div class="v" id="priceWeightMid">3.05 g</div>
+              </div>
+              <div class="price-line">
+                <div class="k">Upah / proses</div>
+                <div class="v" id="priceLabor">RM 95.00</div>
+              </div>
+
+              <div class="grand-total">
+                <div class="k">Anggaran Harga</div>
+                <div class="v" id="grandTotal">RM 1,376</div>
+              </div>
+
+              <div class="price-note">
+  Nilai di atas ialah <strong>anggaran bayaran awal</strong> berdasarkan rekaan semasa. Bayaran akhir akan dimaklumkan selepas barang siap mengikut berat sebenar, finishing dan proses kerja akhir.
+</div>
+
+              <div class="cta-stack">
+  <button type="button" class="btn btn-soft" id="btnSaveDraftOrder">💾 Simpan Rekaan</button>
+  <button type="button" class="btn btn-green" id="btnProceedOrder">✅ Teruskan Tempahan</button>
+</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="bottom-grid" style="padding:0 16px 16px">
+          <div class="info-card">
+            <h3>Simbol popular</h3>
+            <span class="badge-inline">❤ Love</span>
+            <span class="badge-inline">✿ Bunga</span>
+            <span class="badge-inline">★ Bintang</span>
+            <span class="badge-inline">♛ Crown</span>
+            <span class="badge-inline">🦋 Butterfly</span>
+            <span class="badge-inline">❦ Daun</span>
+
+            <div style="height:10px"></div>
+
+            <div class="bullet">
+              <div class="icon">1</div>
+              <div class="text">Customer taip nama sendiri dan tengok preview terus berubah live.</div>
+            </div>
+            <div class="bullet">
+              <div class="icon">2</div>
+              <div class="text">Boleh pilih material <strong>916</strong> atau <strong>silver 925</strong>, font, posisi ring, simbol, tebal dan saiz.</div>
+            </div>
+            <div class="bullet">
+              <div class="icon">3</div>
+              <div class="text">Sistem kira anggaran berdasarkan <strong>luas × tebal × density</strong>.</div>
+            </div>
+            <div class="bullet">
+              <div class="icon">4</div>
+              <div class="text">Lepas ni senang sambung ke export <strong>SVG / PDF / DXF / PLT</strong>.</div>
+            </div>
+          </div>
+
+          <div class="info-card">
+  <h3>Makluman penting tempahan</h3>
+
+            <div class="bullet">
+              <div class="icon">!</div>
+             <div class="text"><span class="danger">Anggaran berat dan harga ini bukan muktamad.</span> Nilai akhir akan disahkan selepas barang siap mengikut berat sebenar dan finishing.</div>
+            </div>
+            <div class="bullet">
+              <div class="icon">✓</div>
+              <div class="text"><span class="good">Preset posisi ring</span> lebih stabil berbanding drag bebas sebab senang kawal balance design.</div>
+            </div>
+            <div class="bullet">
+              <div class="icon">✓</div>
+              <div class="text">Untuk step seterusnya, preview text dalam SVG ni boleh ditukar kepada <strong>outline sebenar</strong> sebelum export production.</div>
+            </div>
+            <div class="bullet">
+              <div class="icon">✓</div>
+              <div class="text">Kalau nama terlalu pendek/panjang, sistem boleh auto adjust saiz supaya muat cantik.</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- OFFCANVAS MENU -->
+<div class="offcanvas offcanvas-end" tabindex="-1" id="menuCanvas" aria-labelledby="menuCanvasLabel">
+  <div class="offcanvas-header">
+    <h5 class="offcanvas-title" id="menuCanvasLabel">Menu</h5>
+    <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Tutup"></button>
+  </div>
+  <div class="offcanvas-body">
+    <div class="d-grid gap-2">
+      <a href="index.html" class="btn btn-outline-secondary">🏠 Halaman Utama</a>
+      <a href="goldbar-coin.html" class="btn btn-outline-secondary">🪙 GoldBar/Coin Fizikal</a>
+      <a href="j916.html" class="btn btn-outline-secondary">💍 Barang Kemas 916</a>
+      <a href="tabung.html" class="btn btn-outline-secondary">🟡 Tabung Emas</a>
+      <a href="account.html" class="btn btn-outline-secondary">👤 Akaun</a>
+      <hr>
+      <div class="menu-tip">
+        Tempahan loket nama ini adalah custom order. Anggaran awal dipapar sekarang, manakala bayaran akhir akan disahkan selepas barang siap mengikut berat sebenar dan finishing.
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL PILIH KAEDAH BAYARAN -->
+<div class="modal fade" id="modalPayLoket" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-lg modal-dialog-scrollable modal-fullscreen-sm-down">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Teruskan Tempahan Loket Nama</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Tutup"></button>
+      </div>
+
+      <div class="modal-body">
+        <div class="pay-summary-box mb-3">
+          <div class="d-flex justify-content-between gap-3 align-items-start">
+            <div>
+              <div style="font-size:13px;color:#8a6200;font-weight:800;">Anggaran Bayaran Awal</div>
+              <div style="font-size:30px;line-height:1.05;font-weight:900;color:#9a6a00;" id="payEstimateTotal">RM 0</div>
+            </div>
+            <div class="text-end">
+              <div class="small text-muted">Nama</div>
+              <div class="fw-bold" id="paySummaryName">Atiqah</div>
+            </div>
+          </div>
+
+          <div class="pay-summary-note">
+            Anggaran ini adalah untuk rujukan awal berdasarkan rekaan semasa. <strong>Bayaran akhir akan disahkan selepas barang siap</strong> mengikut berat sebenar, finishing, sambungan ring dan proses kerja akhir.
+          </div>
+        </div>
+
+        <div class="row g-3">
+          <div class="col-md-6">
+            <div class="pay-option-card active" data-pay="manual" id="payCardManual">
+              <div class="pay-option-title">QR / Transfer</div>
+              <div class="pay-option-sub">
+                Customer akan teruskan bayaran melalui WhatsApp dan admin akan semak bayaran seperti biasa.
+              </div>
+            </div>
+          </div>
+
+          <div class="col-md-6">
+            <div class="pay-option-card" data-pay="atome" id="payCardAtome">
+              <div class="pay-option-title">Atome (Ansuran)</div>
+              <div class="pay-option-sub">
+                Customer akan menerima langkah pembayaran Atome melalui WhatsApp sebelum admin sahkan tempahan.
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="mt-3 small text-muted" id="payMethodNoteLoket">
+          Anda akan menerima ringkasan tempahan lengkap melalui WhatsApp sebelum meneruskan bayaran.
+        </div>
+      </div>
+
+      <div class="modal-footer">
+        <div class="pay-method-actions w-100">
+          <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Kembali</button>
+          <button type="button" class="btn btn-green" id="btnContinuePayLoket">Teruskan</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL MAKLUMAN PEMBAYARAN LOKET -->
+<div class="modal fade" id="modalPayInfoLoket" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Makluman Tempahan Loket</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Tutup"></button>
+      </div>
+
+      <div class="modal-body">
+        <div class="mb-2 small text-muted">
+          Tempahan loket nama ini adalah <strong>custom order</strong>.
+        </div>
+
+        <div class="alert alert-info small my-3" id="payInfoGeneralLoket">
+          Nilai yang dipaparkan sekarang ialah <strong>anggaran bayaran awal</strong>. Bayaran akhir akan disahkan selepas barang siap berdasarkan berat sebenar, finishing dan proses kerja akhir.
+        </div>
+
+        <div class="mb-2 small">
+          Selepas anda teruskan, sistem akan sediakan <strong>ringkasan tempahan</strong> dan anda akan menerima arahan langkah seterusnya melalui WhatsApp.
+        </div>
+
+        <hr class="my-3">
+
+        <div class="d-flex align-items-start gap-2 small">
+          <div class="text-muted">Kaedah dipilih:</div>
+          <div id="payInfoMethodLoket" class="fw-semibold">QR / Transfer</div>
+        </div>
+
+        <div class="small text-muted mt-1" id="payInfoCtaLoket">
+          Klik butang di bawah untuk meneruskan langkah seterusnya.
+        </div>
+      </div>
+
+      <div class="modal-footer">
+        <button class="btn btn-outline-secondary" data-bs-dismiss="modal" type="button">Kembali</button>
+        <button id="btnPayInfoManualLoket" class="btn btn-success" type="button">
+          Teruskan ke QR / Transfer
+        </button>
+        <button id="btnPayInfoAtomeLoket" class="btn btn-dark" type="button" style="display:none">
+          Teruskan ke Atome
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL SELEPAS WHATSAPP -->
+<div class="modal fade" id="modalAfterLoketWA" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Teruskan di WhatsApp</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Tutup"></button>
+      </div>
+      <div class="modal-body small">
+        Ringkasan tempahan anda sedang atau telah dibuka di WhatsApp.<br><br>
+        Sila teruskan ikut arahan bayaran yang diberi oleh admin Emas Amir.
+        <br><br>
+        Tempahan anda akan disemak semula dan <strong>bayaran akhir hanya akan disahkan selepas barang siap</strong>.
+      </div>
+      <div class="modal-footer">
+        <button id="btnAfterLoketHome" type="button" class="btn btn-primary">
+          Pergi ke Halaman Utama
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+
+<script>
+// ===== ONSEND CONFIG =====
+const ONSEND_BASE  = "https://onsend.io/api/v1";
+const ONSEND_TOKEN = "4b879470cc16ca8f06c5ab9878a4578880cfd0fd7b7cfe0121499f3ab017dd04";
+
+const QR_DUITNOW_URL = "https://emasamir.app/qr-maybank.html";
+const QR_ATOME_URL   = "https://emasamir.app/qr-atome.html";
+
+function toMsisdn(phone){
+  const d = String(phone || "").replace(/\D+/g, "");
+  if (!d) return "";
+  return d.startsWith("6") ? d : ("6" + d);
+}
+
+async function sendWA(msisdn, text){
+  try{
+    const r = await fetch(ONSEND_BASE + "/send", {
+      method: "POST",
+      headers: {
+        "Accept": "application/json",
+        "Content-Type": "application/json",
+        "Authorization": "Bearer " + ONSEND_TOKEN
+      },
+      body: JSON.stringify({
+        phone_number: msisdn,
+        message: text,
+        type: "text"
+      })
+    });
+
+    const j = await r.json().catch(() => ({}));
+    console.log("OnSend resp:", r.status, j);
+    return r.ok && (j.success === true || r.status === 200);
+  }catch(e){
+    console.warn("OnSend error:", e);
+    return false;
+  }
+}
+</script>
+
+<script>
+
+
+  (function(){
+const SB_URL = "https://dduizetstqqjrpsezbpi.supabase.co";
+const SB_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRkdWl6ZXRzdHFxanJwc2V6YnBpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTg3MzI0ODQsImV4cCI6MjA3NDMwODQ4NH0.CrlHXrmHtKgR9qc2192U6quRb5lpFEeOSgwG0Lb8KRM";
+const sb = window.sb || window.supabase.createClient(SB_URL, SB_KEY);
+window.sb = sb;
+     const state = {
+  name: "Atiqah",
+  material: "916",
+  font: "Pacifico",
+  ring: "left",
+  ornament: "none",
+  thickness: 0.8,
+  size: "medium",
+
+  customWidthMm: 36,
+  mode: "custom",
+  budgetMin: 0.8,
+  budgetMax: 1.2,
+  keepInBudget: true,
+
+  ornamentPosLeft: null,
+  ornamentPosRight: null
+};
+
+      const MATERIALS = {
+        "916": {
+          label: "Emas 22K (916)",
+          density: 17.6,
+          pricePerGram: 420,
+          laborBase: 95,
+          previewColor: "#b77900"
+        },
+        "925": {
+          label: "Silver 925",
+          density: 10.3,
+          pricePerGram: 8.5,
+          laborBase: 55,
+          previewColor: "#6b7280"
+        }
+      };
+
+      const SIZE_MULTIPLIER = {
+        small: 0.88,
+        medium: 1.00,
+        large: 1.16
+      };
+
+      const FONT_FACTOR = {
+        "Pacifico": 1.00,
+        "Lobster": 1.06,
+        "Dancing Script": 0.94,
+        "Great Vibes": 0.90,
+        "Satisfy": 0.96,
+        "Poppins": 1.14
+      };
+
+      const ORNAMENTS = {
+        "none": { label:"Tiada", iconLeft:"", iconRight:"", areaAdd:0.00, priceAdd:0 },
+        "heart": { label:"Love", iconLeft:"❤", iconRight:"", areaAdd:0.12, priceAdd:8 },
+        "double-heart": { label:"Love Berganda", iconLeft:"❤", iconRight:"❤", areaAdd:0.22, priceAdd:15 },
+        "flower": { label:"Bunga", iconLeft:"✿", iconRight:"", areaAdd:0.16, priceAdd:10 },
+        "star": { label:"Bintang", iconLeft:"★", iconRight:"", areaAdd:0.11, priceAdd:8 },
+        "crown": { label:"Crown", iconLeft:"♛", iconRight:"", areaAdd:0.18, priceAdd:12 },
+        "butterfly": { label:"Butterfly", iconLeft:"🦋", iconRight:"", areaAdd:0.20, priceAdd:14 },
+        "leaf": { label:"Daun", iconLeft:"❦", iconRight:"", areaAdd:0.14, priceAdd:9 }
+      };
+
+     const RINGS = {
+  "none": { label:"Tiada Ring", count:0, areaAdd:0.00 },
+  "left": { label:"Ring Kiri", count:1, areaAdd:0.11 },
+  "right": { label:"Ring Kanan", count:1, areaAdd:0.11 },
+  "both": { label:"Ring Kiri + Kanan", count:2, areaAdd:0.22 },
+  "top-center": { label:"Ring Tengah Atas", count:1, areaAdd:0.11 },
+  "top-left": { label:"Ring Atas Kiri", count:1, areaAdd:0.11 },
+  "top-right": { label:"Ring Atas Kanan", count:1, areaAdd:0.11 },
+  "top-both": { label:"Ring Atas Kiri + Kanan", count:2, areaAdd:0.22 }
+};
+
+      const $ = (sel) => document.querySelector(sel);
+      const $$ = (sel) => Array.from(document.querySelectorAll(sel));
+
+      const nameInput = $("#nameInput");
+const charCount = $("#charCount");
+const nameSvgText = $("#nameSvgText");
+const ringsGroup = $("#ringsGroup");
+const ornamentLeft = $("#ornamentLeft");
+const ornamentRight = $("#ornamentRight");
+const widthLabel = $("#widthLabel");
+const heightLabel = $("#heightLabel");
+
+const customWidthInput = $("#customWidthInput");
+const customWidthRange = $("#customWidthRange");
+const customWidthLive = $("#customWidthLive");
+
+const budgetMinInput = $("#budgetMinInput");
+const budgetMaxInput = $("#budgetMaxInput");
+const keepInBudgetCheck = $("#keepInBudgetCheck");
+
+const authStatus = $("#authStatus");
+const btnLogin = $("#btnLogin");
+const btnLogout = $("#btnLogout");
+const btnProceedOrder = $("#btnProceedOrder");
+const btnSaveDraftOrder = $("#btnSaveDraftOrder");
+
+const payEstimateTotal = $("#payEstimateTotal");
+const paySummaryName = $("#paySummaryName");
+const payMethodNoteLoket = $("#payMethodNoteLoket");
+const btnContinuePayLoket = $("#btnContinuePayLoket");
+
+let selectedPayMethod = "manual";
+let BSPayLoket = null;
+let BSPayInfoLoket = null;
+let BSAfterLoketWA = null;
+
+      function formatRM(v){
+        return "RM " + Number(v).toLocaleString("ms-MY", {
+          minimumFractionDigits: 0,
+          maximumFractionDigits: 0
+        });
+      }
+
+      function fmt2(v){
+        return Number(v).toFixed(2);
+      }
+
+      function safeName(raw){
+        let s = String(raw || "")
+          .replace(/[^\p{L}\p{N}\s]/gu, "")
+          .replace(/\s+/g, " ")
+          .trim();
+
+        if (!s) s = "Atiqah";
+        return s.slice(0, 12);
+      }
+
+      function setActive(list, predicate){
+        list.forEach(el => {
+          el.classList.toggle("active", predicate(el));
+        });
+      }
+
+      function calc(){
+  const cleanName = safeName(state.name);
+  const len = cleanName.length;
+  const sizeMul = SIZE_MULTIPLIER[state.size] || 1;
+  const fontMul = FONT_FACTOR[state.font] || 1;
+  const material = MATERIALS[state.material] || MATERIALS["916"];
+  const ring = RINGS[state.ring] || RINGS.left;
+  const ornament = ORNAMENTS[state.ornament] || ORNAMENTS.none;
+
+  const naturalWidthMm = ((len * 4.8 + 7.2) * fontMul * sizeMul) + (ring.count === 2 ? 3.0 : ring.count === 1 ? 1.6 : 0);
+  const targetWidthMm = Math.max(25, Math.min(70, Number(state.customWidthMm || naturalWidthMm)));
+
+  let scaleByWidth = targetWidthMm / naturalWidthMm;
+  if (!isFinite(scaleByWidth) || scaleByWidth <= 0) scaleByWidth = 1;
+
+  let widthMm = naturalWidthMm * scaleByWidth;
+  let heightMmBase = (13.4 + (state.font === "Poppins" ? 1.0 : 0)) * (state.font === "Great Vibes" ? 1.08 : 1);
+  let heightMm = (heightMmBase * sizeMul + ((state.ring.startsWith("top")) ? 1.8 : 0)) * scaleByWidth;
+
+  let baseAreaCm2 = (len * 0.34 + 0.90) * fontMul * sizeMul * scaleByWidth * scaleByWidth;
+  let areaCm2 = baseAreaCm2 + (ring.areaAdd * scaleByWidth * scaleByWidth) + (ornament.areaAdd * scaleByWidth * scaleByWidth) + ((state.font === "Poppins") ? 0.12 : 0);
+
+  if (state.mode === "budget" && state.keepInBudget) {
+    const thicknessCmForBudget = state.thickness / 10;
+    let predicted = areaCm2 * thicknessCmForBudget * material.density;
+
+    if (predicted > state.budgetMax && predicted > 0) {
+      const ratio = Math.sqrt(state.budgetMax / predicted);
+      widthMm *= ratio;
+      heightMm *= ratio;
+      areaCm2 *= ratio * ratio;
+      state.customWidthMm = Math.max(25, Math.min(70, widthMm));
+    } else if (predicted < state.budgetMin && predicted > 0) {
+      const ratio = Math.sqrt(state.budgetMin / predicted);
+      widthMm *= ratio;
+      heightMm *= ratio;
+      areaCm2 *= ratio * ratio;
+      state.customWidthMm = Math.max(25, Math.min(70, widthMm));
+    }
+  }
+
+  const thicknessCm = state.thickness / 10;
+  const weightG = areaCm2 * thicknessCm * material.density;
+
+  const rangePad = Math.max(0.08, weightG * 0.035);
+  const weightMin = Math.max(0, weightG - rangePad);
+  const weightMax = weightG + rangePad;
+
+  const labor = material.laborBase + (state.size === "large" ? 18 : state.size === "small" ? -8 : 0) + ornament.priceAdd;
+  const total = weightG * material.pricePerGram + labor;
+
+  return {
+    cleanName,
+    widthMm,
+    heightMm,
+    areaCm2,
+    weightG,
+    weightMin,
+    weightMax,
+    labor,
+    total,
+    material
+  };
+}
+
+
+  function clamp(v, min, max){
+    return Math.max(min, Math.min(max, v));
+  }
+
+  function getTextBBoxSafe(){
+    try{
+      const box = nameSvgText.getBBox();
+      if (!box || !isFinite(box.x) || !isFinite(box.y) || !isFinite(box.width) || !isFinite(box.height)){
+        throw new Error("Invalid bbox");
+      }
+      return box;
+    }catch(_e){
+      return {
+        x: 490 - 180,
+        y: 300 - 60,
+        width: 360,
+        height: 120
+      };
+    }
+  }
+
+
+     function buildRing(cx, cy, outerR = 16, innerR = 7){
+  return `
+    <circle class="svg-ring" cx="${cx}" cy="${cy}" r="${outerR}"></circle>
+    <circle cx="${cx}" cy="${cy}" r="${innerR}" fill="#fff" stroke="#111827" stroke-width="4"></circle>
+  `;
+}
+
+function renderRings(){
+  const box = getTextBBoxSafe();
+
+  const padSide = 18;
+  const padTop = 18;
+
+  const leftX = clamp(box.x - padSide, 28, 952);
+  const rightX = clamp(box.x + box.width + padSide, 28, 952);
+  const sideY = clamp(box.y + (box.height * 0.48), 28, 592);
+
+  const topCenterX = clamp(box.x + (box.width / 2), 28, 952);
+  const topLeftX = clamp(box.x + Math.min(28, box.width * 0.18), 28, 952);
+  const topRightX = clamp(box.x + box.width - Math.min(28, box.width * 0.18), 28, 952);
+  const topY = clamp(box.y - padTop, 28, 592);
+
+  let html = "";
+
+  switch(state.ring){
+  case "none":
+    html = "";
+    break;
+  case "left":
+    html = buildRing(leftX, sideY);
+    break;
+  case "right":
+    html = buildRing(rightX, sideY);
+    break;
+  case "both":
+    html = buildRing(leftX, sideY) + buildRing(rightX, sideY);
+    break;
+  case "top-center":
+    html = buildRing(topCenterX, topY);
+    break;
+  case "top-left":
+    html = buildRing(topLeftX, topY);
+    break;
+  case "top-right":
+    html = buildRing(topRightX, topY);
+    break;
+  case "top-both":
+    html = buildRing(topLeftX, topY) + buildRing(topRightX, topY);
+    break;
+}
+
+  ringsGroup.innerHTML = html;
+}
+
+function renderOrnaments(){
+  const o = ORNAMENTS[state.ornament] || ORNAMENTS.none;
+  const box = getTextBBoxSafe();
+
+  const autoLeftX = clamp(box.x - 26, 20, 960);
+  const autoRightX = clamp(box.x + box.width + 26, 20, 960);
+  const autoTopY = clamp(box.y - 14, 24, 590);
+
+  ornamentLeft.textContent = o.iconLeft || "";
+  ornamentRight.textContent = o.iconRight || "";
+
+  const leftPos = state.ornamentPosLeft || { x: autoLeftX, y: autoTopY };
+  const rightPos = state.ornamentPosRight || { x: autoRightX, y: autoTopY };
+
+  ornamentLeft.setAttribute("x", leftPos.x);
+  ornamentLeft.setAttribute("y", leftPos.y);
+
+  ornamentRight.setAttribute("x", rightPos.x);
+  ornamentRight.setAttribute("y", rightPos.y);
+
+  ornamentLeft.style.display = o.iconLeft ? "block" : "none";
+  ornamentRight.style.display = o.iconRight ? "block" : "none";
+ornamentLeft.parentNode.appendChild(ornamentLeft);
+ornamentRight.parentNode.appendChild(ornamentRight);
+}
+      function refreshFontCards(){
+        const cleanName = safeName(state.name);
+        $$(".font-card .font-preview").forEach(el => {
+          el.textContent = cleanName;
+        });
+      }
+
+      function render(){
+  const result = calc();
+  state.name = result.cleanName;
+
+  nameInput.value = result.cleanName;
+  charCount.textContent = `${result.cleanName.length} / 12`;
+
+  customWidthInput.value = Math.round(state.customWidthMm || result.widthMm);
+  customWidthRange.value = Math.round(state.customWidthMm || result.widthMm);
+  customWidthLive.textContent = `${Math.round(result.widthMm)} mm`;
+
+  budgetMinInput.value = state.budgetMin;
+  budgetMaxInput.value = state.budgetMax;
+  keepInBudgetCheck.checked = !!state.keepInBudget;
+
+  nameSvgText.textContent = result.cleanName;
+  nameSvgText.style.fontFamily = `'${state.font}', ${state.font === "Poppins" ? "sans-serif" : "cursive"}`;
+  nameSvgText.style.fontWeight = state.font === "Poppins" ? "800" : "700";
+  nameSvgText.style.fill = "#fff";
+  nameSvgText.style.stroke = "#111827";
+
+ refreshFontCards();
+
+requestAnimationFrame(() => {
+  renderRings();
+  renderOrnaments();
+});;
+
+  widthLabel.textContent = `${fmt2(result.widthMm)} mm`;
+  heightLabel.textContent = `${fmt2(result.heightMm)} mm`;
+
+  $("#specName").textContent = result.cleanName;
+  $("#specMaterial").textContent = result.material.label;
+  $("#specFont").textContent = state.font;
+  $("#specRing").textContent = (RINGS[state.ring] || {}).label || "-";
+  $("#specOrnament").textContent = (ORNAMENTS[state.ornament] || {}).label || "-";
+  $("#specMode").textContent = state.mode === "budget" ? "Bajet" : "Custom";
+  $("#specBudgetRange").textContent = state.mode === "budget"
+    ? `${fmt2(state.budgetMin)}g – ${fmt2(state.budgetMax)}g`
+    : "—";
+  $("#specWidth").textContent = `${fmt2(result.widthMm)} mm`;
+  $("#specHeight").textContent = `${fmt2(result.heightMm)} mm`;
+  $("#specThickness").textContent = `${fmt2(state.thickness)} mm`;
+  $("#specArea").textContent = `${fmt2(result.areaCm2)} cm²`;
+  $("#specWeight").textContent = `${fmt2(result.weightMin)} g – ${fmt2(result.weightMax)} g`;
+
+  $("#priceBaseRef").textContent = `${formatRM(result.material.pricePerGram)} / g`;
+  $("#priceWeightMid").textContent = `${fmt2(result.weightG)} g`;
+  $("#priceLabor").textContent = formatRM(result.labor);
+  $("#grandTotal").textContent = formatRM(result.total);
+
+  setActive($$(".material-card"), el => el.dataset.material === state.material);
+  setActive($$(".font-card"), el => el.dataset.font === state.font);
+  setActive($$("#ringPositionRow .pill-option"), el => el.dataset.ring === state.ring);
+  setActive($$("#thicknessRow .pill-option"), el => Number(el.dataset.thickness) === Number(state.thickness));
+  setActive($$("#sizeRow .pill-option"), el => el.dataset.size === state.size);
+  setActive($$(".ornament-card"), el => el.dataset.ornament === state.ornament);
+  setActive($$("#modeRow .pill-option"), el => el.dataset.mode === state.mode);
+}
+
+
+
+   function getAuth(){
+        try{
+          if (window.auth_get){
+            const a = window.auth_get();
+            if (a && (a.name || a.phone || a.id || a.auth_user_id)) return a;
+          }
+        }catch(_e){}
+
+        return null;
+      }
+
+      function refreshTopAuth(){
+        const a = getAuth();
+
+        if (a){
+          const who = a?.name?.trim() ? a.name : (a?.phone || "pengguna");
+          authStatus.textContent = `Log masuk sebagai ${who}`;
+          btnLogin.style.display = "none";
+          btnLogout.style.display = "";
+        }else{
+          authStatus.textContent = "Tidak log masuk";
+          btnLogin.style.display = "";
+          btnLogout.style.display = "none";
+        }
+      }
+
+      function requireLogin(){
+        const a = getAuth();
+        if (a) return a;
+
+        alert("Sila log masuk dahulu untuk meneruskan tempahan.");
+        location.href = "/login.html#login";
+        return null;
+      }
+
+      function openPayLoketModal(){
+        const auth = requireLogin();
+        if (!auth) return;
+
+        const result = calc();
+
+        payEstimateTotal.textContent = formatRM(result.total);
+        paySummaryName.textContent = result.cleanName || "-";
+        selectedPayMethod = "manual";
+
+        $("#payCardManual").classList.add("active");
+        $("#payCardAtome").classList.remove("active");
+        payMethodNoteLoket.textContent =
+          "Anda akan menerima ringkasan tempahan lengkap melalui WhatsApp sebelum meneruskan bayaran QR / transfer.";
+
+        BSPayLoket = BSPayLoket || new bootstrap.Modal($("#modalPayLoket"));
+        BSPayLoket.show();
+      }
+
+      function proceedLoketOrder(){
+        const auth = requireLogin();
+        if (!auth) return;
+
+        BSPayLoket?.hide();
+
+        $("#payInfoMethodLoket").textContent =
+          selectedPayMethod === "atome" ? "Atome (Ansuran)" : "QR / Transfer";
+
+        $("#btnPayInfoManualLoket").style.display =
+          selectedPayMethod === "manual" ? "" : "none";
+
+        $("#btnPayInfoAtomeLoket").style.display =
+          selectedPayMethod === "atome" ? "" : "none";
+
+        $("#payInfoGeneralLoket").innerHTML =
+          selectedPayMethod === "atome"
+            ? `Nilai yang dipaparkan sekarang ialah <strong>anggaran bayaran awal</strong>. Bayaran akhir akan disahkan selepas barang siap berdasarkan berat sebenar, finishing dan proses kerja akhir.<br><br><b>Atome:</b> Admin akan beri langkah seterusnya melalui WhatsApp sebelum pengesahan akhir tempahan.`
+            : `Nilai yang dipaparkan sekarang ialah <strong>anggaran bayaran awal</strong>. Bayaran akhir akan disahkan selepas barang siap berdasarkan berat sebenar, finishing dan proses kerja akhir.<br><br>Untuk kaedah <b>QR / Transfer</b>, anda akan menerima ringkasan tempahan dan arahan bayaran melalui WhatsApp admin.`;
+
+        $("#payInfoCtaLoket").textContent =
+          selectedPayMethod === "atome"
+            ? "Klik butang di bawah untuk teruskan langkah Atome."
+            : "Klik butang di bawah untuk teruskan langkah QR / transfer.";
+
+        BSPayInfoLoket = BSPayInfoLoket || new bootstrap.Modal($("#modalPayInfoLoket"));
+        BSPayInfoLoket.show();
+      }
+
+      function toMsisdn(phone){
+        const d = String(phone || "").replace(/\D+/g, "");
+        if (!d) return "";
+        if (d.startsWith("60")) return d;
+        if (d.startsWith("0")) return "60" + d.slice(1);
+        return d;
+      }
+
+      function openWhatsAppText(phone, text){
+        const msisdn = toMsisdn(phone);
+        const url = `https://wa.me/${msisdn}?text=${encodeURIComponent(text)}`;
+        window.open(url, "_blank");
+      }
+
+      function showAfterLoketWA(){
+        BSAfterLoketWA = BSAfterLoketWA || new bootstrap.Modal($("#modalAfterLoketWA"));
+        BSAfterLoketWA.show();
+
+        setTimeout(() => {
+          location.href = "index.html";
+        }, 6000);
+      }
+
+    function buildWhatsappOrderText(method){
+  const auth = getAuth() || {};
+  const result = calc();
+
+  const materialLabel = (MATERIALS[state.material] || {}).label || state.material;
+  const ringLabelText = (RINGS[state.ring] || {}).label || "-";
+  const ornamentLabel = (ORNAMENTS[state.ornament] || {}).label || "-";
+  const payLabel = method === "atome" ? "Atome (Ansuran)" : "QR / Transfer";
+
+  const phoneRaw = auth.phone || "";
+  const phoneDigits = String(phoneRaw).replace(/\D+/g, "");
+  const ref4 = phoneDigits ? phoneDigits.slice(-4) : "XXXX";
+
+  const lines = [
+    "Assalamualaikum,",
+    "",
+    "Ini ringkasan tempahan loket nama anda di Emas Amir.",
+    auth.name ? `Nama: ${auth.name}` : "",
+    auth.phone ? `No. Telefon: ${auth.phone}` : "",
+    "",
+    `Nama loket: ${result.cleanName}`,
+    `Material: ${materialLabel}`,
+    `Font: ${state.font}`,
+    `Posisi ring: ${ringLabelText}`,
+    `Simbol: ${ornamentLabel}`,
+    `Ketebalan: ${fmt2(state.thickness)} mm`,
+    `Lebar anggaran: ${fmt2(result.widthMm)} mm`,
+    `Tinggi anggaran: ${fmt2(result.heightMm)} mm`,
+    `Anggaran berat: ${fmt2(result.weightMin)} g – ${fmt2(result.weightMax)} g`,
+    "",
+    `Anggaran bayaran awal: ${formatRM(result.total)}`,
+    `Kaedah dipilih: ${payLabel}`,
+    "",
+    "Makluman penting:",
+    "• Tempahan ini adalah custom order.",
+    "• Nilai di atas ialah anggaran awal berdasarkan rekaan semasa.",
+    "• Bayaran akhir akan disahkan selepas barang siap mengikut berat sebenar, finishing dan proses kerja akhir.",
+    ""
+  ].filter(Boolean);
+
+  if (method === "atome"){
+    lines.push(
+      "✅ Pembayaran Atome (Ansuran)",
+      "• Bayaran pertama berjaya → barang terus boleh dapat selepas admin sahkan tempahan.",
+      "• Minimum ansuran biasanya 3 bulan, dan boleh jadi lebih dari 3 bulan bergantung pada akaun anda.",
+      "• Anda boleh semak pilihan tempoh ansuran bila anda scan QR Atome nanti.",
+      "",
+      QR_ATOME_URL ? `📌 Scan / buka QR Atome di sini: ${QR_ATOME_URL}` : "",
+      "",
+      "Selepas berjaya, anda akan terima WhatsApp pengesahan dari sistem kami. ✅"
+    );
+  } else {
+    lines.push(
+      "No Akaun untuk Pembayaran Secara Online Transfer",
+      "👇🏻👇🏻👇🏻",
+      "Bank   : Maybank",
+      "Nama   : EMAS AMIR SDN. BHD.",
+      "No Akaun : 552031155695",
+      `Reference : ${ref4}`,
+      "",
+      QR_DUITNOW_URL ? `Atau boleh juga scan QR berikut: ${QR_DUITNOW_URL}` : "",
+      "",
+      "Sila buat bayaran Tunai / E-Wallet / Online Transfer mengikut jumlah di atas.",
+      "Selepas berjaya, sila hantarkan resit bayaran kepada admin Emas Amir seperti biasa. ✅"
+    );
+  }
+
+  lines.push("", "Terima kasih.");
+  return lines.join("\n");
+}
+
+async function createLoketOrder(method){
+  const auth = requireLogin();
+  if (!auth) return null;
+
+  const result = calc();
+
+  const phoneRaw = auth.phone || "";
+  const phoneDigits = String(phoneRaw).replace(/\D+/g, "");
+  const last4 = phoneDigits ? phoneDigits.slice(-4) : "0000";
+
+  const ref1 = `LKT${Date.now().toString().slice(-8)}${last4}`;
+
+ const payload = {
+    reference_1: ref1,
+
+    customer_name: auth.name || "",
+    customer_phone: phoneRaw,
+
+    loket_name: result.cleanName,
+    material: state.material, // mesti "916" atau "925"
+    font_name: state.font,
+    ring_position: state.ring,
+    ornament: state.ornament,
+
+    thickness_mm: Number(state.thickness || 0),
+    custom_width_mm: Number(result.widthMm || 0),
+
+    final_width_mm: Number(result.widthMm || 0),
+    final_height_mm: Number(result.heightMm || 0),
+    final_thickness_mm: Number(state.thickness || 0),
+
+    estimated_weight_g: Number(result.weightG || 0),
+    total_rm: Number(result.total || 0),
+
+    status: "PENDING",
+    production_status: "DRAFT",
+    production_notes: "",
+
+    svg_file_url: "",
+    plt_file_url: "",
+
+    config_json: {
+      payment_method: method === "atome" ? "ATOME" : "MANUAL_QR_TRANSFER",
+      order_source: "LOKET_PAGE",
+      mode: state.mode,
+      budget_min: Number(state.budgetMin || 0),
+      budget_max: Number(state.budgetMax || 0),
+      keep_in_budget: !!state.keepInBudget,
+      ornament_pos_left: state.ornamentPosLeft || null,
+      ornament_pos_right: state.ornamentPosRight || null
+    }
+  };
+  const { data, error } = await sb
+    .from("tempahan_loket_orders")
+    .insert([payload])
+    .select()
+    .single();
+
+  if (error) throw error;
+  return data;
+}
+     async function submitLoketToWhatsApp(method){
+  const auth = requireLogin();
+  if (!auth) return;
+
+  try{
+    const savedOrder = await createLoketOrder(method);
+
+    const msg = buildWhatsappOrderText(method);
+    const msisdn = toMsisdn(auth.phone || "");
+
+    console.log("LOKET_ORDER_PAYLOAD", {
+      order: savedOrder,
+      customer: auth,
+      pay_method: method,
+      config: { ...state },
+      whatsapp_text: msg,
+      msisdn
+    });
+
+    const ok = await sendWA(msisdn, msg);
+
+    if (!ok){
+      alert("Tempahan sudah disimpan, tetapi WhatsApp gagal dihantar. Sila cuba lagi atau hubungi admin.");
+      return;
+    }
+
+    BSPayInfoLoket?.hide();
+    showAfterLoketWA();
+  }catch(e){
+    console.error("Gagal simpan tempahan loket:", e);
+    alert("Tempahan gagal disimpan ke sistem. Sila cuba lagi.");
+  }
+}
+
+    btnLogin?.addEventListener("click", function(){
+        location.href = "/login.html#login";
+      });
+
+      btnLogout?.addEventListener("click", function(){
+        try{
+          if (window.auth_clear) window.auth_clear();
+        }catch(_e){}
+
+        location.reload();
+      });
+
+      btnSaveDraftOrder?.addEventListener("click", function(){
+        const payload = {
+          ...state,
+          generated_at: new Date().toISOString()
+        };
+        localStorage.setItem("ea_loket_nama_demo_config", JSON.stringify(payload));
+        alert("Rekaan berjaya disimpan pada peranti ini.");
+      });
+
+      btnProceedOrder?.addEventListener("click", function(){
+        openPayLoketModal();
+      });
+
+      $("#payCardManual")?.addEventListener("click", function(){
+        selectedPayMethod = "manual";
+        $("#payCardManual").classList.add("active");
+        $("#payCardAtome").classList.remove("active");
+        payMethodNoteLoket.textContent =
+          "Anda akan menerima ringkasan tempahan lengkap melalui WhatsApp sebelum meneruskan bayaran QR / transfer.";
+      });
+
+      $("#payCardAtome")?.addEventListener("click", function(){
+        selectedPayMethod = "atome";
+        $("#payCardAtome").classList.add("active");
+        $("#payCardManual").classList.remove("active");
+        payMethodNoteLoket.textContent =
+          "Anda akan menerima ringkasan tempahan lengkap melalui WhatsApp sebelum meneruskan bayaran Atome.";
+      });
+
+      btnContinuePayLoket?.addEventListener("click", function(){
+        proceedLoketOrder();
+      });
+
+      $("#btnPayInfoManualLoket")?.addEventListener("click", function(){
+        submitLoketToWhatsApp("manual");
+      });
+
+      $("#btnPayInfoAtomeLoket")?.addEventListener("click", function(){
+        submitLoketToWhatsApp("atome");
+      });
+
+      $("#btnAfterLoketHome")?.addEventListener("click", function(){
+        location.href = "index.html";
+      });
+
+      nameInput.addEventListener("input", function(){
+        state.name = safeName(this.value);
+        render();
+      });
+
+      $$(".material-card").forEach(card => {
+        card.addEventListener("click", function(){
+          state.material = this.dataset.material || "916";
+          render();
+        });
+      });
+
+      $$(".font-card").forEach(card => {
+        card.addEventListener("click", function(){
+          state.font = this.dataset.font || "Pacifico";
+          render();
+        });
+      });
+
+      $$("#ringPositionRow .pill-option").forEach(btn => {
+        btn.addEventListener("click", function(){
+          state.ring = this.dataset.ring || "left";
+          render();
+        });
+      });
+
+      $$("#thicknessRow .pill-option").forEach(btn => {
+        btn.addEventListener("click", function(){
+          state.thickness = Number(this.dataset.thickness || 0.8);
+          render();
+        });
+      });
+
+      $$("#sizeRow .pill-option").forEach(btn => {
+        btn.addEventListener("click", function(){
+          state.size = this.dataset.size || "medium";
+          render();
+        });
+      });
+
+      $$(".ornament-card").forEach(card => {
+        card.addEventListener("click", function(){
+          state.ornament = this.dataset.ornament || "none";
+          state.ornamentPosLeft = null;
+          state.ornamentPosRight = null;
+          render();
+        });
+      });
+
+      customWidthInput.addEventListener("input", function(){
+        state.customWidthMm = Math.max(25, Math.min(70, Number(this.value || 36)));
+        customWidthRange.value = state.customWidthMm;
+        render();
+      });
+
+      customWidthRange.addEventListener("input", function(){
+        state.customWidthMm = Math.max(25, Math.min(70, Number(this.value || 36)));
+        customWidthInput.value = state.customWidthMm;
+        render();
+      });
+
+      $$("#modeRow .pill-option").forEach(btn => {
+        btn.addEventListener("click", function(){
+          state.mode = this.dataset.mode || "custom";
+          render();
+        });
+      });
+
+      budgetMinInput.addEventListener("input", function(){
+        state.budgetMin = Math.max(0.3, Number(this.value || 0.8));
+        if (state.budgetMin > state.budgetMax) state.budgetMax = state.budgetMin;
+        render();
+      });
+
+      budgetMaxInput.addEventListener("input", function(){
+        state.budgetMax = Math.max(state.budgetMin, Number(this.value || 1.2));
+        render();
+      });
+
+      keepInBudgetCheck.addEventListener("change", function(){
+        state.keepInBudget = !!this.checked;
+        render();
+      });
+
+      $("#btnReset").addEventListener("click", function(){
+        state.name = "Atiqah";
+        state.material = "916";
+        state.font = "Pacifico";
+        state.ring = "left";
+        state.ornament = "none";
+        state.thickness = 0.8;
+        state.size = "medium";
+        state.customWidthMm = 36;
+        state.mode = "custom";
+        state.budgetMin = 0.8;
+        state.budgetMax = 1.2;
+        state.keepInBudget = true;
+        state.ornamentPosLeft = null;
+        state.ornamentPosRight = null;
+        render();
+      });
+
+      $("#btnSaveConfig").addEventListener("click", function(){
+        const payload = {
+          ...state,
+          generated_at: new Date().toISOString()
+        };
+        localStorage.setItem("ea_loket_nama_demo_config", JSON.stringify(payload));
+        alert("Rekaan demo berjaya disimpan dalam localStorage browser ini.");
+      });
+
+      $("#btnDownloadSvg").addEventListener("click", function(){
+        const svg = document.getElementById("stageSvg");
+        const serializer = new XMLSerializer();
+        const source = serializer.serializeToString(svg);
+        const blob = new Blob([source], { type: "image/svg+xml;charset=utf-8" });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = `loket-nama-${safeName(state.name).toLowerCase().replace(/\s+/g,"-")}.svg`;
+        document.body.appendChild(a);
+        a.click();
+        a.remove();
+        setTimeout(() => URL.revokeObjectURL(url), 1000);
+      });
+
+      function makeSvgTextDraggable(el, key){
+        let dragging = false;
+
+        el.style.cursor = "grab";
+
+        el.addEventListener("pointerdown", function(e){
+          if (!el.textContent) return;
+          dragging = true;
+          el.setPointerCapture?.(e.pointerId);
+          el.style.cursor = "grabbing";
+        });
+
+        el.addEventListener("pointermove", function(e){
+          if (!dragging) return;
+
+          const svg = document.getElementById("stageSvg");
+          const pt = svg.createSVGPoint();
+          pt.x = e.clientX;
+          pt.y = e.clientY;
+
+          const svgP = pt.matrixTransform(svg.getScreenCTM().inverse());
+
+          const x = clamp(svgP.x, 20, 960);
+          const y = clamp(svgP.y, 24, 590);
+
+          if (key === "left"){
+            state.ornamentPosLeft = { x, y };
+          } else {
+            state.ornamentPosRight = { x, y };
+          }
+
+          el.setAttribute("x", x);
+          el.setAttribute("y", y);
+        });
+
+        function stopDrag(e){
+          dragging = false;
+          el.style.cursor = "grab";
+          try{ el.releasePointerCapture?.(e.pointerId); }catch(_e){}
+        }
+
+        el.addEventListener("pointerup", stopDrag);
+        el.addEventListener("pointercancel", stopDrag);
+      }
+
+      makeSvgTextDraggable(ornamentLeft, "left");
+      makeSvgTextDraggable(ornamentRight, "right");
+
+      const saved = localStorage.getItem("ea_loket_nama_demo_config");
+      if (saved){
+        try{
+          const parsed = JSON.parse(saved);
+          if (parsed && typeof parsed === "object"){
+            state.name = safeName(parsed.name || state.name);
+            state.material = parsed.material || state.material;
+            state.font = parsed.font || state.font;
+            state.ring = parsed.ring || state.ring;
+            state.ornament = parsed.ornament || state.ornament;
+            state.thickness = Number(parsed.thickness || state.thickness);
+            state.size = parsed.size || state.size;
+            state.customWidthMm = Number(parsed.customWidthMm || state.customWidthMm);
+            state.mode = parsed.mode || state.mode;
+            state.budgetMin = Number(parsed.budgetMin || state.budgetMin);
+            state.budgetMax = Number(parsed.budgetMax || state.budgetMax);
+            state.keepInBudget = typeof parsed.keepInBudget === "boolean" ? parsed.keepInBudget : state.keepInBudget;
+            state.ornamentPosLeft = parsed.ornamentPosLeft || null;
+            state.ornamentPosRight = parsed.ornamentPosRight || null;
+          }
+        }catch(_e){}
+      }
+
+      refreshTopAuth();
+      render();
+    })();
+  </script>
+
+  <script>
+    (function(){
+      const page = document.querySelector('.page-shell');
+      if (!page) return;
+
+      let startX = 0;
+      let startY = 0;
+      let currentX = 0;
+      let tracking = false;
+      let dragging = false;
+
+      const EDGE_ZONE = 24;
+      const MAX_DY = 70;
+      const TRIGGER_RATIO = 0.33;
+
+      function getOpenModalEl(){
+        const modals = Array.from(document.querySelectorAll('.modal.show'));
+        return modals.length ? modals[modals.length - 1] : null;
+      }
+
+      function closeTopModal(){
+        const el = getOpenModalEl();
+        if (!el) return false;
+
+        try{
+          const inst = bootstrap.Modal.getInstance(el) || bootstrap.Modal.getOrCreateInstance(el);
+          inst.hide();
+          return true;
+        }catch(_){
+          el.classList.remove('show');
+          el.style.display = 'none';
+          document.body.classList.remove('modal-open');
+          document.querySelectorAll('.modal-backdrop').forEach(x => x.remove());
+          return true;
+        }
+      }
+
+      function goBackPage(){
+        if (window.history.length > 1){
+          history.back();
+        }else{
+          location.href = 'index.html';
+        }
+      }
+
+      function resetPage(){
+        page.classList.remove('dragging');
+        page.style.transform = 'translateX(0)';
+        setTimeout(()=>{
+          document.body.classList.remove('swipe-peek');
+        }, 220);
+      }
+
+      document.addEventListener('touchstart', function(e){
+        if (!e.touches || !e.touches.length) return;
+
+        const t = e.touches[0];
+        startX = t.clientX;
+        startY = t.clientY;
+        currentX = 0;
+        dragging = false;
+        tracking = startX <= EDGE_ZONE;
+      }, { passive:true });
+
+      document.addEventListener('touchmove', function(e){
+        if (!tracking || !e.touches || !e.touches.length) return;
+
+        const t = e.touches[0];
+        const dx = t.clientX - startX;
+        const dy = Math.abs(t.clientY - startY);
+
+        if (dy > MAX_DY) return;
+        if (dx <= 0) return;
+
+        currentX = dx;
+        dragging = true;
+
+        document.body.classList.add('swipe-peek');
+        page.classList.add('dragging');
+        page.style.transform = `translateX(${dx}px)`;
+      }, { passive:true });
+
+      document.addEventListener('touchend', function(){
+        if (!tracking) return;
+
+        tracking = false;
+        page.classList.remove('dragging');
+
+        if (!dragging){
+          document.body.classList.remove('swipe-peek');
+          return;
+        }
+
+        const threshold = window.innerWidth * TRIGGER_RATIO;
+
+        if (currentX >= threshold){
+          page.style.transform = `translateX(${window.innerWidth}px)`;
+
+          setTimeout(()=>{
+            const closedModal = closeTopModal();
+            if (!closedModal){
+              goBackPage();
+            }else{
+              page.style.transition = 'none';
+              page.style.transform = 'translateX(0)';
+              void page.offsetHeight;
+              page.style.transition = '';
+              document.body.classList.remove('swipe-peek');
+            }
+          }, 180);
+        } else {
+          resetPage();
+        }
+
+        dragging = false;
+        currentX = 0;
+      }, { passive:true });
+    })();
+  </script>
+</body>
+</html>

@@ -2,7 +2,8 @@
 <html lang="ms">
 <head>
   <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<link rel="stylesheet" href="/global.css">
   <title>Admin • Settle Sale + Trade In — Emas Amir</title>
 
   <!-- Libs -->
@@ -83,12 +84,13 @@
         <div class="table-responsive mt-2">
           <table class="table table-sm align-middle table-sticky">
             <thead>
-              <tr>
-                <th style="width:150px">Tarikh</th>
-                <th>Order</th>
-                <th>Pelanggan</th>
-                <th class="text-end" style="width:140px">Jumlah</th>
-              </tr>
+             <tr>
+  <th style="width:70px">Pilih</th>
+  <th style="width:150px">Tarikh</th>
+  <th>Order</th>
+  <th>Pelanggan</th>
+  <th class="text-end" style="width:140px">Jumlah</th>
+</tr>
             </thead>
             <tbody id="saleTbody">
               <tr><td colspan="4" class="text-center text-muted py-4">Belum cari.</td></tr>
@@ -165,13 +167,14 @@
         <input id="noteBox" class="form-control" placeholder="Contoh: bayar beza tunai / cash out transfer / nota staff" />
       </div>
       <div class="col-12 col-md-3">
-        <label class="form-label mb-1">Cash out method (jika kedai bayar)</label>
+        <label class="form-label mb-1" id="methodLabel">Kaedah settlement</label>
         <select id="cashoutMethod" class="form-select">
           <option value="">-</option>
           <option value="TUNAI">TUNAI</option>
           <option value="TRANSFER">TRANSFER</option>
+          <option value="ATOME">ATOME</option>
         </select>
-        <div class="small-muted mt-1">Isi kalau Net negatif.</div>
+        <div class="small-muted mt-1" id="methodHint">Pilih ikut keadaan net.</div>
       </div>
       <div class="col-12 col-md-3">
         <label class="form-label mb-1">Rujukan (optional)</label>
@@ -404,7 +407,7 @@ function buildAdminSettleMsg({ cust, saleOrder, saleGroup, tradeId, saleRM, trad
     `Trade RM: RM ${Number(tradeRM||0).toFixed(2)}`,
     `NET: ${netTxt}`,
     "",
-    `Cashout Method: ${method || "-"}`,
+    `Kaedah Settlement: ${method || "-"}`,
     `Rujukan: ${ref || "-"}`,
     (note ? `Nota: ${note}` : null),
     (resitUrl ? `Resit: ${resitUrl}` : null),
@@ -426,6 +429,53 @@ function buildAdminSettleMsg({ cust, saleOrder, saleGroup, tradeId, saleRM, trad
   return lines.join("\n");
 }
 
+function refreshMethodOptions(){
+  const sel = $('cashoutMethod');
+  const label = $('methodLabel');
+  const hint = $('methodHint');
+
+  if(!sel || !label || !hint) return;
+
+  const prev = (sel.value || '').trim();
+  const saleRM = pickedSales.reduce((sum, r) => sum + calcSaleRM(r), 0);
+  const tradeRM = pickedTrade ? Number(pickedTrade.subtotal_rm||0) : 0;
+  const net = saleRM - tradeRM;
+
+  let options = ['TUNAI', 'TRANSFER', 'ATOME'];
+  let nextLabel = 'Kaedah settlement';
+  let nextHint = 'Pilih ikut keadaan net.';
+
+  if(!pickedSales.length || !pickedTrade){
+    options = ['TUNAI', 'TRANSFER', 'ATOME'];
+    nextLabel = 'Kaedah settlement';
+    nextHint = 'Pilih selepas sale dan trade-in dipilih.';
+  }else if(net > 0){
+    options = ['TUNAI', 'TRANSFER', 'ATOME'];
+    nextLabel = 'Kaedah bayaran customer';
+    nextHint = 'Customer perlu tambah duit. Boleh pilih TUNAI / TRANSFER / ATOME.';
+  }else if(net < 0){
+    options = ['TUNAI', 'TRANSFER'];
+    nextLabel = 'Cash out method (kedai bayar)';
+    nextHint = 'Net negatif. Kedai bayar balik melalui TUNAI atau TRANSFER.';
+  }else{
+    options = ['TUNAI', 'TRANSFER'];
+    nextLabel = 'Kaedah settlement';
+    nextHint = 'Net 0. Boleh kosongkan jika tak perlu.';
+  }
+
+  sel.innerHTML = ['<option value="">-</option>']
+    .concat(options.map(v => `<option value="${v}">${v}</option>`))
+    .join('');
+
+  if(options.includes(prev)){
+    sel.value = prev;
+  }else{
+    sel.value = '';
+  }
+
+  label.textContent = nextLabel;
+  hint.textContent = nextHint;
+}
 /* ========================== Topbar Auth UI ========================== */
 (function(){
   const pill=$('authStatus'),login=$('btnLogin'),logout=$('btnLogout');
@@ -450,7 +500,8 @@ async function fallbackRequireAdmin(){
   const phone = (''+(a.phone||a.msisdn||a.username||'')).replace(/\D/g,'');
   if(!phone){ alert("Akses terhad."); location.href="index.html"; return false; }
   const {data,error}=await sb
-    .from("admin_users").select("phone,is_active")
+    .from("admin_users")
+    .select("phone,is_active")
     .eq("phone",phone.startsWith('60')?phone:('60'+phone))
     .eq("is_active",true)
     .maybeSingle();
@@ -462,9 +513,9 @@ async function fallbackRequireAdmin(){
 let saleRows = [];
 let tradeRows = [];
 
-let pickedSale = null;        // row j916_orders (row yang diklik)
-let pickedSaleGroup = null;   // checkout_group yang dipilih
-let pickedSales = [];         // semua row dalam group (tanpa limit)
+let pickedSale = null;        // item pertama yang dipilih (untuk compatibility lama)
+let pickedSaleGroup = null;   // tak pakai untuk auto-pilih lagi
+let pickedSales = [];         // semua item sale yang ditanda manual
 
 let pickedTrade = null;       // row tradein_txn
 
@@ -472,21 +523,18 @@ function resetPick(){
   pickedSale = null;
   pickedSaleGroup = null;
   pickedSales = [];
-
   pickedTrade = null;
 
   $('salePicked').textContent='-';
   $('tradePicked').textContent='-';
+  $('cashoutMethod').value = '';
   updateSummary();
+  refreshMethodOptions();
   $('btnSettle').disabled = true;
   $('btnPreview').disabled = true;
 }
-
 function updateSummary(){
-  const saleRM = (pickedSales && pickedSales.length)
-    ? pickedSales.reduce((sum, r)=> sum + calcSaleRM(r), 0)
-    : (pickedSale ? calcSaleRM(pickedSale) : 0);
-
+  const saleRM = pickedSales.reduce((sum, r) => sum + calcSaleRM(r), 0);
   const tradeRM = pickedTrade ? Number(pickedTrade.subtotal_rm||0) : 0;
   const net = saleRM - tradeRM;
 
@@ -494,8 +542,9 @@ function updateSummary(){
   $('sumTrade').textContent = money(tradeRM);
   $('sumNet').textContent = money(net);
 
-  if(!pickedSale || !pickedTrade){
-    $('netHint').textContent = 'Pilih 1 sale + 1 trade-in dahulu.';
+  if(!pickedSales.length || !pickedTrade){
+    $('netHint').textContent = 'Pilih sekurang-kurangnya 1 sale + 1 trade-in dahulu.';
+    refreshMethodOptions();
     return;
   }
 
@@ -507,27 +556,38 @@ function updateSummary(){
     $('netHint').textContent = `Tiada beza (0).`;
   }
 
+  refreshMethodOptions();
   $('btnSettle').disabled = false;
   $('btnPreview').disabled = false;
 }
-
 function renderSale(){
   const tb = $('saleTbody');
   $('saleCount').textContent = saleRows.length;
 
   if(!saleRows.length){
-    tb.innerHTML = `<tr><td colspan="4" class="text-center text-muted py-4">Tiada J916 PENDING untuk nombor ini.</td></tr>`;
+    tb.innerHTML = `<tr><td colspan="5" class="text-center text-muted py-4">Tiada J916 PENDING untuk nombor ini.</td></tr>`;
     return;
   }
 
   tb.innerHTML = saleRows.map((r, idx)=>{
-    const sel = (pickedSaleGroup && r.checkout_group === pickedSaleGroup) ? 'selected-row' : '';
+    const checked = pickedSales.some(x => x.order_code === r.order_code);
+    const sel = checked ? 'selected-row' : '';
+
     return `
-      <tr class="pick-row ${sel}" data-idx="${idx}" onclick="pickSale(${idx})">
+      <tr class="${sel}">
+        <td class="text-center">
+          <input
+            type="checkbox"
+            class="form-check-input"
+            ${checked ? 'checked' : ''}
+            onchange="toggleSalePick(${idx}, this.checked)"
+          >
+        </td>
         <td>${fmtMY(r.created_at)}</td>
         <td class="mono">
           <div class="fw-semibold">${r.order_code || '-'}</div>
           <div class="small-muted">Status: ${(r.status||'').toUpperCase()}</div>
+          <div class="small-muted">Group: ${r.checkout_group ? String(r.checkout_group).slice(0,8)+'…' : '-'}</div>
         </td>
         <td>
           <div class="fw-semibold">${r.customer_name || '-'}</div>
@@ -538,7 +598,6 @@ function renderSale(){
     `;
   }).join('');
 }
-
 function renderTrade(){
   const tb = $('tradeTbody');
   $('tradeCount').textContent = tradeRows.length;
@@ -552,7 +611,7 @@ function renderTrade(){
     const short = String(r.id||'').slice(0,8)+'…';
     const sel = (pickedTrade && pickedTrade.id === r.id) ? 'selected-row' : '';
     return `
-      <tr class="pick-row ${sel}" data-idx="${idx}" onclick="pickTrade(${idx})">
+      <tr class="pick-row ${sel}" data-trade-idx="${idx}">
         <td>${fmtMY(r.created_at)}</td>
         <td class="mono">
           <div class="fw-semibold">${short}</div>
@@ -568,28 +627,28 @@ function renderTrade(){
   }).join('');
 }
 
-window.pickSale = function(idx){
-  pickedSale = saleRows[idx] || null;
+window.toggleSalePick = function(idx, checked){
+  const row = saleRows[idx];
+  if(!row) return;
 
-  // pilih semua order dalam checkout_group yang sama (tanpa limit)
-  pickedSaleGroup = pickedSale?.checkout_group || null;
-
-  if(pickedSaleGroup){
-    pickedSales = saleRows.filter(r => r.checkout_group === pickedSaleGroup);
+  if(checked){
+    if(!pickedSales.some(x => x.order_code === row.order_code)){
+      pickedSales.push(row);
+    }
   }else{
-    pickedSales = pickedSale ? [pickedSale] : [];
+    pickedSales = pickedSales.filter(x => x.order_code !== row.order_code);
   }
 
-  // paparan "Dipilih"
-  if(!pickedSale){
+  pickedSale = pickedSales.length ? pickedSales[0] : null;
+  pickedSaleGroup = null;
+
+  if(!pickedSales.length){
     $('salePicked').textContent = '-';
-  }else if(pickedSaleGroup){
-    const gShort = String(pickedSaleGroup).slice(0,8) + '…';
-    const codes = pickedSales.map(r => r.order_code).filter(Boolean);
-    const codesShort = codes.slice(0,3).join(', ') + (codes.length > 3 ? ` +${codes.length-3} lagi` : '');
-    $('salePicked').textContent = `Group ${gShort} • ${pickedSales.length} item • ${codesShort || '-'}`;
   }else{
-    $('salePicked').textContent = pickedSale.order_code || '-';
+    const total = pickedSales.reduce((sum, r) => sum + calcSaleRM(r), 0);
+    const codes = pickedSales.map(r => r.order_code).filter(Boolean);
+    $('salePicked').textContent =
+      `${pickedSales.length} item • ${money(total)} • ${codes.join(', ')}`;
   }
 
   renderSale();
@@ -608,7 +667,6 @@ async function fetchPendingSaleByPhone(phoneInput){
   const key = phoneKey(phoneInput);
   if(!key) return [];
 
-  // ambil semua PENDING dulu (limit besar sikit), kemudian tapis secara digits
   const { data, error } = await sb
     .from('j916_orders')
     .select('order_code,checkout_group,created_at,customer_name,phone,amount_cents,status,pay_method,subtotal_rm,shipping_rm,pay_disc_rm,coupon_disc_rm,grand_total_rm')
@@ -669,17 +727,17 @@ async function doSearch(){
 
 /* ========================== Preview Resit Gabungan ========================== */
 function openCombinedReceiptPreview(){
-  if(!pickedSale || !pickedTrade){
-    alert('Sila pilih 1 sale dan 1 trade-in.');
+  if(!pickedSales.length || !pickedTrade){
+    alert('Sila pilih sekurang-kurangnya 1 sale dan 1 trade-in.');
     return;
   }
 
-  const saleList = (pickedSales && pickedSales.length) ? pickedSales : (pickedSale ? [pickedSale] : []);
+  const saleList = pickedSales;
   const saleCodes = saleList.map(r => r.order_code).filter(Boolean);
 
   const payload = {
-    sale: saleCodes[0] || pickedSale.order_code,
-    sale_group: pickedSaleGroup || pickedSale.checkout_group || '',
+    sale: saleCodes[0] || '',
+    sale_group: '',
     sale_list: saleCodes.join(','),
     trade: pickedTrade.id,
     note: ($('noteBox').value||'').trim(),
@@ -688,7 +746,6 @@ function openCombinedReceiptPreview(){
     at: new Date().toISOString()
   };
 
-  // ✅ backup kalau query string hilang (rewrite/router)
   try{ localStorage.setItem('settle_preview', JSON.stringify(payload)); }catch(_){}
 
   const qs = new URLSearchParams({
@@ -701,28 +758,24 @@ function openCombinedReceiptPreview(){
     method: payload.method
   }).toString();
 
-  // ✅ guna absolute URL (lebih kebal)
   const url = `${location.origin}/resit-gabungan-settle.html?${qs}`;
   window.open(url, '_blank');
 }
 
 /* ========================== Settle action ========================== */
 async function settleNow(){
-  if(!pickedSale || !pickedTrade){
-    alert('Sila pilih 1 sale dan 1 trade-in.');
+  if(!pickedSales.length || !pickedTrade){
+    alert('Sila pilih sekurang-kurangnya 1 sale dan 1 trade-in.');
     return;
   }
 
-  const saleList = (pickedSales && pickedSales.length) ? pickedSales : (pickedSale ? [pickedSale] : []);
+  const saleList = pickedSales;
   const saleCodes = saleList.map(r => r.order_code).filter(Boolean);
-  const saleLabel = (pickedSaleGroup)
-    ? `GROUP ${String(pickedSaleGroup).slice(0,8)}… (${saleCodes.length} item)`
-    : (pickedSale?.order_code || '-');
-
+  const saleLabel = `${saleCodes.length} item`;
   /* ======================
-     1) KIRA JUMLAH SALE (SUM GROUP)
+     1) KIRA JUMLAH SALE (1 ITEM SAHAJA)
      ====================== */
-  let saleRM = saleList.reduce((sum, r)=> sum + calcSaleRM(r), 0);
+  let saleRM = saleList.reduce((sum, r) => sum + calcSaleRM(r), 0);
   saleRM = Number(saleRM.toFixed(2));
 
   /* ======================
@@ -736,11 +789,22 @@ async function settleNow(){
   const net = saleRM - tradeRM;
 
   /* ======================
-     4) VALIDASI CASH OUT
+     4) VALIDASI METHOD
      ====================== */
   const method = ($('cashoutMethod').value || '').trim();
+
+  if(net > 0 && !method){
+    alert('Net positif. Sila pilih kaedah bayaran customer (TUNAI / TRANSFER / ATOME).');
+    return;
+  }
+
   if(net < 0 && !method){
     alert('Net negatif. Sila pilih Cash Out Method (TUNAI / TRANSFER).');
+    return;
+  }
+
+  if(net < 0 && method === 'ATOME'){
+    alert('ATOME hanya untuk customer tambah duit (net positif).');
     return;
   }
 
@@ -753,11 +817,11 @@ async function settleNow(){
   const ok = confirm(
     `Sahkan settlement?\n\n` +
     `Sale J916: ${saleLabel}\n` +
-    (pickedSaleGroup ? (`Order: ${saleCodes.slice(0,5).join(', ')}${saleCodes.length>5?` +${saleCodes.length-5} lagi`:''}\n`) : '') +
     `Jumlah Sale: RM ${saleRM.toFixed(2)}\n\n` +
     `Trade In: ${String(pickedTrade.id).slice(0,8)}…\n` +
     `Jumlah Trade: RM ${tradeRM.toFixed(2)}\n\n` +
-    `NET: RM ${net.toFixed(2)}\n\n` +
+    `NET: RM ${net.toFixed(2)}\n` +
+    `Kaedah: ${method || '-'}\n\n` +
     `Tekan OK untuk mark PAID dua-dua.`
   );
   if(!ok) return;
@@ -767,27 +831,16 @@ async function settleNow(){
 
   try{
     /* ======================
-       6) UPDATE SALE J916 (SEMUA DALAM GROUP)
+       6) UPDATE SALE J916 (1 ITEM SAHAJA)
        ====================== */
     if(!saleCodes.length) throw new Error("Tiada sale order_code untuk settle.");
 
-    const saleUpdate = {
-      status: 'PAID',
-      paid_at: new Date().toISOString()
-    };
-
-    // ✅ SELAMAT: auto isi amount_cents hanya jika 1 order sahaja
-    if (saleCodes.length === 1) {
-      const only = saleList[0];
-      const onlyRM = calcSaleRM(only);
-      if (!(Number(only.amount_cents) > 0) && Number(onlyRM) > 0) {
-        saleUpdate.amount_cents = Math.round(Number(onlyRM) * 100);
-      }
-    }
-
     const { error: e1 } = await sb
       .from('j916_orders')
-      .update(saleUpdate)
+      .update({
+        status: 'PAID',
+        paid_at: new Date().toISOString()
+      })
       .in('order_code', saleCodes)
       .eq('status', 'PENDING');
 
@@ -807,10 +860,10 @@ async function settleNow(){
     if(e2) throw e2;
 
     /* ======================
-       7.5) SIMPAN REKOD SETTLEMENT (SUPABASE)
+       7.5) SIMPAN REKOD SETTLEMENT
        ====================== */
     const settlePayload = {
-      sale_order_code: (pickedSaleGroup ? (`GROUP:${pickedSaleGroup}`) : (pickedSale.order_code)),
+      sale_order_code: saleCodes.join(','),
       tradein_id: pickedTrade.id,
       sale_rm: saleRM,
       trade_rm: tradeRM,
@@ -823,26 +876,24 @@ async function settleNow(){
 
     const settleId = await saveSettlementToDB(settlePayload);
 
-    // simpan untuk buka resit balik kalau tab tertutup
     try{
       localStorage.setItem('settle_last_id', String(settleId||''));
     }catch(_){}
 
     /* ======================
-       7.6) WhatsApp ke ADMIN (sentiasa)
+       7.6) WhatsApp ke ADMIN
        ====================== */
     try{
-      // ambil bank customer hanya bila perlu
       let custBank = null;
       if (net < 0 && String(method||'').toUpperCase() === "TRANSFER") {
         custBank = await fetchCustomerBankByPhone(
-          pickedSale.phone || pickedTrade.customer_phone || ""
+          pickedSales[0]?.phone || pickedTrade.customer_phone || ""
         );
       }
 
       const msgAdmin = buildAdminSettleMsg({
         cust: custBank,
-        saleOrder: (pickedSaleGroup ? saleCodes.join(', ') : (pickedSale.order_code)),
+        saleOrder: pickedSale.order_code,
         saleGroup: pickedSaleGroup || pickedSale.checkout_group || null,
         tradeId: pickedTrade.id,
         saleRM,
@@ -909,6 +960,16 @@ async function settleNow(){
 $('btnSearch').addEventListener('click', doSearch);
 $('phoneBox').addEventListener('keydown', (e)=>{ if(e.key==='Enter') doSearch(); });
 
+
+
+$('tradeTbody').addEventListener('click', (e)=>{
+  const tr = e.target.closest('tr[data-trade-idx]');
+  if(!tr) return;
+  const idx = Number(tr.dataset.tradeIdx);
+  if(Number.isNaN(idx)) return;
+  window.pickTrade(idx);
+});
+
 $('btnClear').addEventListener('click', ()=>{
   $('phoneBox').value='';
   $('searchInfo').textContent='-';
@@ -940,6 +1001,7 @@ $('btnSettle').addEventListener('click', settleNow);
   }
   if(!ok) return;
 
+  refreshMethodOptions();
   showToast('Ready. Masukkan phone untuk mula.');
 })();
 </script>

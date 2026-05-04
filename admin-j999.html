@@ -2,7 +2,8 @@
 <html lang="ms">
 <head>
   <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<link rel="stylesheet" href="/global.css">
   <title>Admin-J999 • Senarai Order GoldBar/Coin — Emas Amir</title>
 
   <!-- Libs (ORDER matters) -->
@@ -19,6 +20,19 @@
     .mono{font-family: ui-monospace,SFMono-Regular,Menlo,monospace}
     .table-sticky thead th{position:sticky;top:0;background:#fff;z-index:5}
     .toast-wrap{position:fixed;right:16px;bottom:16px;z-index:1080}
+
+    .split-row{display:flex;gap:8px;align-items:center}
+    .split-row > *{flex:1}
+    .split-row .split-del{flex:0 0 auto}
+    .split-total-pill{
+      display:inline-block;
+      border:1px solid #e5e7eb;
+      border-radius:999px;
+      padding:.15rem .5rem;
+      background:#f8fafc;
+      font-size:12px;
+      color:#444;
+    }
   </style>
 </head>
 <body>
@@ -42,20 +56,44 @@
   <!-- HEADER + FILTER -->
   <div class="d-flex align-items-center justify-content-between gap-2 flex-wrap">
     <h1 class="h4 m-0">Admin-J999 — Senarai Order GoldBar/Coin</h1>
-    <div class="d-flex gap-2">
+    <div class="d-flex gap-2 flex-wrap">
       <button class="btn-chip" data-filter="ALL">Semua</button>
       <button class="btn-chip" data-filter="PAID">Dah Bayar</button>
       <button class="btn-chip" data-filter="PENDING">Menunggu</button>
       <button class="btn-chip" data-filter="COMPLETED">Selesai</button>
+      <button class="btn-chip" data-filter="CANCELLED">Dibatalkan</button>
     </div>
   </div>
 
-  <div class="input-group my-3" style="max-width:640px">
-    <span class="input-group-text">Cari</span>
-    <input id="searchBox" class="form-control" placeholder="Cari ref / phone / bill id / design">
-    <button id="refreshBtn" class="btn btn-outline-secondary">Refresh</button>
+ <div class="input-group my-3" style="max-width:640px">
+  <span class="input-group-text">Cari</span>
+  <input id="searchBox" class="form-control" placeholder="Cari ref / phone / bill id / design">
+  <button id="refreshBtn" class="btn btn-outline-secondary">Refresh</button>
+</div>
+
+<div class="mb-3 p-2 border rounded" style="max-width:640px;background:#fff8f8">
+  <div class="d-flex gap-2 flex-wrap align-items-center">
+    <button id="btnOpenLiveJ999" class="btn btn-danger fw-bold" type="button">
+      🔴 Pilih Barang LIVE J999
+    </button>
+
+    <select id="liveJ999Select" class="form-select" multiple size="8" style="max-width:520px;display:none"></select>
+
+    <button id="btnSetLiveJ999" class="btn btn-danger fw-bold" type="button" style="display:none">
+      Naik LIVE
+    </button>
+
+    <button id="btnOffLiveJ999" class="btn btn-outline-dark" type="button" style="display:none">
+      Off LIVE
+    </button>
   </div>
 
+ <div id="liveJ999Status" class="small text-muted mt-2">
+  Tekan button untuk pilih item J999 yang nak naik dekat Comment Live.
+</div>
+
+<div id="liveJ999ActiveList" class="mt-2 small"></div>
+</div>
   <!-- TABLE -->
   <div class="table-responsive">
     <table class="table table-sm align-middle table-sticky">
@@ -67,7 +105,7 @@
           <th>Butiran</th>
           <th class="text-end" style="width:120px">Jumlah</th>
           <th style="width:120px">Status</th>
-          <th class="text-end" style="width:260px">Tindakan</th>
+          <th class="text-end" style="width:360px">Tindakan</th>
         </tr>
       </thead>
       <tbody id="ordersTbody">
@@ -154,6 +192,103 @@
   </div>
 </div>
 
+<!-- MODAL BAYAR MANUAL -->
+<div class="modal fade" id="manualPayModal" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered modal-sm">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Bayar Manual</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Tutup"></button>
+      </div>
+
+      <div class="modal-body">
+        <div class="small text-muted mb-2" id="mp_info"></div>
+        <input id="mp_order_id" type="hidden">
+        <input id="mp_order_total_cents" type="hidden">
+
+        <div class="form-check mb-2">
+          <input class="form-check-input" type="checkbox" id="mp_is_split">
+          <label class="form-check-label" for="mp_is_split">
+            Split bayaran (lebih dari 1 kaedah)
+          </label>
+        </div>
+
+        <div id="mp_single_wrap">
+          <div class="mb-2">
+            <label class="form-label">Kaedah</label>
+            <select id="mp_method" class="form-select">
+              <option value="MANUAL_MAYBANK">Maybank</option>
+              <option value="MANUAL_CASH">Cash</option>
+              <option value="MANUAL_CARD">Card</option>
+              <option value="MANUAL_ATOME">Atome</option>
+            </select>
+          </div>
+
+          <div class="mb-2">
+            <label class="form-label">Jumlah Bayaran (RM)</label>
+            <input id="mp_amount_rm" class="form-control" type="number" step="0.01" placeholder="contoh 383.07">
+          </div>
+
+          <div class="small text-muted" id="mp_single_note"></div>
+        </div>
+
+        <div id="mp_split_wrap" style="display:none">
+          <div class="d-flex justify-content-between align-items-center mb-2">
+            <div class="small text-muted">Pecahan bayaran</div>
+            <button type="button" class="btn btn-outline-dark btn-sm" id="mp_add_row_btn">+ Tambah</button>
+          </div>
+
+          <div id="mp_split_rows" class="d-flex flex-column gap-2"></div>
+
+          <div class="mt-2 d-flex justify-content-between align-items-center">
+            <span class="split-total-pill" id="mp_split_total_pill">Total split: RM 0.00</span>
+            <span class="split-total-pill" id="mp_split_need_pill">Perlu: RM 0.00</span>
+          </div>
+
+          <div class="small mt-2" id="mp_split_warn" style="color:#b45309"></div>
+        </div>
+      </div>
+
+      <div class="modal-footer">
+        <button type="button" class="btn btn-light" data-bs-dismiss="modal">Batal</button>
+        <button type="button" class="btn btn-primary" id="mp_confirm_btn">Sahkan</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL TUKAR KAEDAH -->
+<div class="modal fade" id="overridePayMethodModal" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered modal-sm">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Tukar Kaedah</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Tutup"></button>
+      </div>
+
+      <div class="modal-body">
+        <div class="mb-2">
+          <label class="form-label">Kaedah</label>
+          <select id="opm_method" class="form-select">
+            <option value="MANUAL_MAYBANK">Maybank</option>
+            <option value="MANUAL_CASH">Cash</option>
+            <option value="MANUAL_CARD">Card</option>
+            <option value="MANUAL_ATOME">Atome</option>
+          </select>
+        </div>
+
+        <div class="small text-muted" id="opm_info"></div>
+        <input id="opm_order_id" type="hidden">
+      </div>
+
+      <div class="modal-footer">
+        <button type="button" class="btn btn-light" data-bs-dismiss="modal">Batal</button>
+        <button type="button" class="btn btn-primary" id="opm_confirm_btn">Sahkan</button>
+      </div>
+    </div>
+  </div>
+</div>
+
 <!-- Bootstrap JS -->
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 
@@ -167,11 +302,10 @@ const SB_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJ
 window.sb = window.sb || window.supabase.createClient(SB_URL, SB_KEY);
 const sb = window.sb;
 
-
 // ===== Auto refresh (GLOBAL) =====
 let _tick = null;
 let _isRefreshing = false;
-const REFRESH_MS = 5000; // 5s – ubah ikut selera
+const REFRESH_MS = 5000;
 
 async function safeRefresh(){
   if (_isRefreshing) return;
@@ -180,9 +314,8 @@ async function safeRefresh(){
 }
 
 function startAutoRefresh(){
-  if (_tick) return;                     // elak gandaan interval
+  if (_tick) return;
   _tick = setInterval(safeRefresh, REFRESH_MS);
-  // bila tab kembali aktif, refresh sekali terus
   document.addEventListener('visibilitychange', ()=>{
     if (!document.hidden) safeRefresh();
   });
@@ -193,37 +326,229 @@ function stopAutoRefresh(){
 }
 window.addEventListener('beforeunload', stopAutoRefresh);
 
-
 const $ = id => document.getElementById(id);
 const ORD_PAGE_SIZE = 10;
 let ORD_CURRENT_PAGE = 1;
 let ORD_FILTER = 'ALL';
 let _pendingId = null;
+let PAID_CHAT_META_BY_GROUP = {};
 
-// Admin WA & OnSend (sama macam halaman jualan)
+// Admin WA & OnSend
 const ADMIN_WA   = '601113230198';
 const ONSEND_BASE  = "https://onsend.io/api/v1";
 const ONSEND_TOKEN = "76a6f98cfc6e009e5d824e47acd98b9b59a6e5177e14b072fd210276309d91f6";
-function normMsisdn(s){ const d=String(s||'').replace(/\D/g,''); if(d.startsWith('60'))return d; if(d.startsWith('0'))return '6'+d; return d?('60'+d):''; }
+
+function normMsisdn(s){
+  const d = String(s||'').replace(/\D/g,'');
+  if (d.startsWith('60')) return d;
+  if (d.startsWith('0')) return '6' + d;
+  return d ? ('60' + d) : '';
+}
+
 async function sendWA(msisdn, text){
   const phone_number = normMsisdn(msisdn);
-  if(!phone_number) return false;
+  if (!phone_number) return false;
   try{
-    const r = await fetch(ONSEND_BASE+"/send",{method:"POST",headers:{
-      "Accept":"application/json","Content-Type":"application/json","Authorization":"Bearer "+ONSEND_TOKEN
-    },body:JSON.stringify({phone_number,message:text,type:"text"})});
+    const r = await fetch(ONSEND_BASE + "/send", {
+      method:"POST",
+      headers:{
+        "Accept":"application/json",
+        "Content-Type":"application/json",
+        "Authorization":"Bearer " + ONSEND_TOKEN
+      },
+      body:JSON.stringify({
+        phone_number,
+        message:text,
+        type:"text"
+      })
+    });
     const j = await r.json().catch(()=>({}));
     console.log("[OnSend]", r.status, j);
-    return r.ok && j.success===true;
-  }catch(e){ console.warn("OnSend error:", e); return false; }
+    return r.ok && j.success === true;
+  }catch(e){
+    console.warn("OnSend error:", e);
+    return false;
+  }
 }
 
 function showToast(msg){
-  const el = $('mainToast'); $('toastMsg').textContent = msg||'OK';
+  const el = $('mainToast');
+  $('toastMsg').textContent = msg || 'OK';
   new bootstrap.Toast(el,{delay:2000}).show();
 }
 function fmtMY(s){ const d=new Date(s); return d.toLocaleString('ms-MY',{hour12:false}); }
 function money(n){ return 'RM ' + Number(n||0).toFixed(2); }
+function rmToCents(rm){
+  const n = Number(rm);
+  if(!Number.isFinite(n)) return null;
+  return Math.round(n * 100);
+}
+function centsToRm(cents){
+  return (Number(cents || 0) / 100).toFixed(2);
+}
+function safeUpper(s){
+  return String(s || '').trim().toUpperCase();
+}
+function humanMethodLabel(method){
+  const m = safeUpper(method);
+  if (m === 'MANUAL_MAYBANK') return 'Maybank';
+  if (m === 'MANUAL_CASH') return 'Cash';
+  if (m === 'MANUAL_CARD') return 'Card';
+  if (m === 'MANUAL_ATOME') return 'Atome';
+  if (m === 'MANUAL_SPLIT') return 'Split';
+  return m || '-';
+}
+function makeManualSingleNote(method){
+  return safeUpper(method || 'MANUAL_MAYBANK');
+}
+function makeManualSplitNote(lines){
+  const parts = (Array.isArray(lines) ? lines : [])
+    .filter(x => Number(x.amount_cents || 0) > 0)
+    .map(x => `${safeUpper(x.method)}:${Number(x.amount_cents || 0)}`);
+  return ['MANUAL_SPLIT'].concat(parts).join('|');
+}
+function parseManualNote(text){
+  const raw = String(text || '').trim();
+  if (!raw) return { isManual:false, isSplit:false, methodLabel:'', summary:'' };
+
+  const upper = raw.toUpperCase();
+
+  if (['MANUAL_MAYBANK','MANUAL_CASH','MANUAL_CARD','MANUAL_ATOME'].includes(upper)){
+    return {
+      isManual:true,
+      isSplit:false,
+      methodLabel: humanMethodLabel(upper),
+      summary: humanMethodLabel(upper)
+    };
+  }
+
+  if (upper.startsWith('MANUAL_SPLIT')){
+    const tokens = raw.split('|').slice(1);
+    const lines = tokens.map(t => {
+      const [method, cents] = String(t || '').split(':');
+      const c = Number(cents || 0);
+      if (!method || !Number.isFinite(c) || c <= 0) return null;
+      return `${humanMethodLabel(method)}: ${money(c / 100)}`;
+    }).filter(Boolean);
+
+    return {
+      isManual:true,
+      isSplit:true,
+      methodLabel:'Split',
+      summary: lines.join(' • ')
+    };
+  }
+
+  return { isManual:false, isSplit:false, methodLabel:'', summary:'' };
+}
+function isManualBillText(text){
+  return parseManualNote(text).isManual;
+}
+function getNeedCents(row){
+  const grand = Number(row?.grand_total_rm || 0);
+  if (Number.isFinite(grand) && grand > 0) return Math.round(grand * 100);
+
+  const total = Number(row?.total_rm || 0);
+  if (Number.isFinite(total) && total > 0) return Math.round(total * 100);
+
+  const sub = Number(row?.subtotal_rm || 0);
+  const ship = Number(row?.shipping_rm || 0);
+  const payDisc = Number(row?.pay_disc_rm || 0);
+  const couponDisc = Number(row?.coupon_disc_rm || 0);
+  const calc = sub + ship - payDisc - couponDisc;
+  if (Number.isFinite(calc) && calc > 0) return Math.round(calc * 100);
+
+  return 0;
+}
+
+function getProductionDoneLabel(kind){
+  const k = safeUpper(kind);
+  if (k === 'COIN') return 'Coin Siap';
+  if (k === 'BAR') return 'Bar Siap';
+  if (k === 'DINAR') return 'Dinar Siap';
+  return 'Production Siap';
+}
+
+function isUUID(v){
+  const s = String(v || '').trim();
+  return /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(s);
+}
+
+function safeParseMeta(m){
+  if(!m) return null;
+  if(typeof m === 'object') return m;
+  try{
+    const s = String(m || '').trim();
+    if(!s) return null;
+    return JSON.parse(s);
+  }catch(_){
+    return null;
+  }
+}
+
+async function fetchPaidChatMetaByGroups(groups){
+  const ids = Array.from(new Set((groups || []).map(x => String(x || '').trim()).filter(Boolean).filter(isUUID)));
+  if(!ids.length) return {};
+
+  const out = {};
+  const CHUNK = 250;
+
+  for(let i=0;i<ids.length;i+=CHUNK){
+    const part = ids.slice(i, i + CHUNK);
+
+    const { data, error } = await sb
+      .from('chat_threads')
+      .select('id,meta')
+      .in('id', part);
+
+    if(error) throw error;
+
+    (data || []).forEach(r=>{
+      const tid = String(r.id || '').trim();
+      if(!tid) return;
+
+      const meta = safeParseMeta(r.meta) || {};
+      out[tid] = meta;
+    });
+  }
+
+  return out;
+}
+
+function getPaidChatBadgeHtml(row){
+  const gid = String(row?.checkout_group || '').trim();
+  if(!gid) return '';
+
+  const meta = PAID_CHAT_META_BY_GROUP[gid] || null;
+  if(!meta) return '';
+
+  const refs = Array.isArray(meta.paid_chat_order_refs)
+    ? meta.paid_chat_order_refs.map(x => String(x || '').trim()).filter(Boolean)
+    : [];
+
+  if(!refs.length) return '';
+
+  const fullRef = String(row?.reference || '').trim();
+  const shortRef = fullRef ? fullRef.slice(0, 8) : '';
+
+  const hit = refs.includes(fullRef) || refs.includes(shortRef);
+
+  if(hit){
+    return `<div class="small mt-1"><span class="badge text-bg-info">paid(chat)</span></div>`;
+  }
+
+  return '';
+}
+function getProductionBadgeHtml(row){
+  const p = safeUpper(row.production_status);
+  if (p === 'QUEUED'){
+    return `<div class="small mt-1"><span class="badge text-bg-warning">Production: Dah Hantar</span></div>`;
+  }
+  if (p === 'DONE'){
+    return `<div class="small mt-1"><span class="badge text-bg-success">Production: ${getProductionDoneLabel(row.kind)}</span></div>`;
+  }
+  return ``;
+}
 
 /* =========================
    Topbar auth pill
@@ -234,11 +559,13 @@ function money(n){ return 'RM ' + Number(n||0).toFixed(2); }
     const a=(window.auth_get && window.auth_get())||null;
     if(a){
       status.textContent='Log masuk (admin) — '+(a.name||a.phone||'pengguna');
-      btnLogin.style.display='none'; btnLogout.style.display='';
+      btnLogin.style.display='none';
+      btnLogout.style.display='';
       btnLogout.onclick=()=>{ window.auth_clear && window.auth_clear(); location.href='login.html#login'; };
     }else{
       status.textContent='Tidak log masuk';
-      btnLogin.style.display=''; btnLogout.style.display='none';
+      btnLogin.style.display='';
+      btnLogout.style.display='none';
       btnLogin.onclick=()=> location.href='login.html#login';
     }
   }catch(_){}
@@ -258,17 +585,19 @@ async function recordAction(orderId, action){
 async function loadActions(ids){
   try{
     const { data } = await sb.from('goldbar_actions')
-      .select('order_id, action').in('order_id', ids);
+      .select('order_id, action')
+      .in('order_id', ids);
     const sent = new Set((data||[]).filter(x=>x.action==='sent_detail').map(x=>x.order_id));
     return { sentDetail: sent };
-  }catch(e){ console.warn('loadActions warn:', e); return { sentDetail: new Set() }; }
+  }catch(e){
+    console.warn('loadActions warn:', e);
+    return { sentDetail: new Set() };
+  }
 }
 
 /* =========================
    AWB via GDEX (myGDEX Prime)
    ========================= */
-
-// Simpan AWB dalam localStorage supaya boleh "Print / Track" walaupun refresh
 const AWB_STORAGE_KEY = 'j999_gdex_awb_v1';
 
 function loadAwbCache(){
@@ -294,7 +623,6 @@ function setAwbForOrder(orderId, awb){
   awbCache[orderId] = awb;
   saveAwbCache(awbCache);
 }
-
 function clearAwbForOrder(orderId){
   if (!orderId) return;
   if (awbCache && Object.prototype.hasOwnProperty.call(awbCache, orderId)) {
@@ -303,26 +631,27 @@ function clearAwbForOrder(orderId){
   }
 }
 
-// ===== Helper telefon untuk match customers.phone =====
+/* =========================
+   Helper customers
+   ========================= */
 function normalizePhoneVariants(msisdn){
   if (!msisdn) return [];
   let x = (''+msisdn).replace(/\D/g,'');
   const set = new Set();
 
-  if (x) set.add(x);              // 6012...
+  if (x) set.add(x);
 
   if (x.startsWith('60') && x.length > 2){
-    set.add('0' + x.slice(2));    // 012...
+    set.add('0' + x.slice(2));
   }
 
   if (x.startsWith('0') && x.length >= 10 && x.length <= 11){
     set.add(x);
-    set.add('60' + x.slice(1));   // 60 + buang 0 depan
+    set.add('60' + x.slice(1));
   }
   return Array.from(set);
 }
 
-// Dapatkan alamat dari table customers sahaja (ikut phone)
 async function fetchAddressForOrder(order){
   let result = {
     name: order.customer_name || '',
@@ -357,9 +686,9 @@ async function fetchAddressForOrder(order){
   return result;
 }
 
-// =====================
-// MODAL ALAMAT (ADMIN)
-// =====================
+/* =========================
+   Modal alamat
+   ========================= */
 let currentOrderForAddress = null;
 let alamatModalInstance = null;
 
@@ -373,7 +702,6 @@ function getAlamatModalInstance(){
   return alamatModalInstance;
 }
 
-// Buka modal bila admin klik butang "Alamat"
 window.openAlamatModalFromBtn = async function(orderId){
   const row = (window._rowsCache && window._rowsCache[orderId]) || null;
   if (!row){
@@ -388,8 +716,6 @@ window.openAlamatModalFromBtn = async function(orderId){
   }
 
   currentOrderForAddress = row;
-
-  // Guna helper fetchAddressForOrder untuk ambil alamat dari customers
   const addr = await fetchAddressForOrder(row);
 
   document.getElementById('addr_name').value     = addr.name || row.customer_name || '';
@@ -401,7 +727,6 @@ window.openAlamatModalFromBtn = async function(orderId){
   modal.show();
 };
 
-// Simpan alamat daripada modal ke table customers (ikut phone)
 window.saveAlamatFromModal = async function(){
   if (!currentOrderForAddress) return;
 
@@ -425,14 +750,13 @@ window.saveAlamatFromModal = async function(){
       return;
     }
 
-    // Update customers ikut phone (varian 6012..., 012..., dll)
     await sb.from('customers')
       .update({
-        name:    nama || currentOrderForAddress.customer_name || null,
-        alamat:  alamat,
+        name: nama || currentOrderForAddress.customer_name || null,
+        alamat: alamat,
         postcode: poskod,
-        city:     bandar,
-        state:    negeri
+        city: bandar,
+        state: negeri
       })
       .in('phone', variants);
 
@@ -444,15 +768,15 @@ window.saveAlamatFromModal = async function(){
   }
 };
 
-// Netlify function ke GDEX (sama macam J916)
+/* =========================
+   GDEX
+   ========================= */
 const GDEX_FN_URL = "/.netlify/functions/gdex-create-consignment";
 
-// Klik "Generate AWB"
 window.generateAwbFromBtn = async function(btn){
   const id = btn.dataset.id;
   if (!id) return;
 
-  // Kalau AWB dah ada, jangan ulang
   const existing = getAwbForOrder(id);
   if (existing){
     alert('AWB sudah wujud: ' + existing);
@@ -465,12 +789,11 @@ window.generateAwbFromBtn = async function(btn){
     return;
   }
 
-  // Alamat & nama pelanggan
   const addr = await fetchAddressForOrder(row);
 
   const receiverName   = addr.name || row.customer_name || "Pelanggan";
   const receiverMobile = row.phone || "60123456789";
-  const receiverEmail  = "";   // buat masa ni kosong
+  const receiverEmail  = "";
 
   const receiverAddress1 = addr.address1;
   const receiverAddress2 = addr.address2;
@@ -479,9 +802,9 @@ window.generateAwbFromBtn = async function(btn){
   const receiverCity     = addr.city;
   const receiverState    = addr.state;
 
-  const shipmentValue  = row.total_rm || 0; // RM
+  const shipmentValue  = row.total_rm || 0;
   const weightKg       = row.weight_g && row.qty
-    ? (row.weight_g * row.qty / 1000)   // gram → kg
+    ? (row.weight_g * row.qty / 1000)
     : 0.5;
 
   const shipmentContent = [
@@ -490,7 +813,6 @@ window.generateAwbFromBtn = async function(btn){
     row.design_name
   ].filter(Boolean).join(' ');
 
-  // UI: disable sekejap
   btn.disabled    = true;
   const oldText   = btn.textContent;
   btn.textContent = 'Menjana AWB…';
@@ -528,7 +850,6 @@ window.generateAwbFromBtn = async function(btn){
       throw new Error("AWB tidak dijumpai dalam response.");
     }
 
-    // Simpan dalam cache & DB
     setAwbForOrder(id, awb);
 
     try{
@@ -574,7 +895,6 @@ window.generateAwbFromBtn = async function(btn){
   }
 };
 
-// Print AWB ringkas (boleh upgrade ke label PDF)
 window.printAwb = function(orderId){
   const awb = getAwbForOrder(orderId);
   if (!awb){ alert('AWB belum dijana.'); return; }
@@ -595,7 +915,6 @@ window.printAwb = function(orderId){
   w.document.close();
 };
 
-// Track AWB – buka laman tracking GDEX
 window.trackAwb = function(orderId){
   const awb = getAwbForOrder(orderId);
   if (!awb){ alert('AWB belum dijana.'); return; }
@@ -606,7 +925,6 @@ window.trackAwb = function(orderId){
   }
 };
 
-// (optional) Redo AWB untuk J999 – sama konsep macam J916
 window.redoAwbFromBtn = async function(orderId){
   if (!orderId) return;
 
@@ -635,8 +953,9 @@ window.redoAwbFromBtn = async function(orderId){
   await window.generateAwbFromBtn(fakeBtn);
 };
 
-
-// Tanda COMPLETED (guna table goldbar_order terus)
+/* =========================
+   Update status
+   ========================= */
 async function rpcMarkDone(id){
   const { error } = await sb
     .from('goldbar_order')
@@ -645,11 +964,231 @@ async function rpcMarkDone(id){
   if (error) throw error;
 }
 
-/* =========================
-   Bayar manual (J999)
-   ========================= */
+async function sendToProduction(orderId){
+  const row = window._rowsCache?.[orderId];
+  if (!row){
+    showToast('Order tidak dijumpai.');
+    return;
+  }
 
-// Klik butang "Bayar manual"
+  if (row.status !== 'PAID'){
+    showToast('Order mesti status PAID.');
+    return;
+  }
+
+  if (safeUpper(row.production_status) === 'QUEUED'){
+    showToast('Order ini sudah dihantar ke production.');
+    return;
+  }
+
+  if (safeUpper(row.production_status) === 'DONE'){
+    showToast(getProductionDoneLabel(row.kind));
+    return;
+  }
+
+  try{
+    const { error } = await sb
+      .from('goldbar_order')
+      .update({
+        production_status: 'QUEUED',
+        production_sent_at: new Date().toISOString()
+      })
+      .eq('id', orderId)
+      .eq('status', 'PAID');
+
+    if (error) throw error;
+
+    await recordAction(orderId, 'sent_production');
+    showToast('Order dihantar ke production.');
+    await refreshOrders();
+  }catch(e){
+    alert('Ralat hantar ke production: ' + (e?.message || e));
+  }
+}
+
+async function cancelOrder(id){
+  const row = window._rowsCache?.[id];
+  if (!row){
+    showToast('Order tidak dijumpai.');
+    return;
+  }
+
+  if (row.status === 'COMPLETED'){
+    showToast('Order sudah selesai.');
+    return;
+  }
+
+  if (row.status === 'CANCELLED'){
+    showToast('Order sudah dibatalkan.');
+    return;
+  }
+
+  const msgConfirm =
+    `Sahkan batal order ini?\n\n` +
+    `Rujukan: ${row.reference}\n` +
+    `Pelanggan: ${row.customer_name || '-'}\n\n` +
+    `Customer akan dimaklumkan melalui WhatsApp.`;
+
+  if (!confirm(msgConfirm)) return;
+
+  try{
+    const { error } = await sb
+      .from('goldbar_order')
+      .update({
+        status: 'CANCELLED'
+      })
+      .eq('id', id);
+
+    if (error) throw error;
+
+    const msg = [
+      'Assalamualaikum.',
+      '',
+      'Order GoldBar/Coin anda telah dibatalkan oleh pihak admin Emas Amir.',
+      '',
+      `Rujukan order: ${row.reference}`,
+      '',
+      'Jika ada sebarang pertanyaan atau ingin buat semula pesanan, boleh balas WhatsApp ini ya.',
+      '',
+      'Terima kasih 🙏'
+    ].join('\n');
+
+    const ok = await sendWA(row.phone, msg);
+    if (ok){
+      showToast('Order dibatalkan & WhatsApp dihantar.');
+    }else{
+      showToast('Order dibatalkan, tetapi WhatsApp gagal dihantar.');
+    }
+
+    await recordAction(id, 'cancelled');
+    await refreshOrders();
+  }catch(e){
+    alert('Ralat cancel order: ' + (e?.message || e));
+  }
+}
+
+/* =========================
+   Bayar manual modal style J916
+   ========================= */
+function mpSetSplitMode(isSplit){
+  const single = $('mp_single_wrap');
+  const split  = $('mp_split_wrap');
+  if (!single || !split) return;
+  single.style.display = isSplit ? 'none' : '';
+  split.style.display  = isSplit ? '' : 'none';
+}
+
+function mpMakeSplitRow({ method='MANUAL_MAYBANK', amount_rm='' } = {}){
+  const row = document.createElement('div');
+  row.className = 'split-row';
+
+  const sel = document.createElement('select');
+  sel.className = 'form-select form-select-sm';
+  sel.innerHTML = `
+    <option value="MANUAL_MAYBANK">Maybank</option>
+    <option value="MANUAL_CASH">Cash</option>
+    <option value="MANUAL_CARD">Card</option>
+    <option value="MANUAL_ATOME">Atome</option>
+  `;
+  sel.value = method;
+
+  const inp = document.createElement('input');
+  inp.className = 'form-control form-control-sm';
+  inp.type = 'number';
+  inp.step = '0.01';
+  inp.placeholder = 'RM';
+  inp.value = amount_rm;
+
+  const del = document.createElement('button');
+  del.type = 'button';
+  del.className = 'btn btn-outline-danger btn-sm split-del';
+  del.textContent = '×';
+  del.onclick = ()=>{
+    row.remove();
+    mpUpdateSplitSummary();
+  };
+
+  sel.addEventListener('change', mpUpdateSplitSummary);
+  inp.addEventListener('input', mpUpdateSplitSummary);
+
+  row.appendChild(sel);
+  row.appendChild(inp);
+  row.appendChild(del);
+  return row;
+}
+
+function mpResetSplitRows(totalCents){
+  const wrap = $('mp_split_rows');
+  if (!wrap) return;
+  wrap.innerHTML = '';
+  wrap.appendChild(mpMakeSplitRow({ method:'MANUAL_MAYBANK', amount_rm:centsToRm(totalCents) }));
+  wrap.appendChild(mpMakeSplitRow({ method:'MANUAL_CASH', amount_rm:'' }));
+  mpUpdateSplitSummary();
+}
+
+function mpGetSplitLines(){
+  const wrap = $('mp_split_rows');
+  if (!wrap) return [];
+  const rows = Array.from(wrap.querySelectorAll('.split-row'));
+  const lines = rows.map((row, idx)=>{
+    const sel = row.querySelector('select');
+    const inp = row.querySelector('input');
+    const method = safeUpper(sel?.value || '');
+    const cents = rmToCents(inp?.value);
+    return {
+      line_no: idx + 1,
+      method,
+      amount_cents: (Number.isFinite(cents) ? cents : 0)
+    };
+  });
+  return lines.filter(x => Number(x.amount_cents) > 0 && !!x.method);
+}
+
+function mpUpdateSplitSummary(){
+  const needCents = Number($('mp_order_total_cents')?.value || 0);
+  const lines = mpGetSplitLines();
+  const total = lines.reduce((a,x)=>a+Number(x.amount_cents||0),0);
+
+  if ($('mp_split_total_pill')) $('mp_split_total_pill').textContent = 'Total split: RM ' + centsToRm(total);
+  if ($('mp_split_need_pill'))  $('mp_split_need_pill').textContent  = 'Perlu: RM ' + centsToRm(needCents);
+
+  if ($('mp_split_warn')){
+    if (total === 0){
+      $('mp_split_warn').textContent = 'Sila isi jumlah untuk setiap baris split.';
+    } else if (total !== needCents){
+      const diff = needCents - total;
+      $('mp_split_warn').textContent = diff > 0
+        ? `Jumlah split belum cukup. Tambah RM ${centsToRm(diff)} lagi.`
+        : `Jumlah split terlebih. Kurangkan RM ${centsToRm(Math.abs(diff))}.`;
+    } else {
+      $('mp_split_warn').textContent = '';
+    }
+  }
+
+  if ($('mp_confirm_btn')){
+    $('mp_confirm_btn').disabled = (total !== needCents);
+  }
+}
+
+$('mp_is_split')?.addEventListener('change', function(){
+  const isSplit = !!this.checked;
+  mpSetSplitMode(isSplit);
+
+  if (isSplit){
+    const needCents = Number($('mp_order_total_cents')?.value || 0);
+    mpResetSplitRows(needCents);
+  } else {
+    if ($('mp_confirm_btn')) $('mp_confirm_btn').disabled = false;
+  }
+});
+
+$('mp_add_row_btn')?.addEventListener('click', function(){
+  const wrap = $('mp_split_rows');
+  if (!wrap) return;
+  wrap.appendChild(mpMakeSplitRow({ method:'MANUAL_MAYBANK', amount_rm:'' }));
+  mpUpdateSplitSummary();
+});
+
 window.askManualPaidFromBtn = function(btn){
   const id  = btn.dataset.id;
   const row = window._rowsCache?.[id];
@@ -659,25 +1198,29 @@ window.askManualPaidFromBtn = function(btn){
     return;
   }
 
-  const defVal = row.total_rm ? Number(row.total_rm).toFixed(2) : '';
-  const input  = prompt(
-    'Masukkan jumlah bayaran (RM) untuk order '+ row.reference +':',
-    defVal
-  );
-  if (input === null) return; // tekan Cancel
+  const needCents = getNeedCents(row);
+  const defVal = needCents > 0 ? centsToRm(needCents) : (row.total_rm ? Number(row.total_rm).toFixed(2) : '');
 
-  const cleaned = String(input).replace(/[^0-9.]/g,'');
-  const v = Number(cleaned);
-  if (!Number.isFinite(v) || v <= 0){
-    alert('Jumlah tidak sah. Sila cuba lagi.');
-    return;
-  }
+  $('mp_order_id').value = id;
+  $('mp_order_total_cents').value = String(needCents);
+  $('mp_amount_rm').value = defVal;
+  $('mp_method').value = 'MANUAL_MAYBANK';
+  $('mp_info').textContent = `Order: ${row.reference} • Perlu: ${money(needCents / 100)} • Status: ${row.status}`;
+  $('mp_single_note').textContent = 'Single mode: ikut jumlah sebenar order.';
 
-  doManualPaid(id, v);
+  if ($('mp_is_split')) $('mp_is_split').checked = false;
+  mpSetSplitMode(false);
+  mpResetSplitRows(needCents);
+  if ($('mp_confirm_btn')) $('mp_confirm_btn').disabled = false;
+
+  const modalEl = $('manualPayModal');
+  const modal = new bootstrap.Modal(modalEl);
+  modal.show();
+
+  setTimeout(()=> $('mp_amount_rm')?.focus(), 150);
 };
 
-// Proses tanda PAID manual (ikut group kalau ada checkout_group)
-async function doManualPaid(id, amountRM){
+async function doManualPaid(id, amountRM, method, splitLines){
   const row = window._rowsCache?.[id];
   if (!row){
     alert('Order tidak ditemui dalam senarai semasa.');
@@ -685,17 +1228,29 @@ async function doManualPaid(id, amountRM){
   }
 
   const nowIso = new Date().toISOString();
+  const isSplit = safeUpper(method) === 'MANUAL_SPLIT';
+
+  let manualNote = '';
+  if (isSplit){
+    manualNote = makeManualSplitNote(splitLines || []);
+  } else {
+    manualNote = makeManualSingleNote(method || 'MANUAL_MAYBANK');
+  }
+
   const payloadMain = {
     status: 'PAID',
     paid_at: nowIso,
-    total_rm: Number(amountRM)
+    bill_id_text: manualNote
   };
+
+  if (!isSplit) {
+    payloadMain.total_rm = Number(amountRM);
+  }
 
   try{
     if (row.checkout_group){
       const grp = row.checkout_group;
 
-      // 1) Update order yang diklik (dengan jumlah RM yang admin masukkan)
       let { error: e1 } = await sb
         .from('goldbar_order')
         .update(payloadMain)
@@ -703,16 +1258,18 @@ async function doManualPaid(id, amountRM){
         .eq('status','PENDING');
       if (e1) throw e1;
 
-      // 2) Order lain dalam group -> hanya tukar status + paid_at
       let { error: e2 } = await sb
         .from('goldbar_order')
-        .update({ status:'PAID', paid_at: nowIso })
+        .update({
+          status:'PAID',
+          paid_at: nowIso,
+          bill_id_text: manualNote
+        })
         .eq('checkout_group', grp)
         .neq('id', id)
         .eq('status','PENDING');
       if (e2) throw e2;
     } else {
-      // Tiada group -> satu order sahaja
       const { error } = await sb
         .from('goldbar_order')
         .update(payloadMain)
@@ -722,29 +1279,406 @@ async function doManualPaid(id, amountRM){
     }
 
     await recordAction(id, 'manual_paid');
-    showToast('Order ditanda sebagai PAID (manual).');
+    showToast(`Order ditanda sebagai PAID (${humanMethodLabel(method)}).`);
     await refreshOrders();
   }catch(e){
     alert('Ralat semasa tanda PAID manual: ' + (e?.message || e));
   }
 }
 
-// =========================
-//  LIST ORDER (baca dari goldbar_order)
-// =========================
+$('mp_confirm_btn')?.addEventListener('click', async ()=>{
+  const id = ($('mp_order_id').value || '').trim();
+  if (!id){
+    alert('Order ID kosong.');
+    return;
+  }
+
+  const isSplit = !!$('mp_is_split')?.checked;
+
+  try{
+    const modalEl = $('manualPayModal');
+    bootstrap.Modal.getInstance(modalEl)?.hide();
+  }catch(_){}
+
+  if (isSplit){
+    const lines = mpGetSplitLines();
+    const total = lines.reduce((a,x)=>a+Number(x.amount_cents||0),0);
+    const need = Number($('mp_order_total_cents').value || 0);
+
+    if (!lines.length){
+      alert('Split kosong. Sila isi pecahan bayaran.');
+      return;
+    }
+    if (total !== need){
+      alert('Jumlah split tidak sama dengan jumlah perlu.');
+      return;
+    }
+
+    await doManualPaid(id, null, 'MANUAL_SPLIT', lines);
+    return;
+  }
+
+  const method = ($('mp_method').value || 'MANUAL_MAYBANK').trim();
+  const cents = rmToCents(($('mp_amount_rm').value || '').trim());
+
+  if (!Number.isFinite(cents) || cents <= 0){
+    alert('Jumlah tidak sah. Sila isi jumlah RM.');
+    return;
+  }
+
+  await doManualPaid(id, cents / 100, method);
+});
+
+/* =========================
+   Override kaedah bayaran (untuk order PAID)
+   ========================= */
+window.openOverridePayMethodFromBtn = function(orderId){
+  const row = window._rowsCache?.[orderId];
+  if (!row){
+    showToast('Order tidak dijumpai.');
+    return;
+  }
+
+  if (row.status !== 'PAID' && row.status !== 'COMPLETED'){
+    showToast('Tukar kaedah hanya untuk order yang dah dibayar.');
+    return;
+  }
+
+  const info = parseManualNote(row.bill_id || '');
+  let currentMethod = 'MANUAL_MAYBANK';
+
+  if (info.isManual && !info.isSplit) {
+    const upper = safeUpper(row.bill_id || '');
+    if (['MANUAL_MAYBANK','MANUAL_CASH','MANUAL_CARD','MANUAL_ATOME'].includes(upper)) {
+      currentMethod = upper;
+    }
+  }
+
+  $('opm_order_id').value = orderId;
+  $('opm_method').value = currentMethod;
+  $('opm_info').textContent =
+    `Order: ${row.reference} • Group: ${row.checkout_group ? row.checkout_group.slice(-8) : '-'}`;
+
+  new bootstrap.Modal($('overridePayMethodModal')).show();
+};
+
+async function doOverridePayMethod(orderId, method){
+  const row = window._rowsCache?.[orderId];
+  if (!row){
+    alert('Order tidak ditemui.');
+    return;
+  }
+
+  const finalMethod = safeUpper(method || 'MANUAL_MAYBANK');
+  if (!['MANUAL_MAYBANK','MANUAL_CASH','MANUAL_CARD','MANUAL_ATOME'].includes(finalMethod)){
+    alert('Kaedah tidak sah.');
+    return;
+  }
+
+  try{
+    if (row.checkout_group){
+      const { error } = await sb
+        .from('goldbar_order')
+        .update({ bill_id_text: finalMethod })
+        .eq('checkout_group', row.checkout_group)
+        .in('status', ['PAID','COMPLETED']);
+
+      if (error) throw error;
+    } else {
+      const { error } = await sb
+        .from('goldbar_order')
+        .update({ bill_id_text: finalMethod })
+        .eq('id', orderId)
+        .in('status', ['PAID','COMPLETED']);
+
+      if (error) throw error;
+    }
+
+    showToast('Kaedah bayaran berjaya ditukar.');
+    await refreshOrders();
+  }catch(e){
+    alert('Ralat semasa tukar kaedah: ' + (e?.message || e));
+  }
+}
+
+$('opm_confirm_btn')?.addEventListener('click', async ()=>{
+  const orderId = ($('opm_order_id').value || '').trim();
+  const method  = ($('opm_method').value || 'MANUAL_MAYBANK').trim();
+
+  if (!orderId){
+    alert('Order ID kosong.');
+    return;
+  }
+
+  try{
+    bootstrap.Modal.getInstance($('overridePayMethodModal'))?.hide();
+  }catch(_){}
+
+  await doOverridePayMethod(orderId, method);
+});
+
+let LIVE999_CATALOG = [];
+
+function normKind999(k){
+  k = String(k || '').toLowerCase();
+  if (k === 'goldbar' || k === 'bar') return 'bar';
+  if (k === 'dinar') return 'dinar';
+  return 'coin';
+}
+
+function labelKind999(k){
+  k = normKind999(k);
+  if (k === 'bar') return 'Gold Bar';
+  if (k === 'dinar') return 'Koleksi Dinar';
+  return 'Gold Coin';
+}
+
+function fmtG999(g){
+  const n = Number(g || 0);
+  return n.toString().replace(/\.?0+$/,'') + 'g';
+}
+
+async function loadLive999Catalog(){
+  const status = $('liveJ999Status');
+  if (status) status.textContent = 'Memuatkan item 999.9…';
+
+  const { data: prices, error: priceErr } = await sb.rpc('goldbar_price_list_v1');
+  if (priceErr) throw priceErr;
+
+  const { data: designs, error: designErr } = await sb
+    .from('goldbar_designs')
+    .select('id,name,image_url,weight_g,kind,is_active,sort_order,extra_custom_fee_cents')
+    .eq('is_active', true)
+    .order('sort_order', { ascending:true });
+
+  if (designErr) throw designErr;
+
+  const list = [];
+
+  (prices || []).forEach(p => {
+    const kind = normKind999(p.kind);
+    const weight = Number(p.weight_g || 0);
+    const priceMarket = Number(p.harga_jual || 0);
+
+    const relatedDesigns = (designs || []).filter(d =>
+      normKind999(d.kind) === kind &&
+      Number(d.weight_g || 0) === weight
+    );
+
+    relatedDesigns.forEach(d => {
+      const customFee = Number(d.extra_custom_fee_cents || 0) / 100;
+
+      list.push({
+        live_code: `${kind}|${weight}|${d.id}|READY`,
+        kind,
+        kind_label: labelKind999(kind),
+        weight_g: weight,
+        weight_label: fmtG999(weight),
+        design_id: d.id,
+        design_name: d.name || 'Design',
+        image_url: d.image_url || '',
+        card_type: 'READY',
+        qty: 1,
+        market_price_rm: priceMarket,
+        live_price_rm: priceMarket,
+        jimat_rm: 0,
+        price_per_g: Number(p.price_per_g || 0),
+        upah_rm: Number(p.upah_rm || 0),
+        custom_fee_rm: 0
+      });
+
+      list.push({
+        live_code: `${kind}|${weight}|${d.id}|CUSTOM`,
+        kind,
+        kind_label: labelKind999(kind),
+        weight_g: weight,
+        weight_label: fmtG999(weight),
+        design_id: d.id,
+        design_name: d.name || 'Design',
+        image_url: d.image_url || '',
+        card_type: 'CUSTOM',
+        qty: 1,
+        market_price_rm: priceMarket + customFee,
+        live_price_rm: priceMarket + customFee,
+        jimat_rm: 0,
+        price_per_g: Number(p.price_per_g || 0),
+        upah_rm: Number(p.upah_rm || 0),
+        custom_fee_rm: customFee
+      });
+    });
+  });
+
+  LIVE999_CATALOG = list;
+  populateLiveJ999Select();
+
+  if (status) status.textContent = `Siap. ${list.length} pilihan J999 tersedia.`;
+}
+
+function populateLiveJ999Select(){
+  const sel = $('liveJ999Select');
+  if (!sel) return;
+
+  sel.innerHTML = LIVE999_CATALOG.map(x => {
+    const label = `${x.kind_label} ${x.weight_label} — ${x.design_name} — ${x.card_type} — ${money(x.live_price_rm)}`;
+    return `<option value="${x.live_code}">${label}</option>`;
+  }).join('');
+}
+
+function getSelectedLive999List(){
+  const sel = $('liveJ999Select');
+  if (!sel) return [];
+
+  const codes = Array.from(sel.selectedOptions)
+    .map(opt => opt.value)
+    .filter(Boolean);
+
+  return codes
+    .map(code => LIVE999_CATALOG.find(x => x.live_code === code))
+    .filter(Boolean);
+}
+
+
+async function setLive999(makeLive){
+  const items = getSelectedLive999List();
+
+  if (makeLive && !items.length){
+    alert('Pilih sekurang-kurangnya 1 item J999 dulu.');
+    return;
+  }
+
+  try{
+    if (!makeLive){
+      const { data, error } = await sb.rpc('admin_off_gold999_live_now_v1');
+
+      if (error) throw error;
+      if (data && data.ok === false) throw new Error(data.message || 'Gagal OFF LIVE.');
+
+      $('liveJ999Status').textContent = 'LIVE J999 sudah OFF.';
+      showToast('LIVE J999 OFF.');
+      await loadActiveLive999List();
+      return;
+    }
+
+    // ✅ PENTING: jangan off semua bila naik live
+    // Ini akan TAMBAH item baru ke live list
+    for (const item of items){
+      const payload = {
+        live_code: item.live_code,
+        kind: item.kind,
+        kind_label: item.kind_label,
+        weight_g: item.weight_g,
+        weight_label: item.weight_label,
+        design_id: item.design_id,
+        design_name: item.design_name,
+        image_url: item.image_url,
+        card_type: item.card_type,
+        qty: item.qty,
+        market_price_rm: item.market_price_rm,
+        live_price_rm: item.live_price_rm,
+        jimat_rm: item.jimat_rm,
+        price_per_g: item.price_per_g,
+        upah_rm: item.upah_rm,
+        custom_fee_rm: item.custom_fee_rm
+      };
+
+      const { data, error } = await sb.rpc('admin_set_gold999_live_now_v1', {
+        p_payload: payload
+      });
+
+      if (error) throw error;
+      if (data && data.ok === false) throw new Error(data.message || 'Gagal naik LIVE.');
+    }
+
+    $('liveJ999Status').textContent =
+      `🔴 Ditambah LIVE: ${items.length} item J999`;
+
+    showToast(`${items.length} item J999 ditambah ke LIVE.`);
+    await loadActiveLive999List();
+
+  }catch(e){
+    alert('Ralat LIVE J999: ' + (e?.message || e));
+  }
+}
+async function loadActiveLive999List(){
+  const box = $('liveJ999ActiveList');
+  if (!box) return;
+
+  try{
+    const { data, error } = await sb
+      .from('gold999_live_now')
+      .select('live_code,kind_label,weight_label,design_name,card_type,live_price_rm,updated_at')
+      .eq('is_active', true)
+      .order('updated_at', { ascending:false });
+
+    if (error) throw error;
+
+    const rows = Array.isArray(data) ? data : [];
+
+    if (!rows.length){
+      box.innerHTML = `<div class="text-muted">Tiada item J999 sedang LIVE.</div>`;
+      return;
+    }
+
+    box.innerHTML = `
+      <div class="fw-bold mb-1">🔴 Item sedang LIVE:</div>
+      <div class="d-flex flex-column gap-1">
+        ${rows.map(r => `
+          <div class="d-flex justify-content-between align-items-center gap-2 border rounded px-2 py-1 bg-white">
+            <div style="min-width:0">
+              <div class="fw-semibold">
+                ${r.kind_label || ''} ${r.weight_label || ''} — ${r.design_name || ''} — ${r.card_type || ''}
+              </div>
+              <div class="text-muted">${money(r.live_price_rm || 0)}</div>
+            </div>
+
+            <button class="btn btn-sm btn-outline-danger"
+                    type="button"
+                    onclick="offOneLive999('${String(r.live_code || '').replace(/'/g, "\\'")}')">
+              Off
+            </button>
+          </div>
+        `).join('')}
+      </div>
+    `;
+  }catch(e){
+    box.innerHTML = `<div class="text-danger">Gagal muat list LIVE.</div>`;
+    console.warn('loadActiveLive999List error:', e);
+  }
+}
+
+async function offOneLive999(liveCode){
+  if (!liveCode) return;
+
+  if (!confirm('Off item LIVE ini sahaja?')) return;
+
+  try{
+    const { data, error } = await sb.rpc('admin_off_one_gold999_live_now_v1', {
+      p_live_code: liveCode
+    });
+
+    if (error) throw error;
+    if (data && data.ok === false) throw new Error(data.message || 'Gagal off item.');
+
+    showToast('Item LIVE sudah OFF.');
+    await loadActiveLive999List();
+  }catch(e){
+    alert('Ralat off item LIVE: ' + (e?.message || e));
+  }
+}
+
+/* =========================
+   LIST ORDER
+   ========================= */
 async function rpcList(page, pageSize, filter, q){
-  // asas: baca semua dari table goldbar_order
   let query = sb
     .from('goldbar_order')
     .select('*', { count: 'exact' })
     .order('created_at', { ascending: false });
 
-  // tapis status (PAID / PENDING / COMPLETED)
   if (filter && filter !== 'ALL') {
     query = query.eq('status', filter);
   }
 
-  // carian bebas: ref / phone / bill / design / nama
   if (q && q.trim()) {
     const s = q.trim();
     const like = `%${s}%`;
@@ -757,7 +1691,6 @@ async function rpcList(page, pageSize, filter, q){
     ].join(','));
   }
 
-  // pagination
   const from = (page - 1) * pageSize;
   const to   = from + pageSize - 1;
 
@@ -766,25 +1699,36 @@ async function rpcList(page, pageSize, filter, q){
 
   const rows = Array.isArray(data) ? data : [];
 
-  // map supaya ikut bentuk yang refreshOrders/render guna
-  const items = rows.map(r => ({
-    id:              r.id,
-    reference:       r.reference_1 || r.id,
-    created_at:      r.created_at,
-    customer_name:   r.customer_name || '-',
-    phone:           r.customer_phone || '',
-    kind:            r.kind || '',
-    card_type:       r.card_type || '',
-    weight_g:        Number(r.weight_g || 0),
-    qty:             Number(r.qty || 1),
-    design_name:     r.design_name || '',
-    total_rm:        Number(r.total_rm || 0),
-    status:          String(r.status || '').toUpperCase(),
-    bill_id:         r.bill_id_text || null,
-    checkout_group:  r.checkout_group || null,
-    tracking_no:     r.tracking_no || null,
-    receipt_sent_at: r.receipt_sent_at || null
-  }));
+  const items = rows.map(r => {
+    const manualInfo = parseManualNote(r.bill_id_text || '');
+    return {
+      id:              r.id,
+      reference:       r.reference_1 || r.id,
+      created_at:      r.created_at,
+      customer_name:   r.customer_name || '-',
+      phone:           r.customer_phone || '',
+      kind:            r.kind || '',
+      card_type:       r.card_type || '',
+      weight_g:        Number(r.weight_g || 0),
+      qty:             Number(r.qty || 1),
+      design_name:     r.design_name || '',
+      total_rm:        Number(r.total_rm || 0),
+      grand_total_rm:  Number(r.grand_total_rm || 0),
+      subtotal_rm:     Number(r.subtotal_rm || 0),
+      shipping_rm:     Number(r.shipping_rm || 0),
+      pay_disc_rm:     Number(r.pay_disc_rm || 0),
+      coupon_disc_rm:  Number(r.coupon_disc_rm || 0),
+      status:          String(r.status || '').toUpperCase(),
+      bill_id:         r.bill_id_text || null,
+      checkout_group:  r.checkout_group || null,
+      tracking_no:     r.tracking_no || null,
+      receipt_sent_at: r.receipt_sent_at || null,
+      production_status: String(r.production_status || '').toUpperCase(),
+      production_sent_at: r.production_sent_at || null,
+      production_done_at: r.production_done_at || null,
+      manual_info:     manualInfo
+    };
+  });
 
   const total  = count ?? items.length;
   const hasPrev = from > 0;
@@ -800,10 +1744,8 @@ async function refreshOrders(){
   const q = ($('searchBox')?.value||'').trim();
   const { items, total, hasNext, hasPrev } = await rpcList(ORD_CURRENT_PAGE, ORD_PAGE_SIZE, ORD_FILTER, q);
 
-  // load action flags (sent_detail)
   const { sentDetail } = await loadActions(items.map(x=>x.id));
-
-// Seed AWB cache daripada tracking_no yang sedia ada dalam DB
+PAID_CHAT_META_BY_GROUP = await fetchPaidChatMetaByGroups(items.map(x => x.checkout_group).filter(Boolean));
   try{
     (items || []).forEach(r => {
       if (r.tracking_no && !awbCache[r.id]) {
@@ -815,7 +1757,6 @@ async function refreshOrders(){
     console.warn('Seed awbCache gagal:', e);
   }
 
-  /* 🔔 Detect PAID baharu -> main bunyi */
   window._prevPaidJ999 = window._prevPaidJ999 || new Set();
   const currentPaid = new Set((items||[]).filter(x => x.status === 'PAID').map(x => x.id));
 
@@ -824,7 +1765,7 @@ async function refreshOrders(){
     for (const id of currentPaid){
       if (!window._prevPaidJ999.has(id)){ hasNew = true; break; }
     }
-    if (hasNew) { playCash(); }   // ka-ching
+    if (hasNew) { playCash(); }
   }
   window._prevPaidJ999 = currentPaid;
 
@@ -832,24 +1773,28 @@ async function refreshOrders(){
   if(!items.length){
     tb.innerHTML = `<tr><td colspan="7" class="text-muted py-4">0 rekod</td></tr>`;
     $('resultInfo').textContent = '0 rekod';
+    $('prevPageBtn').disabled = !hasPrev;
+    $('nextPageBtn').disabled = !hasNext;
+    window._rowsCache = {};
+populateLiveJ999Select();
     return;
   }
+
   tb.innerHTML = items.map(r=>{
     const completed   = (r.status === 'COMPLETED');
+    const cancelled   = (r.status === 'CANCELLED');
+    const paid        = (r.status === 'PAID');
+    const pending     = (r.status === 'PENDING');
     const alreadySent = !!r.receipt_sent_at;
-    const billShort   = r.bill_id ? ('…' + String(r.bill_id).slice(-6)) : '-';
+    const billShort   = (r.bill_id && !isManualBillText(r.bill_id)) ? ('…' + String(r.bill_id).slice(-6)) : '-';
 
-    // URL resit:
-    // - Ada bill_id  → ?bill_id=...
-    // - Tiada        → ?order=REFERENCE  (bayaran manual)
-    const receiptUrl = (r.bill_id && String(r.bill_id).trim())
+    const receiptUrl = (!isManualBillText(r.bill_id) && r.bill_id && String(r.bill_id).trim())
       ? `${location.origin}/resit-j999.html?bill_id=${encodeURIComponent(r.bill_id)}`
       : `${location.origin}/resit-j999.html?order=${encodeURIComponent(r.reference)}`;
 
-    // Link "Lihat resit" bila resit sudah dihantar
     let receiptLinkHtml = "";
     if (alreadySent){
-      const storeJs = r.bill_id
+      const storeJs = (!isManualBillText(r.bill_id) && r.bill_id)
         ? `try{ localStorage.setItem('j999_last_bill_id','${r.bill_id}'); }catch(_){ }`
         : `try{ localStorage.setItem('j999_last_order','${r.reference}'); }catch(_){ }`;
       receiptLinkHtml = `
@@ -862,77 +1807,147 @@ async function refreshOrders(){
         </div>`;
     }
 
-    const btnGroup = completed
-      ? `<span class="text-success fw-semibold">✓ Selesai</span>`
-      : `
-    <div class="btn-group btn-group-sm">
-      <button class="btn btn-outline-primary"
-              ${r.status==='PAID'?'':'disabled'}
-              onclick="sendDetailBelian('${r.id}')">
-        ${sentDetail.has(r.id)?'✔ Selesai hantar':'Hantar detail belian'}
-      </button>
+    let productionBtnHtml = '';
+    if (paid){
+      if (r.production_status === 'DONE'){
+        productionBtnHtml = `
+          <button class="btn btn-success" type="button" disabled>
+            ${getProductionDoneLabel(r.kind)}
+          </button>
+        `;
+      } else if (r.production_status === 'QUEUED'){
+        productionBtnHtml = `
+          <button class="btn btn-outline-warning" type="button" disabled>
+            Dah Hantar
+          </button>
+        `;
+      } else {
+        productionBtnHtml = `
+          <button class="btn btn-outline-info"
+                  type="button"
+                  onclick="sendToProduction('${r.id}')">
+            Hantar ke Production
+          </button>
+        `;
+      }
+    }
 
-      <button class="btn btn-outline-secondary" 
-              ${(r.status==='PAID' && !alreadySent) ? '' : 'disabled'} 
-              data-receipt-btn="${r.id}"
-              onclick="sendReceipt('${r.id}')">
-        ${alreadySent ? '✔ Resit dihantar' : 'Hantar resit'}
-      </button>
+    let btnGroup = '';
+    if (completed){
+      btnGroup = `<span class="text-success fw-semibold">✓ Selesai</span>`;
+    } else if (cancelled){
+      btnGroup = `<span class="text-danger fw-semibold">✕ Dibatalkan</span>`;
+    } else {
+      btnGroup = `
+        <div class="btn-group btn-group-sm flex-wrap justify-content-end">
+          <button class="btn btn-outline-primary"
+                  ${paid ? '' : 'disabled'}
+                  onclick="sendDetailBelian('${r.id}')">
+            ${sentDetail.has(r.id)?'✔ Selesai hantar':'Hantar detail belian'}
+          </button>
 
-      <!-- Butang ALAMAT baharu -->
-      <button class="btn btn-outline-dark"
-              type="button"
-              onclick="openAlamatModalFromBtn('${r.id}')">
-        Alamat
-      </button>
+          <button class="btn btn-outline-secondary"
+                  ${(paid && !alreadySent) ? '' : 'disabled'}
+                  data-receipt-btn="${r.id}"
+                  onclick="sendReceipt('${r.id}')">
+            ${alreadySent ? '✔ Resit dihantar' : 'Hantar resit'}
+          </button>
 
-      <button class="btn btn-outline-success" 
-              ${r.status==='PENDING'?'':'disabled'}
-              data-id="${r.id}"
-              onclick="askManualPaidFromBtn(this)">
-        Bayar manual
-      </button>
+          ${productionBtnHtml}
 
-      <button class="btn btn-success"
-              ${r.status==='PAID'?'':'disabled'}
-              onclick="askComplete('${r.id}')">
-        Tanda Selesai
-      </button>
-    </div>
-    ${receiptLinkHtml}
-  `;
+          <button class="btn btn-outline-dark"
+                  type="button"
+                  onclick="openAlamatModalFromBtn('${r.id}')">
+            Alamat
+          </button>
 
-    // AWB (dummy) – sama gaya macam admin 916
+
+          <button class="btn btn-outline-success"
+                  ${pending ? '' : 'disabled'}
+                  data-id="${r.id}"
+                  onclick="askManualPaidFromBtn(this)">
+            Bayar manual
+          </button>
+
+          <button class="btn btn-outline-danger"
+                  ${(pending || paid) ? '' : 'disabled'}
+                  onclick="cancelOrder('${r.id}')">
+            Cancel
+          </button>
+
+          <button class="btn btn-success"
+                  ${paid ? '' : 'disabled'}
+                  onclick="askComplete('${r.id}')">
+            Tanda Selesai
+          </button>
+        </div>
+        ${receiptLinkHtml}
+      `;
+    }
+
     const awbNo = getAwbForOrder(r.id);
-   const awbHtml = awbNo
-      ? `<div class="mt-1 small text-muted">
-           AWB: ${awbNo}
-           <button class="btn btn-link btn-sm p-0 ms-1"
-                   type="button"
-                   onclick="printAwb('${r.id}')">
-             Print
-           </button>
-           <button class="btn btn-link btn-sm p-0 ms-1"
-                   type="button"
-                   onclick="trackAwb('${r.id}')">
-             Track
-           </button>
-           <button class="btn btn-link btn-sm p-0 ms-1 text-danger"
-                   type="button"
-                   onclick="redoAwbFromBtn('${r.id}')">
-             Redo
-           </button>
-         </div>`
-      : (r.status === 'PAID'
-          ? `<div class="mt-1">
-               <button class="btn btn-outline-dark btn-sm"
-                       type="button"
-                       data-id="${r.id}"
-                       onclick="generateAwbFromBtn(this)">
-                 Generate AWB
-               </button>
-             </div>`
-          : '');
+    const awbHtml = cancelled
+      ? ``
+      : awbNo
+        ? `<div class="mt-1 small text-muted">
+             AWB: ${awbNo}
+             <button class="btn btn-link btn-sm p-0 ms-1"
+                     type="button"
+                     onclick="printAwb('${r.id}')">
+               Print
+             </button>
+             <button class="btn btn-link btn-sm p-0 ms-1"
+                     type="button"
+                     onclick="trackAwb('${r.id}')">
+               Track
+             </button>
+             <button class="btn btn-link btn-sm p-0 ms-1 text-danger"
+                     type="button"
+                     onclick="redoAwbFromBtn('${r.id}')">
+               Redo
+             </button>
+           </div>`
+        : (paid
+            ? `<div class="mt-1">
+                 <button class="btn btn-outline-dark btn-sm"
+                         type="button"
+                         data-id="${r.id}"
+                         onclick="generateAwbFromBtn(this)">
+                   Generate AWB
+                 </button>
+               </div>`
+            : '');
+
+    const badgeClass =
+      r.status==='PAID'
+        ? 'bg-success'
+        : (r.status==='PENDING'
+            ? 'bg-warning text-dark'
+            : (r.status==='COMPLETED'
+                ? 'bg-primary'
+                : (r.status==='CANCELLED'
+                    ? 'bg-danger'
+                    : 'bg-secondary')));
+
+    const manualLine = r.manual_info?.isManual
+      ? `
+        <div class="text-muted small mt-1">Manual: ${r.manual_info.summary || r.manual_info.methodLabel}</div>
+        ${
+          (r.status === 'PAID' || r.status === 'COMPLETED')
+            ? `<div class="small">
+                 <button class="btn btn-link btn-sm p-0"
+                         type="button"
+                         onclick="openOverridePayMethodFromBtn('${r.id}')">
+                   Tukar kaedah
+                 </button>
+               </div>`
+            : ``
+        }
+      `
+      : ``;
+
+    const productionLine = getProductionBadgeHtml(r);
+    const paidChatLine = getPaidChatBadgeHtml(r);
 
     return `
     <tr id="row-${r.id}">
@@ -942,8 +1957,16 @@ async function refreshOrders(){
         <div class="fw-semibold mono">${r.reference}</div>
         <div class="text-muted small">Bill: ${billShort}</div>
         <div class="text-muted small">
-          Group: ${r.checkout_group ? (r.checkout_group.slice(0,8)+'…') : '-'}
-        </div>
+  Group: ${
+    r.checkout_group
+      ? (() => {
+          const s = String(r.checkout_group || '');
+          const parts = s.split('_');
+          return parts[parts.length - 1] || s;
+        })()
+      : '-'
+  }
+</div>
       </td>
 
       <td>
@@ -951,24 +1974,19 @@ async function refreshOrders(){
         <div class="text-muted small">${r.phone||'-'}</div>
       </td>
 
-      <td>
+    <td>
         <div>${r.kind} • ${r.card_type}</div>
         <div class="text-muted small">${r.weight_g.toFixed(3)}g × ${r.qty}</div>
         <div class="text-muted small">${r.design_name}</div>
+        ${paidChatLine}
+        ${manualLine}
+        ${productionLine}
       </td>
 
       <td class="text-end fw-semibold">${money(r.total_rm)}</td>
 
       <td>
-        <span class="badge ${
-          r.status==='PAID'
-            ? 'bg-success'
-            : (r.status==='PENDING'
-                ? 'bg-warning text-dark'
-                : (r.status==='COMPLETED'
-                    ? 'bg-primary'
-                    : 'bg-secondary'))
-        }">
+        <span class="badge ${badgeClass}">
           ${r.status}
         </span>
       </td>
@@ -983,11 +2001,12 @@ async function refreshOrders(){
   $('resultInfo').textContent = `${total} rekod`;
   $('prevPageBtn').disabled = !hasPrev;
   $('nextPageBtn').disabled = !hasNext;
-
-  // cache rows
   window._rowsCache = Object.fromEntries(items.map(x=>[x.id, x]));
 }
 
+/* =========================
+   Confirm complete
+   ========================= */
 function askComplete(id){
   _pendingId = id;
   $('confirmText').textContent = 'Sahkan tanda order ini sebagai SELESAI?';
@@ -996,20 +2015,23 @@ function askComplete(id){
 
 $('confirmYesBtn')?.addEventListener('click', async ()=>{
   if(!_pendingId) return;
-  const btn = $('confirmYesBtn'); btn.disabled = true;
+  const btn = $('confirmYesBtn');
+  btn.disabled = true;
   try{
-    await rpcMarkDone(_pendingId);        // persist -> status COMPLETED
-    await recordAction(_pendingId,'completed'); // rekod tindakan (optional)
+    await rpcMarkDone(_pendingId);
+    await recordAction(_pendingId,'completed');
 
-    // Kemas UI baris terus: tukar badge + buang butang WA
     const tr = document.getElementById('row-'+_pendingId);
     if (tr){
-      // status badge
       const badge = tr.querySelector('td:nth-child(6) .badge');
-      if (badge){ badge.className='badge bg-primary'; badge.textContent='COMPLETED'; }
-      // tindakan
+      if (badge){
+        badge.className='badge bg-primary';
+        badge.textContent='COMPLETED';
+      }
       const tdAct = tr.querySelector('td:last-child');
-      if (tdAct){ tdAct.innerHTML = `<span class="text-success fw-semibold">✓ Selesai</span>`; }
+      if (tdAct){
+        tdAct.innerHTML = `<span class="text-success fw-semibold">✓ Selesai</span>`;
+      }
     }
     showToast('Order ditandakan SELESAI.');
   }catch(e){
@@ -1022,26 +2044,58 @@ $('confirmYesBtn')?.addEventListener('click', async ()=>{
 });
 
 /* =========================
-   Hantar detail belian (OnSend)
+   Hantar detail belian
    ========================= */
 async function sendDetailBelian(id){
-  const r = window._rowsCache?.[id]; if(!r) return;
-  if (r.status!=='PAID'){ showToast('Perlu status PAID.'); return; }
+  const r = window._rowsCache?.[id];
+  if(!r) return;
+  if (r.status!=='PAID'){
+    showToast('Perlu status PAID.');
+    return;
+  }
 
-  const { msgCust, msgAdmin } = buildMessages(r);
+  const manualText = r.manual_info?.isManual
+    ? [`Kaedah: ${r.manual_info.summary || r.manual_info.methodLabel}`]
+    : [];
 
-  // hantar kepada pelanggan
+  const msgCust = [
+    'Assalamualaikum.',
+    '',
+    'Berikut detail belian GoldBar/Coin anda.',
+    '',
+    `Rujukan: ${r.reference}`,
+    `Item: ${r.kind || '-'} • ${r.card_type || '-'}`,
+    `Berat: ${Number(r.weight_g || 0).toFixed(3)}g × ${Number(r.qty || 1)}`,
+    `Design: ${r.design_name || '-'}`,
+    `Jumlah: ${money(r.total_rm)}`,
+    ...manualText,
+    '',
+    'Terima kasih 🙏'
+  ].join('\n');
+
+  const msgAdmin = [
+    'Detail belian J999 dihantar kepada customer.',
+    '',
+    `Rujukan: ${r.reference}`,
+    `Nama: ${r.customer_name || '-'}`,
+    `Phone: ${r.phone || '-'}`,
+    `Jumlah: ${money(r.total_rm)}`,
+    ...(r.manual_info?.isManual ? [`Kaedah: ${r.manual_info.summary || r.manual_info.methodLabel}`] : [])
+  ].join('\n');
+
   const okC = await sendWA(r.phone, msgCust);
-  // hantar kepada admin
   const okA = await sendWA(ADMIN_WA, msgAdmin);
 
   if (okC || okA){
-    await recordAction(id,'sent_detail'); // simpan supaya “✔ Selesai hantar”
-    // tukar label butang pada baris ini
+    await recordAction(id,'sent_detail');
     const tr = document.getElementById('row-'+id);
     if (tr){
       const firstBtn = tr.querySelector('td:last-child .btn-group .btn');
-      if (firstBtn){ firstBtn.textContent='✔ Selesai hantar'; firstBtn.disabled=true; firstBtn.className='btn btn-outline-secondary btn-sm'; }
+      if (firstBtn){
+        firstBtn.textContent='✔ Selesai hantar';
+        firstBtn.disabled=true;
+        firstBtn.className='btn btn-outline-secondary btn-sm';
+      }
     }
     showToast('Detail belian dihantar.');
   }else{
@@ -1049,13 +2103,14 @@ async function sendDetailBelian(id){
   }
 }
 
-
+/* =========================
+   Hantar resit
+   ========================= */
 async function sendReceipt(id){
   const row = (window._rowsCache && window._rowsCache[id]) || null;
   if (!row){ showToast('Ralat: order tiada.'); return; }
   if (row.status !== 'PAID'){ showToast('Perlu status PAID.'); return; }
 
-  // kunci butang
   const btn = document.querySelector(`[data-receipt-btn="${id}"]`);
   if (btn){
     btn.disabled   = true;
@@ -1063,7 +2118,6 @@ async function sendReceipt(id){
   }
 
   try{
-    // 1) Cuba dapatkan Bill ID (bill_id / bill_id_text)
     let bill = (row.bill_id || '').trim();
     if (!bill){
       const { data } = await sb
@@ -1075,45 +2129,49 @@ async function sendReceipt(id){
       bill = (data?.bill_id_text || '').trim();
     }
 
-    // 2) Kalau masih tiada Bill → anggap bayaran manual, minta rujukan bank
+    if (isManualBillText(bill)) {
+      bill = '';
+    }
+
     if (!bill){
-      let manualRef = prompt(
-        'Bill ID tiada.\n\nJika bayaran dibuat secara manual (tunai / online transfer), ' +
-        'boleh isi No Rujukan / Reference bank di bawah.\n\n' +
-        'Jika tidak mahu isi, biarkan kosong dan tekan OK.',
-        ''
-      );
-
-      // Tekan Cancel → batalkan proses
-      if (manualRef === null){
-        if (btn){ btn.disabled = false; btn.textContent = 'Hantar resit'; }
-        showToast('Dibatalkan.');
-        return;
-      }
-
-      manualRef = manualRef.trim();
-      if (manualRef){
-        // Simpan rujukan manual ke bill_id_text
-        await sb.from('goldbar_order')
-          .update({ bill_id_text: manualRef })
-          .eq('id', row.id);
-        bill = manualRef;
-      }
-    }
-
-    // 3) Bina URL resit
-    let url;
-    if (bill){
-      // Laluan biasa: ada Bill ID
-      url = `${location.origin}/resit-j999.html?bill_id=${encodeURIComponent(bill)}`;
-      try{ localStorage.setItem('j999_last_bill_id', bill); }catch(_){}
-    } else {
-      // Masih tiada bill → guna param ?order=REFERENCE
-      url = `${location.origin}/resit-j999.html?order=${encodeURIComponent(row.reference)}`;
+      let url = `${location.origin}/resit-j999.html?order=${encodeURIComponent(row.reference)}`;
       try{ localStorage.setItem('j999_last_order', row.reference); }catch(_){}
+
+      const phone = row.phone || '';
+      const msg = [
+        'Resit pembelian GoldBar/Coin anda:',
+        url,
+        '',
+        'Terima kasih atas belian! 🙏'
+      ].join('\n');
+      await sendWA(phone, msg);
+
+      try{
+        const { error: rpcErr } = await sb.rpc('j999_mark_receipt_sent_v1', { p_order_id: row.id });
+        if (rpcErr) throw rpcErr;
+      }catch(_){
+        await sb.from('goldbar_order')
+          .update({ receipt_sent_at: new Date().toISOString() })
+          .eq('id', row.id);
+      }
+
+      if (window._rowsCache){
+        window._rowsCache[id].receipt_sent_at = new Date().toISOString();
+      }
+      if (btn){
+        btn.textContent = '✔ Resit dihantar';
+        btn.className   = 'btn btn-outline-secondary';
+        btn.disabled    = true;
+      }
+
+      window.open(url, '_blank');
+      showToast('Resit dihantar & dibuka.');
+      return;
     }
 
-    // 4) Hantar link resit melalui WhatsApp
+    let url = `${location.origin}/resit-j999.html?bill_id=${encodeURIComponent(bill)}`;
+    try{ localStorage.setItem('j999_last_bill_id', bill); }catch(_){}
+
     const phone = row.phone || '';
     const msg = [
       'Resit pembelian GoldBar/Coin anda:',
@@ -1123,7 +2181,6 @@ async function sendReceipt(id){
     ].join('\n');
     await sendWA(phone, msg);
 
-    // 5) Tandakan resit dihantar
     try{
       const { error: rpcErr } = await sb.rpc('j999_mark_receipt_sent_v1', { p_order_id: row.id });
       if (rpcErr) throw rpcErr;
@@ -1133,7 +2190,6 @@ async function sendReceipt(id){
         .eq('id', row.id);
     }
 
-    // 6) Kemas UI
     if (window._rowsCache){
       window._rowsCache[id].receipt_sent_at = new Date().toISOString();
     }
@@ -1143,7 +2199,6 @@ async function sendReceipt(id){
       btn.disabled    = true;
     }
 
-    // 7) Buka tab resit
     window.open(url, '_blank');
     showToast('Resit dihantar & dibuka.');
   }catch(e){
@@ -1154,16 +2209,61 @@ async function sendReceipt(id){
     }
   }
 }
+
 /* =========================
    Events
    ========================= */
-document.getElementById('refreshBtn')?.addEventListener('click', ()=>{ ORD_CURRENT_PAGE=1; refreshOrders(); startAutoRefresh(); });
-document.getElementById('searchBox')?.addEventListener('keydown', (e)=>{ if(e.key==='Enter'){ ORD_CURRENT_PAGE=1; refreshOrders(); startAutoRefresh(); } });
-document.getElementById('prevPageBtn')?.addEventListener('click', ()=>{ if(ORD_CURRENT_PAGE>1){ ORD_CURRENT_PAGE--; refreshOrders(); }});
-document.getElementById('nextPageBtn')?.addEventListener('click', ()=>{ ORD_CURRENT_PAGE++; refreshOrders(); });
+document.getElementById('refreshBtn')?.addEventListener('click', ()=>{
+  ORD_CURRENT_PAGE=1;
+  refreshOrders();
+  startAutoRefresh();
+});
 
+document.getElementById('searchBox')?.addEventListener('keydown', (e)=>{
+  if(e.key==='Enter'){
+    ORD_CURRENT_PAGE=1;
+    refreshOrders();
+    startAutoRefresh();
+  }
+});
+
+document.getElementById('prevPageBtn')?.addEventListener('click', ()=>{
+  if(ORD_CURRENT_PAGE>1){
+    ORD_CURRENT_PAGE--;
+    refreshOrders();
+  }
+});
+
+document.getElementById('nextPageBtn')?.addEventListener('click', ()=>{
+  ORD_CURRENT_PAGE++;
+  refreshOrders();
+});
+
+document.getElementById('btnOpenLiveJ999')?.addEventListener('click', async ()=>{
+  const sel = $('liveJ999Select');
+  const btnSet = $('btnSetLiveJ999');
+  const btnOff = $('btnOffLiveJ999');
+
+  if (sel) sel.style.display = '';
+  if (btnSet) btnSet.style.display = '';
+  if (btnOff) btnOff.style.display = '';
+
+  try{
+    await loadLive999Catalog();
+  }catch(e){
+    alert('Gagal muat item J999: ' + (e?.message || e));
+  }
+});
+
+document.getElementById('btnSetLiveJ999')?.addEventListener('click', async ()=>{
+  await setLive999(true);
+});
+
+document.getElementById('btnOffLiveJ999')?.addEventListener('click', async ()=>{
+  await setLive999(false);
+});
 document.addEventListener('click', (e)=>{
-  const el = e.target?.closest?.('[data-filter]'); if(!el) return;
+  const el = e.target?.closest?.('[data-filter]');  if(!el) return;
   e.preventDefault();
   ORD_FILTER = el.getAttribute('data-filter') || 'ALL';
   ORD_CURRENT_PAGE = 1;
@@ -1173,7 +2273,7 @@ document.addEventListener('click', (e)=>{
 });
 
 /* =========================
-   BOOT (admin guard + load)
+   BOOT
    ========================= */
 (async ()=>{
   const pill = $('authStatus');
@@ -1194,7 +2294,8 @@ document.addEventListener('click', (e)=>{
   if(!ok) return;
 
   await refreshOrders();
-  startAutoRefresh();
+await loadActiveLive999List();
+startAutoRefresh();
 })();
 </script>
 
@@ -1208,6 +2309,7 @@ document.addEventListener('click', (e)=>{
             border-radius:10px;padding:6px 10px;display:none;z-index:9999">
   Bunyi dikunci — klik <button id="btnUnlockAudio" class="btn btn-sm btn-outline-dark">Aktifkan</button>
 </div>
+
 <script>
 window.addEventListener('load', ()=>{
   const a = document.getElementById('soundCash');
@@ -1215,7 +2317,9 @@ window.addEventListener('load', ()=>{
   setTimeout(()=>{
     a.volume = 0.0;
     a.play().then(()=>{
-      a.pause(); a.currentTime = 0; a.volume = 1.0;
+      a.pause();
+      a.currentTime = 0;
+      a.volume = 1.0;
       console.log("AUDIO UNLOCK ✅");
     }).catch(e=>{
       console.log("AUDIO STILL LOCKED ❌", e.message);
@@ -1223,27 +2327,27 @@ window.addEventListener('load', ()=>{
   }, 1000);
 });
 </script>
+
 <script>
-// Cuba main & reset untuk unlock
 function __tryUnlockAudio(){
   const a = document.getElementById('soundCash');
   if (!a) return false;
-  a.volume = 1.0; a.muted = false;
+  a.volume = 1.0;
+  a.muted = false;
   return a.play().then(()=>{
-    a.pause(); a.currentTime = 0;
+    a.pause();
+    a.currentTime = 0;
     window.__cashUnlocked = true;
     console.log('🔓 Audio unlocked');
     return true;
   }).catch(()=>false);
 }
 
-// Tunjuk/sembunyi hint
 function __showHint(show){
   const h = document.getElementById('audioHint');
   if (h) h.style.display = show ? '' : 'none';
 }
 
-// Pasang listener untuk pastikan boleh unlock bila user sentuh/klik
 (function setupAudioUnlock(){
   if (window.__audioUnlockReady) return;
   window.__audioUnlockReady = true;
@@ -1253,28 +2357,29 @@ function __showHint(show){
     const ok = await __tryUnlockAudio();
     if (ok){ cleanup(); __showHint(false); }
   };
+
   function cleanup(){
     window.removeEventListener('click',handler,true);
     window.removeEventListener('touchstart',handler,true);
     window.removeEventListener('keydown',handler,true);
   }
+
   window.addEventListener('click',handler,true);
   window.addEventListener('touchstart',handler,true);
   window.addEventListener('keydown',handler,true);
 
-  // Tunjuk hint jika masih terkunci selepas 1s
   setTimeout(()=>{ if (!window.__cashUnlocked) __showHint(true); }, 1000);
-
-  // Butang manual
   document.getElementById('btnUnlockAudio')?.addEventListener('click', handler);
 })();
 
-// Main bunyi ka-ching
 function playCash(){
   const a = document.getElementById('soundCash');
   if (!a) return;
 
-  const doPlay = ()=>{ a.currentTime = 0; a.play().catch(()=>{}); };
+  const doPlay = ()=>{
+    a.currentTime = 0;
+    a.play().catch(()=>{});
+  };
 
   if (!window.__cashUnlocked){
     const once = async ()=>{
@@ -1295,12 +2400,14 @@ function playCash(){
   doPlay();
 }
 </script>
+
 <script>
 document.addEventListener('DOMContentLoaded', ()=>{
   const bar = document.querySelector('.d-flex.align-items-center.mb-2 .d-flex.flex-wrap');
   if (!bar || document.getElementById('btnTestSound')) return;
   const btn = document.createElement('button');
-  btn.id='btnTestSound'; btn.className='btn btn-outline-dark btn-sm';
+  btn.id='btnTestSound';
+  btn.className='btn btn-outline-dark btn-sm';
   btn.textContent='Uji Bunyi 🔊';
   btn.style.marginLeft='8px';
   btn.onclick = ()=>playCash();

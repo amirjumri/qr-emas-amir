@@ -1,0 +1,362 @@
+<!doctype html>
+<html lang="ms">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Point & Ganjaran Saya — Emas Amir</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+  <style>
+    body{background:#f9fafb;}
+    .container-narrow{max-width:960px}
+    .card+.card{margin-top:14px}
+    .badge-soft{background:#eef7ff;color:#0d6efd;border:1px solid #d7ebff}
+    .table-xs td,.table-xs th{padding:.45rem .55rem}
+  </style>
+</head>
+<body>
+<div class="container container-narrow py-3">
+  <div class="d-flex justify-content-between align-items-center mb-2">
+    <h3 class="m-0">Point &amp; Ganjaran Saya</h3>
+    <a href="account.html" class="btn btn-outline-secondary btn-sm">Kembali ke Akaun</a>
+  </div>
+  <div id="authInfo" class="text-muted small mb-2">Memuatkan maklumat akaun…</div>
+
+  <!-- Baki Point -->
+  <div class="card">
+    <div class="card-body">
+      <h5 class="card-title mb-2">Jumlah Point</h5>
+      <div class="d-flex align-items-baseline gap-3">
+        <div>
+          <div id="ptBalance" class="display-5 fw-bold">0</div>
+          <div class="text-muted small">Point terkumpul</div>
+        </div>
+        <div class="ms-auto text-end small text-muted">
+          Point akan bertambah setiap kali pembelian anda ditandakan sebagai <b>PAID</b>.<br>
+          Point hanya boleh digunakan sebagai <b>diskaun belian / pos</b>, bukan tunai.
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Ganjaran boleh tebus -->
+  <div class="card">
+    <div class="card-body">
+      <h5 class="card-title mb-2">Ganjaran Boleh Tebus</h5>
+      <p class="text-muted small">
+        Pilih ganjaran di bawah. Bila anda tebus, sistem akan cipta <b>kupon khas</b> untuk nombor telefon anda.
+        Kupon itu boleh digunakan di ruangan kupon semasa checkout.
+      </p>
+      <div class="table-responsive">
+        <table class="table table-sm align-middle table-xs">
+          <thead>
+            <tr>
+              <th>Ganjaran</th>
+              <th>Perlu Point</th>
+              <th>Diskaun</th>
+              <th>Min Order</th>
+              <th>Sah (hari)</th>
+              <th class="text-end">Tindakan</th>
+            </tr>
+          </thead>
+          <tbody id="rwAvail">
+            <tr><td colspan="6">Memuatkan…</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <div id="redeemMsg" class="small mt-2 text-muted"></div>
+    </div>
+  </div>
+
+  <!-- Sejarah Point -->
+  <div class="card">
+    <div class="card-body">
+      <h5 class="card-title mb-2">Sejarah Point</h5>
+      <div class="table-responsive">
+        <table class="table table-sm table-xs align-middle">
+          <thead>
+            <tr>
+              <th>Tarikh</th>
+              <th>Keterangan</th>
+              <th class="text-end">Perubahan</th>
+            </tr>
+          </thead>
+          <tbody id="ptHist">
+            <tr><td colspan="3">Memuatkan…</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="auth.js?v=13.1"></script>
+
+<script>
+// ================== Supabase & util asas ==================
+const SB_URL = "https://dduizetstqqjrpsezbpi.supabase.co";
+const SB_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRkdWl6ZXRzdHFxanJwc2V6YnBpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTg3MzI0ODQsImV4cCI6MjA3NDMwODQ4NH0.CrlHXrmHtKgR9qc2192U6quRb5lpFEeOSgwG0Lb8KRM";
+
+window.sb = window.sb || window.supabase.createClient(SB_URL, SB_KEY);
+const sb = window.sb;
+
+const $  = id => document.getElementById(id);
+const MY = "ms-MY";
+
+function money(n){ return Number(n||0).toFixed(2); }
+function dt(x){
+  try{
+    return new Date(x).toLocaleString(MY,{dateStyle:"medium",timeStyle:"short",hour12:true});
+  }catch{ return x; }
+}
+
+// ================== LOCALSTORAGE: kupon loyalty ==================
+const LS_MY_COUPONS = "emasamir_loyalty_coupons_v1";
+
+/**
+ * Simpan kupon hasil tebus ke localStorage
+ * Format yang akan dibaca oleh page checkout:
+ *   [{ code, label, min_order, expires_at }, ...]
+ */
+function saveLoyaltyCouponToLocal(coupon){
+  try{
+    if (!coupon || !coupon.code) return;
+
+    const raw  = localStorage.getItem(LS_MY_COUPONS);
+    const arr  = raw ? JSON.parse(raw) : [];
+    const list = Array.isArray(arr) ? arr.filter(x => x.code !== coupon.code) : [];
+
+    list.push({
+      code      : coupon.code,
+      label     : coupon.label || "",
+      min_order : Number(coupon.min_order || 0),
+      expires_at: coupon.expires_at || null
+    });
+
+    localStorage.setItem(LS_MY_COUPONS, JSON.stringify(list));
+    console.log("[LOYALTY] saved coupon:", coupon);
+  }catch(e){
+    console.warn("[LOYALTY] cannot save coupon:", e);
+  }
+}
+
+// ================== Telefon normalise (selari SQL) ==================
+function normalizePhone(raw){
+  if(!raw) return null;
+  let v = (""+raw).trim();
+  if(!v) return null;
+
+  if(v.startsWith("+"))  return v;              // +60..., +65...
+  if(v.startsWith("00")) return "+"+v.slice(2); // 0065.. -> +65..
+  if(v.startsWith("601"))return "+"+v;          // 6013.. -> +6013..
+  if(v.startsWith("0"))  return "+60"+v.slice(1); // 013.. -> +6013..
+
+  return v; // fallback
+}
+
+// ================== State global ==================
+let gUser      = null;
+let gPhoneE164 = null;
+let gBalance   = 0;
+
+// ================== Auth & load asas ==================
+async function requireLogin(){
+  const infoEl = $("authInfo");
+  try{
+    const a = (window.auth_get && window.auth_get()) || null;
+    if(!a){
+      infoEl.textContent = "Sila log masuk terlebih dahulu.";
+      return null;
+    }
+    const phone = a.phone || a.msisdn || a.username || "";
+    const nrm   = normalizePhone(phone);
+    gUser       = a;
+    gPhoneE164  = nrm;
+
+    infoEl.textContent = `Log masuk sebagai: ${nrm || phone || "(tanpa nombor telefon)"}`;
+    return a;
+  }catch(e){
+    infoEl.textContent = "Ralat semak akaun: " + (e?.message||e);
+    return null;
+  }
+}
+
+async function loadBalance(){
+  if(!gPhoneE164){
+    $("ptBalance").textContent = "0";
+    return;
+  }
+
+  const { data, error } = await sb
+    .from("v_loyalty_balance")
+    .select("phone_e164, balance")
+    .eq("phone_e164", gPhoneE164)
+    .maybeSingle();
+
+  if(error){
+    $("ptBalance").textContent = "0";
+    console.error("balance error", error);
+    return;
+  }
+
+  gBalance = data?.balance || 0;
+  $("ptBalance").textContent = gBalance;
+}
+
+async function loadHistory(limit=50){
+  const body = $("ptHist");
+  if(!gPhoneE164){
+    body.innerHTML = `<tr><td colspan="3">Tiada sejarah point (tiada nombor telefon).</td></tr>`;
+    return;
+  }
+
+  const { data, error } = await sb
+    .from("loyalty_points_ledger")
+    .select("created_at, points, note, direction")
+    .eq("phone_e164", gPhoneE164)
+    .order("created_at", { ascending:false })
+    .limit(limit);
+
+  if(error){
+    body.innerHTML = `<tr><td colspan="3">Ralat: ${error.message}</td></tr>`;
+    return;
+  }
+  if(!data || !data.length){
+    body.innerHTML = `<tr><td colspan="3">Belum ada rekod point.</td></tr>`;
+    return;
+  }
+
+  body.innerHTML = data.map(r=>{
+    const sign = r.points > 0 ? "+" : "";
+    const cls  = r.points > 0 ? "text-success" : "text-danger";
+    const note = r.note || (r.direction === "EARN" ? "Dapat point" : "Tebus / pelarasan");
+    return `
+      <tr>
+        <td>${dt(r.created_at)}</td>
+        <td>${note}</td>
+        <td class="text-end ${cls}">${sign}${r.points}</td>
+      </tr>
+    `;
+  }).join("");
+}
+
+// ================== Ganjaran boleh tebus ==================
+async function loadAvailableRewards(){
+  const body = $("rwAvail");
+  const msg  = $("redeemMsg");
+
+  const { data, error } = await sb
+    .from("loyalty_rewards")
+    .select("*")
+    .eq("is_active", true)
+    .order("required_points", { ascending:true });
+
+  if(error){
+    body.innerHTML = `<tr><td colspan="6">Ralat muat ganjaran: ${error.message}</td></tr>`;
+    return;
+  }
+  if(!data || !data.length){
+    body.innerHTML = `<tr><td colspan="6">Tiada ganjaran aktif buat masa ini.</td></tr>`;
+    return;
+  }
+
+  body.innerHTML = data.map(r=>{
+    const jenis = r.discount_type === "percent"
+      ? `${Number(r.discount_value||0).toFixed(2)}%`
+      : `RM ${money(r.discount_value)}`;
+    const perlu  = r.required_points || 0;
+    const bolehTebus = gBalance >= perlu;
+    const disabledAttr = bolehTebus ? "" : "disabled";
+    const btnLabel = bolehTebus ? "Tebus" : "Tidak cukup point";
+
+    return `
+      <tr>
+        <td>
+          <b>${r.title || r.code}</b>
+          <div class="small text-muted">${r.description || ""}</div>
+        </td>
+        <td>${perlu}</td>
+        <td>${jenis}</td>
+        <td>RM ${money(r.min_order_rm||0)}</td>
+        <td>${r.valid_days || 0}</td>
+        <td class="text-end">
+          <button class="btn btn-sm btn-primary"
+                  data-reward="${r.id}"
+                  ${disabledAttr}>${btnLabel}</button>
+        </td>
+      </tr>
+    `;
+  }).join("");
+
+  // Wiring butang Tebus
+  [...body.querySelectorAll("button[data-reward]")].forEach(btn=>{
+    btn.onclick = async ()=>{
+      const rewardId = btn.getAttribute("data-reward");
+      if(!gUser || !gPhoneE164){
+        alert("Sila log masuk terlebih dahulu.");
+        return;
+      }
+      if(btn.disabled) return;
+      if(!confirm("Tebus ganjaran ini dengan point anda?")) return;
+
+      msg.textContent = "Menebus ganjaran…";
+
+      try{
+        // Cari row ganjaran asal (untuk ambil min_order dll)
+        const reward = (data || []).find(r => String(r.id) === String(rewardId)) || null;
+
+        const { data: d2, error: e2 } = await sb.rpc("redeem_loyalty_reward", {
+          p_phone_raw: gPhoneE164,
+          p_reward_id: rewardId
+        });
+        if(e2) throw e2;
+
+        const row   = (Array.isArray(d2) && d2[0]) ? d2[0] : d2;
+        const code  = row?.coupon_code || row?.code || "(tiada kod)";
+        const endAt = row?.coupon_end_at || row?.end_at || null;
+        const minRm = row?.min_order_rm ?? reward?.min_order_rm ?? 0;
+        const label =
+          row?.coupon_title ||
+          row?.title ||
+          row?.reward_title ||
+          row?.description ||
+          reward?.title ||
+          reward?.code ||
+          "Kupon loyalty";
+
+        msg.innerHTML =
+          `✔ Berjaya tebus! Kupon anda: <b>${code}</b> ` +
+          `(sila lihat di bahagian kupon semasa checkout).`;
+
+        // 🔸 Simpan ke localStorage untuk digunakan di checkout (J916 / lain2)
+        saveLoyaltyCouponToLocal({
+          code      : code,
+          label     : label,
+          min_order : Number(minRm || 0),
+          expires_at: endAt
+        });
+
+        // Refresh baki & sejarah & senarai ganjaran
+        await loadBalance();
+        await loadHistory();
+        await loadAvailableRewards();
+      }catch(e){
+        console.error("redeem_loyalty_reward error:", e);
+        msg.textContent = "Gagal tebus: " + (e?.message || e);
+      }
+    };
+  });
+}
+
+// ================== Init ==================
+(async ()=>{
+  const u = await requireLogin();
+  if(!u) return;
+
+  await loadBalance();
+  await loadHistory();
+  await loadAvailableRewards();
+})();
+</script>
+</body>
+</html>

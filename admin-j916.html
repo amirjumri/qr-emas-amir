@@ -2,7 +2,8 @@
 <html lang="ms">
 <head>
   <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<link rel="stylesheet" href="/global.css">
   <title>Admin-J916 • Senarai Order — Emas Amir</title>
 
   <!-- Libs -->
@@ -46,7 +47,7 @@
       <a class="btn btn-outline-secondary btn-chip" href="admin-j999.html">Admin 999</a>
       <a class="btn btn-outline-secondary btn-chip" href="adminstok-j916.html">Admin Stok 916</a>
       <a class="btn btn-outline-secondary btn-chip" href="admintabung-simpan.html">Admin Tabung</a>
-      <a class="btn btn-outline-secondary btn-chip" href="account.html">Akaun</a>
+      <a class="btn btn-outline-secondary btn-chip" href="admin-j916-queue.html">Queue</a>
       <button id="btnLogin"  class="btn btn-outline-secondary btn-chip" type="button">Log masuk</button>
       <button id="btnLogout" class="btn btn-outline-secondary btn-chip" type="button" style="display:none">Log keluar</button>
     </div>
@@ -387,57 +388,57 @@ let _pendingOrderId=null, _pendingAction=null;
 async function apiOrdersList({ page, pageSize, filter, q }) {
   // mapper supaya bentuk data kekal sama untuk UI
   const mapRow = (r) => {
-  // ✅ 1) Pastikan order_code TIDAK jadi kosong
-  // Keutamaan: r.order_code -> r.id (kalau RPC guna id sebagai short code) -> prefix reference UUID
-  let order_code =
-    (r.order_code && String(r.order_code).trim()) ||
-    (r.id && String(r.id).trim()) ||
-    (r.reference && String(r.reference).trim().slice(0, 7)) ||
-    '';
+    // ✅ 1) Pastikan order_code TIDAK jadi kosong
+    // Keutamaan: r.order_code -> r.id (kalau RPC guna id sebagai short code) -> prefix reference UUID
+    let order_code =
+      (r.order_code && String(r.order_code).trim()) ||
+      (r.id && String(r.id).trim()) ||
+      (r.reference && String(r.reference).trim().slice(0, 7)) ||
+      '';
 
-  const item_code  = r.item_code || r.code || null;
+    const item_code  = r.item_code || r.code || null;
 
-  // ✅ settlement_txn.sale_order_code simpan ORDER_CODE
-  const sale_code = order_code;
+    // ✅ settlement_txn.sale_order_code simpan ORDER_CODE
+    const sale_code = order_code;
 
-  // ✅ 2) amount_cents: kalau kosong/0, fallback guna grand_total_rm/subtotal_rm (RM -> cents)
-  const gt = (r.grand_total_rm ?? r.total_rm ?? r.subtotal_rm ?? null);
-  const amtFromRM = (gt !== null && gt !== undefined && gt !== '')
-    ? Math.round(Number(gt) * 100)
-    : 0;
+    // ✅ 2) amount_cents: kalau kosong/0, fallback guna grand_total_rm/subtotal_rm (RM -> cents)
+    const gt = (r.grand_total_rm ?? r.total_rm ?? r.subtotal_rm ?? null);
+    const amtFromRM = (gt !== null && gt !== undefined && gt !== '')
+      ? Math.round(Number(gt) * 100)
+      : 0;
 
-  const amount_cents =
-    (Number.isFinite(Number(r.amount_cents)) && Number(r.amount_cents) > 0)
-      ? Number(r.amount_cents)
-      : amtFromRM;
+    const amount_cents =
+      (Number.isFinite(Number(r.amount_cents)) && Number(r.amount_cents) > 0)
+        ? Number(r.amount_cents)
+        : amtFromRM;
 
-  return {
-    reference: r.reference || null,   // reference UUID (kalau ada)
-    id: order_code,
-    order_code,
-    sale_code,
-    created_at: r.created_at,
-    bill_id: r.bill_id_text || r.bill_id || null,
-    customer_name: r.customer_name || r.name || '-',
-    phone: r.phone || r.msisdn || r.customer_phone || '',
-    amount_cents,
-    method: r.method || r.pay_method || '',
-    status: String(r.status || '').toUpperCase(),
-    tracking_no: r.tracking_no || r.tracking || '',
-    code: item_code,
-    item_name: r.item_name || r.name_item || r.product_name || '',
-    weight_g: Number(r.weight_g || r.grams || 0),
-    receipt_sent_at: r.receipt_sent_at || null,
-    checkout_group: r.checkout_group || null,
-    customer_id: r.customer_id || null,
-    settlement_id: null,
-    settlement_url: null,
-    split_id: null,
-    split_code: null,
-    split_url: null,
-    manual_split_summary: null
+    return {
+      reference: r.reference || null,   // reference UUID (kalau ada)
+      id: order_code,
+      order_code,
+      sale_code,
+      created_at: r.created_at,
+      bill_id: r.bill_id_text || r.bill_id || null,
+      customer_name: r.customer_name || r.name || '-',
+      phone: r.phone || r.msisdn || r.customer_phone || '',
+      amount_cents,
+      method: r.method || r.pay_method || '',
+      status: String(r.status || '').toUpperCase(),
+      tracking_no: r.tracking_no || r.tracking || '',
+      code: item_code,
+      item_name: r.item_name || r.name_item || r.product_name || '',
+      weight_g: Number(r.weight_g || r.grams || 0),
+      receipt_sent_at: r.receipt_sent_at || null,
+      checkout_group: r.checkout_group || null,
+      customer_id: r.customer_id || null,
+      settlement_id: null,
+      settlement_url: null,
+      split_id: null,
+      split_code: null,
+      split_url: null,
+      manual_split_summary: null
+    };
   };
-};
 
   try {
     /* --- PANGGIL RPC (asal) --- */
@@ -567,20 +568,39 @@ try {
 
 // 4) Enrich SETTLEMENT (resit gabungan) ikut sale_order_code
 try {
-  const codes = [...new Set(items.map(x => x.sale_code).filter(Boolean))];
+  const codes = [...new Set(items.map(x => String(x.sale_code || '').trim()).filter(Boolean))];
 
   if (codes.length) {
+    // ambil row settlement terbaru, kemudian match manual sebab sale_order_code boleh jadi gabungan comma
     const { data: srows, error: serr } = await sb
       .from('settlement_txn')
-      .select('id,sale_order_code')
-      .in('sale_order_code', codes);
+      .select('id,sale_order_code,created_at')
+      .order('created_at', { ascending: false })
+      .limit(500);
 
     if (serr) throw serr;
 
-    const sMap = Object.fromEntries((srows || []).map(r => [r.sale_order_code, r.id]));
+    const sMap = {};
+
+    (srows || []).forEach(r => {
+      const raw = String(r.sale_order_code || '').trim();
+      if (!raw) return;
+
+      const parts = raw
+        .split(',')
+        .map(x => String(x || '').trim())
+        .filter(Boolean);
+
+      parts.forEach(code => {
+        // ambil settlement terbaru sahaja untuk setiap order_code
+        if (!sMap[code]) {
+          sMap[code] = r.id;
+        }
+      });
+    });
 
     items = items.map(x => {
-      const sid = sMap[x.sale_code] || null;
+      const sid = sMap[String(x.sale_code || '').trim()] || null;
       return sid
         ? {
             ...x,
@@ -593,7 +613,6 @@ try {
 } catch (e) {
   console.warn('Enrich settlement_txn gagal:', e?.message || e);
 }
-
 // 5) Enrich SPLIT (resit split) ikut order_code (contoh: 6201f84)
 try {
   const codes = [...new Set(items.map(x => x.order_code).filter(Boolean))];
@@ -1274,6 +1293,79 @@ function buildMsg(r){
   return {msgCust,msgAdmin};
 }
 
+
+function buildFollowupUpdateMsg(r){
+  return [
+    'Assalamualaikum cik 🌷',
+    '',
+    'Kami ingin bertanya, adakah cik masih berminat dengan item ini ya?',
+    '',
+    `Item: ${[r.code ? ('#' + r.code) : null, r.item_name || null, r.weight_g ? (r.weight_g.toFixed(2) + 'g') : null].filter(Boolean).join(' • ') || '-'}`,
+    `Jumlah: ${moneyCents(getNeedCents(r))}`,
+    '',
+    'Jika masih berminat, boleh balas kepada kami ya 😊',
+    'Jika tidak berminat, kami akan batalkan order ini dan cik boleh lock semula item tersebut di dalam live nanti.',
+    '',
+    'Terima kasih cik 🌷'
+  ].join('\n');
+}
+
+function buildCancelMsg(r){
+  return [
+    'Assalamualaikum cik 🌷',
+    '',
+    'Untuk makluman, item ini telah kami batalkan daripada order/lock cik ya.',
+    '',
+    `Item: ${[r.code ? ('#' + r.code) : null, r.item_name || null, r.weight_g ? (r.weight_g.toFixed(2) + 'g') : null].filter(Boolean).join(' • ') || '-'}`,
+    `Jumlah: ${moneyCents(getNeedCents(r))}`,
+    '',
+    'Jika cik masih berminat, cik boleh lock semula item tersebut semasa live nanti 😊',
+    '',
+    'Terima kasih atas perhatian cik.'
+  ].join('\n');
+}
+
+window.sendUpdateFromBtn = async function(btn){
+  const code = (btn.dataset.code || '').trim();
+  const r = (orderState.items || []).find(x => x.order_code === code);
+
+  if (!r){
+    showToast('Order tidak dijumpai.');
+    return;
+  }
+
+  if (!r.phone){
+    showToast('Nombor telefon pelanggan tiada.');
+    return;
+  }
+
+  const oldText = btn.textContent;
+  btn.disabled = true;
+  btn.textContent = 'Menghantar…';
+
+  try{
+    const msg = buildFollowupUpdateMsg(r);
+    const sent = await sendWA(r.phone, msg);
+
+    if (!sent.ok) throw new Error('WhatsApp gagal dihantar.');
+
+    try{
+      await recordAction(code, 'asked_update');
+    }catch(_){}
+
+    showToast('WhatsApp tanya update berjaya dihantar.');
+  }catch(e){
+    showToast('Gagal hantar WhatsApp update.');
+    btn.disabled = false;
+    btn.textContent = oldText;
+    return;
+  }
+
+  btn.disabled = false;
+  btn.textContent = oldText;
+};
+
+
 /* ========== Render & actions ========== */
 let orderState={items:[],total:0,hasNext:false,hasPrev:false}, _sentSet=new Set();
 
@@ -1380,8 +1472,13 @@ const splitLinkHtml = (r.split_url && r.split_id)
            </button>
            <button class="btn btn-outline-secondary" ${(r.status === 'PAID' && !alreadySent) ? '' : 'disabled'}
                    data-code="${r.order_code}" data-row="${rowKey}" data-phone="${r.phone || ''}"
-onclick="sendReceiptFromBtn(this)">
+                   onclick="sendReceiptFromBtn(this)">
              ${alreadySent ? '✔ Resit dihantar' : 'Hantar resit'}
+           </button>
+           <button class="btn btn-outline-info" ${r.status === 'PENDING' ? '' : 'disabled'}
+                   data-code="${r.order_code}"
+                   onclick="sendUpdateFromBtn(this)">
+             Tanya Update
            </button>
            <!-- 🔹 BUTANG ALAMAT -->
            <button class="btn btn-outline-dark"
@@ -1396,25 +1493,25 @@ onclick="sendReceiptFromBtn(this)">
                    onclick="askManualPaidFromBtn(this)">
              Bayar manual
            </button>
-          <button class="btn btn-outline-warning"
-        ${ (r.status === 'PENDING' && isWalkinNoBill(r.bill_id)) ? '' : 'disabled' }
-        data-code="${r.order_code}"
-        data-phone="${r.phone || ''}"
-        data-status="${r.status}"
-        data-bill="${r.bill_id || ''}"
-        onclick="openSplitFromBtn(this)">
-  Split
-</button>
+           <button class="btn btn-outline-warning"
+                   ${ (r.status === 'PENDING' && isWalkinNoBill(r.bill_id)) ? '' : 'disabled' }
+                   data-code="${r.order_code}"
+                   data-phone="${r.phone || ''}"
+                   data-status="${r.status}"
+                   data-bill="${r.bill_id || ''}"
+                   onclick="openSplitFromBtn(this)">
+             Split
+           </button>
 
-<button class="btn btn-outline-warning"
-        ${ (r.status === 'PAID') ? '' : 'disabled' }
-        data-code="${r.order_code}"
-        data-phone="${r.phone || ''}"
-        data-status="${r.status}"
-        data-bill="${r.bill_id || ''}"
-        onclick="openSplitLiveFromBtn(this)">
-  Split Live
-</button>
+           <button class="btn btn-outline-warning"
+                   ${ (r.status === 'PAID') ? '' : 'disabled' }
+                   data-code="${r.order_code}"
+                   data-phone="${r.phone || ''}"
+                   data-status="${r.status}"
+                   data-bill="${r.bill_id || ''}"
+                   onclick="openSplitLiveFromBtn(this)">
+             Split Live
+           </button>
            <button class="btn btn-danger" ${r.status === 'PENDING' ? '' : 'disabled'}
                    data-code="${r.reference}" onclick="askCancelFromBtn(this)">Cancel</button>
            <button class="btn btn-success" ${r.status === 'PAID' ? '' : 'disabled'}
@@ -1540,7 +1637,7 @@ window.askCompleteFromBtn = function(btn){
 window.askCancelFromBtn = function(btn){
   _pendingOrderId = btn.dataset.code;
   _pendingAction  = 'cancel';
-  $('confirmText').textContent='Batal order ini? Stok berkaitan akan kembali AVAILABLE.';
+  $('confirmText').textContent='Batal order ini? Stok berkaitan akan kembali AVAILABLE dan customer akan dimaklumkan melalui WhatsApp.';
   new bootstrap.Modal($('confirmModal')).show();
 };
 
@@ -1684,6 +1781,31 @@ function mpUpdateSplitSummary(){
   }
 }
 
+// wire checkbox split + button tambah
+document.getElementById('mp_is_split')?.addEventListener('change', function(){
+  const isSplit = !!this.checked;
+  mpSetSplitMode(isSplit);
+
+  if (isSplit) {
+    const needCents = Number(document.getElementById('mp_order_total_cents')?.value || 0);
+    mpResetSplitRows(needCents);
+  } else {
+    const btn = document.getElementById('mp_confirm_btn');
+    if (btn) btn.disabled = false;
+  }
+});
+
+document.getElementById('mp_add_row_btn')?.addEventListener('click', function(){
+  const wrap = document.getElementById('mp_split_rows');
+  if (!wrap) return;
+
+  wrap.appendChild(mpMakeSplitRow({
+    method: 'MANUAL_MAYBANK',
+    amount_rm: ''
+  }));
+
+  mpUpdateSplitSummary();
+});
 /* ===============================
    Bayar Manual Modal open
 ================================ */
@@ -1692,7 +1814,7 @@ window.askManualPaidFromBtn = function(btn){
   const order = (orderState.items || []).find(x => x.order_code === code);
   if (!order){ showToast('Order tidak dijumpai.'); return; }
 
-  // ✅ FIX: bayar manual ikut harga asal item (bukan total checkout group)
+  // ✅ kiraan asal (biar kekal)
   let needCents = 0;
   const qty  = Number(order?.qty || 1);
   const sub  = Number(order?.subtotal_rm || 0);
@@ -1703,9 +1825,11 @@ window.askManualPaidFromBtn = function(btn){
   } else if (Number.isFinite(unit) && unit > 0) {
     needCents = Math.round(unit * qty * 100);
   } else {
-    // fallback kalau data item kosong
     needCents = getNeedCents(order);
   }
+
+  // ✅ TAMBAH INI (override guna jumlah sebenar order)
+  needCents = getNeedCents(order);
 
   // set nilai dalam modal
   document.getElementById('mp_order_code').value = code;
@@ -1728,19 +1852,16 @@ window.askManualPaidFromBtn = function(btn){
     `Order: ${code} • Perlu: ${moneyCents(needCents)} • Status: ${order.status}`;
 
   document.getElementById('mp_single_note').textContent =
-    `Single mode: ikut harga item asal (bukan total group).`;
+    `Single mode: ikut jumlah sebenar order.`;
 
-  // reset split checkbox
   const chk = document.getElementById('mp_is_split');
   if(chk){
     chk.checked = false;
   }
   mpSetSplitMode(false);
 
-  // reset split rows ikut harga item
   mpResetSplitRows(needCents);
 
-  // buka modal
   const modalEl = document.getElementById('manualPayModal');
   const modal = new bootstrap.Modal(modalEl);
   modal.show();
@@ -1957,7 +2078,25 @@ async function doComplete(code){
   await refresh();
 }
 async function doCancel(code){
+  const order = (orderState.items || []).find(x => x.reference === code || x.order_code === code);
+
   await apiOrderCancel(code);
+
+  if (order && order.phone){
+    try{
+      const msg = buildCancelMsg(order);
+      const sent = await sendWA(order.phone, msg);
+
+      if (sent.ok){
+        try{
+          await recordAction(order.order_code, 'sent_cancel_whatsapp');
+        }catch(_){}
+      }
+    }catch(e){
+      console.warn('Gagal hantar WhatsApp cancel:', e?.message || e);
+    }
+  }
+
   showToast('Order dibatalkan. Stok kembali AVAILABLE.');
   await refresh();
 }

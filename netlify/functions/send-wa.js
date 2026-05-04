@@ -17,7 +17,6 @@ export async function handler(event) {
     const phone_number = body.phone_number;
     const message = String(body.message || "").trim();
 
-    // ✅ sokong lampiran (kita embed sebagai link dalam text)
     const file_url =
       body.file_url ||
       body.attachment_url ||
@@ -30,7 +29,6 @@ export async function handler(event) {
       (body.attachment && body.attachment.name) ||
       "";
 
-    // ✅ message boleh kosong jika ada file_url
     if (!phone_number || (!message && !file_url)) {
       return json(400, {
         ok: false,
@@ -38,19 +36,26 @@ export async function handler(event) {
       });
     }
 
-    const base = process.env.ONSEND_BASE || "https://onsend.io/api/v1";
+    const base = "https://onsend.io/api/v1";
+
+    // TEST SAHAJA — lepas confirm jalan, padam balik
+    const token = "";
 
     let finalMessage = message || "Lampiran";
     if (file_url) {
       finalMessage += `\n\n📎 ${file_name ? file_name + "\n" : ""}${file_url}`;
     }
 
+    console.log("DEBUG send-wa has token:", !!token);
+    console.log("DEBUG send-wa phone_number:", phone_number);
+    console.log("DEBUG send-wa message length:", finalMessage.length);
+
     const r = await fetch(base + "/send", {
       method: "POST",
       headers: {
         "Accept": "application/json",
         "Content-Type": "application/json",
-        "Authorization": "Bearer " + process.env.ONSEND_TOKEN
+        "Authorization": "Bearer " + token
       },
       body: JSON.stringify({
         phone_number,
@@ -59,10 +64,28 @@ export async function handler(event) {
       })
     });
 
-    const j = await r.json().catch(() => ({}));
-    return json(r.ok ? 200 : r.status, { ok: r.ok, data: j });
+    const raw = await r.text().catch(() => "");
+    console.log("DEBUG send-wa status:", r.status);
+    console.log("DEBUG send-wa raw response:", raw);
+
+    let j = {};
+    try {
+      j = raw ? JSON.parse(raw) : {};
+    } catch (_) {
+      j = { raw };
+    }
+
+    return json(r.ok ? 200 : r.status, {
+      ok: r.ok,
+      data: j,
+      debug: {
+        has_token: !!token,
+        status: r.status
+      }
+    });
 
   } catch (e) {
+    console.log("DEBUG send-wa error:", e?.message || e);
     return json(500, { ok: false, error: e.message });
   }
 }

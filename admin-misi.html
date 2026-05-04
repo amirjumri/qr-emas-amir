@@ -1,0 +1,944 @@
+<!doctype html>
+<html lang="ms">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<link rel="stylesheet" href="/global.css">
+<title>Admin Misi 0.1g — Emas Amir</title>
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+<style>
+  body{background:#fff}
+  .container-narrow{max-width:1180px}
+  .card+.card{margin-top:14px}
+  .top-btns .btn{border-radius:12px}
+  .table-xs td,.table-xs th{padding:.5rem .55rem}
+  .summary-card{
+    border:1px solid #eceff3;
+    border-radius:16px;
+    padding:14px;
+    background:#fff;
+    height:100%;
+  }
+  .summary-kicker{
+    font-size:12px;
+    color:#6b7280;
+    margin-bottom:4px;
+    font-weight:700;
+  }
+  .summary-value{
+    font-size:28px;
+    line-height:1;
+    font-weight:900;
+    color:#111827;
+  }
+  .badge-soft{
+    background:#eef7ff;
+    color:#0d6efd;
+    border:1px solid #d7ebff;
+  }
+  .badge-soft-success{
+    background:#eafaf0;
+    color:#198754;
+    border:1px solid #cfeedd;
+  }
+  .badge-soft-warning{
+    background:#fff7e6;
+    color:#b26a00;
+    border:1px solid #ffe0a6;
+  }
+  .badge-soft-danger{
+    background:#fff0f1;
+    color:#dc3545;
+    border:1px solid #ffd6d9;
+  }
+  .badge-soft-dark{
+    background:#f3f4f6;
+    color:#111827;
+    border:1px solid #e5e7eb;
+  }
+  .stat-pill{
+    display:inline-flex;
+    align-items:center;
+    gap:8px;
+    border-radius:999px;
+    padding:6px 10px;
+    font-size:12px;
+    font-weight:800;
+    white-space:nowrap;
+  }
+  .click-row{cursor:pointer}
+  .click-row:hover{background:#fafafa}
+  .mini-muted{font-size:12px;color:#6b7280}
+  .mono{font-family:ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace}
+  .filter-chip{border-radius:999px}
+  .detail-box{
+    border:1px solid #edf0f2;
+    border-radius:14px;
+    padding:12px;
+    background:#fff;
+    height:100%;
+  }
+  .detail-label{
+    font-size:12px;
+    color:#6b7280;
+    margin-bottom:4px;
+    font-weight:700;
+  }
+  .detail-value{
+    font-size:16px;
+    font-weight:800;
+    color:#111827;
+  }
+  .section-title{
+    font-size:18px;
+    font-weight:900;
+    margin-bottom:12px;
+  }
+  .sticky-head{
+    position:sticky;
+    top:0;
+    z-index:2;
+    background:#fff;
+  }
+  .table-responsive.sticky-table{
+    max-height:65vh;
+    overflow:auto;
+  }
+  .progress-thin{
+    height:10px;
+    border-radius:999px;
+    background:#eef1f4;
+    overflow:hidden;
+  }
+  .progress-thin > div{
+    height:100%;
+    background:linear-gradient(90deg,#facc15,#f59e0b);
+  }
+</style>
+</head>
+<body>
+<div class="container container-narrow py-3">
+
+  <div class="d-flex justify-content-between align-items-center flex-wrap gap-2">
+    <h3 class="m-0">Admin Misi 0.1g</h3>
+
+    <div class="top-btns btn-group flex-wrap">
+      <a class="btn btn-outline-secondary" href="index.html">Laman Utama</a>
+
+      <div class="btn-group">
+        <button
+          type="button"
+          class="btn btn-outline-secondary btn-chip dropdown-toggle"
+          data-bs-toggle="dropdown"
+          aria-expanded="false">
+          Admin Report
+        </button>
+
+        <ul class="dropdown-menu">
+          <li><a class="dropdown-item" href="admin-misc-service.html">Misc Service</a></li>
+          <li><a class="dropdown-item" href="admin-report.html">Admin Report 916</a></li>
+          <li><a class="dropdown-item" href="admin-report-j999.html">Admin Report 999</a></li>
+          <li><a class="dropdown-item" href="admin-gold-stockout.html">Stok Out</a></li>
+          <li><a class="dropdown-item" href="admin-j916-rules.html">Admin Rule</a></li>
+          <li><a class="dropdown-item" href="admin-gold999-production.html">Admin Production 9999</a></li>
+          <li><a class="dropdown-item" href="admin-zakat.html">Admin Zakat</a></li>
+          <li><a class="dropdown-item" href="admin-point.html">Admin Point</a></li>
+          <li><a class="dropdown-item active" href="admin-misi.html">Admin Misi 0.1g</a></li>
+        </ul>
+      </div>
+
+      <div class="btn-group">
+        <button
+          type="button"
+          class="btn btn-outline-secondary btn-chip dropdown-toggle"
+          data-bs-toggle="dropdown"
+          aria-expanded="false">
+          Admin 916 999 Tabung
+        </button>
+
+        <ul class="dropdown-menu">
+          <li><a class="dropdown-item" href="admin-j916.html">Admin 916</a></li>
+          <li><a class="dropdown-item" href="adminstok-j916.html">Admin Stok 916</a></li>
+          <li><a class="dropdown-item" href="admin-stok-voice-batch.html">Admin Stok Voice</a></li>
+          <li><a class="dropdown-item" href="admin-j999.html">Admin 999</a></li>
+          <li><a class="dropdown-item" href="admintabung-simpan.html">Admin Tabung</a></li>
+          <li><a class="dropdown-item" href="admin-chat.html">Admin Chat</a></li>
+        </ul>
+      </div>
+
+      <div class="btn-group">
+        <button
+          type="button"
+          class="btn btn-outline-secondary btn-chip dropdown-toggle"
+          data-bs-toggle="dropdown"
+          aria-expanded="false">
+          Admin Trade
+        </button>
+
+        <ul class="dropdown-menu">
+          <li><a class="dropdown-item" href="tradein.html">Trade In</a></li>
+          <li><a class="dropdown-item" href="admin-settle-j916-tradein.html">Settle J916 Tradein</a></li>
+          <li><a class="dropdown-item" href="admin-tradein.html">Senarai Tradein</a></li>
+        </ul>
+      </div>
+
+      <div class="btn-group">
+        <button
+          type="button"
+          class="btn btn-outline-secondary btn-chip dropdown-toggle"
+          data-bs-toggle="dropdown"
+          aria-expanded="false">
+          Admin Cert
+        </button>
+
+        <ul class="dropdown-menu">
+          <li><a class="dropdown-item" href="admin-cert-psd.html">Admin Cert 36</a></li>
+          <li><a class="dropdown-item" href="custom-studio.html">Cert Studio</a></li>
+        </ul>
+      </div>
+
+      <a class="btn btn-outline-secondary btn-chip" href="account.html">Akaun</a>
+    </div>
+  </div>
+
+  <hr>
+
+  <div class="d-flex justify-content-between align-items-center flex-wrap gap-2 mb-3">
+    <div>
+      <div class="fw-bold">Dashboard Misi Log Masuk 60 Hari</div>
+      <div class="text-muted small">Pantau peserta, progress, pembelian, dan status tebusan.</div>
+    </div>
+    <div class="d-flex align-items-center gap-2">
+      <span id="authStatus" class="badge badge-soft">Mengesahkan akses…</span>
+      <button id="btnReloadAll" class="btn btn-primary">Refresh</button>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-body">
+      <div class="section-title">Ringkasan</div>
+      <div class="row g-3">
+        <div class="col-6 col-md-4 col-xl-2"><div class="summary-card"><div class="summary-kicker">Jumlah Join</div><div id="sumJoined" class="summary-value">0</div></div></div>
+        <div class="col-6 col-md-4 col-xl-2"><div class="summary-card"><div class="summary-kicker">Aktif Progress</div><div id="sumActive" class="summary-value">0</div></div></div>
+        <div class="col-6 col-md-4 col-xl-2"><div class="summary-card"><div class="summary-kicker">Dah Log Masuk Hari Ini</div><div id="sumTodayDone" class="summary-value">0</div></div></div>
+        <div class="col-6 col-md-4 col-xl-2"><div class="summary-card"><div class="summary-kicker">Pembelian Lengkap</div><div id="sumPurchaseDone" class="summary-value">0</div></div></div>
+        <div class="col-6 col-md-4 col-xl-2"><div class="summary-card"><div class="summary-kicker">Layak Tebus</div><div id="sumUnlocked" class="summary-value">0</div></div></div>
+        <div class="col-6 col-md-4 col-xl-2"><div class="summary-card"><div class="summary-kicker">Dah Tebus</div><div id="sumClaimed" class="summary-value">0</div></div></div>
+      </div>
+
+   <div class="row g-3 mt-1">
+  <div class="col-6 col-md-4 col-xl-2">
+    <div class="summary-card">
+      <div class="summary-kicker">Hari 59</div>
+      <div id="sum59" class="summary-value">0</div>
+    </div>
+  </div>
+
+  <div class="col-6 col-md-4 col-xl-2">
+    <div class="summary-card">
+      <div class="summary-kicker">Dah 60 Hari</div>
+      <div id="sum60" class="summary-value">0</div>
+    </div>
+  </div>
+
+  <div class="col-6 col-md-4 col-xl-2">
+    <div class="summary-card">
+      <div class="summary-kicker">Belum Beli</div>
+      <div id="sumNoPurchase" class="summary-value">0</div>
+    </div>
+  </div>
+
+  <div class="col-6 col-md-4 col-xl-2">
+    <div class="summary-card">
+      <div class="summary-kicker">Belum Log Masuk Hari Ini</div>
+      <div id="sumNotToday" class="summary-value">0</div>
+    </div>
+  </div>
+
+  <div class="col-6 col-md-4 col-xl-2">
+    <div class="summary-card">
+      <div class="summary-kicker">Redeem Pending</div>
+      <div id="sumRedeemPending" class="summary-value">0</div>
+    </div>
+  </div>
+
+  <div class="col-6 col-md-4 col-xl-2">
+    <div class="summary-card">
+      <div class="summary-kicker">Redeem Approved</div>
+      <div id="sumRedeemApproved" class="summary-value">0</div>
+    </div>
+  </div>
+
+  <div class="col-6 col-md-4 col-xl-2">
+    <div class="summary-card">
+      <div class="summary-kicker">Join Hari Ini</div>
+      <div id="sumJoinToday" class="summary-value">0</div>
+    </div>
+  </div>
+
+  <div class="col-6 col-md-4 col-xl-2">
+    <div class="summary-card">
+      <div class="summary-kicker">Capai 7 Hari</div>
+      <div id="sum7Days" class="summary-value">0</div>
+    </div>
+  </div>
+
+  <div class="col-6 col-md-4 col-xl-2">
+    <div class="summary-card">
+      <div class="summary-kicker">Capai 14 Hari</div>
+      <div id="sum14Days" class="summary-value">0</div>
+    </div>
+  </div>
+
+  <div class="col-6 col-md-4 col-xl-2">
+    <div class="summary-card">
+      <div class="summary-kicker">Capai 30 Hari</div>
+      <div id="sum30Days" class="summary-value">0</div>
+    </div>
+  </div>
+
+  <div class="col-6 col-md-4 col-xl-2">
+    <div class="summary-card">
+      <div class="summary-kicker">59 Hari Belum Beli</div>
+      <div id="sum59NoBuy" class="summary-value">0</div>
+    </div>
+  </div>
+
+  <div class="col-6 col-md-4 col-xl-2">
+    <div class="summary-card">
+      <div class="summary-kicker">Layak Tebus Belum Claim</div>
+      <div id="sumEligibleNotClaim" class="summary-value">0</div>
+    </div>
+  </div>
+
+  <div class="col-6 col-md-4 col-xl-2">
+    <div class="summary-card">
+      <div class="summary-kicker">Dah Claim Pending</div>
+      <div id="sumClaimPending" class="summary-value">0</div>
+    </div>
+  </div>
+
+  <div class="col-6 col-md-4 col-xl-2">
+    <div class="summary-card">
+      <div class="summary-kicker">Dah Claim Approved</div>
+      <div id="sumClaimApproved" class="summary-value">0</div>
+    </div>
+  </div>
+</div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-body">
+      <div class="section-title">Carian & Filter</div>
+
+      <div class="row g-2 align-items-end">
+        <div class="col-md-4">
+          <label class="form-label">Cari Nama / Phone / IC</label>
+          <input id="qSearch" class="form-control" placeholder="cth amir / 013 / 9209">
+        </div>
+
+        <div class="col-md-2">
+          <label class="form-label">Status Hari Ini</label>
+          <select id="fToday" class="form-select">
+            <option value="">Semua</option>
+            <option value="done">Dah log masuk</option>
+            <option value="not_done">Belum log masuk</option>
+          </select>
+        </div>
+
+        <div class="col-md-2">
+          <label class="form-label">Status Pembelian</label>
+          <select id="fPurchase" class="form-select">
+            <option value="">Semua</option>
+            <option value="done">Syarat pembelian lengkap</option>
+            <option value="not_done">Belum cukup pembelian</option>
+          </select>
+        </div>
+
+        <div class="col-md-2">
+          <label class="form-label">Status Tebus</label>
+          <select id="fRedeem" class="form-select">
+            <option value="">Semua</option>
+            <option value="unlocked">Layak tebus</option>
+            <option value="claimed">Dah tebus</option>
+            <option value="not_claimed">Belum tebus</option>
+          </select>
+        </div>
+
+        <div class="col-md-2">
+          <label class="form-label">Progress Hari</label>
+          <select id="fDays" class="form-select">
+  <option value="">Semua</option>
+  <option value="0_0">0 hari</option>
+  <option value="1_6">1 - 6</option>
+  <option value="7_13">7 - 13</option>
+  <option value="14_29">14 - 29</option>
+  <option value="30_58">30 - 58</option>
+  <option value="59_59">59</option>
+  <option value="60_999">60 ke atas</option>
+  <option value="30_999">30 ke atas</option>
+</select>
+        </div>
+
+        <div class="col-md-3">
+          <label class="form-label">Susun Ikut</label>
+          <select id="fSort" class="form-select">
+            <option value="days_desc">Hari tertinggi</option>
+            <option value="days_asc">Hari terendah</option>
+            <option value="joined_desc">Join terbaru</option>
+            <option value="joined_asc">Join terlama</option>
+            <option value="name_asc">Nama A-Z</option>
+          </select>
+        </div>
+
+        <div class="col-md-9 d-flex gap-2 flex-wrap">
+  <button class="btn btn-outline-secondary filter-chip" data-quick="all">Semua</button>
+  <button class="btn btn-outline-secondary filter-chip" data-quick="today_not_done">Belum log masuk hari ini</button>
+  <button class="btn btn-outline-secondary filter-chip" data-quick="purchase_not_done">Belum cukup pembelian</button>
+  <button class="btn btn-outline-secondary filter-chip" data-quick="59">Hari 59</button>
+  <button class="btn btn-outline-secondary filter-chip" data-quick="eligible">Layak tebus</button>
+  <button class="btn btn-outline-secondary filter-chip" data-quick="days_60_plus">60 hari ke atas</button>
+  <button class="btn btn-outline-secondary filter-chip" data-quick="days_30_plus">30 hari ke atas</button>
+</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-body">
+      <div class="d-flex justify-content-between align-items-center flex-wrap gap-2 mb-2">
+        <div class="section-title mb-0">Senarai Peserta</div>
+        <div class="small text-muted">Rekod: <span id="rowCount">0</span></div>
+      </div>
+
+      <div class="table-responsive sticky-table">
+        <table class="table table-sm align-middle table-xs">
+          <thead class="sticky-head">
+            <tr>
+              <th>Peserta</th>
+              <th>Join</th>
+              <th>Hari</th>
+              <th>Status Hari Ini</th>
+              <th>Pembelian</th>
+              <th>Status Misi</th>
+              <th>Last Check-In</th>
+              <th class="text-end">Tindakan</th>
+            </tr>
+          </thead>
+          <tbody id="missionRows">
+            <tr><td colspan="8">Memuatkan…</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<div class="modal fade" id="detailModal" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-xl modal-dialog-scrollable">
+    <div class="modal-content">
+      <div class="modal-header">
+        <div>
+          <h5 class="modal-title mb-0">Butiran Peserta Misi</h5>
+          <div id="detailSubhead" class="small text-muted">Memuatkan…</div>
+        </div>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Tutup"></button>
+      </div>
+
+      <div class="modal-body">
+        <div class="row g-3">
+          <div class="col-md-3"><div class="detail-box"><div class="detail-label">Nama</div><div id="dName" class="detail-value">-</div></div></div>
+          <div class="col-md-3"><div class="detail-box"><div class="detail-label">Phone</div><div id="dPhone" class="detail-value mono">-</div></div></div>
+          <div class="col-md-3"><div class="detail-box"><div class="detail-label">IC</div><div id="dIc" class="detail-value mono">-</div></div></div>
+          <div class="col-md-3"><div class="detail-box"><div class="detail-label">Join</div><div id="dJoinDate" class="detail-value">-</div></div></div>
+
+          <div class="col-md-3"><div class="detail-box"><div class="detail-label">Total Hari</div><div id="dDays" class="detail-value">-</div></div></div>
+          <div class="col-md-3"><div class="detail-box"><div class="detail-label">Hari Ini</div><div id="dToday" class="detail-value">-</div></div></div>
+          <div class="col-md-3"><div class="detail-box"><div class="detail-label">Pembelian</div><div id="dPurchase" class="detail-value">-</div></div></div>
+          <div class="col-md-3"><div class="detail-box"><div class="detail-label">Status Misi</div><div id="dMissionStatus" class="detail-value">-</div></div></div>
+
+          <div class="col-12">
+            <div class="detail-box">
+              <div class="detail-label">Progress</div>
+              <div class="d-flex justify-content-between align-items-center mb-2">
+                <div id="dProgressText" class="detail-value">0/60 hari</div>
+                <div id="dProgressNote" class="small text-muted">-</div>
+              </div>
+              <div class="progress-thin">
+                <div id="dProgressBar" style="width:0%"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <hr>
+
+        <div class="row g-3">
+          <div class="col-lg-6">
+            <div class="detail-box">
+              <div class="section-title">Log Harian</div>
+              <div class="table-responsive">
+                <table class="table table-sm align-middle table-xs">
+                  <thead>
+                    <tr>
+                      <th>Cycle Date</th>
+                      <th>Created At</th>
+                    </tr>
+                  </thead>
+                  <tbody id="dLogs">
+                    <tr><td colspan="2">Memuatkan…</td></tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+
+          <div class="col-lg-6">
+            <div class="detail-box">
+              <div class="section-title">Rekod Tebusan</div>
+              <div class="table-responsive">
+                <table class="table table-sm align-middle table-xs">
+                  <thead>
+                    <tr>
+                      <th>Status</th>
+                      <th>Reward</th>
+                      <th>Created</th>
+                    </tr>
+                  </thead>
+                  <tbody id="dRedeems">
+                    <tr><td colspan="3">Memuatkan…</td></tr>
+                  </tbody>
+                </table>
+              </div>
+              <div class="mt-2">
+                <a href="admin-point.html" class="btn btn-outline-primary btn-sm">Buka Admin Point</a>
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+      <div class="modal-footer">
+        <button id="btnDetailReload" type="button" class="btn btn-primary">Refresh Butiran</button>
+        <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Tutup</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="auth.js?v=13.1"></script>
+<script src="admin-guard.js?v=1"></script>
+
+<script>
+const SB_URL = "https://dduizetstqqjrpsezbpi.supabase.co";
+const SB_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRkdWl6ZXRzdHFxanJwc2V6YnBpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTg3MzI0ODQsImV4cCI6MjA3NDMwODQ4NH0.CrlHXrmHtKgR9qc2192U6quRb5lpFEeOSgwG0Lb8KRM";
+window.sb = window.sb || window.supabase.createClient(SB_URL, SB_KEY);
+const sb = window.sb;
+
+const $ = id => document.getElementById(id);
+const MY = "ms-MY";
+let ALL_ROWS = [];
+let CURRENT_DETAIL = null;
+let DETAIL_MODAL = null;
+
+function dt(x){
+  try{
+    return new Date(x).toLocaleString(MY,{dateStyle:"medium",timeStyle:"short",hour12:true});
+  }catch{
+    return x || "-";
+  }
+}
+function dd(x){
+  try{
+    return new Date(x).toLocaleDateString(MY,{dateStyle:"medium"});
+  }catch{
+    return x || "-";
+  }
+}
+function esc(s){
+  return String(s ?? "")
+    .replaceAll("&","&amp;")
+    .replaceAll("<","&lt;")
+    .replaceAll(">","&gt;")
+    .replaceAll('"',"&quot;");
+}
+function n(v){ return Number(v || 0); }
+
+function missionCycleDateNow(){
+  const now = new Date();
+  const shifted = new Date(now.getTime() - (10 * 60 * 60 * 1000));
+  const y = shifted.getFullYear();
+  const m = String(shifted.getMonth() + 1).padStart(2, "0");
+  const d = String(shifted.getDate()).padStart(2, "0");
+  return `${y}-${m}-${d}`;
+}
+
+function maskedIc(ic){
+  const s = String(ic || "").replace(/\D+/g,"");
+  if(!s) return "-";
+  if(s.length <= 4) return s;
+  return `${s.slice(0,2)}******${s.slice(-4)}`;
+}
+
+function normalizedPhone(v){
+  let p = String(v || "").trim();
+  if(!p) return "-";
+  if(p.startsWith("+60")) return p;
+  if(p.startsWith("60")) return "+" + p;
+  if(p.startsWith("0")) return "+60" + p.slice(1);
+  return p;
+}
+
+function statusBadgeHtml(text, cls="badge-soft-dark"){
+  return `<span class="stat-pill ${cls}">${text}</span>`;
+}
+
+function renderSummaryBox(s){
+  $("sumJoined").textContent = n(s.total_join);
+  $("sumActive").textContent = n(s.aktif_progress);
+  $("sumTodayDone").textContent = n(s.dah_log_masuk_hari_ini);
+  $("sumPurchaseDone").textContent = n(s.pembelian_lengkap);
+  $("sumUnlocked").textContent = n(s.layak_tebus);
+  $("sumClaimed").textContent = n(s.dah_tebus);
+
+  $("sum59").textContent = n(s.hari_59);
+  $("sum60").textContent = n(s.dah_60_hari);
+  $("sumNoPurchase").textContent = n(s.belum_beli);
+  $("sumNotToday").textContent = n(s.belum_log_masuk_hari_ini);
+  $("sumRedeemPending").textContent = n(s.redeem_pending);
+  $("sumRedeemApproved").textContent = n(s.redeem_approved);
+
+  if ($("sumJoinToday")) $("sumJoinToday").textContent = n(s.join_hari_ini);
+  if ($("sum7Days")) $("sum7Days").textContent = n(s.capai_7_hari);
+  if ($("sum14Days")) $("sum14Days").textContent = n(s.capai_14_hari);
+  if ($("sum30Days")) $("sum30Days").textContent = n(s.capai_30_hari);
+  if ($("sum59NoBuy")) $("sum59NoBuy").textContent = n(s.hari_59_belum_beli);
+  if ($("sumEligibleNotClaim")) $("sumEligibleNotClaim").textContent = n(s.layak_tebus_belum_claim);
+  if ($("sumClaimPending")) $("sumClaimPending").textContent = n(s.dah_claim_pending);
+  if ($("sumClaimApproved")) $("sumClaimApproved").textContent = n(s.dah_claim_approved);
+}
+function missionStatusClass(status){
+  const s = String(status || "").toUpperCase();
+  if (s === "DAH_TEBUS") return "badge-soft-success";
+  if (s === "LAYAK_TEBUS") return "badge-soft-warning";
+  if (s === "SEDANG_KUMPUL_HARI") return "badge-soft-success";
+  if (s === "BELUM_CUKUP_PEMBELIAN") return "badge-soft-danger";
+  return "badge-soft-dark";
+}
+
+function missionStatusLabel(status){
+  const s = String(status || "").toUpperCase();
+  if (s === "DAH_TEBUS") return "Dah Tebus";
+  if (s === "LAYAK_TEBUS") return "Layak Tebus";
+  if (s === "SEDANG_KUMPUL_HARI") return "Sedang Kumpul Hari";
+  if (s === "BELUM_CUKUP_PEMBELIAN") return "Belum Cukup Pembelian";
+  if (s === "BARU_JOIN") return "Baru Join";
+  return s || "-";
+}
+
+function applyFilters(rows){
+  const q = String($("qSearch").value || "").trim().toLowerCase();
+  const fToday = $("fToday").value;
+  const fPurchase = $("fPurchase").value;
+  const fRedeem = $("fRedeem").value;
+  const fDays = $("fDays").value;
+  const fSort = $("fSort").value;
+
+  let out = [...rows];
+
+  if (q){
+    out = out.filter(r => {
+      const blob = [
+        r.customer_name,
+        r.phone,
+        r.ic,
+        r.user_id,
+        r.customer_id
+      ].map(x => String(x || "").toLowerCase()).join(" || ");
+      return blob.includes(q);
+    });
+  }
+
+  if (fToday){
+    out = out.filter(r => {
+      const done = String(r.today_status || "").toUpperCase() === "DAH_LOG_MASUK";
+      return fToday === "done" ? done : !done;
+    });
+  }
+
+  if (fPurchase){
+    out = out.filter(r => {
+      const done = String(r.purchase_status || "").toUpperCase() === "LENGKAP";
+      return fPurchase === "done" ? done : !done;
+    });
+  }
+
+  if (fRedeem){
+    out = out.filter(r => {
+      const unlocked = String(r.mission_status || "").toUpperCase() === "LAYAK_TEBUS";
+      const claimed = !!r.reward_claimed;
+      if (fRedeem === "unlocked") return unlocked;
+      if (fRedeem === "claimed") return claimed;
+      if (fRedeem === "not_claimed") return !claimed;
+      return true;
+    });
+  }
+
+  if (fDays){
+    const [minS, maxS] = fDays.split("_");
+    const min = Number(minS || 0);
+    const max = Number(maxS || 999999);
+    out = out.filter(r => {
+      const days = n(r.total_days);
+      return days >= min && days <= max;
+    });
+  }
+
+  if (fSort === "days_desc"){
+    out.sort((a,b)=> n(b.total_days)-n(a.total_days) || new Date(b.joined_at||0)-new Date(a.joined_at||0));
+  } else if (fSort === "days_asc"){
+    out.sort((a,b)=> n(a.total_days)-n(b.total_days) || new Date(a.joined_at||0)-new Date(b.joined_at||0));
+  } else if (fSort === "joined_desc"){
+    out.sort((a,b)=> new Date(b.joined_at||0)-new Date(a.joined_at||0));
+  } else if (fSort === "joined_asc"){
+    out.sort((a,b)=> new Date(a.joined_at||0)-new Date(b.joined_at||0));
+  } else if (fSort === "name_asc"){
+    out.sort((a,b)=> String(a.customer_name||"").localeCompare(String(b.customer_name||""),"ms"));
+  }
+
+  return out;
+}
+
+function renderRows(){
+  const rows = applyFilters(ALL_ROWS);
+  const tbody = $("missionRows");
+
+  $("rowCount").textContent = rows.length;
+
+  if (!rows.length){
+    tbody.innerHTML = `<tr><td colspan="8">Tiada rekod padan.</td></tr>`;
+    return;
+  }
+
+  tbody.innerHTML = rows.map(r=>{
+    const days = n(r.total_days);
+    const progressPct = Math.max(0, Math.min(100, (days/60)*100));
+
+    const todayDone = String(r.today_status || "").toUpperCase() === "DAH_LOG_MASUK";
+    const todayText = todayDone ? "Dah log masuk" : "Belum log masuk";
+    const todayCls = todayDone ? "badge-soft-success" : "badge-soft-danger";
+
+    const purchaseDone = String(r.purchase_status || "").toUpperCase() === "LENGKAP";
+    const purchaseText = purchaseDone ? "Lengkap" : "Belum cukup";
+    const purchaseCls = purchaseDone ? "badge-soft-success" : "badge-soft-danger";
+
+    const missionText = missionStatusLabel(r.mission_status);
+    const missionCls = missionStatusClass(r.mission_status);
+
+    return `
+      <tr class="click-row" data-user-id="${esc(r.user_id)}">
+        <td>
+          <div class="fw-bold">${esc(r.customer_name || "-")}</div>
+          <div class="mini-muted">${esc(normalizedPhone(r.phone))}</div>
+          <div class="mini-muted mono">${esc(maskedIc(r.ic))}</div>
+        </td>
+        <td>
+          <div>${esc(dd(r.joined_at))}</div>
+          <div class="mini-muted">${esc(dt(r.joined_at))}</div>
+        </td>
+        <td style="min-width:150px">
+          <div class="fw-bold">${days}/60</div>
+          <div class="progress-thin mt-1"><div style="width:${progressPct}%"></div></div>
+        </td>
+        <td>${statusBadgeHtml(todayText, todayCls)}</td>
+        <td>${statusBadgeHtml(purchaseText, purchaseCls)}</td>
+        <td>${statusBadgeHtml(missionText, missionCls)}</td>
+        <td>
+          <div>${esc(r.last_checkin_cycle_date || "-")}</div>
+          <div class="mini-muted">${esc(dt(r.last_checkin_at || r.updated_at || r.joined_at))}</div>
+        </td>
+        <td class="text-end">
+          <button class="btn btn-sm btn-outline-primary" data-open="${esc(r.user_id)}">Butiran</button>
+        </td>
+      </tr>
+    `;
+  }).join("");
+
+  [...tbody.querySelectorAll("button[data-open]")].forEach(btn=>{
+    btn.onclick = (e)=>{
+      e.stopPropagation();
+      openDetail(btn.getAttribute("data-open"));
+    };
+  });
+
+  [...tbody.querySelectorAll("tr[data-user-id]")].forEach(tr=>{
+    tr.onclick = ()=> openDetail(tr.getAttribute("data-user-id"));
+  });
+}
+
+async function loadAllData(){
+  const summaryRes = await sb
+    .from("admin_mission_summary_advanced_v1")
+    .select("*")
+    .maybeSingle();
+
+  if (summaryRes.error){
+    console.warn("[admin-misi] summary advanced error:", summaryRes.error);
+  } else if (summaryRes.data){
+    renderSummaryBox(summaryRes.data);
+  }
+
+  const listRes = await sb
+    .from("admin_mission_list_v1")
+    .select("*")
+    .order("joined_at", { ascending:false });
+
+  if (listRes.error){
+    $("missionRows").innerHTML = `<tr><td colspan="8">Ralat muat peserta: ${esc(listRes.error.message)}</td></tr>`;
+    return;
+  }
+
+  ALL_ROWS = Array.isArray(listRes.data) ? listRes.data : [];
+  renderRows();
+}
+async function openDetail(userId){
+  CURRENT_DETAIL = userId;
+
+  const row = ALL_ROWS.find(x => String(x.user_id) === String(userId));
+  if (!row) return;
+
+  if (!DETAIL_MODAL){
+    DETAIL_MODAL = new bootstrap.Modal(document.getElementById("detailModal"));
+  }
+
+  $("detailSubhead").textContent = `User ID: ${userId}`;
+  $("dName").textContent = row.customer_name || "-";
+  $("dPhone").textContent = normalizedPhone(row.phone);
+  $("dIc").textContent = maskedIc(row.ic);
+  $("dJoinDate").textContent = dt(row.joined_at);
+  $("dDays").textContent = `${n(row.total_days)}/60`;
+
+  const todayDone = String(row.today_status || "").toUpperCase() === "DAH_LOG_MASUK";
+  $("dToday").textContent = todayDone ? "Dah log masuk hari ini" : "Belum log masuk hari ini";
+
+  const purchaseDone = String(row.purchase_status || "").toUpperCase() === "LENGKAP";
+  $("dPurchase").textContent = purchaseDone ? "Syarat pembelian lengkap" : "Belum cukup pembelian";
+
+  $("dMissionStatus").textContent = missionStatusLabel(row.mission_status);
+
+  const pct = Math.max(0, Math.min(100, (n(row.total_days)/60)*100));
+  $("dProgressText").textContent = `${n(row.total_days)}/60 hari`;
+  $("dProgressNote").textContent = row.last_checkin_cycle_date ? `Last cycle: ${row.last_checkin_cycle_date}` : "-";
+  $("dProgressBar").style.width = pct + "%";
+
+  $("dLogs").innerHTML = `<tr><td colspan="2">Memuatkan…</td></tr>`;
+  const logsRes = await sb
+  .from("admin_mission_logs_v1")
+  .select("cycle_date,created_at")
+  .eq("user_id", userId)
+  .order("cycle_date", { ascending:false });
+
+  if (logsRes.error){
+    $("dLogs").innerHTML = `<tr><td colspan="2">Ralat: ${esc(logsRes.error.message)}</td></tr>`;
+  } else {
+    const logs = Array.isArray(logsRes.data) ? logsRes.data : [];
+    $("dLogs").innerHTML = logs.length
+      ? logs.map(l=>`
+          <tr>
+            <td>${esc(l.cycle_date || "-")}</td>
+            <td>${esc(dt(l.created_at))}</td>
+          </tr>
+        `).join("")
+      : `<tr><td colspan="2">Tiada log.</td></tr>`;
+  }
+
+  $("dRedeems").innerHTML = `<tr><td colspan="3">Memuatkan…</td></tr>`;
+ const redeemRes = await sb
+  .from("admin_mission_redeems_v1")
+  .select("*")
+  .order("created_at",{ ascending:false });
+
+  if (redeemRes.error){
+    $("dRedeems").innerHTML = `<tr><td colspan="3">Ralat: ${esc(redeemRes.error.message)}</td></tr>`;
+  } else {
+    const phoneKey = String(row.phone || "").replace(/\D+/g,"");
+    const items = (redeemRes.data || []).filter(x=>{
+      const xPhone = String(x.phone || "").replace(/\D+/g,"");
+      return (row.customer_id && String(x.customer_id || "") === String(row.customer_id))
+        || (phoneKey && xPhone === phoneKey);
+    });
+
+    $("dRedeems").innerHTML = items.length
+      ? items.map(x=>`
+          <tr>
+            <td>${esc(x.status || "-")}</td>
+            <td>${esc(x.reward_name || x.reward_code || "-")}</td>
+            <td>${esc(dt(x.created_at))}</td>
+          </tr>
+        `).join("")
+      : `<tr><td colspan="3">Tiada rekod tebusan.</td></tr>`;
+  }
+
+  DETAIL_MODAL.show();
+}
+
+function bindFilters(){
+  ["qSearch","fToday","fPurchase","fRedeem","fDays","fSort"].forEach(id=>{
+    $(id).addEventListener("input", renderRows);
+    $(id).addEventListener("change", renderRows);
+  });
+
+[...document.querySelectorAll("[data-quick]")].forEach(btn=>{
+  btn.onclick = ()=>{
+    const q = btn.getAttribute("data-quick");
+
+    $("fToday").value = "";
+    $("fPurchase").value = "";
+    $("fRedeem").value = "";
+    $("fDays").value = "";
+    $("qSearch").value = "";
+
+    if (q === "today_not_done") $("fToday").value = "not_done";
+    else if (q === "purchase_not_done") $("fPurchase").value = "not_done";
+    else if (q === "59") $("fDays").value = "59_59";
+    else if (q === "eligible") $("fRedeem").value = "unlocked";
+    else if (q === "days_60_plus") $("fDays").value = "60_999";
+    else if (q === "days_30_plus") $("fDays").value = "30_999";
+
+    renderRows();
+  };
+});
+  $("btnReloadAll").onclick = async ()=>{
+    await loadAllData();
+    if (CURRENT_DETAIL) await openDetail(CURRENT_DETAIL);
+  };
+
+  $("btnDetailReload").onclick = async ()=>{
+    if (CURRENT_DETAIL) await openDetail(CURRENT_DETAIL);
+  };
+}
+
+(async ()=>{
+  bindFilters();
+
+  const pill = document.getElementById("authStatus");
+  const set = (t)=> pill && (pill.textContent = t);
+
+  const ok = await adminGuard.require({
+    onChecking: ()=> set("Mengesahkan akses…"),
+    onDenied: ()=> set("Akses ditolak"),
+    onAllowed: (phone)=> set("Log masuk (admin) — " + phone)
+  });
+
+  if (!ok) return;
+
+  await loadAllData();
+})();
+</script>
+</body>
+</html>

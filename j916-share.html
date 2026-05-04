@@ -1,0 +1,111 @@
+<!doctype html>
+<html lang="ms">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+
+  <title>Barang Kemas 916 — Emas Amir</title>
+
+  <meta name="description" content="Lihat koleksi Barang Kemas 916 di Emas Amir.">
+
+  <!-- Default preview kalau crawler tak dapat data -->
+  <meta property="og:type" content="website">
+  <meta property="og:site_name" content="Emas Amir">
+  <meta property="og:title" content="Barang Kemas 916 — Emas Amir">
+  <meta property="og:description" content="Lihat koleksi Barang Kemas 916 di Emas Amir.">
+  <meta property="og:url" content="https://emasamir.app/j916-share.html">
+  <meta property="og:image" content="https://emasamir.app/icons/icon-512.png">
+  <meta property="og:image:secure_url" content="https://emasamir.app/icons/icon-512.png">
+  <meta property="og:image:type" content="image/png">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
+
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="Barang Kemas 916 — Emas Amir">
+  <meta name="twitter:description" content="Lihat koleksi Barang Kemas 916 di Emas Amir.">
+  <meta name="twitter:image" content="https://emasamir.app/icons/icon-512.png">
+
+  <style>
+    body{
+      margin:0;
+      min-height:100vh;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      background:#f6f7f9;
+      font-family:system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+      color:#111827;
+      padding:20px;
+    }
+    .card{
+      width:100%;
+      max-width:420px;
+      background:#fff;
+      border:1px solid #e5e7eb;
+      border-radius:22px;
+      padding:22px;
+      text-align:center;
+      box-shadow:0 18px 45px rgba(15,23,42,.12);
+    }
+    .logo{
+      width:74px;
+      height:74px;
+      border-radius:22px;
+      object-fit:cover;
+      margin-bottom:12px;
+    }
+    .title{
+      font-weight:900;
+      font-size:22px;
+      margin-bottom:6px;
+    }
+    .text{
+      color:#6b7280;
+      font-size:14px;
+      margin-bottom:16px;
+    }
+    .btn{
+      display:inline-block;
+      padding:12px 18px;
+      border-radius:999px;
+      background:#111827;
+      color:#fff;
+      text-decoration:none;
+      font-weight:800;
+    }
+  </style>
+</head>
+
+<body>
+  <div class="card">
+    <img class="logo" src="/icons/icon-512.png" alt="Emas Amir">
+    <div class="title">Barang Kemas 916</div>
+    <div class="text">Sedang buka barang pilihan di Emas Amir…</div>
+    <a id="openBtn" class="btn" href="/j916.html">Buka Sekarang</a>
+  </div>
+
+<script>
+(function(){
+  const q = new URLSearchParams(location.search);
+
+  const design = q.get("design") || "";
+  const product = q.get("product") || q.get("id") || "";
+
+  let target = "/j916.html";
+
+  if (product) {
+    target += "?product=" + encodeURIComponent(product);
+  } else if (design) {
+    target += "?design=" + encodeURIComponent(design);
+  }
+
+  const btn = document.getElementById("openBtn");
+  if (btn) btn.href = target;
+
+  setTimeout(()=>{
+    location.replace(target);
+  }, 650);
+})();
+</script>
+</body>
+</html>

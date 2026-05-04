@@ -1,80 +1,498 @@
 :root{
+  --bg:#f6f7f9;
+  --card:#ffffff;
   --muted:#6c757d;
-  --chip:#e9ecef;
-  --border:#eee;
+  --text:#212529;
+  --chip:#eef1f4;
+  --border:#e9ecef;
+  --border-soft:#eef1f4;
+  --shadow:0 1px 2px rgba(16,24,40,.04);
 }
 
-body{background:#fff}
-.muted{color:var(--muted)}
+*{box-sizing:border-box}
 
-/* ===== Top actions (consisten dgn index/tabung) ===== */
-.top-actions{
-  max-width:1140px;margin:12px auto 0;padding:0 12px;
-  display:flex;gap:8px;justify-content:flex-end;flex-wrap:wrap
+body{
+  margin:0;
+  background:var(--bg);
+  color:var(--text);
 }
-/* pill status "Log masuk sebagai ..." */
+
+.muted{
+  color:var(--muted)!important;
+}
+
+.mono{
+  font-family:ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+}
+
+/* ===== Swipe page shell ===== */
+.page-shell{
+  min-height:100vh;
+  background:var(--bg);
+  transform:translateX(0);
+  transition:transform .22s ease-out;
+  will-change:transform;
+}
+
+.page-shell.dragging{
+  transition:none;
+}
+
+body.swipe-peek{
+  background:#e5e7eb;
+}
+
+/* ===== Wrapper ===== */
+.wrap{
+  max-width:980px;
+  margin:16px auto 48px;
+  padding:12px;
+}
+
+/* ===== Reusable UI ===== */
+.box{
+  background:var(--card);
+  border:1px solid var(--border);
+  border-radius:16px;
+  padding:16px;
+  box-shadow:var(--shadow);
+}
+
+.box + .box{
+  margin-top:14px;
+}
+
 .pill{
-  display:inline-block;background:#f8f9fa;border:1px solid #e9ecef;
-  border-radius:999px;padding:2px 10px;font-size:12px
+  display:inline-flex;
+  align-items:center;
+  gap:8px;
+  padding:6px 10px;
+  border-radius:999px;
+  background:var(--chip);
+  font-size:12px;
+  color:#495057;
+  border:1px solid transparent;
 }
-.pill-admin{background:#e8f7ee;border-color:#c9ecd8;color:#157347;font-weight:600}
-/* butang kecil atas dibulatkan */
-.top-actions .btn{border-radius:12px}
-/* optional: gaya chip untuk link/penapis ringkas */
-.btn-chip{border-radius:999px;padding:.35rem .9rem}
 
-/* ===== Page wrapper ===== */
-.page-wrap{max-width:1140px;margin:12px auto 48px;padding:0 12px}
-.section-card{background:#fff;border:1px solid var(--border);border-radius:14px;padding:14px}
-.section-card+.section-card{margin-top:14px}
+.pill-admin{
+  background:#e8f7ee;
+  border-color:#c9ecd8;
+  color:#157347;
+  font-weight:700;
+}
 
-/* ===== Table ===== */
-table.tb{width:100%;border-collapse:collapse}
-table.tb th,table.tb td{padding:12px;border-bottom:1px solid var(--border);vertical-align:middle}
-table.tb thead th{background:#f7f7f7;font-weight:700}
-.right{text-align:right}
-.clickable{cursor:pointer}
+.icon-btn{
+  border-radius:12px;
+}
 
-/* =========== Modal Design =========== */
+.btn-chip{
+  border-radius:999px;
+  padding:.45rem .95rem;
+}
+
+.btn,
+.form-control,
+.form-select{
+  border-radius:12px;
+}
+
+.btn-wide{
+  min-width:220px;
+}
+
+/* ===== Topbar ===== */
+.topbar{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:10px;
+  flex-wrap:wrap;
+  margin-bottom:14px;
+}
+
+.top-left{
+  display:flex;
+  align-items:center;
+  gap:10px;
+  flex-wrap:wrap;
+}
+
+.brand-title{
+  font-weight:900;
+  font-size:18px;
+  letter-spacing:.2px;
+}
+
+.xsmall{
+  font-size:.8rem;
+}
+
+/* ===== Summary card ===== */
+.summary-head{
+  display:flex;
+  justify-content:space-between;
+  align-items:flex-start;
+  gap:12px;
+  flex-wrap:wrap;
+}
+
+.price-lg{
+  font-size:28px;
+  font-weight:800;
+  line-height:1.05;
+}
+
+.price-note{
+  color:#6b7280;
+  font-size:12px;
+}
+
+hr.my-3{
+  border:0;
+  border-top:1px dashed #e5e7eb;
+  opacity:1;
+}
+
+/* ===== Action List ===== */
+.action-list{
+  display:grid;
+  gap:10px;
+}
+
+.action-item{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:10px;
+  padding:14px;
+  border:1px solid var(--border);
+  border-radius:14px;
+  background:#fff;
+  cursor:pointer;
+  transition:transform .06s ease, box-shadow .06s ease, border-color .06s ease;
+}
+
+.action-item:hover{
+  border-color:#dde3ea;
+}
+
+.action-item:active{
+  transform:scale(.995);
+}
+
+.action-left{
+  display:flex;
+  align-items:center;
+  gap:12px;
+  min-width:0;
+}
+
+.action-ico{
+  width:38px;
+  height:38px;
+  border-radius:12px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  background:#f3f4f6;
+  font-size:18px;
+  flex:0 0 38px;
+}
+
+.action-title{
+  font-weight:800;
+  line-height:1.1;
+}
+
+.action-sub{
+  font-size:12px;
+  color:#6b7280;
+  margin-top:2px;
+}
+
+.chev{
+  color:#9ca3af;
+  font-weight:700;
+  font-size:20px;
+  line-height:1;
+}
+
+/* ===== Panels ===== */
+.panel{
+  border:1px solid var(--border);
+  border-radius:16px;
+  background:#fff;
+  overflow:hidden;
+}
+
+.panel .panel-h{
+  padding:14px;
+  border-bottom:1px solid var(--border-soft);
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:10px;
+}
+
+.panel .panel-b{
+  padding:14px;
+}
+
+/* ===== Product table ===== */
+.table-wrap{
+  border:1px solid var(--border);
+  border-radius:14px;
+  overflow:hidden;
+  background:#fff;
+}
+
+table.tb{
+  width:100%;
+  border-collapse:collapse;
+  margin:0;
+}
+
+table.tb th,
+table.tb td{
+  padding:14px 12px;
+  border-bottom:1px solid var(--border-soft);
+  vertical-align:middle;
+}
+
+table.tb thead th{
+  background:#f8f9fb;
+  font-weight:800;
+  color:#1f2937;
+}
+
+table.tb tbody tr:last-child td{
+  border-bottom:0;
+}
+
+.right{
+  text-align:right;
+}
+
+.clickable{
+  cursor:pointer;
+}
+
+.clickable:hover{
+  background:#fafbfc;
+}
+
+.weight-link{
+  font-weight:800;
+  color:#212529;
+  text-decoration:none;
+}
+
+.weight-link:hover{
+  text-decoration:underline;
+}
+
+/* ===== Modal design ===== */
 .preview-wrap{
-  width:100%;border:1px solid var(--border);border-radius:12px;padding:10px;
-  display:flex;flex-direction:column;gap:6px;align-items:center;justify-content:center;
-  background:#fafafa
+  width:100%;
+  border:1px solid var(--border);
+  border-radius:14px;
+  padding:10px;
+  display:flex;
+  flex-direction:column;
+  gap:6px;
+  align-items:center;
+  justify-content:center;
+  background:#fafafa;
 }
-.preview-wrap img{
-  max-width:100%;height:auto;display:block;border-radius:10px;object-fit:contain;
-}
-.big-name{font-weight:600}
 
-.design-grid{display:grid;gap:10px;grid-template-columns:repeat(3,minmax(0,1fr))}
-@media(min-width:992px){ .design-grid{ grid-template-columns:repeat(4,minmax(0,1fr)); } }
+.preview-wrap img,
+#bigPreview{
+  max-width:100%;
+  height:auto;
+  display:block;
+  border-radius:10px;
+  object-fit:contain;
+}
+
+.big-name{
+  font-weight:700;
+}
+
+.design-grid{
+  display:grid;
+  gap:10px;
+  grid-template-columns:repeat(2,minmax(0,1fr));
+}
 
 .design-thumb{
-  border:1px solid var(--border);border-radius:12px;padding:8px;
-  display:flex;flex-direction:column;gap:6px;align-items:center;cursor:pointer;background:#fff;
-  transition:box-shadow .15s,border-color .15s,transform .05s;
+  border:1px solid var(--border);
+  border-radius:12px;
+  padding:8px;
+  display:flex;
+  flex-direction:column;
+  gap:6px;
+  align-items:center;
+  cursor:pointer;
+  background:#fff;
+  transition:box-shadow .15s, border-color .15s, transform .05s;
 }
-.design-thumb:hover{transform:translateY(-1px)}
-.design-thumb.selected{border-color:#0d6efd;box-shadow:0 0 0 2px rgba(13,110,253,.15)}
 
-.thumb-img{width:100%;height:110px;border-radius:8px;object-fit:cover;background:#f4f4f4}
-.thumb-name{font-size:13px;text-align:center}
+.design-thumb:hover{
+  transform:translateY(-1px);
+}
 
-/* Ringkas */
-.summary b{font-size:15px}
+.design-thumb.selected{
+  border-color:#0d6efd;
+  box-shadow:0 0 0 2px rgba(13,110,253,.15);
+}
 
-/* =========== Modal Sahkan Pembelian =========== */
-.payment-note{color:#198754;font-weight:600}
-.price-line{display:flex;justify-content:space-between;align-items:center}
-.price-line b{font-size:1rem}
-.modal-footer{flex-wrap:wrap;gap:.5rem}
-.btn-wide{min-width:220px}
-@media (max-width:576px){ .btn-wide{min-width:100%} }
+.thumb-img{
+  width:100%;
+  height:110px;
+  border-radius:8px;
+  object-fit:cover;
+  background:#f4f4f4;
+}
 
-.ship-box{border:1px solid var(--border);border-radius:12px;padding:12px;background:#fff}
-.ship-box .form-check{margin-right:10px}
+.thumb-name{
+  font-size:13px;
+  text-align:center;
+}
 
-.method-box{border:1px solid var(--border);border-radius:12px;padding:12px;background:#fff}
-.method-box .form-check{margin-right:10px}
+/* ===== Summary / pricing ===== */
+.summary b{
+  font-size:15px;
+}
 
-.coupon-box{border:1px dashed #cfcfcf;border-radius:10px;padding:10px;background:#fcfcfc}
+.payment-note{
+  color:#198754;
+  font-weight:700;
+}
+
+.price-line{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  gap:10px;
+}
+
+.price-line b{
+  font-size:1rem;
+}
+
+.modal-footer{
+  flex-wrap:wrap;
+  gap:.5rem;
+}
+
+/* ===== Shipping / payment / coupon ===== */
+.ship-box,
+.method-box{
+  border:1px solid var(--border);
+  border-radius:14px;
+  padding:12px;
+  background:#fff;
+}
+
+.ship-box .form-check,
+.method-box .form-check{
+  margin-right:10px;
+}
+
+.coupon-box{
+  border:1px dashed #cfcfcf;
+  border-radius:12px;
+  padding:12px;
+  background:#fcfcfc;
+}
+
+/* ===== Offcanvas ===== */
+.offcanvas .btn{
+  border-radius:12px;
+}
+
+/* ===== Modal safe area ===== */
+#modalDesign .modal-dialog{
+  margin-top:calc(env(safe-area-inset-top, 0px) + 18px);
+  margin-bottom:calc(env(safe-area-inset-bottom, 0px) + 12px);
+}
+
+#modalDesign .modal-content{
+  border-radius:18px;
+  overflow:hidden;
+}
+
+#modalDesign .modal-header{
+  padding-top:1rem;
+  padding-bottom:.9rem;
+}
+
+/* ===== Responsive ===== */
+@media (min-width:768px){
+  .design-grid{
+    grid-template-columns:repeat(3,minmax(0,1fr));
+  }
+}
+
+@media (min-width:992px){
+  .design-grid{
+    grid-template-columns:repeat(4,minmax(0,1fr));
+  }
+}
+
+@media (max-width:767.98px){
+  .wrap{
+    padding:10px;
+    margin-top:10px;
+    padding-top:calc(env(safe-area-inset-top, 0px) + 12px);
+  }
+
+  .topbar{
+    align-items:flex-start;
+  }
+
+  .top-left{
+    width:100%;
+    align-items:flex-start;
+  }
+
+  .topbar > .d-flex{
+    width:100%;
+  }
+
+  .topbar > .d-flex .btn{
+    flex:1 1 auto;
+  }
+
+  .summary-head .price-lg{
+    font-size:25px;
+  }
+
+  table.tb th,
+  table.tb td{
+    padding:12px 10px;
+  }
+}
+
+@media (max-width:576px){
+  .btn-wide{
+    min-width:100%;
+  }
+
+  #modalDesign .modal-dialog{
+    margin-top:calc(env(safe-area-inset-top, 0px) + 22px);
+    margin-left:10px;
+    margin-right:10px;
+    margin-bottom:calc(env(safe-area-inset-bottom, 0px) + 10px);
+  }
+
+  #modalDesign .modal-body{
+    padding-top:12px;
+  }
+
+  #modalDesign .modal-header .modal-title{
+    font-size:1.05rem;
+    line-height:1.25;
+    padding-right:28px;
+  }
+}

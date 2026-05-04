@@ -2,116 +2,516 @@
 <html lang="ms">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<link rel="stylesheet" href="/global.css">
 <title>Jual Emas — Emas Amir</title>
 <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+
 <style>
-  :root{ --border:#e9ecef; --muted:#6c757d; }
-  body{background:#fafafa}
-  .page-wrap{max-width:1000px;margin:18px auto 48px;padding:0 12px}
-  .section-card{background:#fff;border:1px solid var(--border);border-radius:14px;padding:18px}
-  .top-actions{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-bottom:12px}
-  .btn-chip{border-radius:999px;padding:.35rem .9rem}
-  .pill{display:inline-block;background:#f3f4f6;border:1px solid #e5e7eb;border-radius:999px;padding:4px 10px;font-size:12px}
-  .muted{color:var(--muted)}
-  .price-lg{font-size:2rem;font-weight:800}
-  .table-sm td,.table-sm th{padding:.6rem .6rem}
-  .hint{font-size:.9rem;color:#0d6efd}
+  :root{
+    --bg:#f6f7f9;
+    --card:#ffffff;
+    --muted:#6c757d;
+    --text:#212529;
+    --chip:#eef1f4;
+    --border:#e9ecef;
+    --border-soft:#eef1f4;
+    --shadow:0 1px 2px rgba(16,24,40,.04);
+  }
+
+  *{box-sizing:border-box}
+
+  body{
+    margin:0;
+    background:var(--bg);
+    color:var(--text);
+  }
+
+  .page-wrap{
+    max-width:980px;
+    margin:16px auto 48px;
+    padding:12px;
+  }
+
+  .muted{color:var(--muted)!important}
+  .xsmall{font-size:.8rem}
+
+  .box{
+    background:var(--card);
+    border:1px solid var(--border);
+    border-radius:16px;
+    padding:16px;
+    box-shadow:var(--shadow);
+  }
+  .box + .box{margin-top:14px}
+
+  .pill{
+    display:inline-flex;
+    align-items:center;
+    gap:8px;
+    padding:6px 10px;
+    border-radius:999px;
+    background:var(--chip);
+    font-size:12px;
+    color:#495057;
+    border:1px solid transparent;
+  }
+
+  .icon-btn{border-radius:12px}
+  .btn, .form-control, .form-select{border-radius:12px}
+
+  /* ===== Topbar ===== */
+  .topbar{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap:10px;
+    flex-wrap:wrap;
+    margin-bottom:14px;
+  }
+  .top-left{
+    display:flex;
+    align-items:center;
+    gap:10px;
+    flex-wrap:wrap;
+  }
+  .brand-title{
+    font-weight:900;
+    font-size:18px;
+    letter-spacing:.2px;
+  }
+
+  /* ===== Hero/Summary ===== */
+  .summary-head{
+    display:flex;
+    justify-content:space-between;
+    align-items:flex-start;
+    gap:12px;
+    flex-wrap:wrap;
+  }
+  .price-lg{
+    font-size:28px;
+    font-weight:800;
+    line-height:1.05;
+  }
+  .price-note{
+    color:#6b7280;
+    font-size:12px;
+  }
+  hr.my-3{
+    border:0;
+    border-top:1px dashed #e5e7eb;
+    opacity:1;
+  }
+
+  /* ===== Action List ===== */
+  .action-list{
+    display:grid;
+    gap:10px;
+  }
+  .action-item{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap:10px;
+    padding:14px;
+    border:1px solid var(--border);
+    border-radius:14px;
+    background:#fff;
+    cursor:pointer;
+    transition:transform .06s ease, box-shadow .06s ease, border-color .06s ease;
+  }
+  .action-item:hover{
+    border-color:#dde3ea;
+  }
+  .action-item:active{
+    transform:scale(.995);
+  }
+  .action-left{
+    display:flex;
+    align-items:center;
+    gap:12px;
+    min-width:0;
+  }
+  .action-ico{
+    width:38px;
+    height:38px;
+    border-radius:12px;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    background:#f3f4f6;
+    font-size:18px;
+    flex:0 0 38px;
+  }
+  .action-title{
+    font-weight:800;
+    line-height:1.1;
+  }
+  .action-sub{
+    font-size:12px;
+    color:#6b7280;
+    margin-top:2px;
+  }
+  .chev{
+    color:#9ca3af;
+    font-weight:700;
+    font-size:20px;
+    line-height:1;
+  }
+
+  /* ===== Table / info ===== */
+  .table-wrap{
+    border:1px solid var(--border);
+    border-radius:14px;
+    overflow:hidden;
+    background:#fff;
+  }
+  .table-sm td,.table-sm th{padding:.6rem .65rem}
+
+  .hint{
+    font-size:.95rem;
+    color:#0d6efd;
+    font-weight:600;
+  }
+
+  .info-card{
+    border:1px solid var(--border);
+    border-radius:14px;
+    padding:14px;
+    background:#fff;
+  }
+
+  .section-title{
+    font-weight:800;
+    margin:0;
+  }
+
+  .btn-wide{
+    min-width:220px;
+  }
+
+  /* ===== Offcanvas ===== */
+  .offcanvas .btn{border-radius:12px}
+
+  /* ===== Responsive ===== */
+  @media (max-width:767.98px){
+    .page-wrap{
+      padding:10px;
+      margin-top:10px;
+    }
+
+    .topbar{
+      align-items:flex-start;
+    }
+
+    .top-left{
+      width:100%;
+      align-items:flex-start;
+    }
+
+    .topbar > .d-flex{
+      width:100%;
+    }
+
+    .topbar > .d-flex .btn{
+      flex:1 1 auto;
+    }
+
+    .price-lg{
+      font-size:25px;
+    }
+  }
+
+.page-shell{
+  min-height:100vh;
+  background:#f6f7f9;
+  transform:translateX(0);
+  transition:transform .22s ease-out;
+  will-change:transform;
+}
+
+.page-shell.dragging{
+  transition:none;
+}
+
+body.swipe-peek{
+  background:#e5e7eb;
+}
 </style>
 </head>
+
 <body>
+<div class="page-shell">
+
 <div class="page-wrap">
 
-  <!-- Top actions -->
-  <div class="top-actions">
-    <span id="authPill" class="pill">Memuatkan…</span>
-    <a class="btn btn-outline-secondary btn-chip" href="index.html">Halaman Utama</a>
-    <a class="btn btn-outline-secondary btn-chip" href="tabung.html">Tabung</a> 
-    <a class="btn btn-outline-secondary btn-chip" href="goldbar-coin.html">GoldBar/Coin Fizikal</a> 
-    <a class="btn btn-outline-secondary btn-chip" href="policy.html">Polisi</a>
-    <a class="btn btn-outline-secondary btn-chip" href="account.html">Akaun</a>
-    <a class="btn btn-outline-secondary btn-chip ms-auto" id="btnLogin" href="login.html#login">Log masuk/Daftar</a>
-    <button class="btn btn-outline-secondary btn-chip" id="btnLogout" style="display:none">Log keluar</button>
-    
-  </div>
-
-  <h3 class="mb-3">🪙 <b>Jual Emas Anda</b></h3>
-
-  <!-- KAD: Harga Jual Balik (per 1g) -->
-  <div class="section-card mb-3">
-    <div class="d-flex justify-content-between align-items-center mb-2">
-      <div class="h5 m-0">Harga Jual Balik (per 1g)</div>
-      <div class="small text-muted" id="sellLatestTime">Terkini: memuatkan…</div>
+  <!-- TOPBAR -->
+  <div class="topbar">
+    <div class="top-left">
+      <a href="index.html" class="btn btn-outline-secondary icon-btn">🏠</a>
+      <div>
+        <div class="brand-title">🪙 Jual Emas</div>
+        <div class="muted xsmall">Semak harga • kira anggaran • hantar kepada admin</div>
+      </div>
+      <span id="authPill" class="pill">Memuatkan…</span>
     </div>
-    <div class="table-responsive">
-      <table class="table table-sm align-middle">
-        <thead class="table-light">
-          <tr>
-            <th>Tarikh & Masa</th>
-            <th class="text-end">Emas 999.9 (1g)</th>
-            <th class="text-end">Emas 916 (1g)</th>
-          </tr>
-        </thead>
-        <tbody id="sellTableBody">
-          <tr><td colspan="3" class="text-muted">Memuatkan…</td></tr>
-        </tbody>
-      </table>
+
+    <div class="d-flex gap-2">
+      <button class="btn btn-outline-secondary icon-btn" type="button" data-bs-toggle="offcanvas" data-bs-target="#menuCanvas" aria-controls="menuCanvas">
+        ☰ Menu
+      </button>
+      <a class="btn btn-outline-secondary icon-btn" id="btnLogin" href="login.html#login">Log masuk</a>
+      <button class="btn btn-outline-secondary icon-btn" id="btnLogout" type="button" style="display:none">Log keluar</button>
     </div>
   </div>
 
-  <!-- KALKULATOR -->
-  <div class="section-card">
+  <!-- RINGKASAN -->
+  <div class="box mb-3">
+    <div class="summary-head">
+      <div>
+        <div class="fw-semibold">Kalkulator Jual Emas</div>
+        <div class="muted xsmall">Anggaran berdasarkan harga jual balik semasa</div>
+      </div>
+      <div class="text-md-end">
+        <div class="price-lg" id="anggaranTop">RM 0.00</div>
+        <div class="price-note">Harga akhir tertakluk kepada semakan berat & mutu di kedai</div>
+      </div>
+    </div>
+
+    <hr class="my-3">
+
     <div class="row g-3">
-      <div class="col-lg-4">
-        <label class="form-label">Mutu Emas</label>
-        <select id="mutu" class="form-select">
-          <option value="9999">999.9</option>
-          <option value="916">916</option>
-        </select>
+      <div class="col-md-4">
+        <div class="d-flex align-items-start gap-2">
+          <div style="font-size:20px;line-height:1">💰</div>
+          <div>
+            <div class="fw-semibold">Harga Terkini</div>
+            <div class="muted xsmall">Data live ikut harga jual balik semasa</div>
+          </div>
+        </div>
       </div>
-      <div class="col-lg-4">
-        <label class="form-label">Berat (gram)</label>
-        <input id="berat" class="form-control" placeholder="cth: 5.23" inputmode="decimal">
+      <div class="col-md-4">
+        <div class="d-flex align-items-start gap-2">
+          <div style="font-size:20px;line-height:1">🧮</div>
+          <div>
+            <div class="fw-semibold">Kiraan Mudah</div>
+            <div class="muted xsmall">Masukkan berat untuk lihat anggaran segera</div>
+          </div>
+        </div>
       </div>
-      <div class="col-lg-4">
-        <label class="form-label">Harga Jual Balik Semasa (per 1g)</label>
-        <input id="hargaPerG" class="form-control" readonly value="RM 0.00">
+      <div class="col-md-4">
+        <div class="d-flex align-items-start gap-2">
+          <div style="font-size:20px;line-height:1">📱</div>
+          <div>
+            <div class="fw-semibold">Terus WhatsApp</div>
+            <div class="muted xsmall">Admin akan bantu sahkan nilai sebenar</div>
+          </div>
+        </div>
       </div>
     </div>
+  </div>
 
-    <div class="mt-3">
-      <div class="hint">🧮 Harga Anggaran:</div>
-      <div id="anggaran" class="price-lg">RM 0.00</div>
+  <!-- ACTION LIST -->
+  <div class="box mb-3">
+    <div class="fw-semibold mb-2">Pilih Bahagian</div>
+
+    <div class="action-list">
+      <div class="action-item" data-open="panelHarga">
+        <div class="action-left">
+          <div class="action-ico">📊</div>
+          <div>
+            <div class="action-title">Harga Jual Balik</div>
+            <div class="action-sub">Lihat harga terkini untuk emas 999.9 dan 916</div>
+          </div>
+        </div>
+        <div class="chev">›</div>
+      </div>
+
+      <div class="action-item" data-open="panelCalc">
+        <div class="action-left">
+          <div class="action-ico">🧮</div>
+          <div>
+            <div class="action-title">Kalkulator Anggaran</div>
+            <div class="action-sub">Masukkan berat emas dan pilih mutu</div>
+          </div>
+        </div>
+        <div class="chev">›</div>
+      </div>
+
+      <div class="action-item" data-open="panelWA">
+        <div class="action-left">
+          <div class="action-ico">💬</div>
+          <div>
+            <div class="action-title">Hubungi Admin</div>
+            <div class="action-sub">Hantar terus permintaan jual emas melalui WhatsApp</div>
+          </div>
+        </div>
+        <div class="chev">›</div>
+      </div>
     </div>
+  </div>
 
-    <div class="d-flex align-items-center gap-2 mt-3">
-      <a id="btnWA" class="btn btn-success" href="#" rel="noopener">
-        WhatsApp Admin
-      </a>
-      <div class="small text-muted">Admin akan sahkan berat & mutu sebelum harga akhir dimuktamadkan.</div>
+  <!-- PANEL HARGA -->
+  <div class="collapse mb-3" id="panelHarga">
+    <div class="box">
+      <div class="d-flex justify-content-between align-items-start gap-2 flex-wrap">
+        <div>
+          <div class="fw-semibold">📊 Harga Jual Balik (per 1g)</div>
+          <div class="muted xsmall">Harga semasa untuk rujukan anggaran</div>
+        </div>
+        <div class="small text-muted" id="sellLatestTime">Terkini: memuatkan…</div>
+      </div>
+
+      <hr class="my-3">
+
+      <div class="table-wrap">
+        <div class="table-responsive">
+          <table class="table table-sm align-middle mb-0">
+            <thead class="table-light">
+              <tr>
+                <th>Tarikh & Masa</th>
+                <th class="text-end">Emas 999.9 (1g)</th>
+                <th class="text-end">Emas 916 (1g)</th>
+              </tr>
+            </thead>
+            <tbody id="sellTableBody">
+              <tr><td colspan="3" class="text-muted">Memuatkan…</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
     </div>
+  </div>
 
-    <div class="alert alert-warning mt-3 mb-0">
-      <b>Peringatan:</b> Harga ini hanyalah <u>anggaran</u>. Berat & mutu akan disahkan di kedai.
-      Emas perlu diperiksa (ditimbang & diuji; mungkin dibakar) sebelum harga akhir dimuktamadkan.
+  <!-- PANEL KALKULATOR -->
+  <div class="collapse mb-3" id="panelCalc">
+    <div class="box">
+      <div class="fw-semibold mb-2">🧮 Kalkulator Anggaran</div>
+      <div class="muted xsmall mb-3">Masukkan berat emas anda dan sistem akan kira anggaran mengikut mutu dipilih.</div>
+
+      <div class="row g-3">
+        <div class="col-lg-4">
+          <label class="form-label">Mutu Emas</label>
+          <select id="mutu" class="form-select">
+            <option value="9999">999.9</option>
+            <option value="916">916</option>
+          </select>
+        </div>
+        <div class="col-lg-4">
+          <label class="form-label">Berat (gram)</label>
+          <input id="berat" class="form-control" placeholder="cth: 5.23" inputmode="decimal">
+        </div>
+        <div class="col-lg-4">
+          <label class="form-label">Harga Jual Balik Semasa (per 1g)</label>
+          <input id="hargaPerG" class="form-control" readonly value="RM 0.00">
+        </div>
+      </div>
+
+      <div class="info-card mt-3">
+        <div class="hint">🧮 Harga Anggaran</div>
+        <div id="anggaran" class="price-lg mt-1">RM 0.00</div>
+      </div>
+
+      <div class="alert alert-warning mt-3 mb-0">
+        <b>Peringatan:</b> Harga ini hanyalah <u>anggaran</u>. Berat & mutu akan disahkan di kedai.
+        Emas perlu diperiksa, ditimbang dan diuji sebelum harga akhir dimuktamadkan.
+      </div>
+    </div>
+  </div>
+
+  <!-- PANEL WHATSAPP -->
+  <div class="collapse mb-3" id="panelWA">
+    <div class="box">
+      <div class="fw-semibold mb-2">💬 Hubungi Admin</div>
+      <div class="muted xsmall mb-3">Selepas isi kalkulator, tekan butang di bawah untuk hantar terus maklumat kepada admin.</div>
+
+      <div class="d-flex align-items-center gap-2 flex-wrap">
+        <a id="btnWA" class="btn btn-success btn-wide" href="#" rel="noopener">
+          WhatsApp Admin
+        </a>
+        <div class="small text-muted">Admin akan sahkan berat & mutu sebelum harga akhir dimuktamadkan.</div>
+      </div>
+    </div>
+  </div>
+
+</div>
+</div>
+
+<!-- OFFCANVAS MENU -->
+<div class="offcanvas offcanvas-end" tabindex="-1" id="menuCanvas" aria-labelledby="menuCanvasLabel">
+  <div class="offcanvas-header">
+    <h5 class="offcanvas-title" id="menuCanvasLabel">Menu</h5>
+    <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Tutup"></button>
+  </div>
+  <div class="offcanvas-body">
+    <div class="d-grid gap-2">
+      <a href="index.html" class="btn btn-outline-secondary">🏠 Halaman Utama</a>
+      <a href="tabung.html" class="btn btn-outline-secondary">💰 Tabung Emas</a>
+      <a href="goldbar-coin.html" class="btn btn-outline-secondary">🪙 GoldBar/Coin Fizikal</a>
+      <a href="j916.html" class="btn btn-outline-secondary">🏠 Barang Kemas 916</a>
+      <a href="policy.html" class="btn btn-outline-secondary">🛡️ Polisi</a>
+      <a href="account.html" class="btn btn-outline-secondary">👤 Akaun</a>
+      <hr>
+      <div class="muted xsmall">Tip: Tekan “Harga Jual Balik / Kalkulator Anggaran / Hubungi Admin” untuk buka panel.</div>
     </div>
   </div>
 </div>
 
 <!-- Supabase client & auth helper -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="auth.js?v=13.1"></script>
 
 <script>
 (function(){
   "use strict";
+
   const $ = id => document.getElementById(id);
   const money = n => "RM " + Number(n||0).toFixed(2);
 
+  // ===== PANEL ACTIONS =====
+  const panels = {
+    panelHarga: document.getElementById("panelHarga"),
+    panelCalc:  document.getElementById("panelCalc"),
+    panelWA:    document.getElementById("panelWA")
+  };
+
+  async function openPanel(id){
+    Object.keys(panels).forEach(pid=>{
+      if(pid !== id){
+        try{
+          const inst = bootstrap.Collapse.getOrCreateInstance(panels[pid], { toggle:false });
+          inst.hide();
+        }catch{}
+      }
+    });
+
+    const el = panels[id];
+    if(!el) return;
+
+    try{
+      const inst = bootstrap.Collapse.getOrCreateInstance(el, { toggle:false });
+      inst.show();
+    }catch{
+      el.classList.add("show");
+    }
+
+    setTimeout(()=>{
+      try{ el.scrollIntoView({ behavior:"smooth", block:"start" }); }catch{}
+    }, 150);
+  }
+
+  document.querySelectorAll(".action-item[data-open]").forEach(el=>{
+    el.addEventListener("click", ()=>{
+      openPanel(el.getAttribute("data-open"));
+    });
+  });
+
   // ===== ADMIN ikut mutu (NO PENERIMA) =====
   const ADMIN_MAP = {
-    "9999": "601113230198",  // Admin Gold Coin (betul: 1323 0198)
-    "916":  "60168055916"    // Admin 916
+    "9999": "601113230198",
+    "916":  "60168055916"
   };
 
   // ===== AUTH UI =====
@@ -123,23 +523,32 @@
         pill.textContent = "Log masuk sebagai " + (a.name || a.phone || "pengguna");
         $("btnLogin").style.display = "none";
         $("btnLogout").style.display = "";
-        $("btnLogout").onclick = ()=>{ window.auth_clear && window.auth_clear(); location.reload(); };
+        $("btnLogout").onclick = ()=>{
+          window.auth_clear && window.auth_clear();
+          location.reload();
+        };
       }else{
         pill.textContent = "Tidak log masuk";
         $("btnLogin").style.display = "";
         $("btnLogout").style.display = "none";
       }
-    }catch(e){ console.warn("auth pill:", e); }
+    }catch(e){
+      console.warn("auth pill:", e);
+    }
   })();
 
-  // ===== ONSEND CONFIG (TOKEN PENGHANTAR IKUT MUTU) =====
+  // ===== ONSEND CONFIG =====
   const ONSEND_BASE  = "https://onsend.io/api/v1";
   const ONSEND_TOKEN_MAP = {
-    "9999": "76a6f98cfc6e009e5d824e47acd98b9b59a6e5177e14b072fd210276309d91f6", // device: Admin Gold Coin (999.9)
-    "916":  "4b879470cc16ca8f06c5ab9878a4578880cfd0fd7b7cfe0121499f3ab017dd04"  // device: Admin 916
+    "9999": "76a6f98cfc6e009e5d824e47acd98b9b59a6e5177e14b072fd210276309d91f6",
+    "916":  "4b879470cc16ca8f06c5ab9878a4578880cfd0fd7b7cfe0121499f3ab017dd04"
   };
   const ONSEND_TOKEN_DEFAULT = ONSEND_TOKEN_MAP["9999"];
-  const toMsisdn = v => { const d = String(v||"").replace(/\D+/g,""); return d.startsWith("6") ? d : "6"+d; };
+
+  const toMsisdn = v => {
+    const d = String(v||"").replace(/\D+/g,"");
+    return d.startsWith("6") ? d : "6"+d;
+  };
 
   async function sendWA(msisdn, text, tokenOverride){
     const token = tokenOverride || ONSEND_TOKEN_DEFAULT;
@@ -151,7 +560,11 @@
           "Content-Type":"application/json",
           "Authorization":"Bearer " + token
         },
-        body: JSON.stringify({ phone_number: msisdn, message: text, type: "text" })
+        body: JSON.stringify({
+          phone_number: msisdn,
+          message: text,
+          type: "text"
+        })
       });
       const j = await r.json().catch(()=>({}));
       console.log("OnSend resp:", r.status, j);
@@ -165,8 +578,11 @@
   // ===== SUPABASE =====
   const sb = window.sb;
 
-  // Harga DB disimpan per 0.1g — kita tukar ke per 1g untuk paparan
-  const sell = { per01g_9999: 0, per01g_916: 0, at: null };
+  const sell = {
+    per01g_9999: 0,
+    per01g_916: 0,
+    at: null
+  };
 
   async function loadLatestSell(){
     try{
@@ -175,6 +591,7 @@
         .select("ddate, price_9999, price_916")
         .order("ddate",{ascending:false})
         .limit(1);
+
       if (error) throw error;
 
       const row = (data && data[0]) || null;
@@ -187,12 +604,17 @@
       sell.per01g_916  = Number(row.price_916 || 0);
       sell.at          = row.ddate;
 
-      // Tukar per 0.1g → per 1g
       const perG9999 = sell.per01g_9999 * 10;
       const perG916  = sell.per01g_916  * 10;
 
       const dt = new Date(row.ddate);
-      const when = dt.toLocaleString("ms-MY", {year:"numeric",month:"long",day:"numeric", hour:"numeric", minute:"2-digit"});
+      const when = dt.toLocaleString("ms-MY", {
+        year:"numeric",
+        month:"long",
+        day:"numeric",
+        hour:"numeric",
+        minute:"2-digit"
+      });
 
       $("sellLatestTime").textContent =
         `Terkini: ${when} — 999.9: ${money(perG9999)}, 916: ${money(perG916)}`;
@@ -205,7 +627,7 @@
         </tr>
       `;
 
-      refreshCalc(); // set input per 1g & anggaran
+      refreshCalc();
     }catch(err){
       console.warn("loadLatestSell:", err);
       $("sellTableBody").innerHTML = `<tr><td colspan="3" class="text-danger">Ralat muat harga jual balik.</td></tr>`;
@@ -213,87 +635,237 @@
   }
 
   function refreshCalc(){
-    const gram = parseFloat(($("berat").value||"").replace(",",".")) || 0;
-    const mutu = $("mutu").value; // "9999" / "916"
+    const gram = parseFloat(($("berat").value||"").replace(",", ".")) || 0;
+    const mutu = $("mutu").value;
 
-    // per 1g = (per 0.1g × 10)
     const perG = (mutu === "9999")
       ? sell.per01g_9999 * 10
       : sell.per01g_916  * 10;
 
-    $("hargaPerG").value = money(perG);
-    $("anggaran").textContent = money(perG * gram);
+    const total = perG * gram;
 
-    // ===== WhatsApp via OnSend (WAJIB LOGIN + ikut mutu) =====
-    const adminPhone   = (mutu === "9999") ? ADMIN_MAP["9999"]       : ADMIN_MAP["916"];         // penerima
-    const tokenForMutu = (mutu === "9999") ? ONSEND_TOKEN_MAP["9999"] : ONSEND_TOKEN_MAP["916"]; // penghantar
+    $("hargaPerG").value = money(perG);
+    $("anggaran").textContent = money(total);
+    $("anggaranTop").textContent = money(total);
+
+    const adminPhone   = (mutu === "9999") ? ADMIN_MAP["9999"] : ADMIN_MAP["916"];
+    const tokenForMutu = (mutu === "9999") ? ONSEND_TOKEN_MAP["9999"] : ONSEND_TOKEN_MAP["916"];
     const btn = $("btnWA");
     btn.removeAttribute("href");
 
-   btn.onclick = async (e)=>{
-  e.preventDefault();
+    btn.onclick = async (e)=>{
+      e.preventDefault();
 
-  // 1) WAJIB LOGIN
-  const user = (window.auth_get && window.auth_get()) || null;
-  if (!user) {
-    const next = encodeURIComponent("jual-emas.html"); // tukar jika nama fail lain
-    location.href = `login.html?next=${next}#login`;
-    return;
-  }
+      const user = (window.auth_get && window.auth_get()) || null;
+      if (!user) {
+        const next = encodeURIComponent("jual-emas.html");
+        location.href = `login.html?next=${next}#login`;
+        return;
+      }
 
-  // 2) Data pelanggan
-  const custName  = user.name  || user.phone || "Pelanggan";
-  const custPhone = toMsisdn(user.phone || "");
+      const custName  = user.name  || user.phone || "Pelanggan";
+      const custPhone = toMsisdn(user.phone || "");
 
-  // 3) Mesej untuk ADMIN
-  const msgAdmin = `Assalamualaikum, saya ingin JUAL EMAS.
+      const msgAdmin = `Assalamualaikum, saya ingin JUAL EMAS.
 
 Nama pelanggan: ${custName}
 Telefon pelanggan: ${custPhone || "-"}
 
 Mutu: ${mutu === "9999" ? "999.9" : "916"}
 Berat: ${gram.toFixed(2)} g
-Harga anggaran: ${money(perG * gram)}
+Harga anggaran: ${money(total)}
 (Harga per 1g semasa: ${money(perG)})
 
 Sila sahkan berat & mutu di kedai. Terima kasih.`;
 
-  // 4) Mesej untuk PELANGGAN (pengesahan + nombor admin)
-  const msgCust = `Terima kasih ${custName}! Permintaan jual emas anda telah dihantar.
+      const msgCust = `Terima kasih ${custName}! Permintaan jual emas anda telah dihantar.
 
 Mutu: ${mutu === "9999" ? "999.9" : "916"}
 Berat diisi: ${gram.toFixed(2)} g
-Anggaran: ${money(perG * gram)}
+Anggaran: ${money(total)}
 
 Admin akan hubungi anda sebentar lagi.
 No. admin: ${toMsisdn(adminPhone)}`;
 
-  // 5) Hantar DUA mesej via OnSend (guna token ikut mutu untuk konsisten branding)
-  btn.disabled = true; const old = btn.textContent; btn.textContent = "Menghantar…";
+      btn.disabled = true;
+      const old = btn.textContent;
+      btn.textContent = "Menghantar…";
 
-  const [okAdmin, okCust] = await Promise.all([
-    sendWA(toMsisdn(adminPhone), msgAdmin, tokenForMutu), // → kepada ADMIN
-    sendWA(custPhone,            msgCust,  tokenForMutu)  // → kepada PELANGGAN
-  ]);
+      const [okAdmin, okCust] = await Promise.all([
+        sendWA(toMsisdn(adminPhone), msgAdmin, tokenForMutu),
+        sendWA(custPhone, msgCust, tokenForMutu)
+      ]);
 
-  btn.textContent = old; btn.disabled = false;
+      btn.textContent = old;
+      btn.disabled = false;
 
-  if (okAdmin && okCust) {
-    alert("Mesej telah dihantar kepada admin & pelanggan.");
-  } else if (okAdmin) {
-    alert("Mesej kepada admin berjaya, tetapi mesej kepada pelanggan gagal.");
-  } else if (okCust) {
-    alert("Mesej kepada pelanggan berjaya, tetapi mesej kepada admin gagal.");
-  } else {
-    alert("Gagal menghantar mesej. Semak peranti OnSend & cuba lagi.");
-  }
-};
+      if (okAdmin && okCust) {
+        alert("Mesej telah dihantar kepada admin & pelanggan.");
+      } else if (okAdmin) {
+        alert("Mesej kepada admin berjaya, tetapi mesej kepada pelanggan gagal.");
+      } else if (okCust) {
+        alert("Mesej kepada pelanggan berjaya, tetapi mesej kepada admin gagal.");
+      } else {
+        alert("Gagal menghantar mesej. Semak peranti OnSend & cuba lagi.");
+      }
+    };
   }
 
   $("mutu").addEventListener("change", refreshCalc);
   $("berat").addEventListener("input", refreshCalc);
 
   loadLatestSell();
+
+  // ===== iPhone-style swipe back with drag animation =====
+(function(){
+  const page = document.querySelector('.page-shell');
+  if (!page) return;
+
+  let startX = 0;
+  let startY = 0;
+  let currentX = 0;
+  let tracking = false;
+  let dragging = false;
+
+  const EDGE_ZONE = 24;
+  const MAX_DY = 70;
+  const TRIGGER_RATIO = 0.33;
+
+  function getOpenModalEl(){
+    const modals = Array.from(document.querySelectorAll('.modal.show'));
+    return modals.length ? modals[modals.length - 1] : null;
+  }
+
+  function getOpenOffcanvasEl(){
+    const panels = Array.from(document.querySelectorAll('.offcanvas.show'));
+    return panels.length ? panels[panels.length - 1] : null;
+  }
+
+  function closeTopModal(){
+    const el = getOpenModalEl();
+    if (!el) return false;
+
+    try{
+      const inst = bootstrap.Modal.getInstance(el) || bootstrap.Modal.getOrCreateInstance(el);
+      inst.hide();
+      return true;
+    }catch(_){
+      el.classList.remove('show');
+      el.style.display = 'none';
+      document.body.classList.remove('modal-open');
+      document.querySelectorAll('.modal-backdrop').forEach(x => x.remove());
+      return true;
+    }
+  }
+
+  function closeOffcanvas(){
+    const el = getOpenOffcanvasEl();
+    if (!el) return false;
+
+    try{
+      const inst = bootstrap.Offcanvas.getInstance(el) || bootstrap.Offcanvas.getOrCreateInstance(el);
+      inst.hide();
+      return true;
+    }catch(_){
+      el.classList.remove('show');
+      el.style.visibility = 'hidden';
+      document.body.classList.remove('offcanvas-open');
+      document.querySelectorAll('.offcanvas-backdrop').forEach(x => x.remove());
+      return true;
+    }
+  }
+
+  function goBackPage(){
+    if (window.history.length > 1){
+      history.back();
+    }else{
+      location.href = 'index.html';
+    }
+  }
+
+  function resetPage(){
+    page.classList.remove('dragging');
+    page.style.transform = 'translateX(0)';
+    setTimeout(()=>{
+      document.body.classList.remove('swipe-peek');
+    }, 220);
+  }
+
+  document.addEventListener('touchstart', function(e){
+    if (!e.touches || !e.touches.length) return;
+
+    const t = e.touches[0];
+    startX = t.clientX;
+    startY = t.clientY;
+    currentX = 0;
+    dragging = false;
+
+    tracking = startX <= EDGE_ZONE;
+  }, { passive:true });
+
+  document.addEventListener('touchmove', function(e){
+    if (!tracking || !e.touches || !e.touches.length) return;
+
+    const t = e.touches[0];
+    const dx = t.clientX - startX;
+    const dy = Math.abs(t.clientY - startY);
+
+    if (dy > MAX_DY) return;
+    if (dx <= 0) return;
+
+    currentX = dx;
+    dragging = true;
+
+    document.body.classList.add('swipe-peek');
+    page.classList.add('dragging');
+    page.style.transform = `translateX(${dx}px)`;
+  }, { passive:true });
+
+  document.addEventListener('touchend', function(){
+    if (!tracking) return;
+
+    tracking = false;
+    page.classList.remove('dragging');
+
+    if (!dragging){
+      document.body.classList.remove('swipe-peek');
+      return;
+    }
+
+    const threshold = window.innerWidth * TRIGGER_RATIO;
+
+    if (currentX >= threshold){
+      page.style.transform = `translateX(${window.innerWidth}px)`;
+
+      setTimeout(()=>{
+        if (closeTopModal()) {
+          page.style.transition = 'none';
+          page.style.transform = 'translateX(0)';
+          void page.offsetHeight;
+          page.style.transition = '';
+          document.body.classList.remove('swipe-peek');
+          return;
+        }
+
+        if (closeOffcanvas()) {
+          page.style.transition = 'none';
+          page.style.transform = 'translateX(0)';
+          void page.offsetHeight;
+          page.style.transition = '';
+          document.body.classList.remove('swipe-peek');
+          return;
+        }
+
+        goBackPage();
+      }, 180);
+    } else {
+      resetPage();
+    }
+
+    dragging = false;
+    currentX = 0;
+  }, { passive:true });
+})();
 })();
 </script>
 </body>

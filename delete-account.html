@@ -1,0 +1,337 @@
+<!doctype html>
+<html lang="ms">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<link rel="stylesheet" href="/global.css">
+<title>Padam Akaun – Emas Amir</title>
+
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+
+<style>
+  :root{
+    --bg:#f6f7f9;
+    --card:#ffffff;
+    --chip:#eef1f4;
+    --border:#e9ecef;
+    --muted:#6c757d;
+    --text:#212529;
+    --shadow:0 1px 2px rgba(16,24,40,.04);
+    --danger:#dc3545;
+  }
+
+  *{box-sizing:border-box}
+  body{
+    background:var(--bg);
+    color:var(--text);
+  }
+
+  .wrap{
+    max-width:720px;
+    margin:16px auto 48px;
+    padding:12px;
+  }
+
+  .box{
+    background:var(--card);
+    border:1px solid var(--border);
+    border-radius:16px;
+    padding:16px;
+    box-shadow:var(--shadow);
+  }
+
+  .muted{ color:var(--muted)!important; }
+  .ok{ color:#0b7a0b; font-weight:700; }
+  .err{ color:#b91c1c; font-weight:700; }
+  .warn{ color:#b45309; font-weight:700; }
+
+  .topbar{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap:10px;
+    flex-wrap:wrap;
+    margin-bottom:14px;
+  }
+
+  .top-left{
+    display:flex;
+    align-items:center;
+    gap:10px;
+    flex-wrap:wrap;
+  }
+
+  .brand-title{
+    font-weight:900;
+    font-size:18px;
+    letter-spacing:.2px;
+  }
+
+  .xsmall{ font-size:.8rem; }
+
+  .section-title{
+    font-weight:900;
+    font-size:18px;
+    margin-bottom:12px;
+  }
+
+  .form-label{
+    font-weight:600;
+    margin-bottom:.45rem;
+  }
+
+  .form-control,
+  .btn{
+    border-radius:12px;
+  }
+
+  .info-box{
+    border:1px solid #f5c2c7;
+    background:#fff5f5;
+    border-radius:14px;
+    padding:14px;
+    margin-bottom:14px;
+  }
+
+  .info-box .title{
+    font-weight:800;
+    color:#b91c1c;
+    margin-bottom:4px;
+  }
+
+  .action-row{
+    display:flex;
+    align-items:center;
+    gap:10px;
+    flex-wrap:wrap;
+  }
+
+  .btn-danger-soft{
+    background:#fff5f5;
+    color:#b91c1c;
+    border:1px solid #f1b0b7;
+  }
+
+  @media (max-width:767.98px){
+    .wrap{
+      padding:10px;
+      margin-top:10px;
+    }
+  }
+</style>
+</head>
+<body>
+
+<div class="wrap">
+
+  <div class="topbar">
+    <div class="top-left">
+      <a href="account.html" class="btn btn-outline-secondary">← Kembali</a>
+      <div>
+        <div class="brand-title">🗑️ Padam Akaun</div>
+        <div class="muted xsmall">Permintaan padam akaun pelanggan</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="box">
+    <div class="section-title">Permintaan Padam Akaun</div>
+
+    <div class="info-box">
+      <div class="title">Perhatian</div>
+      <div class="muted">
+        Akaun anda akan dihantar untuk proses padam. Sila sahkan nombor telefon dan masukkan OTP sebelum teruskan.
+      </div>
+    </div>
+
+    <div class="row g-3">
+      <div class="col-lg-6">
+        <label class="form-label">Nombor Telefon</label>
+        <input id="phone" class="form-control" inputmode="numeric" placeholder="01XXXXXXXX">
+      </div>
+      <div class="col-lg-6">
+        <label class="form-label">4 Digit Terakhir</label>
+        <input id="last4" class="form-control" inputmode="numeric" maxlength="4" placeholder="XXXX">
+      </div>
+    </div>
+
+    <div class="row g-3 mt-1">
+      <div class="col-lg-8">
+        <label class="form-label">OTP</label>
+        <input id="otp" class="form-control" inputmode="numeric" maxlength="6" placeholder="6 digit OTP">
+      </div>
+      <div class="col-lg-4">
+        <label class="form-label">&nbsp;</label>
+        <button id="btnSendOtp" class="btn btn-outline-secondary w-100" type="button">Minta OTP</button>
+      </div>
+    </div>
+
+    <div class="mt-3">
+      <label class="form-label">Sebab padam akaun (pilihan)</label>
+      <textarea id="reason" class="form-control" rows="4" placeholder="Contoh: Tidak mahu guna akaun lagi"></textarea>
+    </div>
+
+    <div class="action-row mt-3">
+      <button id="btnDelete" class="btn btn-danger-soft" type="button">Padam Akaun</button>
+      <span id="status" class="muted"></span>
+    </div>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="auth.js?v=13.1"></script>
+<script>
+(() => {
+  "use strict";
+
+  const $ = id => document.getElementById(id);
+  const onlyDigits = window.onlyDigits || (s => String(s||"").replace(/\D+/g,""));
+  const ses = (window.auth_get && window.auth_get()) || {};
+
+  const OTP_START_URL = "/.netlify/functions/auth-otp-start";
+  const DELETE_FINISH_URL = "/.netlify/functions/auth-delete-finish";
+
+  async function postJson(url, payload){
+    const r = await fetch(url, {
+      method: "POST",
+      headers: { "Content-Type":"application/json" },
+      body: JSON.stringify(payload || {})
+    });
+    const j = await r.json().catch(() => ({}));
+    return { ok: r.ok, status: r.status, data: j };
+  }
+
+  function setStatus(text, cls){
+    const el = $("status");
+    el.className = cls || "muted";
+    el.textContent = text || "";
+  }
+
+  function toLocalPhone(raw){
+    let d = onlyDigits(raw);
+    if (!d) return "";
+    if (d.startsWith("60")) d = "0" + d.slice(2);
+    return d;
+  }
+
+  $("phone").value = toLocalPhone(ses.phone || "");
+
+  const syncLast4 = () => {
+    const p = onlyDigits($("phone").value);
+    if (p.length >= 4 && !$("last4").value) {
+      $("last4").value = p.slice(-4);
+    }
+  };
+  syncLast4();
+
+  $("btnSendOtp").onclick = async () => {
+    let phone = onlyDigits($("phone").value);
+    const last4 = onlyDigits($("last4").value);
+
+    if (phone.startsWith("60")) {
+      phone = "0" + phone.slice(2);
+    }
+
+    if (!/^\d{9,12}$/.test(phone)) {
+      setStatus("Nombor telefon tak sah.", "err");
+      return;
+    }
+    if (!/^\d{4}$/.test(last4)) {
+      setStatus("Isi 4 digit terakhir.", "err");
+      return;
+    }
+    if (phone.slice(-4) !== last4) {
+      setStatus("4 digit terakhir tak padan.", "err");
+      return;
+    }
+
+    try{
+      setStatus("Menghantar OTP…", "muted");
+
+      const res = await postJson(OTP_START_URL, {
+        purpose: "delete_account",
+        channel: "whatsapp",
+        phone,
+        last4
+      });
+
+      if (!res.ok || res.data?.ok !== true){
+        setStatus(res.data?.error || "Gagal hantar OTP.", "err");
+        return;
+      }
+
+      setStatus("OTP telah dihantar. Sila semak WhatsApp.", "ok");
+    }catch(e){
+      console.error(e);
+      setStatus("Gagal hantar OTP.", "err");
+    }
+  };
+
+  $("btnDelete").onclick = async () => {
+    let phone = onlyDigits($("phone").value);
+    const last4 = onlyDigits($("last4").value);
+    const otp = onlyDigits($("otp").value);
+    const reason = ($("reason").value || "").trim();
+
+    if (phone.startsWith("60")) {
+      phone = "0" + phone.slice(2);
+    }
+
+    if (!/^\d{9,12}$/.test(phone)) {
+      setStatus("Nombor telefon tak sah.", "err");
+      return;
+    }
+    if (!/^\d{4}$/.test(last4)) {
+      setStatus("Isi 4 digit terakhir.", "err");
+      return;
+    }
+    if (phone.slice(-4) !== last4) {
+      setStatus("4 digit terakhir tak padan.", "err");
+      return;
+    }
+    if (!/^\d{6}$/.test(otp)) {
+      setStatus("Isi OTP 6 digit.", "err");
+      return;
+    }
+
+    if (!confirm("Betul mahu teruskan permintaan padam akaun ini?")) {
+      return;
+    }
+
+    try{
+      setStatus("Sedang memproses permintaan padam akaun…", "muted");
+
+      const res = await postJson(DELETE_FINISH_URL, {
+        phone,
+        last4,
+        otp,
+        reason
+      });
+
+      if (!res.ok || res.data?.ok !== true){
+        setStatus(res.data?.error || "Permintaan padam akaun gagal.", "err");
+        return;
+      }
+
+      try {
+        sessionStorage.removeItem("ea_pw");
+      } catch {}
+      try {
+        if (window.auth_clear) window.auth_clear();
+      } catch {}
+
+      setStatus("Permintaan padam akaun berjaya dihantar.", "ok");
+
+      setTimeout(() => {
+        location.replace("login.html#login");
+      }, 1200);
+
+    }catch(e){
+      console.error(e);
+      setStatus("Permintaan padam akaun gagal.", "err");
+    }
+  };
+})();
+</script>
+</body>
+</html>

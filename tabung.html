@@ -2,7 +2,8 @@
 <html lang="ms">
 <head>
   <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<link rel="stylesheet" href="/global.css">
   <title>Tabung Emas – Emas Amir</title>
 
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css">
@@ -172,6 +173,36 @@
   min-width:160px;   /* bagi ruang supaya tak sempit */
 }
 
+.page-shell{
+  min-height:100vh;
+  background:#f6f7f9;
+  transform:translateX(0);
+  transition:transform .22s ease-out;
+  will-change:transform;
+}
+
+.page-shell.dragging{
+  transition:none;
+}
+
+body.swipe-peek{
+  background:#e5e7eb;
+}
+
+#tabungInfoModal .modal-content{
+  padding-top: env(safe-area-inset-top);
+}
+
+#tabungInfoModal .modal-header{
+  padding-top: calc(16px + env(safe-area-inset-top)) !important;
+}
+
+#tabungInfoModal .btn-close{
+  margin-top: env(safe-area-inset-top);
+}
+
+
+
   </style>
 
   <!-- ❗❗ Gantikan dgn domain production (untuk link WhatsApp biru) -->
@@ -179,6 +210,7 @@
 </head>
 
 <body>
+<div class="page-shell">
 <div class="wrap">
 
   <!-- TOPBAR MINIMAL -->
@@ -196,12 +228,16 @@
       <button class="btn btn-outline-secondary icon-btn" type="button" data-bs-toggle="offcanvas" data-bs-target="#menuCanvas" aria-controls="menuCanvas">
         ☰ Menu
       </button>
+
+<button class="btn btn-warning icon-btn fw-bold" type="button" data-bs-toggle="modal" data-bs-target="#tabungInfoModal">
+  ℹ️ Info Tabung
+</button>
       <button id="btnLogout" class="btn btn-outline-secondary icon-btn" type="button" style="display:none">Log keluar</button>
     </div>
   </div>
 
-  <!-- PRICE + BALANCE -->
-  <div class="grid mb-3">
+ <!-- PRICE + BALANCE -->
+  <div class="mb-3">
     <div class="box">
       <div class="d-flex justify-content-between align-items-start gap-2 flex-wrap">
         <div class="fw-semibold">Harga Semasa</div>
@@ -213,6 +249,7 @@
           <div>1g (999.9):</div>
           <div class="price-lg" id="p1g">-</div>
         </div>
+
         <div class="mt-1">Harga beli 0.1g: <b id="p01g_buy">-</b></div>
         <div class="mt-1">Harga <u>jual balik</u> 0.1g: <b id="p01g_sell">-</b></div>
         <div class="mt-1 muted">Upah kad (default): <span id="cardFee">RM 15.00</span></div>
@@ -234,22 +271,25 @@
 
         <hr class="my-3">
 
-        
-    <div class="fw-semibold">👤 Baki Tabung Saya</div>
-    <div class="muted xsmall">(0.1g = 1 unit)</div>
-  </div>
-
-  <div class="balance-box text-center">
-    <div class="balance-main">
-      <span id="balGram">0.0</span><span class="balance-unit"> g</span>
-    </div>
-    <div class="muted">
-      <span id="balUnit">0</span> unit × 0.1g
-    </div>
-  </div>
-</div>
-            
+        <div class="d-flex justify-content-between align-items-end gap-3 flex-wrap">
+          <div>
+            <div class="fw-semibold">👤 Baki Tabung Saya</div>
+            <div class="muted xsmall">(0.1g = 1 unit)</div>
           </div>
+
+          <div class="balance-box text-center">
+            <div class="balance-main">
+              <span id="balGram">0.0</span><span class="balance-unit"> g</span>
+            </div>
+            <div class="muted">
+              <span id="balUnit">0</span> unit × 0.1g
+            </div>
+<div class="mt-2 p-2 rounded-3" style="background:#fff7ed;border:1px solid #fde68a;">
+  <div class="small" style="color:#92400e;">
+    ⚠️ Emas daripada tebusan point / misi tidak boleh dijual kepada RM (tunai),
+    tetapi boleh digunakan untuk keluar fizikal atau tukar ke barang kemas 916.
+  </div>
+</div>          </div>
         </div>
       </div>
     </div>
@@ -289,10 +329,26 @@
             <div class="action-title">Jual</div>
             <div class="action-sub">Jualkan baki tabung emas</div>
           </div>
+<div class="mt-2 p-2 rounded-3" style="background:#fff7ed;border:1px solid #fde68a;">
+  <div class="small" style="color:#92400e;">
+    ⚠️ Hanya emas yang dibeli sendiri boleh dijual semula kepada RM (tunai).<br>
+    Emas daripada tebusan point / misi tidak termasuk untuk jual.
+  </div>
+</div>
         </div>
         <div class="chev">›</div>
       </div>
 
+<div class="action-item" data-open="panelConvert916">
+  <div class="action-left">
+    <div class="action-ico">🔁</div>
+    <div>
+      <div class="action-title">Tukar ke Emas 916</div>
+      <div class="action-sub">Jual tabung untuk membeli barang kemas 916</div>
+    </div>
+  </div>
+  <div class="chev">›</div>
+</div>
       <div class="action-item" data-open="panelHist">
         <div class="action-left">
           <div class="action-ico">🕘</div>
@@ -395,6 +451,39 @@
     </div>
   </div>
 
+<div class="collapse mb-3" id="panelConvert916">
+  <div class="panel">
+    <div class="panel-h">
+      <div class="fw-semibold">🔁 Tukar ke Emas 916</div>
+      <button class="btn btn-sm btn-outline-secondary" type="button" data-bs-toggle="collapse" data-bs-target="#panelConvert916">Tutup</button>
+    </div>
+
+    <div class="panel-b">
+      <div class="muted mb-2">
+        Min 1 unit (0.1g). Nilai tabung digunakan pada harga beli semasa.
+      </div>
+
+      <div class="row g-2">
+        <div class="col-md-6">
+          <label class="form-label">Unit (0.1g)</label>
+          <input type="number" step="1" min="1" max="0" id="convert916Unit" class="form-control" value="1" readonly inputmode="none">
+        </div>
+
+        <div class="col-md-6">
+          <div class="fw-semibold">Dijual untuk membeli barang kemas 916</div>
+          <div class="mt-1"><b id="convert916Total">RM 0.00</b></div>
+        </div>
+      </div>
+
+      <button id="btnConvert916" class="btn btn-warning w-100 btn-lgx mt-3">
+        Tukar Barang Kemas 916
+      </button>
+
+      <div id="convert916Msg" class="small muted mt-2"></div>
+    </div>
+  </div>
+</div>
+
   <div class="collapse mb-2" id="panelHist">
     <div class="panel">
       <div class="panel-h">
@@ -439,6 +528,7 @@
   </div>
 
 </div>
+</div>
 
 <!-- OFFCANVAS MENU -->
 <div class="offcanvas offcanvas-end" tabindex="-1" id="menuCanvas" aria-labelledby="menuCanvasLabel">
@@ -455,12 +545,121 @@
       <a href="policy.html" class="btn btn-outline-secondary">Polisi</a>
       <a id="btnAccount" href="account.html" class="btn btn-outline-secondary">Akaun</a>
       <hr>
-      <div class="muted xsmall">Tip: Tekan “Beli / Keluar Fizikal / Jual / Sejarah” untuk buka panel.</div>
+      <div class="muted xsmall">
+  Tip: Tekan “Info Tabung” untuk faham cara simpan, keluar fizikal, jual dan tukar ke emas 916.
+</div>
     </div>
   </div>
 </div>
 
 <!-- MODALS (confirm/result/payinfo) -->
+<div class="modal fade" id="tabungInfoModal" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-lg modal-dialog-scrollable modal-fullscreen-sm-down">
+    <div class="modal-content" style="border-radius:22px;overflow:hidden">
+      <div class="modal-header">
+        <div>
+          <div class="info-badge">💰 TABUNG EMAS AMIR</div>
+          <h5 class="modal-title mt-2 fw-black">Simpan Emas 999.9 Dari 0.1g</h5>
+        </div>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Tutup"></button>
+      </div>
+
+      <div class="modal-body">
+        <div class="info-hero">
+          <div class="info-title">Kenapa Tabung Emas Amir diwujudkan?</div>
+          <div class="info-sub mt-1">
+            Harga emas semakin tinggi. Untuk membeli 1g emas 999.9 sekaligus, pelanggan mungkin perlu menyediakan sekitar RM600–RM700.
+            Jadi Emas Amir menyediakan kemudahan simpanan emas bermula serendah <b>0.1g</b> supaya lebih ramai rakyat Malaysia boleh mula menyimpan emas secara berperingkat.
+          </div>
+          <div class="mt-3 fw-bold">
+            Contoh: 0.1g Tabung = sekitar <span class="text-success">RM64.50</span> mengikut harga semasa.
+          </div>
+        </div>
+
+        <div class="info-card">
+          <div class="info-title">🏪 Adakah emas fizikal benar-benar ada?</div>
+          <ul class="info-list">
+            <li>Ya, setiap tabungan pelanggan disokong oleh emas fizikal.</li>
+            <li>Setiap 0.1g adalah pegangan individu pelanggan, bukan konsep kongsi satu bar besar ramai-ramai tanpa pemilikan jelas.</li>
+            <li>Emas Amir bertindak sebagai pemegang amanah yang menyimpan emas pelanggan.</li>
+            <li>Pelanggan boleh datang ke kedai untuk semak dan bertanya tentang tabungan mereka bila-bila masa.</li>
+          </ul>
+        </div>
+
+        <div class="info-card">
+          <div class="info-title">📦 Apa itu Keluar Fizikal?</div>
+          <div class="info-sub mt-1">
+            Keluar Fizikal bermaksud pelanggan menukar baki tabung kepada emas fizikal seperti bar atau coin.
+          </div>
+          <ul class="info-list">
+            <li>Boleh keluar apabila cukup minimum seperti 0.5g atau 1g.</li>
+            <li>Pelanggan hanya perlu bayar kos proses pembuatan coin/bar dan sijil.</li>
+            <li>Emas Amir menyediakan pelbagai design coin/bar dan custom sijil percuma.</li>
+          </ul>
+        </div>
+
+        <div class="info-card">
+          <div class="info-title">💸 Apa itu Jual?</div>
+          <div class="info-sub mt-1">
+            Jual bermaksud pelanggan menjual semula baki tabung kepada Emas Amir mengikut harga jual balik semasa.
+          </div>
+          <ul class="info-list">
+            <li>Boleh jual bila-bila masa.</li>
+            <li>Tiada masalah untuk cairkan semula simpanan.</li>
+            <li>Permohonan akan disahkan admin sebelum bayaran dibuat.</li>
+          </ul>
+        </div>
+
+        <div class="info-card">
+          <div class="info-title">🔁 Apa itu Tukar ke Emas 916?</div>
+          <div class="info-sub mt-1">
+            Tukar ke Emas 916 ialah kemudahan terbaru untuk pelanggan menggunakan nilai tabung emas 999.9 bagi membeli barang kemas 916.
+          </div>
+          <ul class="info-list">
+            <li>Nilai tabung akan dikira berdasarkan harga beli semasa.</li>
+            <li>Nilai tersebut digunakan untuk membeli barang kemas 916.</li>
+            <li>Emas 999.9 dan emas 916 adalah produk berbeza, jadi nilai tabung perlu ditukar kepada nilai RM dahulu supaya transaksi lebih jelas dan adil.</li>
+            <li>Konsep ini membantu pelanggan menabung dahulu, kemudian menukar simpanan kepada barang kemas apabila bersedia.</li>
+          </ul>
+        </div>
+
+        <div class="syariah-box mt-3">
+          <div class="info-title">🕌 Adakah Tabung Ini Patuh Syariah?</div>
+          <div class="mt-2">
+            Insya-Allah, Tabung Emas Amir disusun untuk memenuhi prinsip jual beli emas yang jelas dan telus.
+          </div>
+          <ul class="info-list">
+            <li>Emas yang dibeli adalah emas sebenar, bukan sekadar angka maya.</li>
+            <li>Pemilikan pelanggan direkod dengan jelas.</li>
+            <li>Harga jual beli dipaparkan dengan jelas.</li>
+            <li>Tiada unsur riba, gharar atau ketidakjelasan yang disengajakan.</li>
+            <li>Emas Amir menyimpan emas pelanggan sebagai amanah.</li>
+          </ul>
+        </div>
+
+        <div class="info-card">
+          <div class="info-title">✨ Ringkasan Mudah</div>
+          <ul class="info-list">
+            <li>Simpan emas 999.9 dari 0.1g.</li>
+            <li>Ada sandaran emas fizikal.</li>
+            <li>Boleh keluar fizikal apabila cukup berat.</li>
+            <li>Boleh jual balik bila-bila masa.</li>
+            <li>Boleh tukar nilai tabung kepada barang kemas 916.</li>
+            <li>Rekod telus dan disemak melalui sistem Emas Amir.</li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="modal-footer">
+        <button type="button" class="btn btn-dark w-100 fw-bold" data-bs-dismiss="modal">
+          Saya Faham
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+
 <div class="modal fade" id="confirmModal" tabindex="-1" aria-hidden="true">
   <div class="modal-dialog"><div class="modal-content">
     <div class="modal-header">
@@ -526,6 +725,8 @@
     </div>
   </div>
 </div>
+
+
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 <script src="agent-ref.js?v=1"></script>
@@ -626,7 +827,7 @@ async function getUidGabungan(){
   try {
     const r = await sb.auth.getUser();
     const authId = r?.data?.user?.id || null;
-    if (authId) return authId;
+    if (authId) return authId; // untuk loadBalance, kita perlukan auth_uid
   } catch {}
 
   const a = (window.auth_get && window.auth_get()) || {};
@@ -634,13 +835,17 @@ async function getUidGabungan(){
   if (!ids.length) return null;
 
   const { data, error } = await sb
-    .from("v_auth_ident")
-    .select("uid_gabungan")
+    .from("auth_customer_map")
+    .select("auth_uid, customer_id")
     .or(`auth_uid.in.(${ids.join(",")}),customer_id.in.(${ids.join(",")})`)
     .limit(1);
 
-  if (error) { console.warn("[getUidGabungan]", error); return null; }
-  return data?.[0]?.uid_gabungan || null;
+  if (error) {
+    console.warn("[getUidGabungan]", error);
+    return null;
+  }
+
+  return data?.[0]?.auth_uid || null;
 }
 
 // --- AUTH UID ---
@@ -666,8 +871,23 @@ const BILLPLZ_FIXED_FEE = 1.10;
 
 let buyPrice01 = 0, sellPrice01 = 0;
 if (typeof window.myUnits === 'undefined') window.myUnits = 0;
-function getMyUnits(){ return Number(window.myUnits||0) | 0; }
+if (typeof window.myCashableUnits === 'undefined') window.myCashableUnits = 0;
 
+function getMyUnits(){ return Number(window.myUnits||0) | 0; }
+function getMyCashableUnits(){ return Number(window.myCashableUnits||0) | 0; }
+
+function isRewardOrMissionTxn(r){
+  const meta = r?.meta || {};
+  const type = String(r?.type || "").toUpperCase();
+  const source = String(meta?.source || "").toUpperCase();
+  const rewardCode = String(meta?.reward_code || "").toUpperCase();
+
+  return (
+    type === "BONUS" ||
+    source === "POINT_REDEEM" ||
+    rewardCode.includes("MISSION")
+  );
+}
 /* =============== Boot (Auth + UI) =============== */
 const auser = (window.auth_get && window.auth_get()) || null;
 
@@ -769,6 +989,7 @@ async function loadPrices(){
   $("p01g_sell").textContent = money(sellPrice01);
 }
 
+
 async function loadBalance(){
   const uid = await getUidGabungan();
   if (!uid){
@@ -788,35 +1009,87 @@ async function loadBalance(){
   }
 
   const { data, error } = await sb
-    .from("v_tabung_units_by_uid")
-    .select("total_units")
-    .eq("auth_uid", uid)
-    .single();
+    .from("tabung_txn")
+    .select("kind,type,status,units,user_id,user_auth_id,meta")
+    .or(`user_id.eq.${uid},user_auth_id.eq.${uid}`);
 
-  if (error && error.code !== "PGRST116") throw error;
+  if (error) throw error;
 
-  const units = Number(data?.total_units || 0);
-  window.myUnits = units;
-  $("balUnit").textContent = units;
-  $("balGram").textContent = (units/10).toFixed(1);
+  const rows = Array.isArray(data) ? data : [];
 
-  // ✅ clamp & limit untuk JUAL ikut baki
-  const su = $("sellUnit");
-  const btnSell = $("btnSell");
-  if (su){
-    su.max = String(units);
+  let units = 0;
+let cashableUnits = 0;
 
-    let v = Math.max(1, Number(su.value || 1) | 0);
-    if (units <= 0) v = 1;
-    if (v > units) v = units;
+  for (const r of rows){
+    const kind = String(r.kind || "").toUpperCase();
+    const type = String(r.type || "").toUpperCase();
+    const status = String(r.status || "").toUpperCase();
+    const u = Number(r.units || 0);
 
-    su.value = String(v);
+    if (!u) continue;
+
+    if (status !== "PAID" && status !== "APPROVED") continue;
+
+   if (kind === "BUY"){
+  units += u;
+
+  // reward / misi masuk baki paparan, tapi tak boleh jual / tukar RM / tukar 916 / keluar fizikal
+  if (!isRewardOrMissionTxn(r)){
+    cashableUnits += u;
   }
-  if (btnSell) btnSell.disabled = (units <= 0);
 
-  // refresh kiraan
-  try { recalc(); } catch {}
+  continue;
 }
+
+   if (kind === "SELL" || kind === "WITHDRAW" || kind === "CONVERT_916"){
+  units -= u;
+  cashableUnits -= u;
+  continue;
+}
+
+    if (type === "BONUS"){
+      units += u;
+      continue;
+    }
+  }
+
+ if (units < 0) units = 0;
+if (cashableUnits < 0) cashableUnits = 0;
+
+window.myUnits = units;
+window.myCashableUnits = cashableUnits;
+  $("balUnit").textContent = units;
+  $("balGram").textContent = (units / 10).toFixed(1);
+
+  const su = $("sellUnit");
+const btnSell = $("btnSell");
+const cu916 = $("convert916Unit");
+const btnConvert916 = $("btnConvert916");
+
+if (su){
+  su.max = String(cashableUnits);
+
+  let v = Math.max(1, Number(su.value || 1) | 0);
+  if (cashableUnits <= 0) v = 1;
+  if (v > cashableUnits) v = cashableUnits;
+
+  su.value = String(v);
+}
+if (btnSell) btnSell.disabled = (cashableUnits <= 0);
+if (cu916){
+  cu916.max = String(units);
+
+  let cv = Math.max(1, Number(cu916.value || 1) | 0);
+
+  if (units <= 0) cv = 1;
+  if (cv > units) cv = units;
+
+  cu916.value = String(cv);
+}
+
+if (btnConvert916) btnConvert916.disabled = (units <= 0);  try { recalc(); } catch {}
+}
+
 
 /* ================== iOS Wheel Picker Logic ================== */
 let _pickerTargetInput = null;
@@ -963,11 +1236,12 @@ let _historyLoadedOnce = false;
 
 function initPanels(){
   _panels = {
-    panelBuy:  document.getElementById("panelBuy"),
-    panelOut:  document.getElementById("panelOut"),
-    panelSell: document.getElementById("panelSell"),
-    panelHist: document.getElementById("panelHist")
-  };
+  panelBuy:  document.getElementById("panelBuy"),
+  panelOut:  document.getElementById("panelOut"),
+  panelSell: document.getElementById("panelSell"),
+  panelConvert916: document.getElementById("panelConvert916"),
+  panelHist: document.getElementById("panelHist")
+};
 
   document.querySelectorAll(".action-item[data-open]").forEach(el=>{
     el.addEventListener("click", async ()=>{
@@ -1014,30 +1288,57 @@ async function openPanel(id){
 /* ================== Sejarah + pagination ================== */
 let currentFilter = "ALL", allRows=[], pageSize=5, currentPage=1;
 
-async function fetchHistory(){
-  const authUid = await getAuthUid();
-  if (!authUid) throw new Error("Sesi tamat.");
 
-  const { data, error } = await sb.rpc("tabung_history", {
-    p_user_id: authUid,
-    p_paid_only: false
-  });
+async function fetchHistory(){
+  const uid = await getUidGabungan();
+  if (!uid) throw new Error("Sesi tamat.");
+
+  const { data, error } = await sb
+    .from("tabung_txn")
+    .select("created_at, kind, type, status, units, price_per_unit, fee, total, notes, user_id, user_auth_id, meta")
+    .or(`user_id.eq.${uid},user_auth_id.eq.${uid}`)
+    .order("created_at", { ascending: false });
+
   if (error) throw error;
 
-  const KIND_MAP = { BUY:'BELI', SELL:'JUAL', WITHDRAW:'KELUAR FIZIKAL', BELI:'BELI', JUAL:'JUAL', 'KELUAR FIZIKAL':'KELUAR FIZIKAL' };
-
   return (Array.isArray(data) ? data : []).map(x => {
-    const rawKind = (x.kind || x.type || '').toUpperCase();
-    const kind = KIND_MAP[rawKind] || rawKind;
+    const rawKind = String(x.kind || "").toUpperCase();
+    const rawType = String(x.type || "").toUpperCase();
+    const meta = x.meta || {};
+
+    let kindLabel = "-";
+    let noteText = x.notes || "";
+
+    if (rawType === "BONUS" || meta?.source === "POINT_REDEEM"){
+      kindLabel = "BONUS";
+      if (!noteText) {
+        noteText = "Tebusan point masuk tabung";
+      }
+    } else if (rawKind === "BUY") {
+      kindLabel = "BELI";
+    } else if (rawKind === "SELL") {
+      kindLabel = "JUAL";
+   } else if (rawKind === "WITHDRAW") {
+  kindLabel = "KELUAR FIZIKAL";
+} else if (rawKind === "CONVERT_916") {
+  kindLabel = "TUKAR KE 916";
+  if (!noteText) {
+    noteText = "Tukar Tabung ke Emas 916";
+  }
+} else {
+  kindLabel = rawKind || rawType || "-";
+}
+
     return {
       created_at: x.created_at,
-      kind,
-      status: (x.status || '').toUpperCase(),
+      kind: kindLabel,
+      type: rawType,
+      status: String(x.status || "").toUpperCase(),
       units: Number(x.units || 0),
       price_per_unit: Number(x.price_per_unit || 0),
       fee: Number(x.fee || 0),
       total: Number(x.total || 0),
-      notes: x.notes || ''
+      notes: noteText
     };
   });
 }
@@ -1080,20 +1381,32 @@ function renderHistory(){
   const pageRows = rows.slice(start, start+pageSize);
   renderPager(total, currentPage, pageSize);
 
-  body.innerHTML = pageRows.map(x => {
-    const kind = (x.kind || x.type || "").toUpperCase();
-    const status = (x.status || "").toUpperCase();
+ body.innerHTML = pageRows.map(x => {
+    const kind = String(x.kind || "").toUpperCase();
+    const status = String(x.status || "").toUpperCase();
+
     const statusHtml = (() => {
-      if (status === "PAID" && kind === "BELI")           return '<span class="text-success fw-bold">PAID</span>';
-      if (status === "APPROVED" && kind === "JUAL")       return '<span class="text-danger fw-bold">APPROVED</span>';
+      if (status === "PAID" && kind === "BELI") return '<span class="text-success fw-bold">PAID</span>';
+      if (status === "PAID" && kind === "BONUS") return '<span class="text-primary fw-bold">PAID</span>';
+      if (status === "APPROVED" && kind === "JUAL") return '<span class="text-danger fw-bold">APPROVED</span>';
       if (status === "APPROVED" && kind === "KELUAR FIZIKAL") return '<span class="text-warning fw-bold">APPROVED</span>';
-      if (status === "PENDING")                           return '<span class="text-secondary fw-bold">PENDING</span>';
+if (status === "APPROVED" && kind === "TUKAR KE 916") return '<span class="text-success fw-bold">APPROVED</span>';
+      if (status === "PENDING") return '<span class="text-secondary fw-bold">PENDING</span>';
       return `<span class="fw-bold">${status}</span>`;
     })();
+
+    const kindHtml = (() => {
+      if (kind === "BONUS") return '<span class="fw-bold text-primary">🎁 TEBUSAN POINT</span>';
+      if (kind === "BELI") return 'BELI';
+      if (kind === "JUAL") return 'JUAL';
+      if (kind === "KELUAR FIZIKAL") return 'KELUAR FIZIKAL';
+      return kind;
+    })();
+
     return `
       <tr>
         <td>${fmtDT(x.created_at)}</td>
-        <td>${kind}</td>
+        <td>${kindHtml}</td>
         <td class="text-end">${x.units}</td>
         <td class="text-end">${money(x.price_per_unit || 0)}</td>
         <td class="text-end">${money(x.fee || 0)}</td>
@@ -1133,7 +1446,7 @@ function recalc(){
   $("outTotal").textContent = money(fee);
 
   // --- JUAL (ikut baki tabung)
-  const maxSell = Math.max(0, Number(window.myUnits || 0) | 0);
+  const maxSell = Math.max(0, Number(window.myCashableUnits || 0) | 0);
   let su = Math.max(1, Number($("sellUnit").value || 1) | 0);
 
   if (maxSell <= 0) su = 1;
@@ -1144,6 +1457,21 @@ function recalc(){
 
   $("sellTotal").textContent = money(su * sellPrice01);
 
+const cu916El = $("convert916Unit");
+
+if (cu916El){
+  const max = Math.max(0, Number(window.myUnits || 0) | 0);
+
+  let cu916 = Math.max(1, Number(cu916El.value || 1) | 0);
+
+  if (max <= 0) cu916 = 1;
+  if (cu916 > max && max > 0) cu916 = max;
+
+  cu916El.max = String(max);
+  cu916El.value = String(cu916);
+
+  $("convert916Total").textContent = money(cu916 * buyPrice01);
+}
   // optional: disable bila tiada baki
   const btnSell = $("btnSell");
   if (btnSell) btnSell.disabled = (maxSell <= 0);
@@ -1292,6 +1620,108 @@ $("btnBuy").onclick = async () => {
   }
 };
 
+$("btnConvert916").onclick = async () => {
+  await ensureSBSessionOrLogin();
+
+  const units = Math.max(1, Number($("convert916Unit").value || 1) | 0);
+  const total = units * buyPrice01;
+
+  if (units > (Number(window.myUnits || 0) | 0)) {
+    $("convert916Msg").textContent = "❌ Baki tidak mencukupi.";
+    return;
+  }
+
+  const ok = await openConfirm({
+    title: "Sahkan Tukar ke Emas 916",
+    html: `
+      Anda akan menggunakan tabung sebanyak <b>${(units/10).toFixed(1)} g</b> (${units} unit).<br>
+      Nilai digunakan untuk membeli barang kemas 916: <b>${money(total)}</b><br><br>
+      Permohonan ini akan masuk ke admin dahulu untuk disahkan.
+    `,
+    proceedText: "Tukar Barang Kemas 916",
+    cancelText: "Batal"
+  });
+
+  if (!ok) return;
+
+  $("convert916Msg").textContent = "Menghantar permohonan…";
+
+  try {
+    const cust = await getCustomer();
+    if (!cust) throw new Error("Profil pelanggan belum lengkap.");
+
+    let authId = await getAuthUid();
+    if (!authId) {
+      try {
+        const r = await sb.auth.getUser();
+        authId = r?.data?.user?.id || null;
+      } catch {}
+    }
+
+    if (!authId && window.auth_get) authId = window.auth_get().id;
+
+    if (!authId) {
+      alert("Sesi tamat. Sila log masuk semula.");
+      location.href = "login.html?next=" + encodeURIComponent("tabung.html") + "#login";
+      return;
+    }
+
+    const cName = cust?.name || "-";
+    const cPhone = cust?.phone || "-";
+
+    const resp = await sb.rpc("tabung_request_convert916_simple_v1", {
+      p_user_id: authId,
+      p_units: units,
+      p_price_per_unit: buyPrice01,
+      p_name: cName,
+      p_phone: cPhone,
+      p_notes: "Tukar Tabung ke Barang Kemas 916"
+    });
+
+    if (resp.error) throw resp.error;
+
+    const refId = resp.data?.id || resp.data?.request_id || (typeof resp.data === "string" ? resp.data : null);
+    if (!refId) throw new Error("Server tidak pulangkan id transaksi.");
+
+    const link = confirmURL("CONVERT_916", refId);
+
+    const msgAdmin = [
+      "*Permohonan Tukar Tabung ke Barang Kemas 916*",
+      `ID: ${refId}`,
+      `Nama: ${cName}`,
+      `No: ${cPhone}`,
+      `Baki tabung: ${((Number(window.myUnits || 0) / 10)).toFixed(1)} g (${Number(window.myUnits || 0)} unit)`,
+      `Guna: ${(units/10).toFixed(1)} g (${units} unit)`,
+      `Nilai tukar: ${money(total)}`,
+      "",
+      "✅ Sahkan di:",
+      link,
+      ""
+    ].join("\n");
+
+    const msgCust = [
+      "Permohonan tukar Tabung ke Barang Kemas 916 diterima.",
+      `ID: ${refId}`,
+      `Guna: ${(units/10).toFixed(1)} g (${units} unit)`,
+      `Nilai tukar: ${money(total)}`,
+      "Admin akan hubungi anda untuk pilihan barang kemas 916."
+    ].join("\n");
+
+    const okA = await waNotify(ADMIN_WA, msgAdmin, "ADMIN CONVERT916");
+    const okC = await waNotify(cPhone, msgCust, "CUST CONVERT916");
+
+    $("convert916Msg").textContent = (okA || okC)
+      ? "✅ Permohonan tukar ke 916 dihantar."
+      : "❌ Gagal hantar mesej.";
+
+    if (_historyLoadedOnce) await loadHistory();
+    await loadBalance();
+
+  } catch (e) {
+    $("convert916Msg").textContent = "❌ " + (e.message || e);
+  }
+};
+
 /* JUAL → permohonan + WhatsApp */
 $("btnSell").onclick = async () => {
   await ensureSBSessionOrLogin();
@@ -1300,7 +1730,7 @@ $("btnSell").onclick = async () => {
   const bank  = String(($("sellBank").value || "")).trim();
   const total = units * sellPrice01;
 
-  if (units > (Number(window.myUnits||0)|0)) { $("sellMsg").textContent = "❌ Baki tidak mencukupi."; return; }
+  if (units > (Number(window.myCashableUnits||0)|0)) { $("sellMsg").textContent = "❌ Baki tidak mencukupi."; return; }
   if (!bank)           { $("sellMsg").textContent = "❌ Sila masukkan / sahkan no. akaun bank."; return; }
 
   const ok = await openConfirm({
@@ -1387,7 +1817,7 @@ $("btnOut").onclick = async () => {
     const fee     = Number($("outFee")?.value || (weightG >= 5 ? 20 : 15));
 
     if (units <= 0)      { $("outMsg").textContent = "❌ Berat tidak sah."; return; }
-    if (units > (Number(window.myUnits||0)|0)) { $("outMsg").textContent = "❌ Baki tidak mencukupi."; return; }
+   if (units > (Number(window.myUnits||0)|0)) { $("outMsg").textContent = "❌ Baki tidak mencukupi."; return; }
 
     const ok = await openConfirm({
       title: "Sahkan Keluar Fizikal",
@@ -1459,9 +1889,10 @@ $("btnOut").onclick = async () => {
 };
 
 /* ================== Realtime + Filters ================== */
+
 async function initRealtime() {
-  const authUid = await getAuthUid();
-  if (!authUid) return;
+  const uid = await getUidGabungan();
+  if (!uid) return;
 
   const bumpMine = () => {
     loadBalance().catch(console.error);
@@ -1472,7 +1903,9 @@ async function initRealtime() {
     .on('postgres_changes', { event: '*', schema: 'public', table: 'tabung_txn' },
       (p) => {
         const row = p.new || p.old || {};
-        if (row.user_id === authUid) bumpMine();
+        if (row.user_id === uid || row.user_auth_id === uid) {
+          bumpMine();
+        }
         loadStock().catch(console.error);
       })
     .subscribe();
@@ -1482,7 +1915,10 @@ async function initRealtime() {
       () => loadStock().catch(console.error))
     .subscribe();
 
-  window.addEventListener('beforeunload', () => { sb.removeChannel(ch1); sb.removeChannel(ch2); });
+  window.addEventListener('beforeunload', () => {
+    sb.removeChannel(ch1);
+    sb.removeChannel(ch2);
+  });
 }
 
 function bindFilters(){
@@ -1521,9 +1957,16 @@ function bindFilters(){
       "Beli: min 1 unit. Max ikut stok tabung."
     );
 
+attachPickerToInput(
+  "convert916Unit",
+  () => ({ min: 1, max: Math.max(1, Number(window.myUnits||0)|0) }),
+  "Pilih Unit",
+  "Tukar ke 916: max ikut baki tabung anda."
+);
+
     attachPickerToInput(
       "sellUnit",
-      () => ({ min: 1, max: Math.max(1, Number(window.myUnits||0)|0) }),
+      () => ({ min: 1, max: Math.max(1, Number(window.myCashableUnits||0)|0) }),
       "Pilih Unit",
       "Jual: max ikut baki tabung anda."
     );
@@ -1531,6 +1974,173 @@ function bindFilters(){
   }catch(e){
     alert("Ralat memuat data: " + (e.message || e));
   }
+})();
+</script>
+
+<script>
+/* =========================
+   iPhone-style swipe back (Tabung) with drag animation
+   - swipe dari tepi kiri
+   - page ikut jari
+   - modal tutup dulu
+   - offcanvas tutup dulu
+   - wheel picker tak trigger swipe
+   ========================= */
+(function(){
+  const page = document.querySelector('.page-shell');
+  if (!page) return;
+
+  let startX = 0;
+  let startY = 0;
+  let currentX = 0;
+  let tracking = false;
+  let dragging = false;
+
+  const EDGE_ZONE = 24;
+  const MAX_DY = 70;
+  const TRIGGER_RATIO = 0.33;
+
+  function getOpenModalEl(){
+    const modals = Array.from(document.querySelectorAll('.modal.show'));
+    return modals.length ? modals[modals.length - 1] : null;
+  }
+
+  function getOpenOffcanvasEl(){
+    const panels = Array.from(document.querySelectorAll('.offcanvas.show'));
+    return panels.length ? panels[panels.length - 1] : null;
+  }
+
+  function isWheelPickerOpen(){
+    const picker = document.getElementById('numberPickerModal');
+    return !!(picker && picker.classList.contains('show'));
+  }
+
+  function closeTopModal(){
+    const el = getOpenModalEl();
+    if (!el) return false;
+
+    try{
+      const inst = bootstrap.Modal.getInstance(el) || bootstrap.Modal.getOrCreateInstance(el);
+      inst.hide();
+      return true;
+    }catch(_){
+      el.classList.remove('show');
+      el.style.display = 'none';
+      document.body.classList.remove('modal-open');
+      document.querySelectorAll('.modal-backdrop').forEach(x => x.remove());
+      return true;
+    }
+  }
+
+  function closeOffcanvas(){
+    const el = getOpenOffcanvasEl();
+    if (!el) return false;
+
+    try{
+      const inst = bootstrap.Offcanvas.getInstance(el) || bootstrap.Offcanvas.getOrCreateInstance(el);
+      inst.hide();
+      return true;
+    }catch(_){
+      el.classList.remove('show');
+      el.style.visibility = 'hidden';
+      document.body.classList.remove('offcanvas-open');
+      document.querySelectorAll('.offcanvas-backdrop').forEach(x => x.remove());
+      return true;
+    }
+  }
+
+  function goBackPage(){
+    if (window.history.length > 1){
+      history.back();
+    }else{
+      location.href = 'index.html';
+    }
+  }
+
+  function resetPage(){
+    page.classList.remove('dragging');
+    page.style.transform = 'translateX(0)';
+    setTimeout(()=>{
+      document.body.classList.remove('swipe-peek');
+    }, 220);
+  }
+
+  document.addEventListener('touchstart', function(e){
+    if (!e.touches || !e.touches.length) return;
+    if (isWheelPickerOpen()) return;
+
+    const t = e.touches[0];
+    startX = t.clientX;
+    startY = t.clientY;
+    currentX = 0;
+    dragging = false;
+
+    tracking = startX <= EDGE_ZONE;
+  }, { passive:true });
+
+  document.addEventListener('touchmove', function(e){
+    if (!tracking || !e.touches || !e.touches.length) return;
+    if (isWheelPickerOpen()) return;
+
+    const t = e.touches[0];
+    const dx = t.clientX - startX;
+    const dy = Math.abs(t.clientY - startY);
+
+    if (dy > MAX_DY) return;
+    if (dx <= 0) return;
+
+    currentX = dx;
+    dragging = true;
+
+    document.body.classList.add('swipe-peek');
+    page.classList.add('dragging');
+    page.style.transform = `translateX(${dx}px)`;
+  }, { passive:true });
+
+  document.addEventListener('touchend', function(){
+    if (!tracking) return;
+
+    tracking = false;
+    page.classList.remove('dragging');
+
+    if (!dragging){
+      document.body.classList.remove('swipe-peek');
+      return;
+    }
+
+    const threshold = window.innerWidth * TRIGGER_RATIO;
+
+    if (currentX >= threshold){
+      page.style.transform = `translateX(${window.innerWidth}px)`;
+
+      setTimeout(()=>{
+        if (closeTopModal()) {
+          page.style.transition = 'none';
+          page.style.transform = 'translateX(0)';
+          void page.offsetHeight;
+          page.style.transition = '';
+          document.body.classList.remove('swipe-peek');
+          return;
+        }
+
+        if (closeOffcanvas()) {
+          page.style.transition = 'none';
+          page.style.transform = 'translateX(0)';
+          void page.offsetHeight;
+          page.style.transition = '';
+          document.body.classList.remove('swipe-peek');
+          return;
+        }
+
+        goBackPage();
+      }, 180);
+    } else {
+      resetPage();
+    }
+
+    dragging = false;
+    currentX = 0;
+  }, { passive:true });
 })();
 </script>
 </body>

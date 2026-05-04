@@ -1,0 +1,1108 @@
+<!doctype html>
+<html lang="ms">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<link rel="stylesheet" href="/global.css">
+<title>Misi 0.1g – Emas Amir</title>
+
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+
+<style>
+:root{
+  --bg:#f6f7f9;
+  --card:#ffffff;
+  --border:#e9ecef;
+  --muted:#6c757d;
+  --text:#212529;
+}
+
+*{box-sizing:border-box}
+body{
+  background:var(--bg);
+  color:var(--text);
+}
+
+.wrap{
+  max-width:920px;
+  margin:16px auto 48px;
+  padding:12px;
+}
+
+.topbar{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:10px;
+  margin-bottom:14px;
+}
+
+.topbar-title{
+  font-weight:900;
+  font-size:20px;
+}
+
+.icon-btn{
+  border-radius:12px;
+}
+
+.hidden-section{
+  display:none !important;
+}
+
+/* HERO */
+.mission-card{
+  border-radius:22px;
+  padding:18px;
+  color:#111827;
+  background:
+    radial-gradient(circle at 22% 18%, rgba(255,255,255,.48), transparent 32%),
+    radial-gradient(circle at 78% 80%, rgba(255,255,255,.16), transparent 30%),
+    linear-gradient(135deg,#fff3b0 0%, #facc15 46%, #f59e0b 100%);
+  box-shadow:
+    0 18px 40px rgba(245,158,11,.24),
+    inset 0 1px 0 rgba(255,255,255,.55);
+  position:relative;
+  overflow:hidden;
+}
+
+.mission-card::after{
+  content:"";
+  position:absolute;
+  top:10px;
+  left:16px;
+  width:80px;
+  height:14px;
+  border-radius:999px;
+  background:rgba(255,255,255,.24);
+  transform:rotate(-12deg);
+  pointer-events:none;
+}
+
+.hero-badge{
+  display:inline-flex;
+  align-items:center;
+  gap:8px;
+  padding:6px 10px;
+  border-radius:999px;
+  background:rgba(255,255,255,.45);
+  border:1px solid rgba(255,255,255,.35);
+  font-size:12px;
+  font-weight:800;
+  margin-bottom:10px;
+}
+
+.hero-title{
+  font-size:28px;
+  font-weight:900;
+  line-height:1.08;
+  margin-bottom:8px;
+}
+
+.hero-sub{
+  font-size:14px;
+  line-height:1.5;
+  color:#3f4752;
+  max-width:720px;
+}
+
+.progress-top{
+  display:flex;
+  align-items:flex-end;
+  justify-content:space-between;
+  gap:10px;
+  flex-wrap:wrap;
+  margin-top:12px;
+}
+
+.progress-big{
+  font-size:38px;
+  line-height:1;
+  font-weight:900;
+}
+
+.progress-note{
+  font-size:13px;
+  color:#374151;
+  font-weight:700;
+}
+
+.progress-bar-wrap{
+  height:12px;
+  background:rgba(255,255,255,.32);
+  border-radius:999px;
+  overflow:hidden;
+  margin-top:12px;
+}
+.progress-bar-fill{
+  height:100%;
+  width:0%;
+  background:#fff;
+  border-radius:999px;
+  transition:width .35s ease;
+}
+
+.milestone-strip{
+  display:flex;
+  gap:8px;
+  flex-wrap:wrap;
+  margin-top:12px;
+}
+.milestone-pill{
+  padding:7px 10px;
+  border-radius:999px;
+  background:rgba(255,255,255,.40);
+  border:1px solid rgba(255,255,255,.45);
+  font-size:12px;
+  font-weight:800;
+  color:#5b4b00;
+}
+.milestone-pill.active{
+  background:#111827;
+  border-color:#111827;
+  color:#fff;
+}
+
+/* BOX */
+.box{
+  background:#fff;
+  border:1px solid var(--border);
+  border-radius:18px;
+  padding:16px;
+  margin-top:14px;
+  box-shadow:0 1px 2px rgba(16,24,40,.04);
+}
+
+.section-title{
+  font-weight:900;
+  font-size:18px;
+  margin-bottom:12px;
+}
+
+.info-strip{
+  display:grid;
+  gap:10px;
+}
+
+.info-item{
+  border:1px solid var(--border);
+  border-radius:14px;
+  padding:12px;
+  background:#fff;
+}
+
+.info-item-title{
+  font-weight:800;
+  margin-bottom:3px;
+}
+
+.info-item-sub{
+  font-size:13px;
+  color:#6b7280;
+}
+
+/* BEFORE JOIN */
+.state-card{
+  background:#fff;
+  border:1px solid var(--border);
+  border-radius:18px;
+  padding:18px;
+  box-shadow:0 1px 2px rgba(16,24,40,.04);
+}
+
+.state-badge{
+  display:inline-flex;
+  align-items:center;
+  gap:8px;
+  padding:6px 10px;
+  border-radius:999px;
+  background:#fff8d8;
+  border:1px solid #f6df8e;
+  color:#7a5a00;
+  font-size:12px;
+  font-weight:800;
+}
+
+.state-title{
+  font-size:30px;
+  font-weight:900;
+  line-height:1.08;
+  margin-top:12px;
+  margin-bottom:8px;
+}
+
+.state-sub{
+  color:#5f6b76;
+  font-size:15px;
+  line-height:1.6;
+}
+
+.rule-list{
+  display:grid;
+  gap:10px;
+  margin-top:16px;
+}
+
+.rule-item{
+  display:flex;
+  gap:12px;
+  align-items:flex-start;
+  border:1px solid #eef1f4;
+  border-radius:14px;
+  padding:12px;
+  background:#fff;
+}
+
+.rule-icon{
+  width:38px;
+  height:38px;
+  border-radius:12px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  background:#f8fafc;
+  flex:0 0 38px;
+  font-size:18px;
+}
+
+.rule-title{
+  font-weight:800;
+  line-height:1.15;
+  margin-bottom:2px;
+}
+
+.rule-sub{
+  color:#6b7280;
+  font-size:13px;
+  line-height:1.45;
+}
+
+.join-actions{
+  display:flex;
+  gap:10px;
+  flex-wrap:wrap;
+  margin-top:16px;
+}
+.join-actions .btn{
+  flex:1 1 180px;
+  border-radius:12px;
+  font-weight:800;
+}
+
+.btn-main{
+  border-radius:12px;
+  font-weight:800;
+}
+
+.share-grid{
+  display:grid;
+  gap:10px;
+}
+
+/* ANIM */
+.anim-overlay{
+  position:fixed;
+  inset:0;
+  background:rgba(0,0,0,.62);
+  display:none;
+  align-items:center;
+  justify-content:center;
+  z-index:9999;
+  padding:18px;
+}
+.anim-box{
+  width:min(92vw, 340px);
+  background:
+    radial-gradient(circle at 25% 20%, rgba(255,255,255,.16), transparent 30%),
+    linear-gradient(180deg,#111827,#0f172a);
+  color:#fff;
+  border-radius:24px;
+  padding:26px 22px;
+  text-align:center;
+  box-shadow:0 28px 80px rgba(15,23,42,.35);
+}
+.anim-mini{
+  display:inline-flex;
+  align-items:center;
+  gap:8px;
+  border-radius:999px;
+  background:rgba(255,255,255,.10);
+  padding:6px 10px;
+  font-size:12px;
+  font-weight:800;
+  margin-bottom:10px;
+}
+.anim-num{
+  font-size:54px;
+  font-weight:900;
+  line-height:1;
+  margin-bottom:6px;
+}
+.anim-text{
+  font-size:22px;
+  font-weight:900;
+  line-height:1.15;
+}
+.anim-sub{
+  margin-top:8px;
+  color:rgba(255,255,255,.78);
+  font-size:14px;
+  line-height:1.45;
+}
+
+@media (max-width:576px){
+  .wrap{
+    margin-top:10px;
+    padding:10px;
+  }
+  .topbar-title{
+    font-size:18px;
+  }
+  .hero-title{
+    font-size:24px;
+  }
+  .progress-big{
+    font-size:34px;
+  }
+  .state-title{
+    font-size:25px;
+  }
+}
+
+.anim-overlay{
+  opacity:0;
+  transition:opacity .4s ease;
+}
+.anim-overlay.show{
+  display:flex;
+  opacity:1;
+}
+.anim-overlay.hide{
+  opacity:0;
+}
+</style>
+</head>
+
+<body>
+
+<div id="afterJoinSection" class="wrap hidden-section">
+  <div class="topbar">
+    <a href="index.html" class="btn btn-outline-secondary icon-btn">🏠</a>
+    <div class="topbar-title">Misi 0.1g Percuma</div>
+    <div></div>
+  </div>
+
+  <div class="mission-card">
+    <div class="hero-badge">🎯 Misi Log Masuk 60 Hari</div>
+
+    <div class="hero-title">Teruskan langkah anda ke 0.1g percuma</div>
+    <div class="hero-sub">
+      Kumpulkan 60 hari log masuk dan lengkapkan sekurang-kurangnya 1 pembelian PAID untuk melayakkan anda menebus 0.1g emas ke Tabung Emas.
+    </div>
+
+    <div class="progress-top">
+      <div>
+        <div id="progressText" class="progress-big">Memuatkan...</div>
+        <div id="todayStatus" class="progress-note">Sedang semak status semasa...</div>
+      </div>
+      <div class="text-end">
+        <div class="progress-note">Kitaran harian</div>
+        <div class="fw-bold">10:00 pagi → 9:59 pagi</div>
+      </div>
+    </div>
+
+    <div class="progress-bar-wrap">
+      <div id="progressBar" class="progress-bar-fill"></div>
+    </div>
+
+    <div class="milestone-strip">
+      <div class="milestone-pill" id="ms7">7 Hari</div>
+      <div class="milestone-pill" id="ms14">14 Hari</div>
+      <div class="milestone-pill" id="ms30">30 Hari</div>
+      <div class="milestone-pill" id="ms59">59 Hari</div>
+      <div class="milestone-pill" id="ms60">60 Hari</div>
+    </div>
+  </div>
+
+  <div class="box">
+    <div class="section-title">📋 Status Syarat</div>
+    <div class="info-strip">
+      <div class="info-item">
+        <div class="info-item-title" id="statusDays">Log masuk: -</div>
+        <div class="info-item-sub">Progress anda akan meningkat apabila hari baru berjaya direkodkan.</div>
+      </div>
+      <div class="info-item">
+        <div class="info-item-title" id="statusPurchase">Pembelian: -</div>
+        <div class="info-item-sub">Sekurang-kurangnya 1 pembelian PAID daripada 916, GoldBar/Coin atau Tabung Emas.</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="box text-center">
+    <div class="section-title mb-3">✅ Daftar Harian</div>
+    <button id="btnCheckin" class="btn btn-primary btn-main w-100">Rekod Hari Ini</button>
+    <button id="btnRedeem" class="btn btn-success btn-main w-100 mt-2" style="display:none">🎁 Tebus 0.1g</button>
+<button id="btnRedeemPending" class="btn btn-warning btn-main w-100 mt-2" style="display:none" disabled>🕒 Tunggu admin check dan sahkan</button>
+<button id="btnRedeemSuccess" class="btn btn-secondary btn-main w-100 mt-2" style="display:none" disabled>✅ Tahniah! Anda telah berjaya tebus 0.1g</button>
+  </div>
+
+  <div class="box text-center">
+    <div class="section-title mb-3">📤 Kongsi Progress</div>
+    <div class="share-grid">
+      <button id="btnShareImg" class="btn btn-outline-dark">Kongsi Gambar</button>
+      <button id="btnShareLink" class="btn btn-outline-dark">Kongsi Link</button>
+    </div>
+  </div>
+</div>
+
+<div id="beforeJoinSection" class="wrap hidden-section">
+  <div class="topbar">
+    <a href="index.html" class="btn btn-outline-secondary icon-btn">🏠</a>
+    <div class="topbar-title">Misi 0.1g Percuma</div>
+    <div></div>
+  </div>
+
+  <div class="state-card">
+    <div class="state-badge">🎯 Kempen Log Masuk 60 Hari</div>
+
+    <div class="state-title">Sertai Misi 0.1g Percuma</div>
+    <div class="state-sub">
+      Kumpulkan 60 hari log masuk dan lengkapkan minimum 1 pembelian untuk melayakkan anda menebus 0.1g emas ke Tabung Emas.
+    </div>
+
+    <div class="rule-list">
+      <div class="rule-item">
+        <div class="rule-icon">📅</div>
+        <div>
+          <div class="rule-title">Log masuk 60 hari</div>
+<div class="rule-sub">1 hari dikira 1 kali sahaja. Jika anda tidak buka app pada cycle harian seterusnya, progress boleh berkurang mengikut hari yang terlepas. Minimum progress kekal 1 hari selepas anda mula misi.</div>
+        </div>
+      </div>
+
+      <div class="rule-item">
+        <div class="rule-icon">🕙</div>
+        <div>
+          <div class="rule-title">Cycle harian 10:00 pagi</div>
+          <div class="rule-sub">Hari baru bermula pada jam 10:00 pagi sehingga 9:59 pagi keesokan hari.</div>
+        </div>
+      </div>
+
+      <div class="rule-item">
+        <div class="rule-icon">🛍️</div>
+        <div>
+          <div class="rule-title">Minimum 1 pembelian PAID</div>
+          <div class="rule-sub">Pembelian layak daripada 916, GoldBar/Coin atau Tabung Emas yang berjaya dibayar.</div>
+        </div>
+      </div>
+
+      <div class="rule-item">
+        <div class="rule-icon">🪪</div>
+        <div>
+          <div class="rule-title">1 IC hanya untuk 1 akaun</div>
+          <div class="rule-sub">Penyertaan berganda atau maklumat tidak sah boleh dibatalkan.</div>
+        </div>
+      </div>
+
+      <div class="rule-item">
+        <div class="rule-icon">🎁</div>
+        <div>
+          <div class="rule-title">Ganjaran masuk ke Tabung Emas</div>
+          <div class="rule-sub">Selepas cukup syarat, butang tebus akan keluar dan permintaan anda akan melalui semakan admin terlebih dahulu.</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="join-actions">
+      <a href="index.html" class="btn btn-outline-secondary">Nanti Dulu</a>
+      <button id="btnJoin" class="btn btn-primary">Sertai Misi</button>
+    </div>
+  </div>
+</div>
+
+<div id="anim" class="anim-overlay">
+  <div class="anim-box">
+    <div class="anim-mini">✨ Misi 0.1g Percuma</div>
+    <div class="anim-num" id="animDay">1</div>
+    <div class="anim-text" id="animText">Hari berjaya</div>
+    <div class="anim-sub" id="animSub">Progress anda telah dikemaskini.</div>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="/auth.js?v=13.1"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+
+<script>
+const sb = window.sb;
+const auth = (window.auth_get && window.auth_get()) || {};
+let user_id = null;
+let currentShareSlug = "";
+const phone = auth?.phone || auth?.user_phone || null;
+const $ = id => document.getElementById(id);
+
+function makeShareSlug(name, phone){
+  const base = String(name || "pengguna-emas-amir")
+    .toLowerCase()
+    .trim()
+    .replace(/[^\w\s-]/g, "")
+    .replace(/\s+/g, "-")
+    .replace(/-+/g, "-")
+    .replace(/^-|-$/g, "");
+
+  const tail = String(phone || "")
+    .replace(/\D+/g, "")
+    .slice(-4);
+
+  return tail ? `${base}-${tail}` : base;
+}
+
+function getDisplayNameFromAuth(){
+  return auth?.name || auth?.customer_name || "pengguna-emas-amir";
+}
+
+async function resolveMissionUserId(){
+  try{
+    const sess = await sb.auth.getSession();
+    const authUid = sess?.data?.session?.user?.id || null;
+
+    console.log("[MISSION DEBUG] auth_get() =", auth);
+    console.log("[MISSION DEBUG] auth_get.id =", auth?.id || null);
+    console.log("[MISSION DEBUG] auth_get.auth_user_id =", auth?.auth_user_id || null);
+    console.log("[MISSION DEBUG] phone =", phone);
+    console.log("[MISSION DEBUG] supabase auth uid =", authUid);
+
+    user_id = authUid || auth?.auth_user_id || null;
+
+    console.log("[MISSION DEBUG] final mission user_id =", user_id);
+    return user_id;
+  }catch(e){
+    console.warn("[MISSION DEBUG] resolveMissionUserId error:", e);
+    user_id = auth?.auth_user_id || null;
+    console.log("[MISSION DEBUG] fallback mission user_id =", user_id);
+    return user_id;
+  }
+}
+
+function showBeforeJoin(){
+  $("beforeJoinSection").classList.remove("hidden-section");
+  $("afterJoinSection").classList.add("hidden-section");
+}
+
+function showAfterJoin(){
+  $("beforeJoinSection").classList.add("hidden-section");
+  $("afterJoinSection").classList.remove("hidden-section");
+}
+
+function updateMilestones(days){
+  [
+    ["ms7", 7],
+    ["ms14", 14],
+    ["ms30", 30],
+    ["ms59", 59],
+    ["ms60", 60]
+  ].forEach(([id, min])=>{
+    const el = $(id);
+    if (!el) return;
+    if (Number(days || 0) >= min) el.classList.add("active");
+    else el.classList.remove("active");
+  });
+}
+
+function getMilestoneText(d){
+  if (d == 7) return "🔥 7 Hari Pertama";
+  if (d == 14) return "💪 14 Hari Terkumpul";
+  if (d == 30) return "🚀 Separuh Jalan";
+  if (d == 59) return "😱 Lagi 1 Hari";
+  if (d >= 60) return "🎉 Anda Dah Layak Tebus";
+  return "Hari ke " + d + " berjaya direkodkan";
+}
+
+function showAnim(day, isFirstJoin){
+  $("animDay").textContent = day;
+
+  if (isFirstJoin){
+    $("animText").textContent = "Bermulanya misi anda";
+    $("animSub").textContent = "Hari pertama berjaya direkodkan. Teruskan log masuk untuk capai 0.1g percuma.";
+  } else {
+    $("animText").textContent = getMilestoneText(day);
+    $("animSub").textContent = "Progress anda telah dikemaskini untuk hari ini.";
+  }
+
+  const el = $("anim");
+el.classList.add("show");
+
+setTimeout(()=>{
+  el.classList.add("hide");
+
+  setTimeout(()=>{
+    el.classList.remove("show","hide");
+    el.style.display = "none";
+  }, 400);
+}, 4000);
+}
+
+async function loadMissionState(){
+  const resolvedUserId = await resolveMissionUserId();
+
+  if (!resolvedUserId){
+    alert("Sila login dahulu.");
+    location.href = "/login.html#login";
+    return;
+  }
+
+  const { data, error } = await sb
+    .from("mission_01g_users")
+    .select("*")
+    .eq("user_id", resolvedUserId)
+    .maybeSingle();
+
+  console.log("[MISSION DEBUG] mission_01g_users row =", data);
+  console.log("[MISSION DEBUG] mission_01g_users error =", error);
+
+  if (error){
+    console.error("[mission] mission_01g_users error:", error);
+    alert("Tak dapat semak status misi sekarang.");
+    return;
+  }
+
+  if (!data){
+    showBeforeJoin();
+    return;
+  }
+
+  showAfterJoin();
+
+currentShareSlug = data.share_slug || "";
+console.log("[MISSION DEBUG] currentShareSlug =", currentShareSlug);
+
+  const r = await sb.rpc("mission_01g_refresh", { p_user_id: resolvedUserId });
+  console.log("[MISSION DEBUG] refresh response =", r);
+
+  if (r.error){
+    console.error("[mission] mission_01g_refresh error:", r.error);
+    alert("Tak dapat semak progress misi sekarang.");
+    return;
+  }
+
+ const days = Number(r.data?.total_days || 0);
+const purchaseDone = !!r.data?.purchase_done;
+const rewardClaimed = !!r.data?.reward_claimed;
+
+$("progressText").textContent = days + "/60 hari";
+$("progressBar").style.width = Math.max(0, Math.min(100, (days / 60) * 100)) + "%";
+$("statusDays").textContent = "Log masuk: " + days + "/60";
+
+if (days > 0){
+  $("todayStatus").textContent = "Hari baru akan bertukar pada jam 10:00 pagi. Jika anda tidak buka app pada cycle seterusnya, progress boleh berkurang.";
+} else {
+  $("todayStatus").textContent = "Tekan butang rekod apabila hari semasa belum direkodkan.";
+}
+
+if (purchaseDone){
+  $("statusPurchase").innerHTML = "Pembelian: ✔ Syarat pembelian lengkap";
+} else {
+  $("statusPurchase").innerHTML = "Pembelian: ❌ Minimum 1 pembelian masih belum lengkap";
+}
+
+updateMilestones(days);
+
+// reset semua button dulu
+$("btnRedeem").style.display = "none";
+$("btnRedeemPending").style.display = "none";
+$("btnRedeemSuccess").style.display = "none";
+
+let redeemPending = false;
+let redeemApproved = false;
+
+try{
+  const redeemRes = await sb
+    .from("points_redeem_requests")
+    .select("status")
+    .eq("reward_code", "MISSION_010G")
+    .or(`customer_id.eq.${resolvedUserId},phone.eq.${phone || ""}`)
+    .order("created_at", { ascending:false })
+    .limit(1)
+    .maybeSingle();
+
+  if (redeemRes?.data){
+    const st = String(redeemRes.data.status || "").toUpperCase();
+    if (st === "PENDING"){
+      redeemPending = true;
+    }
+    if (st === "APPROVED" || st === "DONE" || st === "COMPLETED"){
+      redeemApproved = true;
+    }
+  }
+}catch(e){
+  console.warn("[MISSION DEBUG] redeem status check error:", e);
+}
+
+if (rewardClaimed || redeemApproved){
+  $("btnRedeemSuccess").style.display = "";
+} else if (redeemPending){
+  $("btnRedeemPending").style.display = "";
+} else if (days >= 60 && purchaseDone){
+  $("btnRedeem").style.display = "";
+}
+
+  const todayCycle = new Date(Date.now() - (10 * 60 * 60 * 1000));
+const todayCycleStr =
+  todayCycle.getFullYear() + "-" +
+  String(todayCycle.getMonth() + 1).padStart(2, "0") + "-" +
+  String(todayCycle.getDate()).padStart(2, "0");
+
+const todayDone = String(data.last_checkin_cycle_date || "") === todayCycleStr;
+
+if (todayDone){
+  $("btnCheckin").disabled = true;
+  $("btnCheckin").textContent = "✔ Dah Rekod Hari Ini";
+  $("btnCheckin").classList.remove("btn-primary");
+  $("btnCheckin").classList.add("btn-secondary");
+} else {
+  $("btnCheckin").disabled = false;
+  $("btnCheckin").textContent = "Rekod Hari Ini";
+  $("btnCheckin").classList.remove("btn-secondary");
+  $("btnCheckin").classList.add("btn-primary");
+}
+}
+
+$("btnJoin").addEventListener("click", async ()=>{
+  const resolvedUserId = await resolveMissionUserId();
+
+  console.log("[MISSION DEBUG] join -> resolvedUserId =", resolvedUserId);
+  console.log("[MISSION DEBUG] join -> phone =", phone);
+
+  if (!resolvedUserId){
+    alert("User ID sebenar tidak dijumpai. Sila login semula.");
+    return;
+  }
+
+  const shareSlug = makeShareSlug(getDisplayNameFromAuth(), phone);
+  console.log("[MISSION DEBUG] join -> shareSlug =", shareSlug);
+
+  const joinRes = await sb.rpc("mission_01g_join", {
+    p_phone: phone,
+    p_share_slug: shareSlug
+  });
+
+  console.log("[MISSION DEBUG] join rpc response =", joinRes);
+
+  if (joinRes.error){
+    alert("Gagal sertai misi: " + joinRes.error.message);
+    return;
+  }
+
+  const r = await sb.rpc("mission_01g_checkin_penalty_v1", { p_user_id: resolvedUserId });
+  console.log("[MISSION DEBUG] first checkin response =", r);
+
+  if (r.error){
+  alert("Misi berjaya disertai, tetapi rekod hari pertama gagal: " + r.error.message);
+  location.reload();
+  return;
+}
+
+if (r.data?.ok){
+  showAfterJoin();
+  await loadMissionState();
+  showAnim(r.data.days || 1, true);
+  return;
+}
+
+location.reload();
+});
+
+$("btnCheckin").addEventListener("click", async ()=>{
+  const resolvedUserId = await resolveMissionUserId();
+
+  console.log("[MISSION DEBUG] checkin -> resolvedUserId =", resolvedUserId);
+
+  if (!resolvedUserId){
+    alert("User ID sebenar tidak dijumpai. Sila login semula.");
+    return;
+  }
+
+  const r = await sb.rpc("mission_01g_checkin_penalty_v1", { p_user_id: resolvedUserId });
+  console.log("[MISSION DEBUG] checkin response =", r);
+
+  if (r.error){
+  alert("Gagal rekod hari ini: " + r.error.message);
+  return;
+}
+
+if (r.data?.ok){
+  showAnim(r.data.days || 1, false);
+}
+
+await loadMissionState();
+});
+
+
+$("btnRedeem").addEventListener("click", async ()=>{
+  const resolvedUserId = await resolveMissionUserId();
+
+  console.log("[MISSION DEBUG] redeem -> resolvedUserId =", resolvedUserId);
+
+  if (!resolvedUserId){
+    alert("User ID sebenar tidak dijumpai. Sila login semula.");
+    return;
+  }
+
+  const r = await sb.rpc("mission_01g_redeem", { p_user_id: resolvedUserId });
+  console.log("[MISSION DEBUG] redeem response =", r);
+
+  if (r.error){
+    alert("Gagal tebus: " + r.error.message);
+    return;
+  }
+
+  alert("Permintaan tebus berjaya dihantar. Tunggu admin check dan sahkan.");
+  await loadMissionState();
+});
+$("btnShareImg").addEventListener("click", async ()=>{
+  const canvas = document.createElement("canvas");
+  canvas.width = 1080;
+  canvas.height = 1350;
+  const ctx = canvas.getContext("2d");
+
+  const progressText = $("progressText").textContent || "0/60 hari";
+  const days = Number((progressText.split("/")[0] || "0").replace(/\D+/g,""));
+  const progressWidth = Math.max(0, Math.min(920, (days / 60) * 920));
+
+  // background gold premium
+  const bg = ctx.createLinearGradient(0, 0, 1080, 1350);
+  bg.addColorStop(0, "#fff7cc");
+  bg.addColorStop(.30, "#fde68a");
+  bg.addColorStop(.65, "#facc15");
+  bg.addColorStop(1, "#f59e0b");
+  ctx.fillStyle = bg;
+  ctx.fillRect(0, 0, 1080, 1350);
+
+  // glow bulat
+  ctx.fillStyle = "rgba(255,255,255,.22)";
+  ctx.beginPath();
+  ctx.arc(170, 180, 150, 0, Math.PI * 2);
+  ctx.fill();
+
+  ctx.fillStyle = "rgba(255,255,255,.14)";
+  ctx.beginPath();
+  ctx.arc(960, 1210, 230, 0, Math.PI * 2);
+  ctx.fill();
+
+  // card putih dalam
+  ctx.fillStyle = "rgba(255,255,255,.20)";
+  roundRect(ctx, 54, 58, 972, 1230, 34, true, false);
+
+  // badge
+  ctx.fillStyle = "rgba(255,255,255,.68)";
+  roundRect(ctx, 82, 94, 315, 58, 29, true, false);
+  ctx.fillStyle = "#111827";
+  ctx.font = "bold 28px sans-serif";
+  ctx.fillText("🎯 Misi 0.1g Percuma", 108, 132);
+
+  // title
+  ctx.fillStyle = "#111827";
+  ctx.font = "bold 64px sans-serif";
+  ctx.fillText("Progress Misi Saya", 82, 235);
+
+  // sub
+  ctx.font = "34px sans-serif";
+  ctx.fillStyle = "#374151";
+  wrapText(
+    ctx,
+    "Saya sedang kumpul hari log masuk untuk capai ganjaran 0.1g emas ke Tabung Emas.",
+    82,
+    300,
+    910,
+    48
+  );
+
+  // progress besar
+  ctx.fillStyle = "#111827";
+  ctx.font = "bold 148px sans-serif";
+  ctx.fillText(progressText, 82, 510);
+
+  ctx.font = "bold 34px sans-serif";
+  ctx.fillStyle = "#374151";
+  ctx.fillText("Progress semasa", 86, 560);
+
+  // bar bg
+  ctx.fillStyle = "rgba(255,255,255,.48)";
+  roundRect(ctx, 82, 610, 920, 30, 15, true, false);
+
+  // bar fill
+  ctx.fillStyle = "#ffffff";
+  roundRect(ctx, 82, 610, Math.max(30, progressWidth), 30, 15, true, false);
+
+  // status
+  ctx.fillStyle = "rgba(17,24,39,.92)";
+  roundRect(ctx, 82, 688, 420, 70, 35, true, false);
+
+  ctx.fillStyle = "#ffffff";
+  ctx.font = "bold 32px sans-serif";
+  ctx.fillText(getShareStatusText(days), 112, 733);
+
+  // milestone mini
+  const milestones = [
+    { label:"7 Hari", x:82 },
+    { label:"14 Hari", x:262 },
+    { label:"30 Hari", x:462 },
+    { label:"59 Hari", x:662 },
+    { label:"60 Hari", x:842 }
+  ];
+
+  milestones.forEach((m, idx)=>{
+    const targets = [7,14,30,59,60];
+    const active = days >= targets[idx];
+    ctx.fillStyle = active ? "#111827" : "rgba(255,255,255,.48)";
+    roundRect(ctx, m.x, 792, 150, 62, 31, true, false);
+    ctx.fillStyle = active ? "#ffffff" : "#111827";
+    ctx.font = "bold 26px sans-serif";
+    ctx.fillText(m.label, m.x + 27, 831);
+  });
+
+  // cta box
+  ctx.fillStyle = "rgba(255,255,255,.72)";
+  roundRect(ctx, 82, 920, 920, 210, 28, true, false);
+
+  ctx.fillStyle = "#111827";
+  ctx.font = "bold 42px sans-serif";
+  ctx.fillText("Jom capai 0.1g percuma bersama saya ✨", 112, 995);
+
+  ctx.font = "30px sans-serif";
+  ctx.fillStyle = "#374151";
+  wrapText(
+    ctx,
+    "Buka app atau laman web Emas Amir dan sertai misi anda sekarang.",
+    112,
+    1050,
+    840,
+    42
+  );
+
+  // branding
+  ctx.fillStyle = "#111827";
+  ctx.font = "bold 38px sans-serif";
+  ctx.fillText("emasamir.app", 112, 1180);
+
+  ctx.font = "28px sans-serif";
+  ctx.fillStyle = "#4b5563";
+  ctx.fillText("Premium Trusted Since 2016", 112, 1222);
+
+  const url = canvas.toDataURL("image/png");
+
+  try{
+    const blob = await (await fetch(url)).blob();
+    const file = new File([blob], "misi-0.1g-progress.png", { type: "image/png" });
+
+    if (navigator.canShare && navigator.canShare({ files: [file] })) {
+      await navigator.share({
+        title: "Misi 0.1g Emas Amir",
+        text: "Ini progress misi saya 💪 Jom sertai di emasamir.app",
+        files: [file]
+      });
+    } else {
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = "misi-0.1g-progress.png";
+      a.click();
+    }
+  }catch(err){
+    console.warn("[MISSION DEBUG] share image fallback:", err);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = "misi-0.1g-progress.png";
+    a.click();
+  }
+});
+
+$("btnShareLink").addEventListener("click", async ()=>{
+  let shareSlug = currentShareSlug;
+
+  if (!shareSlug){
+    shareSlug = makeShareSlug(getDisplayNameFromAuth(), phone);
+  }
+
+  const link = "https://emasamir.app/misi/" + encodeURIComponent(shareSlug);
+
+  try{
+    if (navigator.share) {
+      await navigator.share({
+        title: "Progress Misi 0.1g",
+        text: "Tengok progress misi saya 🔥 Jom sertai di Emas Amir",
+        url: link
+      });
+    } else {
+      await navigator.clipboard.writeText(link);
+      alert("Link progress berjaya disalin.");
+    }
+  }catch(err){
+    console.warn("[MISSION DEBUG] share link fallback:", err);
+    try{
+      await navigator.clipboard.writeText(link);
+      alert("Link progress berjaya disalin.");
+    }catch{
+      prompt("Salin link ini:", link);
+    }
+  }
+});
+function getShareStatusText(days){
+  if (days >= 60) return "🎉 Dah capai 0.1g!";
+  if (days >= 59) return "😱 Lagi 1 hari!";
+  if (days >= 30) return "🔥 Separuh jalan!";
+  if (days >= 14) return "💪 Teruskan!";
+  if (days >= 7) return "✨ Dah mula konsisten!";
+  return "🚀 Baru bermula!";
+}
+
+function roundRect(ctx, x, y, width, height, radius, fill, stroke){
+  if (typeof radius === "number") {
+    radius = { tl: radius, tr: radius, br: radius, bl: radius };
+  } else {
+    radius = Object.assign({ tl: 0, tr: 0, br: 0, bl: 0 }, radius);
+  }
+
+  ctx.beginPath();
+  ctx.moveTo(x + radius.tl, y);
+  ctx.lineTo(x + width - radius.tr, y);
+  ctx.quadraticCurveTo(x + width, y, x + width, y + radius.tr);
+  ctx.lineTo(x + width, y + height - radius.br);
+  ctx.quadraticCurveTo(x + width, y + height, x + width - radius.br, y + height);
+  ctx.lineTo(x + radius.bl, y + height);
+  ctx.quadraticCurveTo(x, y + height, x, y + height - radius.bl);
+  ctx.lineTo(x, y + radius.tl);
+  ctx.quadraticCurveTo(x, y, x + radius.tl, y);
+  ctx.closePath();
+
+  if (fill) ctx.fill();
+  if (stroke) ctx.stroke();
+}
+
+function wrapText(ctx, text, x, y, maxWidth, lineHeight){
+  const words = String(text || "").split(" ");
+  let line = "";
+
+  for (let n = 0; n < words.length; n++) {
+    const testLine = line + words[n] + " ";
+    const metrics = ctx.measureText(testLine);
+    const testWidth = metrics.width;
+
+    if (testWidth > maxWidth && n > 0) {
+      ctx.fillText(line, x, y);
+      line = words[n] + " ";
+      y += lineHeight;
+    } else {
+      line = testLine;
+    }
+  }
+
+  ctx.fillText(line, x, y);
+}
+(async ()=>{
+  const sess = await sb.auth.getSession();
+  console.log("[MISSION DEBUG] full session =", sess);
+  await loadMissionState();
+})();
+</script>
+
+</body>
+</html>

@@ -1,0 +1,779 @@
+<!doctype html>
+<html lang="ms">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<link rel="stylesheet" href="/global.css">
+  <title>Admin • J916 Rules — Emas Amir</title>
+
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+
+  <style>
+    body{background:#fff}
+    .container-narrow{max-width:1180px}
+    .top-btns .btn{border-radius:12px}
+    input[type=number]{text-align:right}
+    .card+.card{margin-top:14px}
+    .badge-soft{background:#eef7ff;color:#0d6efd;border:1px solid #d7ebff}
+    .muted{color:#6c757d}
+    .pill{display:inline-flex;align-items:center;gap:8px;padding:6px 10px;border-radius:999px;background:#eef1f4;font-size:12px;color:#495057}
+    .mono{font-family:ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,"Liberation Mono","Courier New",monospace}
+    .table-sm td,.table-sm th{vertical-align:middle}
+    .rule-row-active{background:#f8fff9}
+    .rule-row-inactive{background:#fff8f8}
+    .sticky-actions{position:sticky;bottom:0;background:#fff;padding-top:8px}
+  </style>
+</head>
+<body>
+<div class="container container-narrow py-3">
+
+  <!-- Top bar -->
+  <div class="d-flex justify-content-between align-items-center">
+    <div>
+      <h3 class="m-0">Admin</h3>
+      <div class="small muted">J916 Rules (Diskaun Pos & Cashback)</div>
+    </div>
+
+    <div class="top-btns btn-group">
+      <a class="btn btn-outline-secondary" href="index.html">Laman Utama</a>
+      <a class="btn btn-outline-secondary" href="admin-misc-service.html">Admin Service</a>
+      <a class="btn btn-outline-secondary" href="admin-j999.html">Admin 999</a>
+      <a class="btn btn-outline-secondary" href="admin-j916.html">Admin 916</a>
+      <a class="btn btn-outline-secondary" href="adminstok-j916.html">Admin Stok 916</a>
+
+      <div class="btn-group">
+        <button
+          type="button"
+          class="btn btn-outline-secondary dropdown-toggle"
+          data-bs-toggle="dropdown"
+          aria-expanded="false">
+          Admin Trade
+        </button>
+
+        <ul class="dropdown-menu">
+          <li><a class="dropdown-item" href="tradein.html">Trade In</a></li>
+          <li><a class="dropdown-item" href="admin-settle-j916-tradein.html">Settle J916 Tradein</a></li>
+          <li><a class="dropdown-item" href="admin-tradein.html">Senarai Tradein</a></li>
+        </ul>
+      </div>
+
+      <a class="btn btn-outline-secondary" href="admintabung-simpan.html">Admin Tabung</a>
+      <a class="btn btn-outline-secondary" href="account.html">Akaun</a>
+    </div>
+  </div>
+
+  <hr>
+
+  <!-- Auth status -->
+  <div class="d-flex justify-content-between align-items-center mb-2">
+    <span id="authStatus" class="pill">Mengesahkan akses…</span>
+    <span id="saveBadge" class="badge badge-soft" style="display:none">✓ Disimpan</span>
+  </div>
+
+  <!-- J916 CARD -->
+  <div class="card">
+    <div class="card-body">
+      <div class="d-flex justify-content-between align-items-start">
+        <div>
+          <h5 class="card-title mb-1">⚙️ J916 Payment Rules</h5>
+          <div class="small muted">
+            Setting ini dipakai oleh flow <span class="mono">lock / checkout</span> untuk kira
+            <b>diskaun pos</b> & <b>cashback</b>.
+          </div>
+        </div>
+        <div class="text-end">
+          <div class="small muted">Row</div>
+          <div class="mono">j916_payment_rules.id = 1</div>
+        </div>
+      </div>
+
+      <div class="row g-2 mt-3 align-items-end">
+        <div class="col-md-4">
+          <label class="form-label">Diskaun Pos (RM)</label>
+          <input id="postageDiscountRm" type="number" step="0.01" min="0" class="form-control" placeholder="cth 10.00">
+          <div class="form-text">Akan tolak daripada jumlah akhir (contoh promosi “Pos RM10”).</div>
+        </div>
+
+        <div class="col-md-4">
+          <label class="form-label">Cashback (%)</label>
+          <input id="cashbackPercent" type="number" step="0.01" min="0" max="20" class="form-control" placeholder="cth 3">
+          <div class="form-text">Cashback dikira dari subtotal (ikut flow Amir). Had 0–20% (guardrail).</div>
+        </div>
+
+        <div class="col-md-4">
+          <label class="form-label">Round Mode</label>
+          <select id="cashbackRoundMode" class="form-select" disabled>
+            <option value="FLOOR">FLOOR (bawah)</option>
+          </select>
+          <div class="form-text">Buat masa ni dikunci kepada <b>FLOOR</b>.</div>
+        </div>
+
+        <div class="col-12 d-flex align-items-center gap-3 mt-2">
+          <button id="btnReload" class="btn btn-outline-secondary">Reload</button>
+          <button id="btnSave" class="btn btn-primary">Simpan</button>
+          <span id="status" class="text-muted"></span>
+        </div>
+
+        <div class="col-12 mt-2">
+          <div class="small muted">
+            Terkini: <span id="updatedAt" class="mono">memuatkan…</span>
+          </div>
+        </div>
+      </div>
+
+      <hr class="my-3">
+
+      <details>
+        <summary class="mono">Debug (preview kiraan contoh)</summary>
+        <div class="mt-2 small">
+          <div class="row g-2">
+            <div class="col-md-4">
+              <label class="form-label">Contoh Subtotal (RM)</label>
+              <input id="exSubtotal" type="number" step="0.01" min="0" class="form-control" value="1000">
+            </div>
+            <div class="col-md-4">
+              <label class="form-label">Contoh Shipping (RM)</label>
+              <input id="exShip" type="number" step="0.01" min="0" class="form-control" value="15">
+            </div>
+            <div class="col-md-4">
+              <label class="form-label">Output</label>
+              <div id="exOut" class="p-2 border rounded bg-light mono" style="min-height:42px">—</div>
+            </div>
+          </div>
+          <div class="muted mt-2">
+            Ini hanya preview cepat supaya Amir nampak angka bergerak (tak kacau flow production).
+          </div>
+        </div>
+      </details>
+    </div>
+  </div>
+
+  <!-- J999 CARD -->
+  <div class="card">
+    <div class="card-body">
+      <div class="d-flex justify-content-between align-items-start flex-wrap gap-2">
+        <div>
+          <h5 class="card-title mb-1">🪙 J999 / AI-Dan Discount Rules</h5>
+          <div class="small muted">
+            Rules ini untuk <b>diskaun khas</b> contoh customer datang dari <span class="mono">AI_DAN</span>.
+            Boleh set ikut <b>jenis</b>, <b>berat</b>, dan mode <b>AMOUNT / PERCENT</b>.
+          </div>
+        </div>
+        <div class="text-end">
+          <div class="small muted">Table</div>
+          <div class="mono">gold999_discount_rules</div>
+        </div>
+      </div>
+
+      <div class="row g-3 mt-2">
+        <div class="col-md-2">
+          <label class="form-label">Source</label>
+          <select id="gSource" class="form-select">
+            <option value="AI_DAN">AI_DAN</option>
+          </select>
+          <div class="form-text">Buat masa ini fokus untuk AI-Dan.</div>
+        </div>
+
+        <div class="col-md-2">
+          <label class="form-label">Jenis</label>
+          <select id="gKind" class="form-select">
+            <option value="coin">Gold Coin</option>
+            <option value="dinar">Koleksi Dinar</option>
+            <option value="bar">Gold Bar</option>
+          </select>
+        </div>
+
+        <div class="col-md-2">
+          <label class="form-label">Berat (g)</label>
+          <input id="gWeight" type="number" step="0.0001" min="0" class="form-control" placeholder="cth 1">
+          <div class="form-text">Contoh 0.1 / 1 / 1.0625</div>
+        </div>
+
+        <div class="col-md-2">
+          <label class="form-label">Mode</label>
+          <select id="gDiscountType" class="form-select">
+            <option value="AMOUNT">AMOUNT (RM)</option>
+            <option value="PERCENT">PERCENT (%)</option>
+          </select>
+        </div>
+
+        <div class="col-md-2">
+          <label class="form-label">Nilai Diskaun</label>
+          <input id="gDiscountValue" type="number" step="0.0001" min="0" class="form-control" placeholder="cth 10">
+          <div class="form-text">RM atau % ikut mode.</div>
+        </div>
+
+        <div class="col-md-2">
+          <label class="form-label">Priority</label>
+          <input id="gPriority" type="number" step="1" min="0" class="form-control" value="1">
+          <div class="form-text">Lagi kecil = lagi awal dipilih.</div>
+        </div>
+
+        <div class="col-md-6">
+          <label class="form-label">Label</label>
+          <input id="gLabel" type="text" class="form-control" placeholder="cth Diskaun AI-Dan 1g">
+        </div>
+
+        <div class="col-md-3">
+          <label class="form-label">Status</label>
+          <div class="form-control d-flex align-items-center" style="height:auto;min-height:38px">
+            <div class="form-check m-0">
+              <input class="form-check-input" type="checkbox" id="gActive" checked>
+              <label class="form-check-label" for="gActive">Aktif</label>
+            </div>
+          </div>
+        </div>
+
+        <div class="col-md-3">
+          <label class="form-label">Rule ID</label>
+          <input id="gRuleId" type="text" class="form-control mono" placeholder="auto" readonly>
+        </div>
+
+        <div class="col-12 sticky-actions d-flex align-items-center gap-2 flex-wrap">
+          <button id="btnGNew" class="btn btn-outline-secondary" type="button">Kosongkan Form</button>
+          <button id="btnGSave" class="btn btn-primary" type="button">Simpan Rule</button>
+          <button id="btnGDelete" class="btn btn-outline-danger" type="button" disabled>Padam Rule</button>
+          <button id="btnGReload" class="btn btn-outline-secondary" type="button">Reload Rules</button>
+          <span id="gStatus" class="text-muted"></span>
+        </div>
+      </div>
+
+     <hr class="my-3">
+
+      <div class="card border-0 bg-light mb-3">
+        <div class="card-body">
+          <div class="d-flex justify-content-between align-items-start flex-wrap gap-2">
+            <div>
+              <div class="fw-semibold">📱 Promo App Platform</div>
+              <div class="small muted">
+                Setting ini untuk promo khas ikut platform app rasmi.
+                Kalau nilai <b>0</b>, promo tak keluar.
+              </div>
+            </div>
+            <div class="text-end">
+              <div class="small muted">Config</div>
+              <div class="mono">gold999_app_platform_promo</div>
+            </div>
+          </div>
+
+          <div class="row g-3 mt-2">
+            <div class="col-md-4">
+              <label class="form-label">Promo App Store (RM)</label>
+              <input id="appStorePromoRm" type="number" step="0.01" min="0" class="form-control" value="10">
+              <div class="form-text">Contoh 10 = tolak RM10 untuk app iPhone.</div>
+            </div>
+
+            <div class="col-md-4">
+              <label class="form-label">Promo Play Store (RM)</label>
+              <input id="playStorePromoRm" type="number" step="0.01" min="0" class="form-control" value="0">
+              <div class="form-text">Contoh 0 = tak ada promo untuk app Android.</div>
+            </div>
+
+            <div class="col-md-4">
+              <label class="form-label">Preview</label>
+              <div id="appPromoPreview" class="p-2 border rounded bg-white mono" style="min-height:38px">—</div>
+            </div>
+
+            <div class="col-12 d-flex align-items-center gap-2 flex-wrap">
+              <button id="btnAppPromoReload" class="btn btn-outline-secondary" type="button">Reload Promo App</button>
+              <button id="btnAppPromoSave" class="btn btn-primary" type="button">Simpan Promo App</button>
+              <span id="appPromoStatus" class="text-muted"></span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="d-flex justify-content-between align-items-center mb-2">
+        <div class="fw-semibold">Senarai Rules Semasa</div>
+        <div class="small muted">Klik <b>Edit</b> untuk load rule ke dalam form.</div>
+      </div>
+
+      <div class="table-responsive">
+        <table class="table table-sm align-middle">
+          <thead class="table-light">
+            <tr>
+              <th>Source</th>
+              <th>Jenis</th>
+              <th>Berat</th>
+              <th>Mode</th>
+              <th>Nilai</th>
+              <th>Label</th>
+              <th>Priority</th>
+              <th>Status</th>
+              <th>Kemaskini</th>
+              <th class="text-end">Tindakan</th>
+            </tr>
+          </thead>
+          <tbody id="gRulesBody">
+            <tr><td colspan="10" class="text-muted">Memuatkan…</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <details class="mt-2">
+        <summary class="mono">Debug (preview J999 diskaun contoh)</summary>
+        <div class="mt-2 small">
+          <div class="row g-2">
+            <div class="col-md-3">
+              <label class="form-label">Harga Asas (RM)</label>
+              <input id="gExBase" type="number" step="0.01" min="0" class="form-control" value="787.32">
+            </div>
+            <div class="col-md-3">
+              <label class="form-label">Diskaun Kaedah (%)</label>
+              <input id="gExMethodPct" type="number" step="0.01" min="0" class="form-control" value="6">
+            </div>
+            <div class="col-md-6">
+              <label class="form-label">Output</label>
+              <div id="gExOut" class="p-2 border rounded bg-light mono" style="min-height:42px">—</div>
+            </div>
+          </div>
+          <div class="muted mt-2">
+            Preview ini guna nilai dalam form sekarang, bukan live checkout.
+          </div>
+        </div>
+      </details>
+    </div>
+  </div>
+
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="auth.js?v=13.1"></script>
+<script src="admin-guard.js?v=1"></script>
+
+<script>
+/* --- Supabase --- */
+const SB_URL = "https://dduizetstqqjrpsezbpi.supabase.co";
+const SB_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRkdWl6ZXRzdHFxanJwc2V6YnBpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTg3MzI0ODQsImV4cCI6MjA3NDMwODQ4NH0.CrlHXrmHtKgR9qc2192U6quRb5lpFEeOSgwG0Lb8KRM";
+
+window.sb = window.sb || window.supabase.createClient(SB_URL, SB_KEY);
+const sb = window.sb;
+
+/* --- Util --- */
+const $ = (id) => document.getElementById(id);
+function money(n){ return Number(n||0).toFixed(2); }
+function dt(x){
+  try{
+    return new Date(x).toLocaleString("ms-MY",{dateStyle:"medium",timeStyle:"short",hour12:true});
+  }catch{
+    return x || "-";
+  }
+}
+function showSaved(){
+  const b = $("saveBadge");
+  b.style.display = "inline-block";
+  setTimeout(()=> b.style.display="none", 1500);
+}
+function gKindLabel(v){
+  const x = String(v||"").toLowerCase();
+  if (x === "coin") return "Gold Coin";
+  if (x === "dinar") return "Koleksi Dinar";
+  if (x === "goldbar" || x === "bar") return "Gold Bar";
+  return v || "-";
+}
+function gModeLabel(v){
+  const x = String(v||"").toUpperCase();
+  if (x === "AMOUNT") return "AMOUNT (RM)";
+  if (x === "PERCENT") return "PERCENT (%)";
+  return v || "-";
+}
+
+async function callJ916RulesApi(action, payload = {}){
+  const r = await fetch("/.netlify/functions/admin-j916-rules", {
+    method: "POST",
+    headers: { "Content-Type":"application/json" },
+    body: JSON.stringify({ action, ...payload })
+  });
+
+  const j = await r.json().catch(()=>({}));
+  if (!r.ok || j.ok !== true) {
+    throw new Error(j.error || ("HTTP " + r.status));
+  }
+  return j;
+}
+
+async function callGold999RulesApi(action, payload = {}){
+  const r = await fetch("/.netlify/functions/admin-gold999-rules", {
+    method: "POST",
+    headers: { "Content-Type":"application/json" },
+    body: JSON.stringify({ action, ...payload })
+  });
+
+  const j = await r.json().catch(()=>({}));
+  if (!r.ok || j.ok !== true) {
+    throw new Error(j.error || ("HTTP " + r.status));
+  }
+  return j;
+}
+
+async function callAppPromoApi(action, payload = {}){
+  const r = await fetch("/.netlify/functions/admin-gold999-app-promo", {
+    method: "POST",
+    headers: { "Content-Type":"application/json" },
+    body: JSON.stringify({ action, ...payload })
+  });
+
+  const j = await r.json().catch(()=>({}));
+  if (!r.ok || j.ok !== true) {
+    throw new Error(j.error || ("HTTP " + r.status));
+  }
+  return j;
+}
+
+/* =========================
+   J916 RULES
+   GUNA NETLIFY FUNCTION
+========================= */
+async function loadRules(){
+  $("status").textContent = "Memuatkan…";
+
+  try{
+    const res = await callJ916RulesApi("get");
+    const data = res.row || null;
+
+    if(!data){
+      $("status").textContent = "Tiada row id=1 (semak SQL insert).";
+      $("updatedAt").textContent = "-";
+      $("postageDiscountRm").value = 0;
+      $("cashbackPercent").value = 0;
+      $("cashbackRoundMode").value = "FLOOR";
+      renderExample();
+      return;
+    }
+
+    $("postageDiscountRm").value = Number(data.postage_discount_rm || 0);
+    $("cashbackPercent").value = Number(data.cashback_percent || 0);
+    $("cashbackRoundMode").value = (data.cashback_round_mode || "FLOOR");
+    $("updatedAt").textContent = dt(data.updated_at);
+    $("status").textContent = "";
+    renderExample();
+  }catch(err){
+    $("status").textContent = "Ralat: " + err.message;
+  }
+}
+
+async function saveRules(){
+  const postage = Number($("postageDiscountRm").value || 0);
+  const percent = Number($("cashbackPercent").value || 0);
+
+  if(!isFinite(postage) || postage < 0) return alert("Diskaun pos mesti >= 0");
+  if(!isFinite(percent) || percent < 0 || percent > 20) return alert("Cashback % mesti antara 0 hingga 20");
+
+  $("status").textContent = "Menyimpan…";
+
+  const row = {
+    id: 1,
+    postage_discount_rm: postage,
+    cashback_percent: percent,
+    cashback_round_mode: "FLOOR"
+  };
+
+  try{
+    const res = await callJ916RulesApi("save", { row });
+    const latest = res.row || null;
+
+    if (latest){
+      $("postageDiscountRm").value = Number(latest.postage_discount_rm || 0);
+      $("cashbackPercent").value = Number(latest.cashback_percent || 0);
+      $("cashbackRoundMode").value = (latest.cashback_round_mode || "FLOOR");
+      $("updatedAt").textContent = dt(latest.updated_at);
+    }
+
+    $("status").textContent = "✔ Disimpan!";
+    showSaved();
+    renderExample();
+  }catch(err){
+    $("status").textContent = "Gagal: " + err.message;
+  }
+}
+
+function renderExample(){
+  const subtotal = Number($("exSubtotal").value || 0);
+  const ship = Number($("exShip").value || 0);
+
+  const discPost = Number($("postageDiscountRm").value || 0);
+  const cbPct = Number($("cashbackPercent").value || 0);
+
+  const cashback = Math.floor((subtotal * cbPct) / 100);
+  const base = subtotal + ship;
+  const final = base - discPost - cashback;
+
+  const out =
+    "Base=" + money(base) +
+    " | DiscPos=" + money(discPost) +
+    " | Cashback=" + money(cashback) +
+    " | Final=" + money(final);
+
+  $("exOut").textContent = out;
+}
+
+/* =========================
+   J999 RULES API
+========================= */
+function gClearForm(){
+  $("gRuleId").value = "";
+  $("gSource").value = "AI_DAN";
+  $("gKind").value = "coin";
+  $("gWeight").value = "";
+  $("gDiscountType").value = "AMOUNT";
+  $("gDiscountValue").value = "";
+  $("gLabel").value = "";
+  $("gPriority").value = "1";
+  $("gActive").checked = true;
+  $("btnGDelete").disabled = true;
+  $("gStatus").textContent = "";
+  renderGold999Example();
+}
+
+function gReadForm(){
+  const id = $("gRuleId").value ? Number($("gRuleId").value) : null;
+  const source = String($("gSource").value || "").trim().toUpperCase();
+  const kind = String($("gKind").value || "").trim().toLowerCase();
+  const weight_g = Number($("gWeight").value || 0);
+  const discount_type = String($("gDiscountType").value || "").trim().toUpperCase();
+  const discount_value = Number($("gDiscountValue").value || 0);
+  const label = String($("gLabel").value || "").trim();
+  const priority = Number($("gPriority").value || 0);
+  const is_active = $("gActive").checked === true;
+
+  return { id, source, kind, weight_g, discount_type, discount_value, label, priority, is_active };
+}
+
+function gValidateForm(row){
+  if (!row.source) return "Source wajib diisi.";
+  if (!row.kind) return "Jenis wajib dipilih.";
+  if (!isFinite(row.weight_g) || row.weight_g <= 0) return "Berat mesti lebih besar daripada 0.";
+  if (!["AMOUNT","PERCENT"].includes(row.discount_type)) return "Mode diskaun tak sah.";
+  if (!isFinite(row.discount_value) || row.discount_value < 0) return "Nilai diskaun mesti >= 0.";
+  if (row.discount_type === "PERCENT" && row.discount_value > 100) return "PERCENT tak boleh lebih 100.";
+  if (!isFinite(row.priority) || row.priority < 0) return "Priority mesti >= 0.";
+  return "";
+}
+
+function gFillForm(row){
+  $("gRuleId").value = row.id || "";
+  $("gSource").value = row.source || "AI_DAN";
+  $("gKind").value = row.kind || "coin";
+  $("gWeight").value = Number(row.weight_g || 0);
+  $("gDiscountType").value = row.discount_type || "AMOUNT";
+  $("gDiscountValue").value = Number(row.discount_value || 0);
+  $("gLabel").value = row.label || "";
+  $("gPriority").value = Number(row.priority || 0);
+  $("gActive").checked = row.is_active !== false;
+  $("btnGDelete").disabled = !row.id;
+  renderGold999Example();
+  window.scrollTo({ top: 0, behavior: "smooth" });
+}
+
+async function loadGold999Rules(){
+  $("gStatus").textContent = "Memuatkan rules…";
+
+  try{
+    const res = await callGold999RulesApi("list");
+    const rows = res.rows || [];
+
+    if (!rows.length){
+      $("gRulesBody").innerHTML = `<tr><td colspan="10" class="text-muted">Belum ada rule.</td></tr>`;
+      window.__gold999RulesCache = [];
+      $("gStatus").textContent = "";
+      return;
+    }
+
+    $("gRulesBody").innerHTML = rows.map(row => {
+      const trClass = row.is_active ? "rule-row-active" : "rule-row-inactive";
+      return `
+        <tr class="${trClass}">
+          <td class="mono">${row.source || "-"}</td>
+          <td>${gKindLabel(row.kind)}</td>
+          <td class="mono">${Number(row.weight_g || 0)}</td>
+          <td>${gModeLabel(row.discount_type)}</td>
+          <td class="mono">${Number(row.discount_value || 0)}</td>
+          <td>${row.label || "-"}</td>
+          <td class="mono">${Number(row.priority || 0)}</td>
+          <td>${row.is_active ? '<span class="badge text-bg-success">Aktif</span>' : '<span class="badge text-bg-secondary">Off</span>'}</td>
+          <td class="small mono">${dt(row.updated_at)}</td>
+          <td class="text-end">
+            <button class="btn btn-sm btn-outline-primary" type="button" onclick="window.__editGRule(${Number(row.id)})">Edit</button>
+          </td>
+        </tr>
+      `;
+    }).join("");
+
+    window.__gold999RulesCache = rows;
+    $("gStatus").textContent = "";
+  }catch(err){
+    $("gStatus").textContent = "Ralat: " + err.message;
+    $("gRulesBody").innerHTML = `<tr><td colspan="10" class="text-danger">Ralat: ${err.message}</td></tr>`;
+  }
+}
+
+window.__editGRule = function(id){
+  const rows = window.__gold999RulesCache || [];
+  const row = rows.find(x => Number(x.id) === Number(id));
+  if (!row) return;
+  gFillForm(row);
+};
+
+async function saveGold999Rule(){
+  const row = gReadForm();
+  const errMsg = gValidateForm(row);
+  if (errMsg) return alert(errMsg);
+
+  $("gStatus").textContent = row.id ? "Mengemaskini…" : "Menyimpan…";
+
+  try{
+    await callGold999RulesApi("save", { row });
+    $("gStatus").textContent = "✔ Rule disimpan!";
+    showSaved();
+    await loadGold999Rules();
+    gClearForm();
+  }catch(err){
+    $("gStatus").textContent = "Gagal: " + err.message;
+  }
+}
+
+async function deleteGold999Rule(){
+  const id = Number($("gRuleId").value || 0);
+  if (!id) return;
+  if (!confirm("Padam rule ini?")) return;
+
+  $("gStatus").textContent = "Memadam…";
+
+  try{
+    await callGold999RulesApi("delete", { id });
+    $("gStatus").textContent = "✔ Rule dipadam!";
+    showSaved();
+    await loadGold999Rules();
+    gClearForm();
+  }catch(err){
+    $("gStatus").textContent = "Gagal: " + err.message;
+  }
+}
+
+function renderGold999Example(){
+  const base = Number($("gExBase").value || 0);
+  const methodPct = Number($("gExMethodPct").value || 0);
+  const mode = String($("gDiscountType").value || "AMOUNT").toUpperCase();
+  const value = Number($("gDiscountValue").value || 0);
+
+  const methodDisc = base * (methodPct / 100);
+  const afterMethod = Math.max(0, base - methodDisc);
+
+  let promoDisc = 0;
+  if (mode === "PERCENT") {
+    promoDisc = afterMethod * (value / 100);
+  } else {
+    promoDisc = Math.min(afterMethod, value);
+  }
+
+  const final = Math.max(0, afterMethod - promoDisc);
+
+  $("gExOut").textContent =
+    "Base=" + money(base) +
+    " | MethodDisc=" + money(methodDisc) +
+    " | PromoDisc=" + money(promoDisc) +
+    " | Final=" + money(final);
+}
+
+/* =========================
+   APP PLATFORM PROMO
+========================= */
+function renderAppPromoPreview(){
+  const appstore = Math.max(0, Number($("appStorePromoRm").value || 0));
+  const playstore = Math.max(0, Number($("playStorePromoRm").value || 0));
+
+  $("appPromoPreview").textContent =
+    "AppStore=-RM" + money(appstore) +
+    " | PlayStore=-RM" + money(playstore);
+}
+
+async function loadAppPromo(){
+  $("appPromoStatus").textContent = "Memuatkan promo app…";
+
+  try{
+    const res = await callAppPromoApi("get");
+    const row = res.row || {};
+
+    $("appStorePromoRm").value = Number(row.appstore_rm || 0);
+    $("playStorePromoRm").value = Number(row.playstore_rm || 0);
+    renderAppPromoPreview();
+    $("appPromoStatus").textContent = "";
+  }catch(err){
+    $("appPromoStatus").textContent = "Ralat: " + err.message;
+    renderAppPromoPreview();
+  }
+}
+
+async function saveAppPromo(){
+  const appstore_rm = Math.max(0, Number($("appStorePromoRm").value || 0));
+  const playstore_rm = Math.max(0, Number($("playStorePromoRm").value || 0));
+
+  if (!isFinite(appstore_rm) || appstore_rm < 0) return alert("Promo App Store mesti >= 0");
+  if (!isFinite(playstore_rm) || playstore_rm < 0) return alert("Promo Play Store mesti >= 0");
+
+  $("appPromoStatus").textContent = "Menyimpan promo app…";
+
+  try{
+    const res = await callAppPromoApi("save", {
+      row: { appstore_rm, playstore_rm }
+    });
+
+    const row = res.row || {};
+    $("appStorePromoRm").value = Number(row.appstore_rm || 0);
+    $("playStorePromoRm").value = Number(row.playstore_rm || 0);
+    renderAppPromoPreview();
+    $("appPromoStatus").textContent = "✔ Promo app disimpan!";
+    showSaved();
+  }catch(err){
+    $("appPromoStatus").textContent = "Gagal: " + err.message;
+  }
+}
+
+/* --- Init & Guard --- */
+(async () => {
+  const pill = $("authStatus");
+  const set = (t)=> pill && (pill.textContent = t);
+
+  const ok = await adminGuard.require({
+    onChecking: ()=> set("Mengesahkan akses…"),
+    onDenied:   ()=> set("Akses ditolak"),
+    onAllowed:  (phone)=> set("Log masuk (admin) — " + phone)
+  });
+
+  if (!ok) return;
+
+  $("btnReload").onclick = loadRules;
+  $("btnSave").onclick = saveRules;
+
+  $("postageDiscountRm").addEventListener("input", renderExample);
+  $("cashbackPercent").addEventListener("input", renderExample);
+  $("exSubtotal").addEventListener("input", renderExample);
+  $("exShip").addEventListener("input", renderExample);
+
+  $("btnGNew").onclick = gClearForm;
+  $("btnGSave").onclick = saveGold999Rule;
+  $("btnGDelete").onclick = deleteGold999Rule;
+  $("btnGReload").onclick = loadGold999Rules;
+
+  $("gDiscountType").addEventListener("change", renderGold999Example);
+  $("gDiscountValue").addEventListener("input", renderGold999Example);
+  $("gExBase").addEventListener("input", renderGold999Example);
+  $("gExMethodPct").addEventListener("input", renderGold999Example);
+
+  $("btnAppPromoReload").onclick = loadAppPromo;
+  $("btnAppPromoSave").onclick = saveAppPromo;
+  $("appStorePromoRm").addEventListener("input", renderAppPromoPreview);
+  $("playStorePromoRm").addEventListener("input", renderAppPromoPreview);
+
+  await loadRules();
+  gClearForm();
+  await loadGold999Rules();
+  renderGold999Example();
+
+  renderAppPromoPreview();
+  await loadAppPromo();
+})();
+</script>
+</body>
+</html>

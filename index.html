@@ -2,8 +2,519 @@
 <html lang="ms">
 <head>
   <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Emas Amir</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<style>
+html, body {
+  margin: 0;
+  padding-top: env(safe-area-inset-top, 0px);
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+}
+
+.point-float{
+  position:fixed;
+  right:18px;
+  bottom:108px;
+  width:72px;
+  height:72px;
+  border-radius:999px;
+  background:
+    radial-gradient(circle at 30% 25%, rgba(255,255,255,.55) 0%, rgba(255,255,255,0) 32%),
+    linear-gradient(135deg,#fff3b0 0%, #facc15 42%, #f59e0b 100%);
+  color:#111827;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  justify-content:center;
+  font-size:12px;
+  font-weight:800;
+  box-shadow:
+    0 14px 30px rgba(245,158,11,.32),
+    inset 0 1px 0 rgba(255,255,255,.5);
+  z-index:10021;
+  cursor:pointer;
+  transition:transform .18s ease, box-shadow .18s ease, filter .18s ease;
+  user-select:none;
+  animation:pointFloatBob 3.2s ease-in-out infinite, pointFloatGlow 2.8s ease-in-out infinite;
+  overflow:visible;
+}
+
+.point-float:hover{
+  transform:translateY(-2px) scale(1.03);
+  filter:brightness(1.02);
+}
+
+.point-float:active{
+  transform:scale(.94);
+}
+
+.point-float .point-float-icon{
+  font-size:18px;
+  line-height:1;
+  margin-bottom:2px;
+}
+
+.point-float .point-float-value{
+  font-size:14px;
+  font-weight:900;
+  line-height:1;
+}
+
+.point-float .point-float-label{
+  position:absolute;
+  top:-18px;
+  left:50%;
+  transform:translateX(-50%);
+  background:rgba(15,23,42,.96);
+  color:#fff;
+  border-radius:999px;
+  padding:4px 10px;
+  font-size:10px;
+  font-weight:800;
+  line-height:1;
+  white-space:nowrap;
+  box-shadow:0 10px 20px rgba(15,23,42,.20);
+  animation:pointLabelBlink 1.6s ease-in-out infinite;
+  letter-spacing:.2px;
+}
+
+.point-float .point-float-label::after{
+  content:"";
+  position:absolute;
+  left:50%;
+  bottom:-4px;
+  width:8px;
+  height:8px;
+  background:rgba(15,23,42,.96);
+  transform:translateX(-50%) rotate(45deg);
+}
+
+.point-float::before{
+  content:"";
+  position:absolute;
+  inset:0;
+  border-radius:999px;
+  padding:1px;
+  background:linear-gradient(135deg, rgba(255,255,255,.7), rgba(255,255,255,0), rgba(146,64,14,.18));
+  -webkit-mask:linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  -webkit-mask-composite:xor;
+  mask-composite:exclude;
+  pointer-events:none;
+}
+
+.point-float::after{
+  content:"";
+  position:absolute;
+  top:8px;
+  left:12px;
+  width:24px;
+  height:10px;
+  border-radius:999px;
+  background:rgba(255,255,255,.38);
+  transform:rotate(-18deg);
+  pointer-events:none;
+}
+
+@keyframes pointFloatBob{
+  0%,100%{ transform:translateY(0); }
+  50%{ transform:translateY(-4px); }
+}
+
+@keyframes pointFloatGlow{
+  0%,100%{
+    box-shadow:
+      0 14px 30px rgba(245,158,11,.28),
+      inset 0 1px 0 rgba(255,255,255,.5);
+  }
+  50%{
+    box-shadow:
+      0 18px 36px rgba(245,158,11,.42),
+      0 0 0 8px rgba(250,204,21,.10),
+      inset 0 1px 0 rgba(255,255,255,.58);
+  }
+}
+
+@keyframes pointLabelBlink{
+  0%,100%{ opacity:1; transform:translateX(-50%) translateY(0); }
+  50%{ opacity:.55; transform:translateX(-50%) translateY(-1px); }
+}
+
+@media (max-width:576px){
+  .point-float{
+    right:14px;
+    bottom:104px;
+    width:68px;
+    height:68px;
+    font-size:11px;
+  }
+
+  .point-float .point-float-icon{
+    font-size:17px;
+  }
+
+  .point-float .point-float-value{
+    font-size:13px;
+  }
+
+  .point-float .point-float-label{
+    top:-16px;
+    font-size:9px;
+    padding:4px 9px;
+  }
+}
+
+body.pwa-visible .point-float{
+  bottom:224px;
+}
+
+@media (max-width:576px){
+  body.pwa-visible .point-float{
+    bottom:228px;
+  }
+}
+
+body.pwa-visible.pwa-tall .point-float{
+  bottom:242px;
+}
+
+@media (max-width:576px){
+  body.pwa-visible.pwa-tall .point-float{
+    bottom:246px;
+  }
+}
+
+/* ===== PRAYER FLOAT + POPUP HOME ===== */
+.prayer-card{
+  display:none;
+}
+
+.prayer-float{
+  position:fixed;
+  left:18px;
+  bottom:108px;
+  width:104px;
+  height:122px;
+  border:1px solid rgba(234,215,167,.85);
+  border-radius:24px;
+  background:
+    radial-gradient(circle at 30% 18%, rgba(255,255,255,.55), transparent 34%),
+    linear-gradient(135deg,#d6a419 0%, #a87300 100%);
+  color:#fff;
+  z-index:10022;
+  box-shadow:
+    0 16px 38px rgba(184,134,11,.28),
+    inset 0 1px 0 rgba(255,255,255,.35);
+  display:none;
+  align-items:center;
+  justify-content:center;
+  text-align:center;
+  cursor:grab;
+  user-select:none;
+  touch-action:none;
+  overflow:visible;
+  transition:box-shadow .18s ease, filter .18s ease, transform .18s ease;
+}
+
+.prayer-float.show{
+  display:flex;
+}
+
+.prayer-float:active{
+  cursor:grabbing;
+  transform:scale(.98);
+}
+
+.prayer-float-inner{
+  width:100%;
+  padding:10px 8px;
+}
+
+.prayer-float-ico{
+  font-size:25px;
+  line-height:1;
+  margin-bottom:7px;
+}
+
+.prayer-float-name{
+  font-size:17px;
+  font-weight:700;
+  line-height:1.1;
+  margin-bottom:7px;
+}
+
+.prayer-float-time{
+  font-size:19px;
+  font-weight:950;
+  line-height:1.1;
+  letter-spacing:.2px;
+}
+
+.prayer-float-mini{
+  margin-top:6px;
+  font-size:10px;
+  font-weight:800;
+  opacity:.92;
+  display:none;
+}
+
+.prayer-float.glow{
+  animation:prayerAzanGlow 1.15s ease-in-out infinite;
+}
+
+.prayer-float.glow .prayer-float-mini{
+  display:block;
+}
+
+.prayer-float.glow::before{
+  content:"";
+  position:absolute;
+  inset:-10px;
+  border-radius:30px;
+  border:2px solid rgba(250,204,21,.35);
+  animation:prayerAzanRing 1.15s ease-in-out infinite;
+  pointer-events:none;
+}
+
+.prayer-float::after{
+  content:"";
+  position:absolute;
+  top:9px;
+  left:13px;
+  width:34px;
+  height:12px;
+  border-radius:999px;
+  background:rgba(255,255,255,.35);
+  transform:rotate(-18deg);
+  pointer-events:none;
+}
+
+@keyframes prayerAzanGlow{
+  0%,100%{
+    box-shadow:
+      0 16px 38px rgba(184,134,11,.30),
+      0 0 0 0 rgba(250,204,21,.22),
+      inset 0 1px 0 rgba(255,255,255,.35);
+    filter:brightness(1);
+  }
+  50%{
+    box-shadow:
+      0 20px 46px rgba(245,158,11,.46),
+      0 0 0 11px rgba(250,204,21,.16),
+      0 0 28px rgba(250,204,21,.48),
+      inset 0 1px 0 rgba(255,255,255,.45);
+    filter:brightness(1.08);
+  }
+}
+
+@keyframes prayerAzanRing{
+  0%{ opacity:.85; transform:scale(.96); }
+  100%{ opacity:0; transform:scale(1.14); }
+}
+
+.prayer-sheet-overlay{
+  position:fixed;
+  inset:0;
+  background:rgba(15,23,42,.42);
+  z-index:10040;
+  display:none;
+  backdrop-filter:blur(3px);
+}
+
+.prayer-sheet-overlay.show{
+  display:block;
+}
+
+.prayer-sheet{
+  position:fixed;
+  left:50%;
+  bottom:14px;
+  transform:translateX(-50%) translateY(110%);
+  width:min(880px, calc(100vw - 24px));
+  max-height:min(82vh, 760px);
+  overflow:auto;
+  border:1px solid #ead7a7;
+  border-radius:24px;
+  background:
+    radial-gradient(circle at 85% 100%, rgba(201,162,77,.16), transparent 34%),
+    linear-gradient(180deg,#fff,#fffaf0);
+  box-shadow:0 28px 90px rgba(15,23,42,.28);
+  z-index:10041;
+  transition:transform .22s ease;
+  -webkit-overflow-scrolling:touch;
+}
+
+.prayer-sheet.show{
+  transform:translateX(-50%) translateY(0);
+}
+
+.prayer-sheet .prayer-body{
+  padding:18px;
+}
+
+.prayer-head{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  gap:10px;
+  flex-wrap:wrap;
+}
+
+.prayer-title{
+  font-weight:900;
+  font-size:22px;
+  color:#111827;
+}
+
+.prayer-loc{
+  color:#b8860b;
+  font-weight:800;
+  font-size:14px;
+}
+
+.prayer-close{
+  width:38px;
+  height:38px;
+  border-radius:999px;
+  border:1px solid #ead7a7;
+  background:#fff;
+  color:#6b4b00;
+  font-size:24px;
+  line-height:1;
+  font-weight:700;
+}
+
+.prayer-grid{
+  display:grid;
+  grid-template-columns:repeat(5,1fr);
+  gap:8px;
+  margin-top:14px;
+}
+
+.prayer-item{
+  background:#fff;
+  border:1px solid #eef0f3;
+  border-radius:16px;
+  padding:12px 6px;
+  text-align:center;
+  box-shadow:0 8px 18px rgba(15,23,42,.05);
+}
+
+.prayer-item .ico{font-size:24px;line-height:1;}
+.prayer-item .name{font-size:14px;margin-top:6px;color:#374151;}
+.prayer-item .time{font-size:16px;font-weight:900;color:#111827;margin-top:2px;}
+
+.prayer-item.active{
+  color:#fff;
+  background:linear-gradient(135deg,#d6a419,#a87300);
+  border-color:#d6a419;
+  box-shadow:0 12px 24px rgba(184,134,11,.25);
+}
+
+.prayer-item.active .name,
+.prayer-item.active .time{color:#fff;}
+
+.prayer-next{
+  margin-top:12px;
+  border:1px solid #f0d99b;
+  border-radius:999px;
+  padding:10px 12px;
+  background:rgba(255,255,255,.75);
+  color:#6b4b00;
+  font-weight:700;
+  text-align:center;
+}
+
+.prayer-quote{
+  margin-top:14px;
+  padding:12px 14px;
+  border-radius:16px;
+  background:rgba(255,255,255,.70);
+  color:#374151;
+  font-size:14px;
+  line-height:1.45;
+  text-align:center;
+}
+
+.prayer-quote b{color:#b8860b;}
+
+@media (max-width:576px){
+  .prayer-float{
+    left:14px;
+    bottom:104px;
+    width:94px;
+    height:112px;
+    border-radius:22px;
+  }
+
+  .prayer-float-ico{
+    font-size:23px;
+  }
+
+  .prayer-float-name{
+    font-size:16px;
+  }
+
+  .prayer-float-time{
+    font-size:18px;
+  }
+
+  .prayer-sheet{
+    bottom:10px;
+    width:calc(100vw - 20px);
+    max-height:82vh;
+    border-radius:22px;
+  }
+
+  .prayer-sheet .prayer-body{
+    padding:14px;
+  }
+
+  .prayer-title{
+    font-size:18px;
+  }
+
+  .prayer-grid{
+    gap:6px;
+  }
+
+  .prayer-item{
+    border-radius:14px;
+    padding:10px 4px;
+  }
+
+  .prayer-item .ico{
+    font-size:20px;
+  }
+
+  .prayer-item .name{
+    font-size:12px;
+  }
+
+  .prayer-item .time{
+    font-size:13px;
+  }
+}
+
+body.pwa-visible .prayer-float{
+  bottom:224px;
+}
+
+@media (max-width:576px){
+  body.pwa-visible .prayer-float{
+    bottom:228px;
+  }
+}
+
+body.pwa-visible.pwa-tall .prayer-float{
+  bottom:242px;
+}
+
+@media (max-width:576px){
+  body.pwa-visible.pwa-tall .prayer-float{
+    bottom:246px;
+  }
+}
+
+</style>  <title>Emas Amir</title>
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css">
   <style>
     body{background:#fff;}
@@ -36,53 +547,697 @@
     .price-new{color:#dc2626;font-weight:800}
     .mono{font-family:ui-monospace,Menlo,Consolas,monospace}
 
-/* ===== PWA Install Banner ===== */
-.pwa-banner{
-  position: fixed;
-  left: 12px;
-  right: 12px;
-  bottom: 12px;
-  z-index: 9999;
-  background: #111827;
-  color: #fff;
-  border-radius: 14px;
-  padding: 12px 12px;
-  box-shadow: 0 10px 30px rgba(0,0,0,.25);
-  display: none;
+    /* ===== PWA Install Banner ===== */
+    .pwa-banner{
+      position: fixed;
+      left: 12px;
+      right: 12px;
+      bottom: 12px;
+      z-index: 9999;
+      background: #111827;
+      color: #fff;
+      border-radius: 14px;
+      padding: 12px 12px;
+      box-shadow: 0 10px 30px rgba(0,0,0,.25);
+      display: none;
+    }
+    .pwa-row{
+      display:flex;
+      gap:10px;
+      align-items:center;
+      justify-content:space-between;
+    }
+    .pwa-left{display:flex; gap:10px; align-items:flex-start;}
+    .pwa-icon{
+      width:44px;height:44px;border-radius:12px;
+      background:#fff; display:flex; align-items:center; justify-content:center;
+      overflow:hidden; flex:0 0 auto;
+    }
+    .pwa-icon img{width:100%;height:100%;object-fit:cover;}
+    .pwa-title{font-weight:800; line-height:1.15;}
+    .pwa-sub{opacity:.9; font-size:13px; line-height:1.25; margin-top:2px;}
+    .pwa-actions{display:flex; gap:8px; align-items:center; flex:0 0 auto;}
+    .pwa-btn{
+      border:0; border-radius:999px;
+      padding:8px 12px; font-weight:800;
+    }
+    .pwa-btn-install{background:#fbbf24; color:#111827;}
+    .pwa-btn-close{background:rgba(255,255,255,.12); color:#fff;}
+    .pwa-ios-steps{
+      margin-top:8px;
+      font-size:13px;
+      opacity:.95;
+      display:none;
+    }
+    .pwa-ios-steps b{font-weight:800;}
+
+    /* ===== FLOATING CHAT ===== */
+    .chat-fab{
+      position:fixed;
+      right:18px;
+      bottom:18px;
+      width:68px;
+      height:68px;
+      border:none;
+      border-radius:999px;
+      background:linear-gradient(180deg,#22c55e 0%, #16a34a 100%);
+      color:#fff;
+      box-shadow:
+        0 18px 40px rgba(22,163,74,.32),
+        0 0 0 0 rgba(34,197,94,.45);
+      z-index:10020;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      cursor:pointer;
+      transition:transform .18s ease, box-shadow .18s ease, opacity .18s ease, filter .18s ease;
+      animation:chatPulse 2.6s infinite;
+    }
+    .chat-fab:hover{
+      transform:translateY(-2px) scale(1.02);
+      box-shadow:
+        0 22px 48px rgba(22,163,74,.38),
+        0 0 0 0 rgba(34,197,94,0);
+      filter:brightness(1.02);
+    }
+    .chat-fab:active{transform:translateY(0) scale(.99)}
+    .chat-fab svg{
+      width:32px;
+      height:32px;
+      filter:drop-shadow(0 1px 1px rgba(0,0,0,.12));
+    }
+    .chat-fab-badge{
+      position:absolute;
+      top:-4px;
+      right:-2px;
+      min-width:24px;
+      height:24px;
+      padding:0 6px;
+      border-radius:999px;
+      background:#ef4444;
+      color:#fff;
+      font-size:12px;
+      font-weight:800;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      border:3px solid #fff;
+      line-height:1;
+      box-shadow:0 8px 18px rgba(239,68,68,.35);
+    }
+    .chat-fab-label{
+      position:fixed;
+      right:98px;
+      bottom:29px;
+      background:rgba(15,23,42,.96);
+      color:#fff;
+      border-radius:999px;
+      padding:10px 15px;
+      font-size:14px;
+      font-weight:700;
+      box-shadow:0 14px 32px rgba(0,0,0,.22);
+      z-index:10018;
+      white-space:nowrap;
+      opacity:.98;
+      transition:opacity .22s ease, transform .22s ease, visibility .22s ease;
+      backdrop-filter:blur(8px);
+      transform:translateY(0);
+      pointer-events:none;
+    }
+    .chat-fab-label.hidden{
+      opacity:0;
+      visibility:hidden;
+      transform:translateY(6px);
+    }
+
+    .chat-popup{
+      position:fixed;
+      right:18px;
+      bottom:100px;
+      width:min(430px, calc(100vw - 24px));
+      height:min(760px, calc(100vh - 120px));
+      background:#fff;
+      border:1px solid rgba(229,231,235,.95);
+      border-radius:22px;
+      overflow:hidden;
+      box-shadow:
+        0 28px 80px rgba(15,23,42,.20),
+        0 8px 20px rgba(15,23,42,.08);
+      z-index:10019;
+      display:none;
+      flex-direction:column;
+      transform-origin:bottom right;
+    }
+    .chat-popup.show{
+      display:flex;
+      animation:chatPopupIn .20s ease;
+    }
+
+    .chat-popup-top{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:10px;
+      padding:14px 14px;
+      background:linear-gradient(180deg,#ffffff 0%, #f8fafc 100%);
+      border-bottom:1px solid #eef2f7;
+      flex:0 0 auto;
+    }
+    .chat-popup-brand{
+      display:flex;
+      gap:12px;
+      align-items:center;
+      min-width:0;
+    }
+    .chat-popup-icon{
+      width:46px;
+      height:46px;
+      border-radius:999px;
+      background:linear-gradient(180deg,#22c55e 0%, #16a34a 100%);
+      color:#fff;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      flex:0 0 auto;
+      box-shadow:0 12px 24px rgba(22,163,74,.24);
+    }
+    .chat-popup-icon svg{width:24px;height:24px}
+    .chat-popup-title{
+      font-weight:800;
+      color:#111827;
+      line-height:1.1;
+      font-size:16px;
+      margin:0;
+    }
+    .chat-popup-sub{
+      color:#16a34a;
+      font-size:13px;
+      font-weight:800;
+      margin-top:3px;
+      letter-spacing:.1px;
+    }
+    .chat-popup-actions{
+      display:flex;
+      align-items:center;
+      gap:8px;
+      flex:0 0 auto;
+    }
+    .chat-top-btn{
+      border:1px solid #e5e7eb;
+      background:#fff;
+      color:#111827;
+      border-radius:12px;
+      padding:8px 11px;
+      font-size:13px;
+      font-weight:700;
+      line-height:1;
+      text-decoration:none;
+      transition:background .18s ease, transform .18s ease, border-color .18s ease;
+    }
+    .chat-top-btn:hover{
+      background:#f9fafb;
+      border-color:#d1d5db;
+      transform:translateY(-1px);
+    }
+    .chat-close{
+      width:38px;
+      height:38px;
+      padding:0;
+      border-radius:999px;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      font-size:23px;
+      font-weight:600;
+    }
+    .chat-popup-iframe{
+      width:100%;
+      height:100%;
+      border:0;
+      display:block;
+      background:#f8fafc;
+      flex:1 1 auto;
+    }
+
+    body.pwa-visible .chat-fab{bottom:132px}
+body.pwa-visible .chat-fab-label{bottom:144px}
+body.pwa-visible .chat-popup{bottom:214px}
+
+@media (max-width:576px){
+  body.pwa-visible .chat-fab{bottom:136px}
+  body.pwa-visible .chat-fab-label{bottom:148px}
+  body.pwa-visible .chat-popup{bottom:220px}
 }
-.pwa-row{
-  display:flex;
-  gap:10px;
-  align-items:center;
-  justify-content:space-between;
+
+body.pwa-visible.pwa-tall .chat-fab{bottom:148px}
+body.pwa-visible.pwa-tall .chat-fab-label{bottom:160px}
+body.pwa-visible.pwa-tall .chat-popup{bottom:232px}
+
+@media (max-width:576px){
+  body.pwa-visible.pwa-tall .chat-fab{bottom:154px}
+  body.pwa-visible.pwa-tall .chat-fab-label{bottom:166px}
+  body.pwa-visible.pwa-tall .chat-popup{bottom:238px}
 }
-.pwa-left{display:flex; gap:10px; align-items:flex-start;}
-.pwa-icon{
-  width:44px;height:44px;border-radius:12px;
-  background:#fff; display:flex; align-items:center; justify-content:center;
-  overflow:hidden; flex:0 0 auto;
+
+    @keyframes chatPulse{
+      0%{
+        box-shadow:
+          0 18px 40px rgba(22,163,74,.32),
+          0 0 0 0 rgba(34,197,94,.42);
+      }
+      70%{
+        box-shadow:
+          0 18px 40px rgba(22,163,74,.32),
+          0 0 0 18px rgba(34,197,94,0);
+      }
+      100%{
+        box-shadow:
+          0 18px 40px rgba(22,163,74,.32),
+          0 0 0 0 rgba(34,197,94,0);
+      }
+    }
+
+    @keyframes chatPopupIn{
+      from{opacity:0; transform:translateY(10px) scale(.985)}
+      to{opacity:1; transform:translateY(0) scale(1)}
+    }
+
+    @keyframes chatNudge{
+      0%{transform:translateX(0)}
+      20%{transform:translateX(-3px)}
+      40%{transform:translateX(3px)}
+      60%{transform:translateX(-2px)}
+      80%{transform:translateX(2px)}
+      100%{transform:translateX(0)}
+    }
+
+    .chat-fab.nudge{
+      animation:
+        chatPulse 2.6s infinite,
+        chatNudge .52s ease;
+    }
+
+    @media (max-width:576px){
+  .chat-fab{
+    right:14px;
+    width:64px;
+    height:64px;
+  }
+  .chat-fab svg{
+    width:30px;
+    height:30px;
+  }
+  .chat-fab-label{
+    right:88px;
+    bottom:25px;
+    font-size:12px;
+    padding:9px 12px;
+    max-width:200px;
+    overflow:hidden;
+    text-overflow:ellipsis;
+  }
+  .chat-popup{
+    right:12px;
+    bottom:88px;
+    width:calc(100vw - 24px);
+    height:min(76vh, 700px);
+    border-radius:18px;
+  }
+  body.pwa-visible .chat-popup{bottom:166px}
+  .chat-popup-top{padding:12px}
+  .chat-popup-title{font-size:15px}
+  .chat-popup-sub{font-size:12px}
+
+  .chat-top-btn-open{
+    display:inline-flex;
+    align-items:center;
+    justify-content:center;
+    padding:8px 10px;
+    font-size:12px;
+    white-space:nowrap;
+  }
+
+  .chat-popup-icon{
+    width:44px;
+    height:44px;
+  }
 }
-.pwa-icon img{width:100%;height:100%;object-fit:cover;}
-.pwa-title{font-weight:800; line-height:1.15;}
-.pwa-sub{opacity:.9; font-size:13px; line-height:1.25; margin-top:2px;}
-.pwa-actions{display:flex; gap:8px; align-items:center; flex:0 0 auto;}
-.pwa-btn{
-  border:0; border-radius:999px;
-  padding:8px 12px; font-weight:800;
-}
-.pwa-btn-install{background:#fbbf24; color:#111827;}
-.pwa-btn-close{background:rgba(255,255,255,.12); color:#fff;}
-.pwa-ios-steps{
-  margin-top:8px;
-  font-size:13px;
-  opacity:.95;
+
+/* ===== GOLD WALLET GUIDE POPUP ===== */
+.gold-guide-popup{
+  position:absolute;
+  z-index:10030;
+  width:min(92vw, 420px);
   display:none;
 }
-.pwa-ios-steps b{font-weight:800;}
 
+.gold-guide-popup.show{
+  display:block;
+  animation:goldGuideIn .18s ease;
+}
+
+.gold-guide-arrow{
+  position:absolute;
+  bottom:-10px;
+  left:50%;
+  transform:translateX(-50%) rotate(45deg);
+  width:20px;
+  height:20px;
+  background:#fff;
+  border-right:1px solid #e5e7eb;
+  border-bottom:1px solid #e5e7eb;
+}
+
+.gold-guide-box{
+  background:#fff;
+  border:1px solid #e5e7eb;
+  border-radius:18px;
+  padding:18px;
+  box-shadow:0 18px 45px rgba(0,0,0,.18);
+}
+
+.gold-guide-title{
+  font-weight:800;
+  font-size:18px;
+  margin-bottom:8px;
+  color:#111827;
+}
+
+.gold-guide-desc{
+  font-size:14px;
+  color:#374151;
+  line-height:1.5;
+  margin-bottom:8px;
+}
+
+.gold-guide-steps{
+  display:grid;
+  gap:6px;
+  font-size:14px;
+  color:#374151;
+  margin:10px 0 12px;
+}
+
+.gold-guide-actions{
+  display:flex;
+  gap:10px;
+  flex-wrap:wrap;
+}
+
+.gold-guide-actions .btn{
+  flex:1 1 140px;
+  border-radius:12px;
+  font-weight:700;
+}
+
+@keyframes goldGuideIn{
+  from{ opacity:0; transform:translateY(10px) scale(.98); }
+  to{ opacity:1; transform:translateY(0) scale(1); }
+}
+
+.btn-wallet.btn-lg{
+  padding:.9rem 1.4rem;
+  font-weight:700;
+  border-radius:14px;
+  border:none;
+  color:#fff;
+  background:linear-gradient(180deg,#22c55e,#16a34a);
+  box-shadow:0 6px 16px rgba(22,163,74,.28);
+}
+
+.btn-wallet.btn-lg:hover{
+  filter:brightness(.97);
+}
+
+.btn-misi.btn-lg{
+  padding:.9rem 1.4rem;
+  font-weight:800;
+  border:none;
+  border-radius:14px;
+  color:#111827;
+  background:
+    radial-gradient(circle at 30% 20%, rgba(255,255,255,.45), transparent 36%),
+    linear-gradient(135deg,#fff3b0 0%, #facc15 46%, #f59e0b 100%);
+  box-shadow:
+    0 10px 24px rgba(245,158,11,.22),
+    inset 0 1px 0 rgba(255,255,255,.55);
+}
+
+.btn-misi.btn-lg:hover{
+  filter:brightness(.98);
+}
+
+.misi-home-note{
+  max-width:880px;
+  margin:6px auto 0;
+  padding:0 12px;
+}
+.misi-home-card{
+  border:1px solid #f3e3a2;
+  border-radius:16px;
+  padding:14px 16px;
+  background:
+    radial-gradient(circle at 20% 20%, rgba(255,255,255,.38), transparent 30%),
+    linear-gradient(135deg,#fff8d6 0%, #fff1a8 55%, #ffe082 100%);
+  box-shadow:0 8px 24px rgba(245,158,11,.10);
+  text-decoration:none;
+  color:#111827;
+  display:none;
+  transition:transform .16s ease, box-shadow .16s ease, filter .16s ease;
+}
+
+.misi-home-card:hover{
+  transform:translateY(-1px);
+  box-shadow:0 12px 28px rgba(245,158,11,.16);
+  filter:brightness(.995);
+}
+
+.misi-home-card:active{
+  transform:scale(.995);
+}
+.misi-home-card.show{
+  display:block;
+}
+
+.misi-home-title{
+  font-weight:900;
+  font-size:18px;
+  line-height:1.15;
+}
+
+.misi-home-sub{
+  margin-top:4px;
+  color:#5b6470;
+  font-size:13px;
+}
+
+.misi-home-badge{
+  display:inline-flex;
+  align-items:center;
+  gap:8px;
+  border-radius:999px;
+  padding:6px 10px;
+  background:rgba(17,24,39,.92);
+  color:#fff;
+  font-size:12px;
+  font-weight:800;
+  line-height:1;
+  white-space:nowrap;
+}
+
+.misi-home-row{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:12px;
+  flex-wrap:wrap;
+}
+
+@media (max-width:576px){
+  .misi-home-title{ font-size:17px; }
+  .misi-home-sub{ font-size:12px; }
+}
+
+.gold-guide-overlay{
+  position:fixed;
+  inset:0;
+  background:rgba(0,0,0,.35);
+  z-index:10029;
+  display:none;
+}
+
+.gold-guide-overlay.show{
+  display:block;
+}
+
+.btn-wallet.btn-lg.gold-guide-focus{
+  position:relative;
+  z-index:10031;
+  box-shadow:
+    0 0 0 6px rgba(255,255,255,.25),
+    0 12px 30px rgba(22,163,74,.45);
+}
+
+@media (max-width:576px){
+  .gold-guide-popup{
+    width:min(94vw, 400px);
+  }
+}
+
+/* ===== MINI LIVE PREVIEW INDEX ===== */
+.home-live-mini{
+  max-width:880px;
+  margin:14px auto 0;
+  padding:0 12px;
+}
+
+.home-live-mini-card{
+  position:relative;
+  border-radius:18px;
+  overflow:hidden;
+  background:#020617;
+  box-shadow:0 14px 34px rgba(15,23,42,.22);
+  cursor:pointer;
+}
+
+.home-live-mini-card img{
+  width:100%;
+  height:170px;
+  object-fit:cover;
+  opacity:.78;
+  display:block;
+}
+
+.home-live-mini-play{
+  position:absolute;
+  inset:0;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  color:#fff;
+  font-weight:900;
+  font-size:18px;
+  background:linear-gradient(180deg,rgba(0,0,0,.08),rgba(0,0,0,.45));
+}
+
+.home-live-mini-play span{
+  background:#dc2626;
+  border-radius:999px;
+  padding:12px 18px;
+  box-shadow:0 12px 30px rgba(220,38,38,.35);
+}
+
+.home-live-mini{
+  max-width:880px;
+  margin:14px auto 0;
+  padding:0 12px;
+}
+
+.home-live-mini-card{
+  position:relative;
+  display:block;
+  border-radius:18px;
+  overflow:hidden;
+  background:#020617;
+  box-shadow:0 14px 34px rgba(15,23,42,.22);
+  text-decoration:none;
+}
+
+.home-live-index-badge{
+  position:absolute;
+  left:50%;
+  bottom:14px;
+  transform:translateX(-50%);
+  background:#dc2626;
+  color:#fff;
+  border-radius:999px;
+  padding:10px 16px;
+  font-weight:900;
+  font-size:14px;
+  box-shadow:0 12px 30px rgba(220,38,38,.35);
+  white-space:nowrap;
+  pointer-events:none;
+}
+
+.home-live-mini-card iframe{
+  pointer-events:auto;
+}
+
+.home-live-index-badge{
+  z-index:5;
+  pointer-events:auto;
+  cursor:pointer;
+}
+.prayer-source{
+  margin-top:8px;
+  text-align:center;
+  font-size:11px;
+  color:#9ca3af;
+  font-weight:600;
+}
+
+.prayer-date-card{
+  margin-top:14px;
+  border:1px solid #f1dfb3;
+  border-radius:18px;
+  padding:14px 16px;
+  background:
+    radial-gradient(circle at 92% 50%, rgba(214,164,25,.16), transparent 30%),
+    linear-gradient(135deg,#fff,#fff8e8);
+  display:flex;
+  align-items:center;
+  gap:14px;
+}
+.prayer-date-ico{font-size:30px}
+.prayer-date-main{
+  font-size:17px;
+  font-weight:900;
+  color:#111827;
+}
+.prayer-date-sub{
+  margin-top:3px;
+  font-size:14px;
+  color:#374151;
+}
+.prayer-share-btn{
+  border:1px solid #e8c76d;
+  background:#fff;
+  color:#9a6a00;
+  border-radius:999px;
+  padding:8px 13px;
+  font-weight:800;
+}
+.prayer-grid{
+  grid-template-columns:repeat(8, minmax(86px,1fr));
+  overflow-x:auto;
+  padding-bottom:4px;
+}
+.prayer-item{
+  min-width:86px;
+}
+.prayer-float.theme-imsak,
+.prayer-float.theme-subuh{
+  background:linear-gradient(135deg,#818cf8 0%, #3730a3 100%);
+}
+.prayer-float.theme-syuruk{
+  background:linear-gradient(135deg,#fb923c 0%, #f97316 100%);
+}
+.prayer-float.theme-dhuha,
+.prayer-float.theme-zohor{
+  background:linear-gradient(135deg,#d6a419 0%, #a87300 100%);
+}
+.prayer-float.theme-asar{
+  background:linear-gradient(135deg,#fbbf24 0%, #d97706 100%);
+}
+.prayer-float.theme-maghrib{
+  background:linear-gradient(135deg,#f97316 0%, #be123c 100%);
+}
+.prayer-float.theme-isyak{
+  background:linear-gradient(135deg,#1e293b 0%, #020617 100%);
+}
   </style>
 
-<!-- PWA -->
+  <!-- PWA -->
   <link rel="manifest" href="/manifest.json">
   <meta name="theme-color" content="#c9a24d">
 
@@ -103,16 +1258,17 @@
        style="display:none">
       Akaun
     </a>
+<a href="/chat.html" class="btn btn-sm btn-outline-secondary btn-chip">Chat</a>
     <a href="/login.html#login" class="btn btn-sm btn-outline-secondary btn-chip" id="btnLogin">Log masuk/Daftar</a>
     <button id="btnLogout" class="btn btn-sm btn-outline-secondary btn-chip" type="button" style="display:none">Log keluar</button>
     <a href="/policy.html" class="btn btn-sm btn-outline-secondary btn-chip">Polisi & Terma</a>
   </div>
 
   <div class="container text-center pb-5">
-    <!-- ✅ gambar ikut root supaya /a/slug pun boleh nampak -->
     <img src="/logo-emas-amir.png" alt="Emas Amir" class="logo">
 
-    <div class="card card-plain text-start">
+
+<div class="card card-plain text-start">
       <div class="card-body">
         <h4 class="card-title mb-2">💰 Harga Emas Harian</h4>
         <div id="lastUpdated" class="text-muted small mb-3">Terkini: memuatkan…</div>
@@ -128,52 +1284,165 @@
     </div>
 
     <div class="hero px-3">
-      <!-- ✅ hero image ikut root -->
-      <img src="/kedai1.jpg" class="d-block w-100" alt="">
+  <img src="/kedai1.jpg" class="d-block w-100" alt="">
+</div>
+
+<div id="homeLiveMini" class="home-live-mini" style="display:none;">
+  <a href="/comment.html" class="home-live-mini-card">
+    <div class="ratio ratio-16x9">
+      <iframe
+        id="homeLiveFrameIndex"
+        src="about:blank"
+        frameborder="0"
+        allow="encrypted-media; picture-in-picture"
+        allowfullscreen>
+      </iframe>
     </div>
 
-    <div class="mt-4">
-      <h1 class="brand">Emas Amir</h1>
-      <p class="lead mb-4">Premium Trusted Since 2016</p>
-      <div class="d-flex justify-content-center gap-2 flex-wrap">
-        <a class="btn btn-tabung btn-lg text-white" href="/tabung.html">Tabung</a>
-        <a class="btn btn-outline-secondary btn-lg" href="/j916.html">Barang Kemas 916</a>
-        <a class="btn btn-goldbar btn-lg" href="/goldbar-coin.html">GoldBar/Coin Fizikal</a>
-        <a class="btn btn-outline-secondary btn-lg" href="/jual-emas.html">Jual emas anda dengan kami</a>
+    <div class="home-live-index-badge" onclick="event.preventDefault(); event.stopPropagation(); window.location.href='/comment.html';">
+      🔴 Tekan untuk komen & lock LIVE
+    </div>
+  </a>
+</div>    <div class="mt-4">
+<div class="misi-home-note">
+  <a href="/misi-0.1g.html" id="misiHomeCard" class="misi-home-card">
+    <div class="misi-home-row">
+      <div>
+        <div class="misi-home-title" id="misiHomeTitle">🎯 Misi 0.1g Percuma</div>
+        <div class="misi-home-sub" id="misiHomeSub">Sertai kempen log masuk 60 hari & lengkapkan 1 pembelian.</div>
       </div>
+      <div class="misi-home-badge" id="misiHomeBadge">Lihat</div>
+    </div>
+  </a>
+</div>
+
+      <h1 class="brand">Emas Amir</h1>
+      <p class="lead mb-2">Premium Trusted Since 2016</p>
+      <div class="d-flex justify-content-center gap-2 flex-wrap">
+  <a class="btn btn-tabung btn-lg text-white" href="/tabung.html">Tabung</a>
+  <a class="btn btn-outline-secondary btn-lg" href="/j916.html">Barang Kemas 916</a>
+  <a class="btn btn-goldbar btn-lg" href="/goldbar-coin.html">GoldBar/Coin Fizikal</a>
+  <a class="btn btn-outline-secondary btn-lg" href="/jual-emas.html">Jual emas anda dengan kami</a>
+  <a class="btn btn-wallet btn-lg" href="/gold-wallet.html" id="btnGoldWallet">Pengurusan Emas Saya</a>
+  </div>
       <div class="mt-3"><a href="/policy.html" class="small text-muted">Lihat Polisi & Terma</a></div>
     </div>
   </div>
 
-  <div class="live-wrap" id="liveWrap" style="display:none">
-    <div class="d-flex align-items-center justify-content-between mb-2">
-      <div class="d-flex align-items-center gap-2">
-        <h4 class="m-0">🔴 Live Sekarang</h4>
-        <span class="badge-live">SEDANG LIVE</span>
-      </div>
-      <!-- Butang pergi ke halaman komen -->
-      <a href="/comment.html" class="btn btn-sm btn-outline-danger btn-chip">
-        💬 Komen & Lock di sini
-      </a>
+  
+<!-- ===== FLOATING PRAYER BUTTON ===== -->
+  <button id="prayerFloat" class="prayer-float" type="button" aria-label="Buka waktu solat">
+    <div class="prayer-float-inner">
+      <div id="prayerFloatIco" class="prayer-float-ico">🌅</div>
+      <div id="prayerFloatName" class="prayer-float-name">Subuh</div>
+      <div id="prayerFloatTime" class="prayer-float-time">--:--</div>
+      <div id="prayerFloatMini" class="prayer-float-mini">Lagi 5 minit</div>
     </div>
-    <div id="liveGrid" class="row g-3"></div>
+  </button>
+
+  <div id="prayerSheetOverlay" class="prayer-sheet-overlay"></div>
+
+  <div id="prayerSheet" class="prayer-sheet" aria-hidden="true">
+    <div class="prayer-body">
+      <div class="prayer-head">
+        <div>
+          <div class="prayer-title">🕌 Waktu Solat Hari Ini</div>
+          <div class="prayer-loc" id="prayerLoc">📍 Mengesan lokasi…</div>
+<div class="prayer-date-sub" id="prayerTodaySmall">Memuatkan tarikh…</div>
+        </div>
+
+        <div class="d-flex align-items-center gap-2">
+  <a href="/account.html" class="btn btn-sm btn-outline-warning btn-chip">Tukar Lokasi</a>
+  <button id="prayerShareBtn" class="prayer-share-btn" type="button">🔗 Share</button>
+  <button id="prayerClose" class="prayer-close" type="button" aria-label="Tutup">×</button>
+</div>
+      </div>
+
+      <div class="prayer-grid" id="prayerGrid">
+        <div class="prayer-item"><div class="ico">🌅</div><div class="name">Subuh</div><div class="time">--:--</div></div>
+        <div class="prayer-item"><div class="ico">☀️</div><div class="name">Zohor</div><div class="time">--:--</div></div>
+        <div class="prayer-item"><div class="ico">🌤️</div><div class="name">Asar</div><div class="time">--:--</div></div>
+        <div class="prayer-item"><div class="ico">🌇</div><div class="name">Maghrib</div><div class="time">--:--</div></div>
+        <div class="prayer-item"><div class="ico">🌙</div><div class="name">Isyak</div><div class="time">--:--</div></div>
+      </div>
+
+<div class="prayer-date-card">
+  <div class="prayer-date-ico">🗓️</div>
+  <div>
+    <div class="prayer-date-main" id="prayerHijriDate">Sabtu • -- Hijrah</div>
+    <div class="prayer-date-sub" id="prayerMasihiDate">--</div>
+  </div>
+</div>
+
+      <div class="prayer-next" id="prayerNext">⏰ Memuatkan waktu seterusnya…</div>
+
+      <div class="prayer-quote" id="prayerQuote">
+        <b>Solat Diutamakan.</b> Rezeki dicari, keberkatan dijaga.
+      </div>
+
+      <div class="prayer-source">
+        Rujukan waktu solat: JAKIM / e-Solat Malaysia
+      </div>
+    </div>
+  </div>
+
+
+
+  <!-- ===== FLOATING CHAT BUTTON ===== -->
+  <div id="chatFabLabel" class="chat-fab-label">Chat dengan Ai-Dan</div>
+
+  <button id="chatFab" class="chat-fab" type="button" aria-label="Buka chat" aria-expanded="false">
+    <span id="chatFabBadge" class="chat-fab-badge" style="display:none">0</span>
+    <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+      <path d="M7 10h10M7 14h6M21 11.5C21 16.194 16.97 20 12 20c-1.266 0-2.472-.246-3.564-.691L3 21l1.799-4.799C4.287 14.86 4 13.216 4 11.5 4 6.806 8.03 3 13 3s8 3.806 8 8.5Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+    </svg>
+  </button>
+
+  <!-- ===== FLOATING CHAT POPUP ===== -->
+  <div id="chatPopup" class="chat-popup" aria-hidden="true">
+    <div class="chat-popup-top">
+      <div class="chat-popup-brand">
+        <div class="chat-popup-icon">
+          <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+            <path d="M7 10h10M7 14h6M21 11.5C21 16.194 16.97 20 12 20c-1.266 0-2.472-.246-3.564-.691L3 21l1.799-4.799C4.287 14.86 4 13.216 4 11.5 4 6.806 8.03 3 13 3s8 3.806 8 8.5Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </div>
+        <div>
+          <div class="chat-popup-title">Mesej Kami</div>
+          <div class="chat-popup-sub">● Online</div>
+        </div>
+      </div>
+
+      <div class="chat-popup-actions">
+        <a href="/chat" id="chatOpenFullBtn" class="chat-top-btn chat-top-btn-open">
+  Buka penuh
+</a>
+        <button id="chatClose" class="chat-top-btn chat-close" type="button" aria-label="Tutup chat">×</button>
+      </div>
+    </div>
+
+    <iframe
+      id="chatFrame"
+      class="chat-popup-iframe"
+      src="about:blank"
+      loading="lazy"
+      referrerpolicy="strict-origin-when-cross-origin"
+      title="Chat Emas Amir">
+    </iframe>
   </div>
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-  <!-- ✅ script ikut root -->
   <script src="/agent-ref.js?v=1"></script>
   <script src="/auth.js?v=13.1"></script>
+<script src="/deeplink.js?v=5"></script>
   <script>
-  // ===== Flag admin (default) =====
   window.__isAdmin = false;
 
-  // baru — tambah #checkout supaya modal terus fokus
   function checkoutHref(code){
     const c = String(code || '').trim().toUpperCase();
     return '/j916.html#checkout?code=' + encodeURIComponent(c) + '&checkout=1';
   }
 
-  /* Helper normalisasi phone (untuk semakan admin) */
   function normalizePhone(p){
     if(!p) return '';
     p = (''+p).trim().replace(/\s|-/g,'');
@@ -182,6 +1451,106 @@
     if (p.startsWith('0'))   return '+60'+p.slice(1);
     return p;
   }
+
+function phoneVariantsForChat(rawPhone){
+  const clean = String(rawPhone || "").replace(/\D+/g, "");
+  const set = new Set();
+
+  if (!clean) return [];
+
+  set.add(clean);
+
+  if (clean.startsWith("60")) {
+    set.add("0" + clean.slice(2));
+    set.add("+" + clean);
+  }
+
+  if (clean.startsWith("0")) {
+    set.add("60" + clean.slice(1));
+    set.add("+60" + clean.slice(1));
+  }
+
+  if (!clean.startsWith("0") && !clean.startsWith("60")) {
+    set.add("0" + clean);
+    set.add("60" + clean);
+    set.add("+60" + clean);
+  }
+
+  return Array.from(set).filter(Boolean);
+}
+  async function updateChatUnreadBadge(){
+  try{
+    const badge = document.getElementById("chatFabBadge");
+    if (!badge) return;
+
+    const sb = window.sb;
+    if (!sb){
+      badge.style.display = "none";
+      badge.textContent = "0";
+      return;
+    }
+
+    const auth = window.auth_get && window.auth_get();
+    const rawPhone = auth?.phone || "";
+
+    if (!rawPhone){
+      badge.style.display = "none";
+      badge.textContent = "0";
+      return;
+    }
+
+    const variants = phoneVariantsForChat(rawPhone);
+    if (!variants.length){
+      badge.style.display = "none";
+      badge.textContent = "0";
+      return;
+    }
+
+    const filters = variants
+      .map(v => `customer_phone.eq.${String(v).replace(/,/g, "")}`)
+      .join(",");
+
+    const { data, error } = await sb
+      .from("chat_threads")
+      .select("id,customer_phone,last_message_at,last_customer_seen_at,meta")
+      .or(filters);
+
+    if (error) throw error;
+
+    let unreadCount = 0;
+
+    (Array.isArray(data) ? data : []).forEach(row => {
+      const lastMsg = row?.last_message_at ? new Date(row.last_message_at).getTime() : 0;
+
+      const metaReadAt =
+        row?.meta?.customer_last_read_at
+          ? new Date(row.meta.customer_last_read_at).getTime()
+          : 0;
+
+      const lastSeenRaw =
+        row?.last_customer_seen_at
+          ? new Date(row.last_customer_seen_at).getTime()
+          : 0;
+
+      const lastSeen = Math.max(lastSeenRaw || 0, metaReadAt || 0);
+
+      if (lastMsg > lastSeen){
+        unreadCount += 1;
+      }
+    });
+
+    if (unreadCount <= 0){
+      badge.style.display = "none";
+      badge.textContent = "0";
+      return;
+    }
+
+    badge.textContent = unreadCount > 99 ? "99+" : String(unreadCount);
+    badge.style.display = "flex";
+  }catch(err){
+    console.warn("[chat badge] gagal update:", err);
+  }
+}
 
   (async function(){
     const $ = id => document.getElementById(id);
@@ -194,7 +1563,6 @@
     const money = n => (Number(n||0)).toFixed(2);
     const fmtDT = iso => { try { return new Date(iso).toLocaleString("ms-MY",{dateStyle:"medium",timeStyle:"short",hour12:true}); } catch { return iso; } };
 
-    /* ====== HARGA EMAS ====== */
     async function loadHarga(){
       try{
         const { data } = await sb.from("gold_prices")
@@ -213,7 +1581,821 @@
     }
     await loadHarga();
 
-    /* ====== LOGIN / ADMIN BADGE ====== */
+function compactText(v){
+  return String(v || "").toLowerCase().replace(/[^a-z0-9\s]/g," ").replace(/\s+/g," ").trim();
+}
+
+function detectPrayerZoneFromCustomer(cust){
+  const rawText = [
+    cust?.address, cust?.alamat, cust?.addr,
+    cust?.postcode, cust?.poskod, cust?.zip,
+    cust?.city, cust?.bandar, cust?.daerah, cust?.district,
+    cust?.state, cust?.negeri
+  ].join(" ");
+
+  const text = compactText(rawText);
+  const postcodeMatch = String(rawText || "").match(/\b\d{5}\b/);
+  const pc = postcodeMatch ? Number(postcodeMatch[0]) : 0;
+
+  console.log("[PRAYER DEBUG TEXT]:", text, "POSTCODE:", pc);
+
+  /* =====================================
+     1️⃣ PRIORITY: DAERAH / BANDAR (PALING TEPAT)
+     ===================================== */
+
+  // ===== KEDAH =====
+  if (text.includes("kulim") || text.includes("bandar baharu")) return { zone:"KDH05", label:"Kulim / Bandar Baharu, Kedah" };
+  if (text.includes("baling")) return { zone:"KDH04", label:"Baling, Kedah" };
+  if (text.includes("sik") || text.includes("padang terap")) return { zone:"KDH03", label:"Sik / Padang Terap, Kedah" };
+  if (text.includes("sungai petani") || text.includes("kuala muda") || text.includes("yan") || text.includes("pendang")) return { zone:"KDH02", label:"Kuala Muda / Yan / Pendang, Kedah" };
+  if (text.includes("alor setar") || text.includes("kota setar") || text.includes("pokok sena") || text.includes("kubang pasu")) return { zone:"KDH01", label:"Kota Setar, Kedah" };
+  if (text.includes("langkawi")) return { zone:"KDH06", label:"Langkawi, Kedah" };
+
+  // ===== SELANGOR =====
+  if (text.includes("klang") || text.includes("kuala langat")) return { zone:"SGR03", label:"Klang / Kuala Langat, Selangor" };
+  if (text.includes("kuala selangor") || text.includes("sabak bernam")) return { zone:"SGR02", label:"Kuala Selangor / Sabak Bernam, Selangor" };
+  if (
+    text.includes("shah alam") || text.includes("gombak") || text.includes("petaling") ||
+    text.includes("subang") || text.includes("puchong") || text.includes("sepang") ||
+    text.includes("cyberjaya") || text.includes("kajang") || text.includes("hulu langat") ||
+    text.includes("rawang") || text.includes("hulu selangor")
+  ) return { zone:"SGR01", label:"Gombak / Petaling / Sepang / Hulu Langat / Shah Alam, Selangor" };
+
+  // ===== KUALA LUMPUR =====
+  if (text.includes("kuala lumpur") || text.includes("kl")) return { zone:"WLY01", label:"Kuala Lumpur" };
+  if (text.includes("putrajaya")) return { zone:"WLY01", label:"Putrajaya" };
+  if (text.includes("labuan")) return { zone:"WLY02", label:"Labuan" };
+
+  // ===== PENANG =====
+  if (text.includes("penang") || text.includes("pulau pinang") || text.includes("georgetown") || text.includes("butterworth")) {
+    return { zone:"PNG01", label:"Pulau Pinang" };
+  }
+
+  // ===== PERLIS =====
+  if (text.includes("perlis") || text.includes("kangar")) return { zone:"PLS01", label:"Perlis" };
+
+  // ===== PERAK =====
+  if (text.includes("ipoh") || text.includes("batu gajah") || text.includes("kampar")) return { zone:"PRK02", label:"Ipoh, Perak" };
+  if (text.includes("taiping") || text.includes("kuala kangsar") || text.includes("parit buntar")) return { zone:"PRK01", label:"Taiping / Kuala Kangsar, Perak" };
+  if (text.includes("teluk intan") || text.includes("bagan datuk") || text.includes("hutan melintang")) return { zone:"PRK03", label:"Teluk Intan, Perak" };
+  if (text.includes("manjung") || text.includes("pangkor") || text.includes("seri manjung")) return { zone:"PRK04", label:"Manjung / Pangkor, Perak" };
+
+  // ===== NEGERI SEMBILAN =====
+  if (text.includes("seremban") || text.includes("port dickson")) return { zone:"NGS02", label:"Seremban, Negeri Sembilan" };
+  if (text.includes("jempol") || text.includes("kuala pilah") || text.includes("tampin")) return { zone:"NGS01", label:"Jempol / Tampin, Negeri Sembilan" };
+
+  // ===== MELAKA =====
+  if (text.includes("melaka") || text.includes("malacca") || text.includes("ayer keroh")) return { zone:"MLK01", label:"Melaka" };
+
+  // ===== JOHOR =====
+  if (text.includes("johor bahru") || text.includes("jb") || text.includes("skudai")) return { zone:"JHR02", label:"Johor Bahru, Johor" };
+  if (text.includes("batu pahat")) return { zone:"JHR04", label:"Batu Pahat, Johor" };
+  if (text.includes("muar") || text.includes("tangkak")) return { zone:"JHR03", label:"Muar / Tangkak, Johor" };
+  if (text.includes("segamat") || text.includes("kluang")) return { zone:"JHR01", label:"Segamat / Kluang, Johor" };
+
+  // ===== PAHANG =====
+  if (text.includes("kuantan")) return { zone:"PHG02", label:"Kuantan, Pahang" };
+  if (text.includes("pekan") || text.includes("rompin")) return { zone:"PHG03", label:"Pekan / Rompin, Pahang" };
+  if (text.includes("raub") || text.includes("lipis") || text.includes("cameron")) return { zone:"PHG01", label:"Raub / Lipis, Pahang" };
+  if (text.includes("temerloh") || text.includes("mentakab") || text.includes("maran")) return { zone:"PHG04", label:"Temerloh / Maran, Pahang" };
+
+  // ===== TERENGGANU =====
+  if (text.includes("kuala terengganu") || text.includes("dungun") || text.includes("kemaman")) {
+    return { zone:"TRG01", label:"Terengganu" };
+  }
+
+  // ===== KELANTAN =====
+  if (text.includes("kota bharu") || text.includes("pasir mas") || text.includes("tanah merah")) {
+    return { zone:"KTN01", label:"Kelantan" };
+  }
+
+  // ===== SABAH =====
+  if (text.includes("kota kinabalu")) return { zone:"SBH07", label:"Kota Kinabalu, Sabah" };
+  if (text.includes("sandakan")) return { zone:"SBH05", label:"Sandakan, Sabah" };
+  if (text.includes("tawau")) return { zone:"SBH03", label:"Tawau, Sabah" };
+
+  // ===== SARAWAK =====
+  if (text.includes("kuching")) return { zone:"SWK08", label:"Kuching, Sarawak" };
+  if (text.includes("sibu")) return { zone:"SWK06", label:"Sibu, Sarawak" };
+  if (text.includes("miri") || text.includes("bintulu")) return { zone:"SWK04", label:"Miri / Bintulu, Sarawak" };
+
+  /* =====================================
+     2️⃣ FALLBACK: NEGERI
+     ===================================== */
+
+  if (text.includes("selangor")) return { zone:"SGR01", label:"Selangor" };
+  if (text.includes("kedah")) return { zone:"KDH01", label:"Kedah" };
+  if (text.includes("perak")) return { zone:"PRK02", label:"Perak" };
+  if (text.includes("johor")) return { zone:"JHR02", label:"Johor" };
+  if (text.includes("pahang")) return { zone:"PHG02", label:"Pahang" };
+  if (text.includes("kelantan")) return { zone:"KTN01", label:"Kelantan" };
+  if (text.includes("terengganu")) return { zone:"TRG01", label:"Terengganu" };
+  if (text.includes("melaka")) return { zone:"MLK01", label:"Melaka" };
+  if (text.includes("negeri sembilan")) return { zone:"NGS02", label:"Negeri Sembilan" };
+
+  /* =====================================
+     3️⃣ LAST: POSTCODE (WEAK FALLBACK)
+     ===================================== */
+
+  if (pc >= 40000 && pc <= 48999) return { zone:"SGR01", label:"Selangor" };
+  if (pc >= 50000 && pc <= 60999) return { zone:"WLY01", label:"Kuala Lumpur" };
+  if (pc >= 70000 && pc <= 79999) return { zone:"NGS02", label:"Negeri Sembilan" };
+  if (pc >= 80000 && pc <= 86999) return { zone:"JHR02", label:"Johor" };
+
+  /* =====================================
+     FINAL FALLBACK
+     ===================================== */
+
+  return { zone:"KDH05", label:"Kulim, Kedah" };
+}
+function normalizePrayerRaw(t){
+  if (t === null || t === undefined) return "";
+
+  if (typeof t === "number" || /^\d{10,13}$/.test(String(t).trim())) {
+    const n = Number(t);
+    const d = new Date(String(n).length === 10 ? n * 1000 : n);
+    const hh = String(d.getHours()).padStart(2, "0");
+    const mm = String(d.getMinutes()).padStart(2, "0");
+    return `${hh}:${mm}`;
+  }
+
+  const s = String(t).trim();
+  const m = s.match(/(\d{1,2}):(\d{2})/);
+  if (!m) return "";
+
+  return `${String(Number(m[1])).padStart(2, "0")}:${m[2]}`;
+}
+
+function formatPrayerTime(t){
+  const raw = normalizePrayerRaw(t);
+  if (!raw) return "--:--";
+
+  const [hh, mm] = raw.split(":");
+  let h = Number(hh);
+  const ampm = h >= 12 ? "PM" : "AM";
+  h = h % 12;
+  if (h === 0) h = 12;
+
+  return `${h}:${mm} ${ampm}`;
+}
+
+function timeToMinutes(t){
+  const raw = normalizePrayerRaw(t);
+  if (!raw) return 99999;
+
+  const [hh, mm] = raw.split(":").map(Number);
+  return hh * 60 + mm;
+}
+
+function getPrayerQuote(activeName){
+
+  const quotes = {
+
+    Subuh: [
+      `<b>“Dirikanlah solat.”</b> — Surah Al-‘Ankabut 29:45<br><small>Mulakan hari dengan solat, hidup jadi lebih berkat.</small>`,
+      `<b>“Sesungguhnya solat itu mencegah dari perbuatan keji dan mungkar.”</b> — Surah Al-‘Ankabut 29:45<br><small>Subuh dijaga, hati lebih terarah.</small>`,
+      `<b>“Dan mintalah pertolongan dengan sabar dan solat.”</b> — Surah Al-Baqarah 2:45<br><small>Mulakan pagi dengan kekuatan dari Allah.</small>`,
+      `<b>“Sesungguhnya berjayalah orang yang beriman.”</b> — Surah Al-Mu’minun 23:1<br><small>Antaranya mereka menjaga solat.</small>`,
+      `<b>“Peliharalah solat.”</b> — Surah Al-Baqarah 2:238<br><small>Subuh adalah permulaan disiplin hidup.</small>`,
+      `<b>“Bangunlah (untuk solat) pada sebahagian malam.”</b> — Surah Al-Isra’ 17:79<br><small>Orang hebat bangun awal bersama Tuhan.</small>`,
+      `<b>“Dan sebutlah nama Tuhanmu pada waktu pagi dan petang.”</b> — Surah Al-Insan 76:25<br><small>Pagi dimulakan dengan zikrullah.</small>`
+    ],
+
+    Zohor: [
+      `<b>“Apabila telah ditunaikan solat, bertebaranlah kamu di muka bumi.”</b> — Surah Al-Jumu‘ah 62:10<br><small>Cari rezeki selepas tunaikan kewajipan.</small>`,
+      `<b>“Dan janganlah kamu lupakan bahagianmu di dunia.”</b> — Surah Al-Qasas 28:77<br><small>Kerja kuat, tapi jangan tinggal solat.</small>`,
+      `<b>“Sesungguhnya Allah telah menghalalkan jual beli.”</b> — Surah Al-Baqarah 2:275<br><small>Berniaga dengan cara yang halal.</small>`,
+      `<b>“Tunaikanlah solat dan keluarkanlah zakat.”</b> — Surah Al-Baqarah 2:43<br><small>Rezeki bersih datang dari ibadah.</small>`,
+      `<b>“Sesungguhnya Allah menyukai orang yang bertawakal.”</b> — Surah Ali ‘Imran 3:159<br><small>Usaha + tawakal = rezeki berkat.</small>`,
+      `<b>“Allah melapangkan rezeki bagi siapa yang Dia kehendaki.”</b> — Surah Ar-Ra‘d 13:26<br><small>Jangan lupa siapa pemberi rezeki.</small>`,
+      `<b>“Makanlah dari rezeki yang baik yang Kami berikan.”</b> — Surah Al-Baqarah 2:172<br><small>Pastikan rezeki itu halal.</small>`
+    ],
+
+    Asar: [
+      `<b>“Sesungguhnya manusia dalam kerugian.”</b> — Surah Al-‘Asr 103:2<br><small>Masa sangat berharga, jangan sia-siakan.</small>`,
+      `<b>“Demi masa.”</b> — Surah Al-‘Asr 103:1<br><small>Asar mengingatkan kita tentang masa.</small>`,
+      `<b>“Dan bersabarlah.”</b> — Surah Al-‘Asr 103:3<br><small>Kejayaan datang dengan sabar.</small>`,
+      `<b>“Sesungguhnya Allah bersama orang yang sabar.”</b> — Surah Al-Baqarah 2:153<br><small>Jangan putus asa dalam usaha.</small>`,
+      `<b>“Janganlah kamu menjadi lemah.”</b> — Surah Ali ‘Imran 3:139<br><small>Terus kuat walaupun penat.</small>`,
+      `<b>“Allah mengetahui apa yang kamu kerjakan.”</b> — Surah Al-‘Asr 103:3<br><small>Setiap usaha ada ganjaran.</small>`,
+      `<b>“Sesungguhnya bersama kesulitan ada kemudahan.”</b> — Surah Ash-Sharh 94:6<br><small>Rezeki datang selepas sabar.</small>`
+    ],
+
+    Maghrib: [
+      `<b>“Jika kamu bersyukur, pasti Aku tambah nikmat.”</b> — Surah Ibrahim 14:7<br><small>Tutup hari dengan syukur.</small>`,
+      `<b>“Dan sedikit sekali kamu bersyukur.”</b> — Surah As-Sajdah 32:9<br><small>Jangan lupa nikmat hari ini.</small>`,
+      `<b>“Ingatlah Aku, nescaya Aku ingat kamu.”</b> — Surah Al-Baqarah 2:152<br><small>Maghrib waktu kembali kepada Allah.</small>`,
+      `<b>“Dan bertakwalah kepada Allah.”</b> — Surah Al-Baqarah 2:189<br><small>Hari ditutup dengan taqwa.</small>`,
+      `<b>“Sesungguhnya rahmat Allah dekat kepada orang yang berbuat baik.”</b> — Surah Al-A‘raf 7:56<br><small>Teruskan kebaikan hari ini.</small>`,
+      `<b>“Dialah yang menjadikan malam untuk kamu beristirahat.”</b> — Surah Yunus 10:67<br><small>Malam adalah rehat dari Allah.</small>`,
+      `<b>“Dan mohonlah ampun kepada Tuhanmu.”</b> — Surah Hud 11:3<br><small>Maghrib waktu istighfar.</small>`
+    ],
+
+    Isyak: [
+      `<b>“Dengan mengingati Allah, hati menjadi tenang.”</b> — Surah Ar-Ra‘d 13:28<br><small>Tenangkan diri sebelum tidur.</small>`,
+      `<b>“Dan hanya kepada Tuhanmu hendaklah engkau berharap.”</b> — Surah Ash-Sharh 94:8<br><small>Serahkan segala urusan kepada Allah.</small>`,
+      `<b>“Sesungguhnya Allah Maha Pengampun lagi Maha Penyayang.”</b> — Surah Az-Zumar 39:53<br><small>Jangan putus harapan.</small>`,
+      `<b>“Dan bertawakallah kepada Allah.”</b> — Surah Al-Ahzab 33:3<br><small>Tutup hari dengan tawakal.</small>`,
+      `<b>“Dialah yang menjadikan malam untuk kamu beristirahat.”</b> — Surah Yunus 10:67<br><small>Rehat adalah nikmat.</small>`,
+      `<b>“Sesungguhnya Tuhanmu Maha Luas keampunan-Nya.”</b> — Surah An-Najm 53:32<br><small>Allah sentiasa menerima taubat.</small>`,
+      `<b>“Dan bangunlah sebahagian malam untuk solat.”</b> — Surah Al-Isra’ 17:79<br><small>Orang hebat bangun malam.</small>`
+    ]
+
+  };
+
+  const fallback = [
+    `<b>“Peliharalah solat.”</b> — Surah Al-Baqarah 2:238<br><small>Solat adalah asas kehidupan.</small>`,
+    `<b>“Ambillah zakat dari harta mereka.”</b> — Surah At-Taubah 9:103<br><small>Harta menjadi bersih dengan zakat.</small>`
+  ];
+
+  const list = quotes[activeName] || fallback;
+
+  return list[new Date().getDay() % list.length];
+}
+let __prayerLoadedState = null;
+let __prayerRefreshTimer = null;
+
+function getPrayerThemeClass(name){
+  const n = String(name || "").toLowerCase();
+
+  if (n.includes("imsak")) return "theme-imsak";
+  if (n.includes("subuh")) return "theme-subuh";
+  if (n.includes("syuruk")) return "theme-syuruk";
+  if (n.includes("dhuha")) return "theme-dhuha";
+  if (n.includes("zohor")) return "theme-zohor";
+  if (n.includes("asar")) return "theme-asar";
+  if (n.includes("maghrib")) return "theme-maghrib";
+  if (n.includes("isyak")) return "theme-isyak";
+
+  return "theme-zohor";
+}
+
+function setPrayerFloatTheme(btn, name){
+  if (!btn) return;
+
+  btn.classList.remove(
+    "theme-imsak",
+    "theme-subuh",
+    "theme-syuruk",
+    "theme-dhuha",
+    "theme-zohor",
+    "theme-asar",
+    "theme-maghrib",
+    "theme-isyak"
+  );
+
+  btn.classList.add(getPrayerThemeClass(name));
+}
+
+function getMalayDateInfo(){
+  const now = new Date();
+
+  const dayName = now.toLocaleDateString("ms-MY", { weekday:"long" });
+  const masihi = now.toLocaleDateString("ms-MY", {
+    day:"2-digit",
+    month:"long",
+    year:"numeric"
+  });
+
+  let hijri = "";
+  try{
+    hijri = new Intl.DateTimeFormat("ms-MY-u-ca-islamic", {
+      day:"numeric",
+      month:"long",
+      year:"numeric"
+    }).format(now);
+
+    hijri = hijri
+      .replace("AH", "H")
+      .replace("A.H.", "H")
+      .replace("Hijrah", "H");
+  }catch(e){
+    hijri = "-- Hijrah";
+  }
+
+  return {
+    dayName,
+    masihi,
+    hijri,
+    header: `${dayName} • ${hijri}`
+  };
+}
+
+function escapeCanvasText(v){
+  return String(v || "")
+    .replace(/<br\s*\/?>/gi, "\n")
+    .replace(/<[^>]+>/g, "")
+    .replace(/&nbsp;/g, " ")
+    .replace(/&amp;/g, "&")
+    .replace(/&quot;/g, '"')
+    .replace(/&#039;/g, "'");
+}
+
+function wrapCanvasText(ctx, text, x, y, maxWidth, lineHeight){
+  const words = String(text || "").split(/\s+/);
+  let line = "";
+  let yy = y;
+
+  for (let n = 0; n < words.length; n++){
+    const testLine = line + words[n] + " ";
+    const metrics = ctx.measureText(testLine);
+
+    if (metrics.width > maxWidth && n > 0){
+      ctx.fillText(line.trim(), x, yy);
+      line = words[n] + " ";
+      yy += lineHeight;
+    } else {
+      line = testLine;
+    }
+  }
+
+  if (line.trim()){
+    ctx.fillText(line.trim(), x, yy);
+  }
+
+  return yy;
+}
+
+async function sharePrayerPoster(){
+  try{
+    const st = window.__prayerLoadedState;
+    if (!st || !Array.isArray(st.prayers)){
+      alert("Waktu solat belum siap dimuatkan.");
+      return;
+    }
+
+    const d = getMalayDateInfo();
+    const canvas = document.createElement("canvas");
+    canvas.width = 1080;
+    canvas.height = 1350;
+
+    const ctx = canvas.getContext("2d");
+
+    const grad = ctx.createLinearGradient(0, 0, 0, canvas.height);
+    grad.addColorStop(0, "#ffffff");
+    grad.addColorStop(1, "#fff7df");
+    ctx.fillStyle = grad;
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+    ctx.strokeStyle = "#c99a1b";
+    ctx.lineWidth = 8;
+    roundRect(ctx, 34, 34, canvas.width - 68, canvas.height - 68, 42, false, true);
+
+    ctx.fillStyle = "#111827";
+    ctx.font = "900 52px Arial";
+    ctx.textAlign = "center";
+    ctx.fillText("🕌 Waktu Solat Hari Ini", canvas.width / 2, 120);
+
+    ctx.fillStyle = "#9a6a00";
+    ctx.font = "800 34px Arial";
+    ctx.fillText(st.label || "Kulim, Kedah", canvas.width / 2, 170);
+
+    ctx.fillStyle = "#111827";
+    ctx.font = "900 42px Arial";
+    ctx.fillText(d.header, canvas.width / 2, 245);
+
+    ctx.fillStyle = "#374151";
+    ctx.font = "700 32px Arial";
+    ctx.fillText(d.masihi, canvas.width / 2, 292);
+
+    let y = 370;
+    const leftX = 230;
+    const rightX = 770;
+
+    ctx.font = "800 34px Arial";
+    st.prayers.forEach((p, i) => {
+      const rowY = y + (i * 72);
+
+      ctx.fillStyle = i === st.nextIndex ? "#fff8df" : "#ffffff";
+      ctx.strokeStyle = i === st.nextIndex ? "#d6a419" : "#f0dfb8";
+      ctx.lineWidth = 2;
+      roundRect(ctx, 120, rowY - 43, 840, 56, 18, true, true);
+
+      ctx.fillStyle = i === st.nextIndex ? "#9a6a00" : "#111827";
+      ctx.textAlign = "left";
+      ctx.font = "900 34px Arial";
+      ctx.fillText(`${p.ico} ${p.name}`, leftX, rowY);
+
+      ctx.textAlign = "right";
+      ctx.font = "900 36px Arial";
+      ctx.fillText(formatPrayerTime(p.raw), rightX, rowY);
+    });
+
+    y = 970;
+
+    ctx.fillStyle = "#fffdf6";
+    ctx.strokeStyle = "#f0dfb8";
+    ctx.lineWidth = 2;
+    roundRect(ctx, 90, y - 40, 900, 190, 28, true, true);
+
+    const quoteText = escapeCanvasText(getPrayerQuote(st.next?.name || "Zohor"));
+
+    ctx.fillStyle = "#8a6100";
+    ctx.textAlign = "center";
+    ctx.font = "800 30px Arial";
+    wrapCanvasText(ctx, quoteText, canvas.width / 2, y + 20, 760, 42);
+
+    ctx.fillStyle = "#9ca3af";
+    ctx.font = "800 26px Arial";
+    ctx.fillText("Rujukan waktu solat: JAKIM / e-Solat Malaysia", canvas.width / 2, 1245);
+
+    ctx.fillStyle = "#9a6a00";
+    ctx.font = "900 28px Arial";
+    ctx.fillText("Emas Amir • Premium Trusted Since 2016", canvas.width / 2, 1290);
+
+    canvas.toBlob(async function(blob){
+      if (!blob) return;
+
+      const file = new File([blob], "waktu-solat-emas-amir.png", { type:"image/png" });
+
+      if (navigator.canShare && navigator.canShare({ files:[file] })){
+        await navigator.share({
+  title: "Waktu Solat Hari Ini",
+  text: `🕌 Waktu solat hari ini (${st.label})
+
+Waktu akan dikemaskini mengikut lokasi anda.
+Semoga urusan harian kita dipermudahkan dan diberkati Allah.
+
+Download App Emas Amir:
+(AppStore/PlayStore):
+https://emasamir.app`,
+  files: [file]
+});
+        return;
+      }
+
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = "waktu-solat-emas-amir.png";
+      a.click();
+
+      setTimeout(() => URL.revokeObjectURL(url), 2000);
+    }, "image/png");
+
+  }catch(e){
+    console.warn("[prayer share] gagal:", e);
+    alert("Gagal buat gambar share. Cuba semula.");
+  }
+}
+
+function roundRect(ctx, x, y, w, h, r, fill, stroke){
+  if (w < 2 * r) r = w / 2;
+  if (h < 2 * r) r = h / 2;
+
+  ctx.beginPath();
+  ctx.moveTo(x + r, y);
+  ctx.arcTo(x + w, y, x + w, y + h, r);
+  ctx.arcTo(x + w, y + h, x, y + h, r);
+  ctx.arcTo(x, y + h, x, y, r);
+  ctx.arcTo(x, y, x + w, y, r);
+  ctx.closePath();
+
+  if (fill) ctx.fill();
+  if (stroke) ctx.stroke();
+}
+
+
+async function loadPrayerHomeCard(){
+  const locEl = document.getElementById("prayerLoc");
+  const grid = document.getElementById("prayerGrid");
+  const nextEl = document.getElementById("prayerNext");
+  const quoteEl = document.getElementById("prayerQuote");
+  const smallDateEl = document.getElementById("prayerTodaySmall");
+  const hijriEl = document.getElementById("prayerHijriDate");
+  const masihiEl = document.getElementById("prayerMasihiDate");
+  const shareBtn = document.getElementById("prayerShareBtn");
+
+  const floatBtn = document.getElementById("prayerFloat");
+  const floatIco = document.getElementById("prayerFloatIco");
+  const floatName = document.getElementById("prayerFloatName");
+  const floatTime = document.getElementById("prayerFloatTime");
+  const floatMini = document.getElementById("prayerFloatMini");
+
+  if (!locEl || !grid || !nextEl || !quoteEl) return;
+
+  try{
+    const dateInfo = getMalayDateInfo();
+
+    if (smallDateEl) smallDateEl.textContent = `${dateInfo.header} • ${dateInfo.masihi}`;
+    if (hijriEl) hijriEl.textContent = dateInfo.header;
+    if (masihiEl) masihiEl.textContent = dateInfo.masihi;
+
+    if (shareBtn && shareBtn.dataset.ready !== "1"){
+      shareBtn.dataset.ready = "1";
+      shareBtn.addEventListener("click", sharePrayerPoster);
+    }
+
+    const auth = window.auth_get && window.auth_get();
+    const rawPhone = auth?.phone || "";
+    const variants = rawPhone ? phoneVariantsForChat(rawPhone) : [];
+
+    let customer = null;
+
+    if (variants.length){
+      const filters = variants
+        .map(v => `phone.eq.${String(v).replace(/,/g,"")}`)
+        .join(",");
+
+      const { data } = await sb
+        .from("customers")
+        .select("*")
+        .or(filters)
+        .limit(1)
+        .maybeSingle();
+
+      customer = data || null;
+    }
+
+    const z = detectPrayerZoneFromCustomer(customer || {});
+    locEl.textContent = `📍 ${z.label}`;
+
+    const todayKey = new Date().toLocaleDateString("en-CA");
+    const cacheKey = `ea_prayer_${z.zone}_${todayKey}`;
+    let apiData = null;
+
+    try{
+      const cached = JSON.parse(localStorage.getItem(cacheKey) || "null");
+      if (cached) apiData = cached;
+    }catch(e){}
+
+    if (!apiData){
+      const res = await fetch(`/.netlify/functions/prayer-times?zone=${encodeURIComponent(z.zone)}`);
+
+      if (!res.ok){
+        throw new Error("Prayer API gagal: " + res.status);
+      }
+
+      apiData = await res.json();
+
+      if (apiData && !apiData.error){
+        localStorage.setItem(cacheKey, JSON.stringify(apiData));
+      }
+    }
+
+    const row =
+      Array.isArray(apiData?.prayerTime) ? apiData.prayerTime[0] :
+      Array.isArray(apiData?.data) ? apiData.data[0] :
+      Array.isArray(apiData?.prayers) ? apiData.prayers[0] :
+      apiData?.prayers ||
+      apiData?.prayer_times ||
+      apiData?.data ||
+      apiData ||
+      {};
+
+    const prayers = [
+      { key:"imsak",   name:"Imsak",   ico:"⏰", raw:row.imsak },
+      { key:"subuh",   name:"Subuh",   ico:"🌅", raw:row.subuh || row.fajr },
+      { key:"syuruk",  name:"Syuruk",  ico:"🌄", raw:row.syuruk || row.sunrise },
+      { key:"dhuha",   name:"Dhuha",   ico:"☀️", raw:row.dhuha },
+      { key:"zohor",   name:"Zohor",   ico:"☀️", raw:row.zohor || row.dhuhr },
+      { key:"asar",    name:"Asar",    ico:"🌤️", raw:row.asar || row.asr },
+      { key:"maghrib", name:"Maghrib", ico:"🌇", raw:row.maghrib },
+      { key:"isyak",   name:"Isyak",   ico:"🌙", raw:row.isyak || row.isha }
+    ].filter(x => normalizePrayerRaw(x.raw));
+
+    const now = new Date();
+    const nowMin = now.getHours() * 60 + now.getMinutes();
+
+    let next = prayers.find(x => timeToMinutes(x.raw) > nowMin) || prayers[0];
+    let nextIndex = Math.max(0, prayers.indexOf(next));
+
+    const nextMin = timeToMinutes(next.raw);
+    let diff = nextMin - nowMin;
+    if (diff < 0) diff += 24 * 60;
+
+    grid.innerHTML = prayers.map((x, i) => `
+      <div class="prayer-item ${i === nextIndex ? "active" : ""}">
+        <div class="ico">${x.ico}</div>
+        <div class="name">${x.name}</div>
+        <div class="time">${formatPrayerTime(x.raw)}</div>
+      </div>
+    `).join("");
+
+    const jam = Math.floor(diff / 60);
+    const minit = diff % 60;
+    const leftText = jam > 0 ? `${jam} jam ${minit} minit lagi` : `${minit} minit lagi`;
+
+    nextEl.innerHTML = `⏰ Seterusnya: <b>${next.name}</b> (${leftText})`;
+    quoteEl.innerHTML = getPrayerQuote(next.name);
+
+    if (floatBtn && floatIco && floatName && floatTime && floatMini){
+      floatIco.textContent = next.ico || "🕌";
+      floatName.textContent = next.name || "Solat";
+      floatTime.textContent = formatPrayerTime(next.raw);
+
+      setPrayerFloatTheme(floatBtn, next.name);
+
+      if (diff <= 60){
+        floatMini.textContent = `Lagi ${diff} minit`;
+        floatMini.style.display = "block";
+      } else {
+        floatMini.textContent = "";
+        floatMini.style.display = "none";
+      }
+
+      floatBtn.classList.add("show");
+
+      if (diff > 0 && diff <= 5){
+        floatBtn.classList.add("glow");
+      } else {
+        floatBtn.classList.remove("glow");
+      }
+    }
+
+    window.__prayerLoadedState = {
+      zone:z.zone,
+      label:z.label,
+      prayers:prayers,
+      nextIndex:nextIndex,
+      next:next,
+      diff:diff
+    };
+
+  }catch(e){
+    console.warn("[prayer] gagal load:", e);
+
+    locEl.textContent = "📍 Kulim, Kedah";
+    nextEl.innerHTML = `⏰ Waktu solat sedang dimuatkan semula…`;
+    quoteEl.innerHTML = `<b>Solat Diutamakan.</b> Rezeki dicari, keberkatan dijaga.`;
+
+    if (floatBtn && floatIco && floatName && floatTime){
+      floatIco.textContent = "🕌";
+      floatName.textContent = "Solat";
+      floatTime.textContent = "--:--";
+      floatBtn.classList.add("show");
+      floatBtn.classList.remove("glow");
+      setPrayerFloatTheme(floatBtn, "Zohor");
+    }
+  }
+
+  if (!__prayerRefreshTimer){
+    __prayerRefreshTimer = setInterval(loadPrayerHomeCard, 60000);
+  }
+}
+function setupPrayerFloatControls(){
+  const floatBtn = document.getElementById("prayerFloat");
+  const sheet = document.getElementById("prayerSheet");
+  const overlay = document.getElementById("prayerSheetOverlay");
+  const closeBtn = document.getElementById("prayerClose");
+
+  if (!floatBtn || !sheet || !overlay) return;
+  if (floatBtn.dataset.ready === "1") return;
+  floatBtn.dataset.ready = "1";
+
+  const POS_KEY = "ea_prayer_float_pos_v1";
+  let dragging = false;
+  let moved = false;
+  let startX = 0;
+  let startY = 0;
+  let baseLeft = 0;
+  let baseTop = 0;
+
+  function clampPosition(left, top){
+    const rect = floatBtn.getBoundingClientRect();
+    const pad = 8;
+    const maxLeft = Math.max(pad, window.innerWidth - rect.width - pad);
+    const maxTop = Math.max(pad, window.innerHeight - rect.height - pad);
+
+    return {
+      left: Math.max(pad, Math.min(left, maxLeft)),
+      top: Math.max(pad, Math.min(top, maxTop))
+    };
+  }
+
+  function savePosition(){
+    const rect = floatBtn.getBoundingClientRect();
+
+    try{
+      localStorage.setItem(POS_KEY, JSON.stringify({
+        left: Math.round(rect.left),
+        top: Math.round(rect.top)
+      }));
+    }catch(e){}
+  }
+
+  function applySavedPosition(){
+    try{
+      const saved = JSON.parse(localStorage.getItem(POS_KEY) || "null");
+      if (!saved) return;
+
+      const pos = clampPosition(Number(saved.left || 18), Number(saved.top || 120));
+
+      floatBtn.style.left = pos.left + "px";
+      floatBtn.style.top = pos.top + "px";
+      floatBtn.style.right = "auto";
+      floatBtn.style.bottom = "auto";
+    }catch(e){}
+  }
+
+  function openSheet(){
+    sheet.classList.add("show");
+    overlay.classList.add("show");
+    sheet.setAttribute("aria-hidden", "false");
+  }
+
+  function closeSheet(){
+    sheet.classList.remove("show");
+    overlay.classList.remove("show");
+    sheet.setAttribute("aria-hidden", "true");
+  }
+
+  function pointerDown(e){
+    if (e.pointerType === "mouse" && e.button !== 0) return;
+
+    dragging = true;
+    moved = false;
+
+    const rect = floatBtn.getBoundingClientRect();
+
+    startX = e.clientX;
+    startY = e.clientY;
+    baseLeft = rect.left;
+    baseTop = rect.top;
+
+    floatBtn.setPointerCapture && floatBtn.setPointerCapture(e.pointerId);
+  }
+
+  function pointerMove(e){
+    if (!dragging) return;
+
+    const dx = e.clientX - startX;
+    const dy = e.clientY - startY;
+
+    if (Math.abs(dx) > 4 || Math.abs(dy) > 4){
+      moved = true;
+    }
+
+    const pos = clampPosition(baseLeft + dx, baseTop + dy);
+
+    floatBtn.style.left = pos.left + "px";
+    floatBtn.style.top = pos.top + "px";
+    floatBtn.style.right = "auto";
+    floatBtn.style.bottom = "auto";
+  }
+
+  function pointerUp(e){
+    if (!dragging) return;
+
+    dragging = false;
+
+    try{
+      floatBtn.releasePointerCapture && floatBtn.releasePointerCapture(e.pointerId);
+    }catch(err){}
+
+    if (moved){
+      savePosition();
+      setTimeout(function(){
+        moved = false;
+      }, 80);
+    }
+  }
+
+  floatBtn.addEventListener("pointerdown", pointerDown);
+  floatBtn.addEventListener("pointermove", pointerMove);
+  floatBtn.addEventListener("pointerup", pointerUp);
+  floatBtn.addEventListener("pointercancel", pointerUp);
+
+  floatBtn.addEventListener("click", function(e){
+    if (moved){
+      e.preventDefault();
+      e.stopPropagation();
+      return;
+    }
+
+    openSheet();
+  });
+
+  overlay.addEventListener("click", closeSheet);
+
+  if (closeBtn){
+    closeBtn.addEventListener("click", closeSheet);
+  }
+
+  document.addEventListener("keydown", function(e){
+    if (e.key === "Escape"){
+      closeSheet();
+    }
+  });
+
+  window.addEventListener("resize", function(){
+    const rect = floatBtn.getBoundingClientRect();
+
+    if (floatBtn.style.left && floatBtn.style.top){
+      const pos = clampPosition(rect.left, rect.top);
+      floatBtn.style.left = pos.left + "px";
+      floatBtn.style.top = pos.top + "px";
+      savePosition();
+    }
+  });
+
+  applySavedPosition();
+}
+
+await loadPrayerHomeCard();
+setupPrayerFloatControls();
+
+
     try {
       const auth = window.auth_get && window.auth_get();
       const rawPhone = auth?.phone || '';
@@ -282,7 +2464,6 @@
       console.warn("[admin-check] error:", e);
     }
 
-    /* ====== LIVE SEKARANG ====== */
     async function getPrice916(){
       try{
         const { data, error } = await sb.rpc('price_916_current_v1');
@@ -423,39 +2604,177 @@
       }
     }
 
-   await loadLive();
 
+async function resolveMissionUserIdForHome(){
+  try{
+    const auth = window.auth_get && window.auth_get();
+    const sess = await sb.auth.getSession();
+    const authUid = sess?.data?.session?.user?.id || null;
+
+    console.log("[MISSION HOME DEBUG] auth_get() =", auth);
+    console.log("[MISSION HOME DEBUG] auth_get.id =", auth?.id || null);
+    console.log("[MISSION HOME DEBUG] auth_get.auth_user_id =", auth?.auth_user_id || null);
+    console.log("[MISSION HOME DEBUG] supabase auth uid =", authUid);
+
+    const finalUserId = authUid || auth?.auth_user_id || null;
+
+    console.log("[MISSION HOME DEBUG] final mission user_id =", finalUserId);
+    return finalUserId;
+  }catch(e){
+    console.warn("[MISSION HOME DEBUG] resolve error:", e);
+    return null;
+  }
+}
+
+async function loadMissionHomeCard(){
+  const card = document.getElementById("misiHomeCard");
+  const title = document.getElementById("misiHomeTitle");
+  const sub = document.getElementById("misiHomeSub");
+  const badge = document.getElementById("misiHomeBadge");
+
+  if (!card || !title || !sub || !badge) return;
+
+  card.classList.add("show");
+
+  const resolvedUserId = await resolveMissionUserIdForHome();
+
+  if (!resolvedUserId){
+    title.textContent = "🎯 Misi 0.1g Percuma";
+    sub.textContent = "Sertai kempen log masuk 60 hari & lengkapkan 1 pembelian.";
+    badge.textContent = "Sertai";
+    return;
+  }
+
+  try{
+    const { data, error } = await sb
+      .from("mission_01g_users")
+      .select("purchase_done,reward_unlocked,reward_claimed,last_checkin_cycle_date")
+      .eq("user_id", resolvedUserId)
+      .maybeSingle();
+
+    console.log("[MISSION HOME DEBUG] mission row =", data);
+    console.log("[MISSION HOME DEBUG] mission error =", error);
+
+    if (error){
+      title.textContent = "🎯 Misi 0.1g Percuma";
+      sub.textContent = "Tekan untuk lihat syarat dan progress misi anda.";
+      badge.textContent = "Buka";
+      return;
+    }
+
+    if (!data){
+      title.textContent = "🎯 Misi 0.1g Percuma";
+      sub.textContent = "Sertai kempen log masuk 60 hari & lengkapkan 1 pembelian.";
+      badge.textContent = "Sertai";
+      return;
+    }
+
+    const refreshRes = await sb.rpc("mission_01g_refresh", { p_user_id: resolvedUserId });
+    console.log("[MISSION HOME DEBUG] refresh response =", refreshRes);
+
+    const days = Number(
+      refreshRes?.data?.days ??
+      refreshRes?.data?.total_days ??
+      0
+    );
+
+    const purchaseDone = !!data.purchase_done;
+    const unlocked = !!data.reward_unlocked;
+    const claimed = !!data.reward_claimed;
+
+    let cycleDate = null;
     try{
-      const liveTimer = setInterval(loadLive, 20000);
-      window.addEventListener('beforeunload', ()=> clearInterval(liveTimer));
+      const cycleRes = await sb.rpc("mission_01g_current_cycle_date");
+      cycleDate = cycleRes?.data || null;
+      console.log("[MISSION HOME DEBUG] cycle date =", cycleDate);
+    }catch(e){
+      console.warn("[MISSION HOME DEBUG] cycle date error:", e);
+    }
+
+    const todayDone = !!(
+      cycleDate &&
+      data.last_checkin_cycle_date &&
+      String(data.last_checkin_cycle_date) === String(cycleDate)
+    );
+
+    if (claimed){
+      title.textContent = "🎉 Misi 0.1g Sudah Ditebus";
+      sub.textContent = `Anda telah capai ${days}/60 hari dan permintaan tebus telah dihantar / selesai.`;
+      badge.textContent = "Lihat";
+      return;
+    }
+
+    if (unlocked){
+      title.textContent = "🎁 Anda Dah Layak Tebus 0.1g";
+      sub.textContent = `Tahniah! ${days}/60 hari lengkap dan syarat pembelian sudah cukup.`;
+      badge.textContent = "Tebus";
+      return;
+    }
+
+    title.textContent = `🎯 Misi 0.1g Percuma • ${days}/60 hari`;
+
+    if (todayDone){
+      if (purchaseDone){
+        sub.textContent = `Hari ini dah log masuk ✅ Tinggal ${Math.max(0, 60 - days)} hari lagi untuk capai 0.1g. Syarat pembelian pun sudah lengkap.`;
+        badge.textContent = "Dah log masuk";
+      } else {
+        sub.textContent = `Hari ini dah log masuk ✅ Tinggal ${Math.max(0, 60 - days)} hari lagi untuk capai 0.1g. Lengkapkan minimum 1 pembelian untuk aktifkan syarat pembelian.`;
+        badge.textContent = "Dah log masuk";
+      }
+    } else {
+      if (purchaseDone){
+        sub.textContent = `Hari baru belum log masuk. Tinggal ${Math.max(0, 60 - days)} hari lagi untuk capai 0.1g. Syarat pembelian sudah lengkap.`;
+        badge.textContent = "Belum log masuk";
+      } else {
+        sub.textContent = `Hari baru belum log masuk. Tinggal ${Math.max(0, 60 - days)} hari lagi untuk capai 0.1g. Lengkapkan minimum 1 pembelian dan teruskan log masuk harian.`;
+        badge.textContent = "Belum log masuk";
+      }
+    }
+  }catch(e){
+    console.warn("[MISSION HOME DEBUG] catch:", e);
+    title.textContent = "🎯 Misi 0.1g Percuma";
+    sub.textContent = "Tekan untuk lihat syarat dan progress misi anda.";
+    badge.textContent = "Buka";
+  }
+}
+
+
+await updateChatUnreadBadge();
+ await loadMissionHomeCard(); 
+    try{
+      
+      const badgeTimer = setInterval(updateChatUnreadBadge, 10000);
+
+      window.addEventListener('beforeunload', ()=> {
+        
+        clearInterval(badgeTimer);
+      });
     }catch{}
   })();
   </script>
 
-<!-- PWA Install Banner -->
-<div id="pwaBanner" class="pwa-banner">
-  <div class="pwa-row">
-    <div class="pwa-left">
-      <div class="pwa-icon">
-        <img src="/icons/icon-192.png" alt="Emas Amir">
-      </div>
-      <div>
-        <div class="pwa-title">Pasang App Emas Amir</div>
-        <div class="pwa-sub">Akses lebih laju & mudah dari Home Screen.</div>
-        <div id="pwaIosSteps" class="pwa-ios-steps">
-          iPhone: tekan <b>Share</b> → <b>Add to Home Screen</b>.
+  <div id="pwaBanner" class="pwa-banner">
+    <div class="pwa-row">
+      <div class="pwa-left">
+        <div class="pwa-icon">
+          <img src="/icons/icon-192.png" alt="Emas Amir">
+        </div>
+        <div>
+          <div class="pwa-title">Pasang App Emas Amir</div>
+          <div class="pwa-sub">Akses lebih laju & mudah dari Home Screen.</div>
+          <div id="pwaIosSteps" class="pwa-ios-steps">
+            iPhone: tekan <b>Share</b> → <b>Add to Home Screen</b>.
+          </div>
         </div>
       </div>
-    </div>
 
-    <div class="pwa-actions">
-      <button id="pwaInstallBtn" class="pwa-btn pwa-btn-install" type="button">Pasang</button>
-      <button id="pwaCloseBtn" class="pwa-btn pwa-btn-close" type="button">Tutup</button>
+      <div class="pwa-actions">
+        <button id="pwaInstallBtn" class="pwa-btn pwa-btn-install" type="button">Pasang</button>
+        <button id="pwaCloseBtn" class="pwa-btn pwa-btn-close" type="button">Tutup</button>
+      </div>
     </div>
   </div>
-</div>
 
-  <!-- PWA: Service Worker register -->
   <script>
     if ("serviceWorker" in navigator) {
       window.addEventListener("load", function () {
@@ -467,76 +2786,605 @@
   </script>
 
 <script>
+  (function(){
+    const fab = document.getElementById("chatFab");
+    const popup = document.getElementById("chatPopup");
+    const closeBtn = document.getElementById("chatClose");
+    const frame = document.getElementById("chatFrame");
+    const label = document.getElementById("chatFabLabel");
+    const openFullBtn = document.getElementById("chatOpenFullBtn");
+
+    if (!fab || !popup || !closeBtn || !frame || !label) return;
+
+    let hasLoadedFrame = false;
+    let hintTimer = null;
+    let nudgeTimer = null;
+
+    function isNativeCapacitorApp(){
+      try{
+        return !!(
+          window.Capacitor &&
+          typeof window.Capacitor.isNativePlatform === "function" &&
+          window.Capacitor.isNativePlatform()
+        );
+      }catch(e){
+        return false;
+      }
+    }
+
+    function openFullChat(){
+      try{
+        window.location.href = "/chat";
+      }catch(e){
+        location.href = "/chat";
+      }
+    }
+
+    function showLabel(){
+      label.classList.remove("hidden");
+    }
+
+    function hideLabel(){
+      label.classList.add("hidden");
+    }
+
+    function openChatPopup(){
+      popup.classList.add("show");
+      popup.setAttribute("aria-hidden", "false");
+      fab.setAttribute("aria-expanded", "true");
+      hideLabel();
+
+      if (!hasLoadedFrame){
+        frame.src = "/chat";
+        hasLoadedFrame = true;
+      }
+    }
+
+    function closeChatPopup(opts){
+      const resetFrame = !!(opts && opts.resetFrame);
+
+      popup.classList.remove("show");
+      popup.setAttribute("aria-hidden", "true");
+      fab.setAttribute("aria-expanded", "false");
+      showLabel();
+
+      if (resetFrame){
+        frame.src = "about:blank";
+        hasLoadedFrame = false;
+      }
+    }
+
+    function toggleChatPopup(){
+      if (isNativeCapacitorApp()){
+        openFullChat();
+        return;
+      }
+
+      if (popup.classList.contains("show")) closeChatPopup();
+      else openChatPopup();
+    }
+
+    fab.addEventListener("click", toggleChatPopup);
+
+    closeBtn.addEventListener("click", function(){
+      closeChatPopup();
+    });
+
+    if (openFullBtn){
+      openFullBtn.addEventListener("click", function(e){
+        e.preventDefault();
+        openFullChat();
+      });
+    }
+
+    document.addEventListener("keydown", (e) => {
+      if (e.key === "Escape" && popup.classList.contains("show")){
+        closeChatPopup();
+      }
+    });
+
+    document.addEventListener("click", (e) => {
+      if (!popup.classList.contains("show")) return;
+      const insidePopup = popup.contains(e.target);
+      const onFab = fab.contains(e.target);
+      if (!insidePopup && !onFab){
+        closeChatPopup();
+      }
+    });
+
+    frame.addEventListener("load", function(){
+      try{
+        const url = frame.contentWindow.location.href || "";
+
+        if (!url || url === "about:blank") return;
+
+        if (url.includes("/index.html") || /\/$/.test(url)) {
+          closeChatPopup({ resetFrame:true });
+        }
+      }catch(e){}
+    });
+
+    if (isNativeCapacitorApp()){
+      label.textContent = "Chat dengan Ai-Dan";
+      showLabel();
+      fab.querySelector(".chat-fab-badge")?.remove();
+      popup.remove();
+      return;
+    }
+
+    hintTimer = setTimeout(() => {
+      if (!popup.classList.contains("show")) showLabel();
+    }, 1200);
+
+    nudgeTimer = setTimeout(() => {
+      fab.classList.add("nudge");
+      setTimeout(() => fab.classList.remove("nudge"), 700);
+    }, 1800);
+
+    // JANGAN auto hide label lagi
+    // setTimeout(() => {
+    //   if (!popup.classList.contains("show")) hideLabel();
+    // }, 8500);
+  })();
+</script>
+<div id="goldGuideOverlay" class="gold-guide-overlay"></div>
+
+<div id="goldGuidePopup" class="gold-guide-popup">
+  <div class="gold-guide-arrow"></div>
+  <div class="gold-guide-box">
+    <div class="gold-guide-title">📒 Jom Cuba Feature Baru</div>
+
+    <div class="gold-guide-desc">
+      
+🇲🇾 Feature pertama di Malaysia untuk rekod & track emas anda sendiri
+Semua dalam satu tempat, mudah & jelas ✨
+
+Catatkan segala belian emas anda di sini dengan lebih jelas dan mudah 😊
+    </div>
+
+    <div class="gold-guide-steps">
+      <div>📊 Lihat berapa jumlah simpanan emas anda sekarang</div>
+      <div>🎯 Tetapkan target simpanan ikut gram</div>
+      <div>🧾 Gabungkan rekod auto + manual dalam satu tempat</div>
+      <div>✨ Banyak lagi feature menarik akan datang selepas ini</div>
+    </div>
+
+    <div class="gold-guide-desc">
+      Anda hanya perlu log masuk sahaja untuk mula guna 💛
+    </div>
+
+    <div class="gold-guide-desc" style="margin-top:8px;font-weight:700;">
+      👉 Tekan “Pengurusan Emas Saya” untuk cuba ya
+    </div>
+
+    <div class="gold-guide-actions mt-3">
+      <button id="btnGoldGuideLater" class="btn btn-outline-secondary" type="button">Nanti dulu</button>
+      <button id="btnGoldGuideGo" class="btn btn-primary" type="button">Cuba sekarang</button>
+    </div>
+  </div>
+</div>
+
+<script>
 (function(){
-  const banner = document.getElementById("pwaBanner");
-  const btnInstall = document.getElementById("pwaInstallBtn");
-  const btnClose = document.getElementById("pwaCloseBtn");
-  const iosSteps = document.getElementById("pwaIosSteps");
+  const popup = document.getElementById("goldGuidePopup");
+  const btnGo = document.getElementById("btnGoldGuideGo");
+  const btnLater = document.getElementById("btnGoldGuideLater");
+  const btnGoldWallet = document.getElementById("btnGoldWallet");
+  const overlay = document.getElementById("goldGuideOverlay");
 
-  if (!banner || !btnInstall || !btnClose) return;
+  if (!popup || !btnGo || !btnLater || !btnGoldWallet || !overlay) return;
 
-  // Jangan kacau kalau user dah tutup
-  const DISMISS_KEY = "pwa_banner_dismissed_v1";
+  const KEY = "ea_gold_wallet_popup_seen_v3";
 
-  // Detect "already installed"
-  function isStandalone() {
-    return window.matchMedia("(display-mode: standalone)").matches
-      || window.navigator.standalone === true; // iOS
+  function placePopupNearButton(){
+    const btnRect = btnGoldWallet.getBoundingClientRect();
+    const popupWidth = Math.min(window.innerWidth * 0.92, 420);
+    const gap = 14;
+
+    let left = btnRect.left + (btnRect.width / 2) - (popupWidth / 2);
+    left = Math.max(12, Math.min(left, window.innerWidth - popupWidth - 12));
+
+    const top = window.scrollY + btnRect.top - gap - 20 - popup.offsetHeight;
+
+    popup.style.width = popupWidth + "px";
+    popup.style.left = left + "px";
+    popup.style.top = Math.max(window.scrollY + 12, top) + "px";
+    popup.style.transform = "none";
   }
 
-  // Detect iOS Safari
-  const ua = navigator.userAgent || "";
-  const isIOS = /iPhone|iPad|iPod/i.test(ua);
-  const isSafari = isIOS && /Safari/i.test(ua) && !/CriOS|FxiOS|EdgiOS/i.test(ua);
+  function showPopup(){
+    btnGoldWallet.scrollIntoView({
+      behavior: "smooth",
+      block: "center"
+    });
 
-  // Kalau dah installed, jangan show
-  if (isStandalone()) return;
+    setTimeout(() => {
+      popup.classList.add("show");
+      overlay.classList.add("show");
+      btnGoldWallet.classList.add("gold-guide-focus");
+      placePopupNearButton();
+    }, 450);
+  }
 
-  // Kalau dah pernah dismiss, jangan show
-  if (localStorage.getItem(DISMISS_KEY) === "1") return;
+  function hidePopup(){
+    popup.classList.remove("show");
+    overlay.classList.remove("show");
+    btnGoldWallet.classList.remove("gold-guide-focus");
+  }
 
+  function isLoggedInNow(){
+    try{
+      const a = window.auth_get && window.auth_get();
+      return !!(a && (a.phone || a.name || a.id));
+    }catch(e){
+      return false;
+    }
+  }
+
+  function tryShowPopup(){
+    if (localStorage.getItem(KEY)) return;
+
+    if (isLoggedInNow()){
+      setTimeout(() => {
+        showPopup();
+        localStorage.setItem(KEY, "1");
+      }, 1200);
+      return;
+    }
+
+    let tries = 0;
+    const timer = setInterval(() => {
+      tries++;
+
+      if (isLoggedInNow()){
+        clearInterval(timer);
+        setTimeout(() => {
+          showPopup();
+          localStorage.setItem(KEY, "1");
+        }, 1200);
+      }
+
+      if (tries >= 20){
+        clearInterval(timer);
+      }
+    }, 500);
+  }
+
+  btnLater.addEventListener("click", hidePopup);
+
+  btnGo.addEventListener("click", function(){
+    window.location.href = "/gold-wallet.html";
+  });
+
+  btnGoldWallet.addEventListener("click", function(){
+    hidePopup();
+  });
+
+  overlay.addEventListener("click", hidePopup);
+
+  window.addEventListener("resize", function(){
+    if (popup.classList.contains("show")) placePopupNearButton();
+  });
+
+  window.addEventListener("scroll", function(){
+    if (popup.classList.contains("show")) placePopupNearButton();
+  });
+
+  tryShowPopup();
+})();
+</script>
+<script>
+(function(){
+  const banner = document.getElementById('pwaBanner');
+  const installBtn = document.getElementById('pwaInstallBtn');
+  const closeBtn = document.getElementById('pwaCloseBtn');
+
+  if (!banner || !installBtn || !closeBtn) return;
+
+  const APPSTORE_URL = "https://apps.apple.com/us/app/emas-amir/id6761734657";
+  const CLOSED_KEY = "ea_pwa_banner_closed_forever";
   let deferredPrompt = null;
 
-  // Android/Chrome: tangkap event install prompt
-  window.addEventListener("beforeinstallprompt", (e) => {
-    e.preventDefault();
-    deferredPrompt = e;
-
-    // Show banner untuk Android
-    banner.style.display = "block";
-    iosSteps.style.display = "none";
-    btnInstall.style.display = "inline-block";
-  });
-
-  // iPhone (tiada beforeinstallprompt): show banner bila Safari iOS
-  if (isSafari) {
-    banner.style.display = "block";
-    iosSteps.style.display = "block";
-    // iOS tak boleh trigger prompt, jadi button "Pasang" jadi guide
-    btnInstall.style.display = "none";
+  function ua(){
+    return navigator.userAgent || '';
   }
 
-  btnClose.addEventListener("click", () => {
-    banner.style.display = "none";
-    localStorage.setItem(DISMISS_KEY, "1");
-  });
+  function isAndroid(){
+    return /Android/i.test(ua());
+  }
 
-  btnInstall.addEventListener("click", async () => {
-    if (!deferredPrompt) return;
+  function isIphone(){
+    return /iPhone|iPad|iPod/i.test(ua());
+  }
+
+  function isStandalone(){
+    return window.matchMedia('(display-mode: standalone)').matches ||
+           window.navigator.standalone === true;
+  }
+
+  function isClosedForever(){
     try {
-      deferredPrompt.prompt();
-      await deferredPrompt.userChoice;
-    } catch (err) {}
-    deferredPrompt = null;
-    banner.style.display = "none";
+      return localStorage.getItem(CLOSED_KEY) === '1';
+    } catch(e){
+      return false;
+    }
+  }
+
+  function markClosedForever(){
+    try {
+      localStorage.setItem(CLOSED_KEY, '1');
+    } catch(e){}
+  }
+
+  function showBanner(){
+    if (isStandalone()) return;
+    if (isClosedForever()) return;
+    banner.style.display = 'block';
+    document.body.classList.add('pwa-visible');
+  }
+
+ function hideBanner(){
+  banner.style.display = 'none';
+  document.body.classList.remove('pwa-visible');
+  document.body.classList.remove('pwa-tall');
+}
+
+  function isAndroidChrome(){
+    const s = ua();
+    return /Android/i.test(s) &&
+           /Chrome/i.test(s) &&
+           !/EdgA|OPR|SamsungBrowser|DuckDuckGo|UCBrowser|MiuiBrowser|HuaweiBrowser|HeyTapBrowser/i.test(s) &&
+           !/\bwv\b|; wv\)/i.test(s);
+  }
+
+  function isAndroidInAppBrowser(){
+    const s = ua();
+
+    if (!/Android/i.test(s)) return false;
+
+    if (/\bwv\b|; wv\)/i.test(s)) return true;
+    if (/TikTok|TTWebView|musical_ly|Bytedance/i.test(s)) return true;
+    if (/Instagram/i.test(s)) return true;
+    if (/FBAN|FBAV|FB_IAB|Messenger/i.test(s)) return true;
+    if (/Line\//i.test(s)) return true;
+    if (/Version\/[\d.]+/i.test(s) && /Chrome/i.test(s) && !isAndroidChrome()) return true;
+
+    return !isAndroidChrome();
+  }
+
+  function setupIphoneBanner(){
+    const titleEl = banner.querySelector('.pwa-title');
+    const subEl = banner.querySelector('.pwa-sub');
+    const iosSteps = document.getElementById('pwaIosSteps');
+
+    if (titleEl) titleEl.textContent = 'Download App Emas Amir';
+    if (subEl) subEl.textContent = 'Pengguna iPhone tekan sini untuk buka App Store.';
+    if (iosSteps) iosSteps.style.display = 'none';
+
+    installBtn.textContent = 'App Store';
+    installBtn.style.display = '';
+  }
+
+ function setupAndroidBanner(){
+  const titleEl = banner.querySelector('.pwa-title');
+  const subEl = banner.querySelector('.pwa-sub');
+  const iosSteps = document.getElementById('pwaIosSteps');
+
+  if (titleEl) titleEl.textContent = 'Pasang App Emas Amir';
+  if (iosSteps) iosSteps.style.display = 'none';
+
+  document.body.classList.remove('pwa-tall');
+
+  if (isAndroidInAppBrowser()){
+    if (subEl) subEl.textContent = 'Untuk pasang app, buka dulu link ini dalam Chrome.';
+    installBtn.textContent = 'Buka di Chrome';
+    document.body.classList.add('pwa-tall');
+  } else {
+    if (subEl) subEl.textContent = 'Akses lebih laju & mudah dari Home Screen.';
+    installBtn.textContent = 'Pasang';
+  }
+
+  installBtn.style.display = '';
+}
+
+  function openInChrome(){
+    const url = window.location.href;
+
+    const intentUrl =
+      'intent://' +
+      location.host +
+      location.pathname +
+      location.search +
+      location.hash +
+      '#Intent;scheme=' + location.protocol.replace(':','') +
+      ';package=com.android.chrome;end';
+
+    try {
+      window.location.href = intentUrl;
+    } catch(e) {}
+
+    setTimeout(function(){
+      try {
+        window.location.href = 'googlechrome://navigate?url=' + encodeURIComponent(url);
+      } catch(e) {}
+    }, 300);
+
+    setTimeout(function(){
+      alert('Sila tekan menu browser ini dan pilih "Open in Chrome" / "Buka di Chrome". Lepas buka dalam Chrome, tekan "Pasang".');
+    }, 900);
+  }
+
+  window.addEventListener('load', function(){
+    if (isClosedForever()) return;
+    if (isStandalone()) return;
+
+    if (isIphone()){
+      setupIphoneBanner();
+      setTimeout(showBanner, 1000);
+      return;
+    }
+
+    if (isAndroid()){
+      setupAndroidBanner();
+      setTimeout(showBanner, 1200);
+    }
   });
 
-  // Bila user install, auto hide
-  window.addEventListener("appinstalled", () => {
-    banner.style.display = "none";
-    localStorage.setItem(DISMISS_KEY, "1");
+  window.addEventListener('beforeinstallprompt', function(e){
+    if (!isAndroidChrome()) return;
+    if (isClosedForever()) return;
+
+    e.preventDefault();
+    deferredPrompt = e;
+    setupAndroidBanner();
+    showBanner();
+  });
+
+  installBtn.addEventListener('click', async function(){
+    if (isIphone()){
+      window.location.href = APPSTORE_URL;
+      return;
+    }
+
+    if (isAndroidInAppBrowser()){
+      openInChrome();
+      return;
+    }
+
+    if (deferredPrompt) {
+      deferredPrompt.prompt();
+      try {
+        await deferredPrompt.userChoice;
+      } catch(e){}
+      deferredPrompt = null;
+      hideBanner();
+      return;
+    }
+
+    openInChrome();
+  });
+
+  closeBtn.addEventListener('click', function(){
+    markClosedForever();
+    hideBanner();
+  });
+
+  window.addEventListener('appinstalled', function(){
+    hideBanner();
+    deferredPrompt = null;
   });
 })();
 </script>
-</body>
+<div id="pointFloat" class="point-float" onclick="window.location.href='/points.html'">
+  <div class="point-float-label">Point Anda</div>
+  <div class="point-float-icon">💰</div>
+  <div id="homePointFloat" class="point-float-value">...</div>
+</div>
+
+<iframe
+  id="pointsMirrorFrame"
+  src="/points.html"
+  style="position:absolute;left:-99999px;top:-99999px;width:1px;height:1px;opacity:0;pointer-events:none;border:0;"
+  tabindex="-1"
+  aria-hidden="true">
+</iframe>
+<script>
+(function(){
+  const frame = document.getElementById("pointsMirrorFrame");
+  const out = document.getElementById("homePointFloat");
+
+  if (!frame || !out) return;
+
+  function cleanPointText(txt){
+    const raw = String(txt || "").trim();
+    if (!raw) return "...";
+    return raw.replace(/\s*Point\s*$/i, "").trim();
+  }
+
+  function tryReadPoint(){
+    try{
+      const doc = frame.contentDocument || frame.contentWindow.document;
+      if (!doc) return false;
+
+      const heroBalance = doc.getElementById("heroBalance");
+      if (!heroBalance) return false;
+
+      const val = cleanPointText(heroBalance.textContent);
+      if (!val) return false;
+
+      out.textContent = val;
+      return true;
+    }catch(e){
+      return false;
+    }
+  }
+
+  frame.addEventListener("load", function(){
+    let tries = 0;
+
+    const timer = setInterval(function(){
+      tries++;
+
+      if (tryReadPoint()){
+        clearInterval(timer);
+        return;
+      }
+
+      if (tries >= 25){
+        clearInterval(timer);
+      }
+    }, 400);
+  });
+})();
+</script>
+<script>
+(async function(){
+  try{
+    const wrap = document.getElementById("homeLiveMini");
+    const frame = document.getElementById("homeLiveFrameIndex");
+    if (!wrap || !frame) return;
+
+    const sb = window.sb || window.supabase.createClient(
+      "https://dduizetstqqjrpsezbpi.supabase.co",
+      "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRkdWl6ZXRzdHFxanJwc2V6YnBpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTg3MzI0ODQsImV4cCI6MjA3NDMwODQ4NH0.CrlHXrmHtKgR9qc2192U6quRb5lpFEeOSgwG0Lb8KRM"
+    );
+
+    window.sb = sb;
+
+    const { data, error } = await sb
+      .from("live_config")
+      .select("youtube_video_id,show_home_live")
+      .eq("id", 1)
+      .maybeSingle();
+
+    if (error) throw error;
+
+    const showHomeLive =
+      data?.show_home_live === true ||
+      data?.show_home_live === "true" ||
+      data?.show_home_live === 1;
+
+    const videoId = String(data?.youtube_video_id || "").trim();
+
+    if (!showHomeLive || !videoId){
+      wrap.style.display = "none";
+      frame.src = "about:blank";
+      return;
+    }
+
+    frame.src =
+      "https://www.youtube-nocookie.com/embed/" +
+      encodeURIComponent(videoId) +
+      "?playsinline=1&rel=0&modestbranding=1";
+
+    wrap.style.display = "block";
+  }catch(e){
+    console.warn("Home live index gagal:", e);
+    const wrap = document.getElementById("homeLiveMini");
+    const frame = document.getElementById("homeLiveFrameIndex");
+    if (wrap) wrap.style.display = "none";
+    if (frame) frame.src = "about:blank";
+  }
+})();
+</script> </body>
 </html>

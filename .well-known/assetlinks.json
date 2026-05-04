@@ -1,0 +1,13 @@
+[
+  {
+    "relation": ["delegate_permission/common.handle_all_urls"],
+    "target": {
+      "namespace": "android_app",
+      "package_name": "com.emasamir.app",
+      "sha256_cert_fingerprints": [
+        "A4:CE:62:2C:72:93:2C:62:F8:9F:4D:4F:96:2D:8F:5E:BC:73:B4:F2:E5:A2:6B:F7:93:46:15:FA:F2:F6:CE:67",
+"CA:2E:2A:B3:85:A9:9D:87:1E:A1:E1:59:3F:96:DE:97:93:4A:E3:51:D1:E2:97:74:FE:DB:E5:C0:E9:29:24:FF"
+      ]
+    }
+  }
+]
