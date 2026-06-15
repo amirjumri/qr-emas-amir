@@ -4,7 +4,7 @@ const path = require("path");
 
 exports.handler = async function(event) {
   try {
-const privateKeyPath = path.join(__dirname, "fpx-secure", "EX00040523.key");
+const privateKeyPath = path.join(__dirname, "EX00040523.key");
 
 if (!fs.existsSync(privateKeyPath)) {
   return {
