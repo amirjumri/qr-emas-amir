@@ -885,10 +885,11 @@ function isRewardOrMissionTxn(r){
   return (
     type === "BONUS" ||
     source === "POINT_REDEEM" ||
-    rewardCode.includes("MISSION")
+    source === "TIKTOK_REDEEM" ||
+    rewardCode.includes("MISSION") ||
+    rewardCode.includes("TIKTOK")
   );
-}
-/* =============== Boot (Auth + UI) =============== */
+}/* =============== Boot (Auth + UI) =============== */
 const auser = (window.auth_get && window.auth_get()) || null;
 
 (function renderAuth(){

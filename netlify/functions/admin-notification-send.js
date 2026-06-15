@@ -3,9 +3,9 @@ const { createClient } = require("@supabase/supabase-js");
 function json(statusCode, body){
   return {
     statusCode,
-    headers: { 
-      "Content-Type":"application/json", 
-      "Access-Control-Allow-Origin":"*" 
+    headers: {
+      "Content-Type":"application/json",
+      "Access-Control-Allow-Origin":"*"
     },
     body: JSON.stringify(body)
   };
@@ -37,6 +37,14 @@ function cleanIc(raw){
   return String(raw || "").replace(/\D+/g, "");
 }
 
+function chunkArray(arr, size){
+  const out = [];
+  for (let i = 0; i < arr.length; i += size){
+    out.push(arr.slice(i, i + size));
+  }
+  return out;
+}
+
 function todayMY(offsetDays){
   const now = new Date();
   const my = new Date(now.toLocaleString("en-US", { timeZone:"Asia/Kuala_Lumpur" }));
@@ -45,6 +53,45 @@ function todayMY(offsetDays){
   const mm = String(my.getMonth() + 1).padStart(2, "0");
   const dd = String(my.getDate()).padStart(2, "0");
   return mm + dd;
+}
+
+async function fetchCustomersByPhoneVariants(supabase, variants){
+  const uniq = Array.from(new Set((variants || []).filter(Boolean)));
+  if (!uniq.length) return [];
+
+  const all = [];
+
+  for (const batch of chunkArray(uniq, 250)){
+    const { data, error } = await supabase
+      .from("customers")
+      .select("id, name, customer_name, phone")
+      .in("phone", batch);
+
+    if (error) throw error;
+    all.push(...(data || []));
+  }
+
+  return all;
+}
+
+async function fetchThreadsByPhoneVariants(supabase, variants){
+  const uniq = Array.from(new Set((variants || []).filter(Boolean)));
+  if (!uniq.length) return [];
+
+  const all = [];
+
+  for (const batch of chunkArray(uniq, 250)){
+    const { data, error } = await supabase
+      .from("chat_threads")
+      .select("*")
+      .in("customer_phone", batch)
+      .order("last_message_at", { ascending:false });
+
+    if (error) throw error;
+    all.push(...(data || []));
+  }
+
+  return all;
 }
 
 async function attachCustomerNamesByPhone(supabase, threads){
@@ -64,12 +111,7 @@ async function attachCustomerNamesByPhone(supabase, threads){
     phoneVariants(p).forEach(v => variants.push(v));
   }
 
-  const { data: customers, error } = await supabase
-    .from("customers")
-    .select("id, name, customer_name, phone")
-    .in("phone", Array.from(new Set(variants)));
-
-  if (error) throw error;
+  const customers = await fetchCustomersByPhoneVariants(supabase, variants);
 
   const byPhone = {};
 
@@ -137,13 +179,7 @@ async function getBirthdayThreads(supabase, segment){
     phoneVariants(p).forEach(v => threadPhoneVariants.push(v));
   });
 
-  const { data, error } = await supabase
-    .from("chat_threads")
-    .select("*")
-    .in("customer_phone", Array.from(new Set(threadPhoneVariants)))
-    .order("last_message_at", { ascending:false });
-
-  if (error) throw error;
+  const data = await fetchThreadsByPhoneVariants(supabase, threadPhoneVariants);
 
   return (data || []).map(t => {
     const p = normalizePhone(t.customer_phone);
@@ -167,12 +203,7 @@ async function getSegmentThreads(supabase, segment, phonesInput){
       phoneVariants(p).forEach(v => variants.push(v));
     }
 
-    const { data, error } = await supabase
-      .from("chat_threads")
-      .select("*")
-      .in("customer_phone", Array.from(new Set(variants)));
-
-    if (error) throw error;
+    const data = await fetchThreadsByPhoneVariants(supabase, variants);
 
     return await attachCustomerNamesByPhone(supabase, data || []);
   }
@@ -189,7 +220,8 @@ async function getSegmentThreads(supabase, segment, phonesInput){
 
   let query = supabase
     .from("chat_threads")
-    .select("*");
+    .select("*")
+    .order("last_message_at", { ascending:false });
 
   if (days > 0){
     const date = new Date();
@@ -204,8 +236,19 @@ async function getSegmentThreads(supabase, segment, phonesInput){
   return await attachCustomerNamesByPhone(supabase, data || []);
 }
 
+function personalizeText(text, t){
+  const name = String(t.customer_name || "Cik").trim() || "Cik";
+  return String(text || "")
+    .replaceAll("{{nama}}", name)
+    .replaceAll("{{name}}", name);
+}
+
 exports.handler = async (event) => {
   try{
+    if (event.httpMethod === "OPTIONS"){
+      return json(200, { ok:true });
+    }
+
     const body = JSON.parse(event.body || "{}");
 
     const segment = body.segment_type || "ALL";
@@ -230,6 +273,7 @@ exports.handler = async (event) => {
     for (const t of threads){
       const p = normalizePhone(t.customer_phone);
       if (!p) continue;
+      if (!t.id) continue;
 
       if (!map[p] || new Date(t.last_message_at || 0) > new Date(map[p].last_message_at || 0)){
         map[p] = t;
@@ -241,7 +285,7 @@ exports.handler = async (event) => {
     const campaignType =
       segment === "BIRTHDAY_TOMORROW" ? "BIRTHDAY_TOMORROW" :
       segment === "BIRTHDAY_TODAY" ? "BIRTHDAY_TODAY" :
-      String(body.campaign_type || "");
+      String(body.campaign_type || body.template_type || "");
 
     const { data: campaign, error: campaignErr } = await supabase
       .from("notification_campaigns")
@@ -268,6 +312,7 @@ exports.handler = async (event) => {
 
     const rows = finalList.map(t => {
       const p = normalizePhone(t.customer_phone);
+      const name = String(t.customer_name || "Cik").trim() || "Cik";
 
       return {
         campaign_id: campaign.id,
@@ -278,17 +323,26 @@ exports.handler = async (event) => {
         error_message: null,
         meta: {
           customer_id: t.customer_id || null,
-          customer_name: String(t.customer_name || "Cik").trim() || "Cik"
+          customer_name: name,
+          title,
+          body: personalizeText(message, t),
+          target_url,
+          campaign_type: campaignType
         }
       };
     });
 
-    if (rows.length){
-      const { error: recErr } = await supabase
-        .from("notification_campaign_recipients")
-        .insert(rows);
+    let inserted = 0;
 
-      if (recErr) throw recErr;
+    if (rows.length){
+      for (const batch of chunkArray(rows, 100)){
+        const { error: recErr } = await supabase
+          .from("notification_campaign_recipients")
+          .insert(batch);
+
+        if (recErr) throw recErr;
+        inserted += batch.length;
+      }
     }
 
     return json(200, {
@@ -296,10 +350,19 @@ exports.handler = async (event) => {
       queued: true,
       campaign_id: campaign.id,
       total: finalList.length,
+      inserted,
       message: "Campaign queue created. Worker will process recipients by batch."
     });
 
   }catch(e){
-    return json(500, { ok:false, error:e.message });
+    console.error("[admin-notification-send error]", e);
+
+    return json(500, {
+      ok:false,
+      error:e.message || String(e),
+      detail:e.details || null,
+      hint:e.hint || null,
+      code:e.code || null
+    });
   }
 };

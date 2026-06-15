@@ -31,12 +31,115 @@ function personalizeMessage(template, customerName){
     .replaceAll("{name}", name);
 }
 
+function cutText(s, n = 120){
+  const t = String(s || "").trim();
+  if (!t) return "";
+  return t.length > n ? (t.slice(0, n - 3) + "...") : t;
+}
+
+async function sendIosPushSafe({ supabase, phone, title, body, url }){
+  const p = normalizePhone(phone);
+  if (!p) return;
+
+  try{
+    console.log("🍎 iOS PUSH CHECK:", p);
+
+    const tokenQ = await supabase
+      .from("chat_device_tokens")
+      .select("id,customer_phone,device_token,platform,is_active,created_at,updated_at")
+      .eq("customer_phone", p)
+      .eq("is_active", true)
+      .eq("platform", "ios")
+      .order("updated_at", { ascending:false })
+      .limit(20);
+
+    if (tokenQ.error) throw tokenQ.error;
+
+    const seenTokens = new Set();
+    const rows = [];
+
+    for (const row of (tokenQ.data || [])){
+      const token = String(row.device_token || "").trim();
+      if (!token) continue;
+      if (seenTokens.has(token)) continue;
+      seenTokens.add(token);
+      rows.push(row);
+    }
+
+    console.log("🍎 iOS TOKEN COUNT:", rows.length);
+
+    for (const row of rows){
+      const deviceToken = String(row.device_token || "").trim();
+      if (!deviceToken) continue;
+
+      try{
+        const res = await fetch("https://emasamir.app/.netlify/functions/send-push", {
+          method: "POST",
+          headers: { "Content-Type":"application/json" },
+          body: JSON.stringify({
+            deviceToken,
+            title: title || "Emas Amir",
+            body: cutText(body || "Notifikasi Emas Amir", 120),
+            url: url || "/chat.html"
+          })
+        });
+
+        const jsonRes = await res.json().catch(() => ({}));
+
+        console.log("🍎 iOS PUSH RESULT:", {
+          token_id: row.id,
+          response: jsonRes
+        });
+
+        const failedCount = Array.isArray(jsonRes?.failed) ? jsonRes.failed.length : 0;
+        const sentCount = Array.isArray(jsonRes?.sent) ? jsonRes.sent.length : 0;
+        const reason = jsonRes?.failed?.[0]?.response?.reason || "";
+
+        if (jsonRes?.success && sentCount > 0 && failedCount === 0){
+          await supabase
+            .from("chat_device_tokens")
+            .update({ updated_at: new Date().toISOString() })
+            .eq("id", row.id);
+        } else {
+          console.error("🍎 iOS PUSH FAIL:", {
+            token_id: row.id,
+            reason,
+            response: jsonRes
+          });
+
+          if (reason === "BadDeviceToken" || reason === "Unregistered"){
+            await supabase
+              .from("chat_device_tokens")
+              .update({
+                is_active: false,
+                updated_at: new Date().toISOString()
+              })
+              .eq("id", row.id);
+          }
+        }
+
+      }catch(err){
+        console.error("🍎 iOS PUSH ERROR ONE:", {
+          token_id: row.id,
+          error: err?.message || String(err)
+        });
+      }
+    }
+
+  }catch(e){
+    console.error("❌ iOS PUSH BLOCK ERROR:", {
+      phone: p,
+      error: e.message || String(e)
+    });
+  }
+}
+
 async function sendAndroidPushSafe({ supabase, phone, title, body, url }){
   const p = normalizePhone(phone);
   if (!p) return;
 
   try{
-    console.log("📲 PUSH CHECK:", p);
+    console.log("🤖 ANDROID PUSH CHECK:", p);
 
     const { data, error } = await supabase
       .from("chat_device_tokens")
@@ -48,7 +151,7 @@ async function sendAndroidPushSafe({ supabase, phone, title, body, url }){
 
     if (error) throw error;
 
-    console.log("📲 PUSH TOKEN COUNT:", data?.length || 0);
+    console.log("🤖 ANDROID TOKEN COUNT:", data?.length || 0);
 
     for (const row of (data || [])){
       const deviceToken = String(row.device_token || "").trim();
@@ -59,23 +162,32 @@ async function sendAndroidPushSafe({ supabase, phone, title, body, url }){
         headers: { "Content-Type":"application/json" },
         body: JSON.stringify({
           deviceToken,
+          platform: "fcm",
+          token_type: "fcm",
           title: title || "Emas Amir",
-          body: body || "",
+          body: cutText(body || "", 120),
           url: url || "/chat.html"
         })
       });
 
       const pushJson = await pushRes.json().catch(() => ({}));
 
-      console.log("📲 PUSH RESULT:", {
+      console.log("🤖 ANDROID PUSH RESULT:", {
         token_id: row.id,
         status: pushRes.status,
         response: pushJson
       });
+
+      if (pushJson?.success){
+        await supabase
+          .from("chat_device_tokens")
+          .update({ updated_at: new Date().toISOString() })
+          .eq("id", row.id);
+      }
     }
 
   }catch(e){
-    console.error("❌ PUSH ERROR:", e.message || String(e));
+    console.error("❌ ANDROID PUSH ERROR:", e.message || String(e));
   }
 }
 
@@ -140,7 +252,6 @@ const realHandler = async (event) => {
     console.log("🔥 METHOD:", event.httpMethod);
     console.log("🔥 PATH:", event.path || "");
     console.log("🔥 USER_AGENT:", event.headers?.["user-agent"] || event.headers?.["User-Agent"] || "");
-    console.log("🔥 SCHEDULE DEBUG: Kalau log ini keluar sendiri setiap 1 minit di Netlify Functions Logs, cron hidup. Kalau hanya keluar bila buka URL, cron belum attach.");
 
     const body = event.httpMethod === "POST"
       ? JSON.parse(event.body || "{}")
@@ -151,11 +262,6 @@ const realHandler = async (event) => {
     console.log("⚙️ WORKER LIMIT:", limit);
 
     if (!process.env.SUPABASE_URL || !process.env.SUPABASE_SERVICE_ROLE_KEY){
-      console.error("❌ ENV MISSING:", {
-        hasUrl: !!process.env.SUPABASE_URL,
-        hasKey: !!process.env.SUPABASE_SERVICE_ROLE_KEY
-      });
-
       return json(500, {
         ok:false,
         error:"Missing SUPABASE_URL / SUPABASE_SERVICE_ROLE_KEY"
@@ -182,14 +288,9 @@ const realHandler = async (event) => {
 
     if (!campaign){
       return json(200, {
-        ok: true,
-        debug: {
-          triggered_at: startedAt,
-          method: event.httpMethod,
-          note: "Worker function jalan, tapi tiada campaign SENDING."
-        },
-        message: "No SENDING campaign",
-        processed: 0
+        ok:true,
+        message:"No SENDING campaign",
+        processed:0
       });
     }
 
@@ -218,22 +319,15 @@ const realHandler = async (event) => {
       const summary = await updateCampaignCounter(supabase, campaign.id);
 
       return json(200, {
-        ok: true,
-        campaign_id: campaign.id,
-        debug: {
-          triggered_at: startedAt,
-          method: event.httpMethod,
-          note: "Campaign ada, tapi tiada PENDING. Counter sudah update."
-        },
-        message: "No pending recipients",
-        processed: 0,
+        ok:true,
+        campaign_id:campaign.id,
+        message:"No pending recipients",
+        processed:0,
         summary
       });
     }
 
     const ids = recipients.map(r => r.id).filter(Boolean);
-
-    console.log("🔒 SET PROCESSING IDS:", ids.length);
 
     const { error: processingErr } = await supabase
       .from("notification_campaign_recipients")
@@ -307,10 +401,18 @@ const realHandler = async (event) => {
 
         if (sentErr) throw sentErr;
 
+        await sendIosPushSafe({
+          supabase,
+          phone: r.customer_phone,
+          title: campaign.title || "Emas Amir",
+          body: finalMessage,
+          url: campaign.target_url || "/chat.html"
+        });
+
         await sendAndroidPushSafe({
           supabase,
           phone: r.customer_phone,
-          title: campaign.title,
+          title: campaign.title || "Emas Amir",
           body: finalMessage,
           url: campaign.target_url || "/chat.html"
         });
@@ -348,14 +450,9 @@ const realHandler = async (event) => {
     });
 
     return json(200, {
-      ok: true,
-      campaign_id: campaign.id,
-      debug: {
-        triggered_at: startedAt,
-        method: event.httpMethod,
-        note: "Kalau ini keluar selepas buka URL, manual OK. Kalau keluar sendiri dalam Netlify logs setiap minit, auto OK."
-      },
-      processed: recipients.length,
+      ok:true,
+      campaign_id:campaign.id,
+      processed:recipients.length,
       success,
       failed,
       summary
@@ -366,11 +463,6 @@ const realHandler = async (event) => {
 
     return json(500, {
       ok:false,
-      debug: {
-        triggered_at: startedAt,
-        method: event.httpMethod,
-        note: "Function masuk handler tapi error."
-      },
       error:e.message || String(e)
     });
   }

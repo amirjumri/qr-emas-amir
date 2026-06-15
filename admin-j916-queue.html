@@ -703,6 +703,28 @@ function getThreadMetaForOrder(o){
   return safeParseMeta(th?.meta) || null;
 }
 
+function getTimerLabel(o){
+  if (o?.payment_timer_disabled === true) return '<span class="badge bg-secondary me-1">timer OFF</span>';
+
+  const dl = o?.payment_deadline_at ? new Date(o.payment_deadline_at).getTime() : 0;
+  if (!dl) return '<span class="badge badge-soft me-1">timer -</span>';
+
+  const left = dl - Date.now();
+
+  if (left <= 0){
+    return '<span class="badge bg-danger me-1">expired</span>';
+  }
+
+  const min = Math.floor(left / 60000);
+  if (min >= 60){
+    const h = Math.floor(min / 60);
+    const m = min % 60;
+    return `<span class="badge bg-warning text-dark me-1">⏳ ${h}j ${m}m</span>`;
+  }
+
+  return `<span class="badge bg-warning text-dark me-1">⏳ ${min}m</span>`;
+}
+
 function getPaidChat(o){
   const meta = getThreadMetaForOrder(o);
   if(!meta) return false;
@@ -837,8 +859,11 @@ function flagsText(o){
 
   const parts = [];
 
-  // ✅ Payment slip badge sentiasa keluar (walaupun tak lock)
-  parts.push(slipBadgeHtml(o));
+// ✅ Timer payment
+parts.push(getTimerLabel(o));
+
+// ✅ Payment slip badge sentiasa keluar (walaupun tak lock)
+parts.push(slipBadgeHtml(o));
 
   // ✅ Note dari chat: customer claim dah bayar / admin tekan "Dah Bayar" dalam chat
   if (getPaidChat(o)){
@@ -916,7 +941,31 @@ function renderList(list){
     const phone = o?.phone || '';
     const name  = o?.customer_name || '-';
 
-    const btnOpen = `<button class="btn btn-outline-primary btn-sm" type="button" onclick="openOrder('${oc}')">Buka</button>`;
+    const tid = getThreadId(o);
+const safePhone = String(phone || '').replace(/'/g, "\\'");
+const safeTid = String(tid || '').replace(/'/g, "\\'");
+
+const btnOpen = `
+  <div class="d-flex gap-1 flex-wrap">
+    <button class="btn btn-outline-primary btn-sm" type="button" onclick="openOrder('${oc}')">
+      Buka
+    </button>
+    <button class="btn btn-outline-dark btn-sm" type="button" onclick="openAdminChat('${safeTid}','${safePhone}','${oc}')">
+      Chat
+    </button>
+
+    <select class="form-select form-select-sm"
+            style="width:105px"
+            onchange="setPaymentTimer('${oc}', this.value); this.value='';">
+      <option value="">Masa</option>
+      <option value="30">+30m</option>
+      <option value="60">+1j</option>
+      <option value="180">+3j</option>
+      <option value="1440">+24j</option>
+      <option value="off">OFF</option>
+    </select>
+  </div>
+`;
 
     return `
 <tr>
@@ -946,6 +995,63 @@ window.openOrder = function(orderCode){
   window.open(url, '_blank');
 };
 
+window.openAdminChat = function(threadId, phone, orderCode){
+  const qs = new URLSearchParams();
+
+  if (threadId && isUUID(threadId)){
+    qs.set('thread', threadId);
+  }
+
+  if (phone){
+    qs.set('phone', phone);
+  }
+
+  if (orderCode){
+    qs.set('order', orderCode);
+  }
+
+  const url = `${location.origin}/admin-chat.html?${qs.toString()}`;
+  window.open(url, '_blank');
+}; 
+
+window.setPaymentTimer = async function(orderCode, val){
+  if (!orderCode || !val) return;
+
+  try{
+    let payload = {
+      payment_timer_note: null
+    };
+
+    if (val === "off"){
+      payload.payment_timer_disabled = true;
+      payload.payment_deadline_at = null;
+      payload.payment_timer_note = "Timer dimatikan oleh admin";
+    }else{
+      const mins = Number(val);
+      if (!Number.isFinite(mins) || mins <= 0) return;
+
+      const deadline = new Date(Date.now() + mins * 60000).toISOString();
+
+      payload.payment_timer_disabled = false;
+      payload.payment_deadline_at = deadline;
+      payload.payment_timer_note = `Admin tambah masa ${mins} minit`;
+    }
+
+    const { error } = await sb
+      .from("j916_orders")
+      .update(payload)
+      .eq("order_code", orderCode);
+
+    if (error) throw error;
+
+    showToast(val === "off" ? "Timer dimatikan." : "Masa bayaran dikemas kini.");
+    await refreshAll({ silent:true });
+
+  }catch(e){
+    alert("Gagal kemas kini masa: " + (e?.message || e));
+  }
+};
+
 /* ===== Fetch data ===== */
 function daysAgoISO(days){
   const d = new Date();
@@ -957,7 +1063,7 @@ async function fetchOrders(days){
   const since = daysAgoISO(days);
   const { data, error } = await sb
     .from('j916_orders')
-    .select('id,order_code,created_at,status,phone,customer_name,amount_cents,grand_total_rm,pay_method,checkout_group,tracking_no')
+    .select('id,order_code,created_at,status,phone,customer_name,amount_cents,grand_total_rm,pay_method,checkout_group,tracking_no,payment_deadline_at,payment_timer_disabled,payment_timer_note,auto_cancelled_at')
     .gte('created_at', since)
     .order('created_at', { ascending: false })
     .limit(800);
@@ -1392,14 +1498,105 @@ function applyFindFilter(){
   renderList(list);
 }
 
-async function refreshAll(){
+let AUTO_CANCEL_RUNNING = false;
+
+let AUTO_REMINDER_RUNNING = false;
+
+async function runAutoReminderExpired(){
+  if (AUTO_REMINDER_RUNNING) return null;
+
+  AUTO_REMINDER_RUNNING = true;
+
   try{
-    $('tbList').innerHTML = `<tr><td colspan="8" class="text-center text-muted py-4">Memuatkan…</td></tr>`;
-    $('infoFoot').textContent = 'Memuatkan…';
 
-    const days = Number($('selRange').value || 7);
-    RAW_ORDERS = await fetchOrders(days);
+    const res = await fetch(
+      "/.netlify/functions/j916-auto-reminder-expired",
+      {
+        method:"POST",
+        headers:{
+          "Content-Type":"application/json"
+        },
+        body: JSON.stringify({
+          limit:10
+        })
+      }
+    );
 
+    const j = await res.json().catch(()=>({}));
+
+    if (!res.ok || j.ok !== true){
+      console.warn("auto reminder failed:", j);
+      return null;
+    }
+
+    if (Number(j.reminded || 0) > 0){
+      showToast(`Reminder dihantar: ${j.reminded} order`);
+    }
+
+    return j;
+
+  }catch(e){
+
+    console.warn(
+      "runAutoReminderExpired error:",
+      e
+    );
+
+    return null;
+
+  }finally{
+    AUTO_REMINDER_RUNNING = false;
+  }
+}
+
+async function runAutoCancelExpired(){
+  if (AUTO_CANCEL_RUNNING) return null;
+
+  AUTO_CANCEL_RUNNING = true;
+
+  try{
+    const res = await fetch("/.netlify/functions/j916-auto-cancel-expired", {
+      method: "POST",
+      headers: { "Content-Type":"application/json" },
+      body: JSON.stringify({ limit: 10 })
+    });
+
+    const j = await res.json().catch(()=>({}));
+
+    if (!res.ok || j.ok !== true){
+      console.warn("auto cancel expired failed:", j);
+      return null;
+    }
+
+    if (Number(j.cancelled || 0) > 0){
+      showToast(`Auto cancel: ${j.cancelled} order tamat masa.`);
+    }
+
+    return j;
+  }catch(e){
+    console.warn("runAutoCancelExpired error:", e);
+    return null;
+  }finally{
+    AUTO_CANCEL_RUNNING = false;
+  }
+}
+
+async function refreshAll(opts = {}){
+  const silent = opts.silent === true;
+
+  try{
+    // ✅ hanya tunjuk loading bila manual refresh / first load
+    if (!silent){
+      $('tbList').innerHTML = `<tr><td colspan="8" class="text-center text-muted py-4">Memuatkan…</td></tr>`;
+      $('infoFoot').textContent = 'Memuatkan…';
+    }
+
+const days = Number($('selRange').value || 7);
+
+await runAutoReminderExpired();
+await runAutoCancelExpired();
+
+RAW_ORDERS = await fetchOrders(days);
     const tids = RAW_ORDERS.map(o=>getThreadId(o)).filter(Boolean);
     const orderIds = RAW_ORDERS.map(o=>getOrderId(o)).filter(Boolean);
 
@@ -1427,20 +1624,27 @@ async function refreshAll(){
       applyBucket(ACTIVE_BUCKET);
     }
 
-   $('infoDebug').textContent =
+    $('infoDebug').textContent =
       `Orders: ${RAW_ORDERS.length} • Threads: ${Object.keys(THREADS_MAP||{}).length} • AI(latest): ${Object.keys(AI_LATEST||{}).length} • LockFlags: ${Object.keys(FLAGS_MAP||{}).length} • Slips: ${Object.keys(SLIP_BY_ORDER_ID||{}).length}`;
 
     const latestStatementRow = await fetchLatestStatementPreview();
     setStatementPreview(latestStatementRow);
 
-    showToast('Queue dikemas kini.');
+    // ✅ toast hanya bila bukan auto refresh
+    if (!silent){
+      showToast('Queue dikemas kini.');
+    }
+
   }catch(e){
     console.warn(e);
-    $('tbList').innerHTML = `<tr><td colspan="8" class="text-center text-danger py-4">Ralat: ${(e?.message||e)}</td></tr>`;
-    $('infoFoot').textContent = 'Ralat';
+
+    // ✅ auto refresh jangan kacau paparan kalau error sekejap
+    if (!silent){
+      $('tbList').innerHTML = `<tr><td colspan="8" class="text-center text-danger py-4">Ralat: ${(e?.message||e)}</td></tr>`;
+      $('infoFoot').textContent = 'Ralat';
+    }
   }
 }
-
 /* ===== Bank Statement Upload + Match (No.2) ===== */
 function readFileAsDataURL(file){
   return new Promise((resolve, reject)=>{
@@ -1616,8 +1820,37 @@ $('btnClearFind').addEventListener('click', ()=>{
   $('txtFind').value = '';
   applyFindFilter();
 });
-$('selRange').addEventListener('change', ()=>{ ACTIVE_BUCKET=null; refreshAll(); });
+$('selRange').addEventListener('change', ()=>{ ACTIVE_BUCKET=null; refreshAll(); }); 
 
+let AUTO_REFRESH_TIMER = null;
+let AUTO_REFRESH_RUNNING = false;
+
+function startAutoRefresh(){
+  if (AUTO_REFRESH_TIMER){
+    clearInterval(AUTO_REFRESH_TIMER);
+  }
+
+  AUTO_REFRESH_TIMER = setInterval(async ()=>{
+    if (document.hidden) return;
+    if (AUTO_REFRESH_RUNNING) return;
+
+    AUTO_REFRESH_RUNNING = true;
+    try{
+      await refreshAll({ silent:true });
+    }catch(err){
+      console.warn('auto refresh queue error:', err);
+    }finally{
+      AUTO_REFRESH_RUNNING = false;
+    }
+  }, 30000);
+}
+
+window.addEventListener('beforeunload', ()=>{
+  if (AUTO_REFRESH_TIMER){
+    clearInterval(AUTO_REFRESH_TIMER);
+    AUTO_REFRESH_TIMER = null;
+  }
+});
 (async ()=>{
   const pill=$('authStatus'); const set=(t)=> pill&&(pill.textContent=t);
   let ok=false;
@@ -1636,7 +1869,8 @@ $('selRange').addEventListener('change', ()=>{ ACTIVE_BUCKET=null; refreshAll();
   if(!ok) return;
 
   await refreshAll();
-})();
-</script>
+
+  startAutoRefresh();
+})();</script>
 </body>
 </html>

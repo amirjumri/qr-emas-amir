@@ -1,0 +1,984 @@
+<!doctype html>
+<html lang="ms">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Nakly • Cik B</title>
+
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+
+<style>
+*{box-sizing:border-box}
+html,body{
+  margin:0;
+  min-height:100%;
+  font-family:Poppins,system-ui,sans-serif;
+  background:#070707;
+  color:#fff;
+}
+body{
+  padding-bottom:90px;
+}
+a{text-decoration:none;color:inherit}
+button,input{font-family:inherit}
+
+:root{
+  --red:#ff2d55;
+  --red2:#e11d48;
+  --dark:#111111;
+  --soft:#f3f4f6;
+  --gold:#facc15;
+  --green:#22c55e;
+}
+
+.page{
+  max-width:1180px;
+  margin:0 auto;
+  padding:18px 16px 120px;
+}
+
+/* TOP */
+.topbar{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:14px;
+  margin-bottom:18px;
+}
+.logo{
+  display:flex;
+  align-items:center;
+  gap:10px;
+  font-size:30px;
+  font-weight:950;
+  letter-spacing:-1px;
+}
+.logo-mark{
+  width:42px;
+  height:42px;
+  border-radius:14px;
+  background:linear-gradient(135deg,#ff2d55,#e11d48);
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  box-shadow:0 12px 35px rgba(255,45,85,.35);
+}
+.logo span b{color:var(--red)}
+
+.search{
+  flex:1;
+  max-width:520px;
+  position:relative;
+}
+.search input{
+  width:100%;
+  height:48px;
+  border-radius:999px;
+  border:1px solid rgba(255,255,255,.18);
+  background:#0d0d0d;
+  color:#fff;
+  padding:0 52px 0 18px;
+  outline:none;
+}
+.search button{
+  position:absolute;
+  right:6px;
+  top:6px;
+  width:36px;
+  height:36px;
+  border:0;
+  border-radius:999px;
+  background:#fff;
+  color:#111;
+  font-weight:900;
+}
+
+.top-actions{
+  display:flex;
+  align-items:center;
+  gap:10px;
+}
+.icon-btn{
+  height:46px;
+  border-radius:999px;
+  border:1px solid rgba(255,255,255,.18);
+  background:#101010;
+  color:#fff;
+  padding:0 16px;
+  font-weight:800;
+}
+
+/* SELLER HERO */
+.seller-card{
+  display:grid;
+  grid-template-columns:1fr 260px;
+  gap:22px;
+  border:1px solid rgba(255,255,255,.08);
+  border-radius:28px;
+  background:
+    radial-gradient(circle at 15% 0%,rgba(255,45,85,.18),transparent 32%),
+    linear-gradient(180deg,#141414,#080808);
+  padding:24px;
+  box-shadow:0 24px 80px rgba(0,0,0,.45);
+}
+.seller-main{
+  display:flex;
+  gap:20px;
+  align-items:center;
+}
+.avatar-wrap{
+  position:relative;
+  flex:0 0 auto;
+}
+.avatar{
+  width:150px;
+  height:150px;
+  border-radius:999px;
+  object-fit:cover;
+  border:5px solid rgba(255,255,255,.08);
+}
+.live-badge{
+  position:absolute;
+  left:50%;
+  bottom:-8px;
+  transform:translateX(-50%);
+  background:linear-gradient(135deg,#ff2d55,#e11d48);
+  color:#fff;
+  border-radius:999px;
+  padding:9px 24px;
+  font-weight:950;
+  box-shadow:0 12px 30px rgba(255,45,85,.35);
+}
+.seller-name{
+  font-size:36px;
+  font-weight:950;
+  letter-spacing:-1px;
+  margin:0 0 6px;
+}
+.verified{
+  color:#38bdf8;
+  font-size:22px;
+}
+.seller-meta{
+  color:#d1d5db;
+  display:flex;
+  flex-wrap:wrap;
+  gap:10px;
+  font-size:14px;
+  margin-bottom:8px;
+}
+.star{color:var(--gold);font-weight:900}
+.seller-desc{
+  color:#e5e7eb;
+  margin:0 0 16px;
+}
+.seller-buttons{
+  display:flex;
+  flex-wrap:wrap;
+  gap:10px;
+}
+.main-btn{
+  border:0;
+  border-radius:14px;
+  padding:13px 24px;
+  color:#fff;
+  font-weight:900;
+  min-width:130px;
+}
+.btn-red{background:linear-gradient(135deg,#ff2d55,#e11d48)}
+.btn-green{background:linear-gradient(135deg,#22c55e,#16a34a)}
+.btn-dark{
+  background:#111827;
+  border:1px solid rgba(255,255,255,.12);
+}
+
+.stats-box{
+  border:1px solid rgba(255,255,255,.08);
+  border-radius:22px;
+  background:rgba(255,255,255,.04);
+  padding:18px;
+  display:grid;
+  gap:16px;
+}
+.stat{
+  display:flex;
+  gap:12px;
+  align-items:center;
+}
+.stat-ico{
+  width:45px;
+  height:45px;
+  border-radius:999px;
+  background:rgba(255,255,255,.08);
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  font-size:20px;
+}
+.stat b{
+  display:block;
+  font-size:18px;
+}
+.stat span{
+  font-size:13px;
+  color:#d1d5db;
+}
+
+/* LIVE BANNER */
+.live-hero{
+  margin-top:22px;
+  min-height:260px;
+  border-radius:26px;
+  border:1px solid rgba(255,45,85,.65);
+  overflow:hidden;
+  position:relative;
+  background:
+    linear-gradient(90deg,rgba(0,0,0,.90),rgba(0,0,0,.58),rgba(0,0,0,.88)),
+    url("https://images.unsplash.com/photo-1515886657613-9f3515b0c78f?q=80&w=1600&auto=format&fit=crop");
+  background-size:cover;
+  background-position:center;
+  display:grid;
+  grid-template-columns:1.1fr .9fr;
+  box-shadow:0 0 45px rgba(255,45,85,.18);
+}
+.live-left{
+  padding:28px;
+  display:flex;
+  flex-direction:column;
+  justify-content:center;
+}
+.live-pill{
+  display:inline-flex;
+  width:max-content;
+  align-items:center;
+  gap:8px;
+  color:#fb7185;
+  font-weight:950;
+  margin-bottom:14px;
+}
+.dot{
+  width:13px;
+  height:13px;
+  border-radius:999px;
+  background:#ff2d55;
+  box-shadow:0 0 16px rgba(255,45,85,.9);
+}
+.live-title{
+  font-size:31px;
+  font-weight:950;
+  line-height:1.18;
+  margin-bottom:10px;
+}
+.live-sub{
+  color:#f3f4f6;
+  margin-bottom:22px;
+}
+.watch-btn{
+  border:0;
+  width:max-content;
+  border-radius:14px;
+  padding:14px 24px;
+  background:linear-gradient(135deg,#ff2d55,#e11d48);
+  color:#fff;
+  font-weight:950;
+  font-size:16px;
+  box-shadow:0 14px 35px rgba(255,45,85,.3);
+}
+.live-comments{
+  padding:24px;
+  display:flex;
+  flex-direction:column;
+  justify-content:center;
+  gap:12px;
+}
+.comment{
+  background:rgba(0,0,0,.42);
+  border:1px solid rgba(255,255,255,.08);
+  border-radius:999px;
+  padding:10px 14px;
+  font-size:14px;
+  color:#fff;
+  backdrop-filter:blur(6px);
+}
+.viewer{
+  position:absolute;
+  top:18px;
+  right:18px;
+  background:rgba(0,0,0,.55);
+  border:1px solid rgba(255,255,255,.15);
+  border-radius:999px;
+  padding:8px 13px;
+  font-weight:800;
+}
+
+/* CATEGORY */
+.cat-row{
+  display:flex;
+  gap:14px;
+  overflow:auto;
+  padding:22px 0 10px;
+}
+.cat{
+  min-width:120px;
+  height:96px;
+  border-radius:16px;
+  background:#101010;
+  border:1px solid rgba(255,255,255,.09);
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  justify-content:center;
+  gap:8px;
+  color:#e5e7eb;
+  font-size:13px;
+  font-weight:700;
+}
+.cat.active{
+  border-color:#ff2d55;
+  color:#ff2d55;
+  background:rgba(255,45,85,.08);
+}
+.cat .ico{font-size:28px}
+
+/* SECTION */
+.section-head{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  margin:22px 0 14px;
+}
+.section-head h2{
+  margin:0;
+  font-size:23px;
+  font-weight:950;
+}
+.section-head a{
+  color:#d1d5db;
+  font-size:14px;
+}
+
+/* PRODUCTS */
+.product-row{
+  display:grid;
+  grid-template-columns:repeat(5,1fr);
+  gap:14px;
+}
+.product-card{
+  border:1px solid rgba(255,255,255,.10);
+  border-radius:16px;
+  overflow:hidden;
+  background:#111;
+}
+.product-img{
+  height:190px;
+  position:relative;
+  background:#222;
+}
+.product-img img{
+  width:100%;
+  height:100%;
+  object-fit:cover;
+  display:block;
+}
+.tag{
+  position:absolute;
+  top:10px;
+  left:10px;
+  background:#ff2d55;
+  color:#fff;
+  border-radius:8px;
+  padding:5px 9px;
+  font-size:11px;
+  font-weight:900;
+}
+.tag.yellow{
+  background:#facc15;
+  color:#111;
+}
+.tag.green{
+  background:#10b981;
+}
+.product-body{
+  padding:12px;
+}
+.product-name{
+  min-height:44px;
+  font-size:14px;
+  color:#fff;
+  margin-bottom:8px;
+}
+.price{
+  color:#facc15;
+  font-size:18px;
+  font-weight:950;
+}
+.old{
+  color:#9ca3af;
+  text-decoration:line-through;
+  font-size:12px;
+  margin-left:5px;
+}
+.product-meta{
+  color:#d1d5db;
+  font-size:12px;
+  margin:8px 0 12px;
+}
+.buy-row{
+  display:grid;
+  grid-template-columns:1fr 44px;
+  gap:8px;
+}
+.buy-btn{
+  border:0;
+  border-radius:10px;
+  background:linear-gradient(135deg,#ff2d55,#e11d48);
+  color:#fff;
+  font-weight:900;
+  padding:10px;
+}
+.cart-btn{
+  border:1px solid rgba(255,255,255,.18);
+  border-radius:10px;
+  background:#0b0b0b;
+  color:#fff;
+  font-size:20px;
+}
+
+/* PROMO */
+.promo{
+  margin-top:24px;
+  border:1px solid rgba(250,204,21,.45);
+  border-radius:22px;
+  background:
+    radial-gradient(circle at 80% 20%,rgba(250,204,21,.24),transparent 25%),
+    linear-gradient(135deg,#3b2600,#101010);
+  padding:24px;
+  display:grid;
+  grid-template-columns:1fr 1.5fr;
+  gap:20px;
+  overflow:hidden;
+}
+.promo h3{
+  font-size:30px;
+  margin:0 0 8px;
+  color:#fde68a;
+}
+.promo p{
+  color:#fff3c4;
+}
+.promo-prizes{
+  display:grid;
+  grid-template-columns:repeat(3,1fr);
+  gap:12px;
+}
+.prize{
+  border:1px solid rgba(250,204,21,.35);
+  border-radius:16px;
+  padding:16px;
+  background:rgba(0,0,0,.35);
+}
+.prize b{
+  color:#fde68a;
+  display:block;
+}
+
+/* TRUST */
+.trust-row{
+  margin-top:24px;
+  display:grid;
+  grid-template-columns:repeat(4,1fr);
+  gap:0;
+  border:1px solid rgba(255,255,255,.08);
+  border-radius:18px;
+  background:#101010;
+  overflow:hidden;
+}
+.trust{
+  padding:20px;
+  border-right:1px solid rgba(255,255,255,.08);
+  display:flex;
+  gap:12px;
+  align-items:center;
+}
+.trust:last-child{border-right:0}
+.trust .ico{
+  color:#facc15;
+  font-size:28px;
+}
+.trust b{display:block}
+.trust span{
+  color:#d1d5db;
+  font-size:12px;
+}
+
+/* BOTTOM NAV */
+.bottom-nav{
+  position:fixed;
+  left:50%;
+  bottom:0;
+  transform:translateX(-50%);
+  width:min(620px,100vw);
+  background:rgba(5,5,5,.94);
+  border:1px solid rgba(255,255,255,.10);
+  border-bottom:0;
+  border-radius:24px 24px 0 0;
+  padding:10px 16px calc(10px + env(safe-area-inset-bottom,0px));
+  display:grid;
+  grid-template-columns:repeat(5,1fr);
+  z-index:999;
+  backdrop-filter:blur(14px);
+}
+.nav-item{
+  text-align:center;
+  color:#cbd5e1;
+  font-size:11px;
+  font-weight:800;
+}
+.nav-item .nav-ico{
+  font-size:22px;
+  display:block;
+}
+.nav-item.active{
+  color:#ff2d55;
+}
+.live-center{
+  margin-top:-34px;
+}
+.live-center .nav-ico{
+  width:76px;
+  height:76px;
+  border-radius:999px;
+  margin:0 auto 3px;
+  background:linear-gradient(135deg,#ff2d55,#e11d48);
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  color:#fff;
+  font-size:32px;
+  box-shadow:0 18px 45px rgba(255,45,85,.35);
+}
+
+/* FLOAT CHAT */
+.float-chat{
+  position:fixed;
+  right:22px;
+  bottom:96px;
+  width:62px;
+  height:62px;
+  border-radius:999px;
+  border:0;
+  background:linear-gradient(135deg,#ff2d55,#e11d48);
+  color:#fff;
+  font-size:28px;
+  box-shadow:0 20px 45px rgba(255,45,85,.4);
+  z-index:998;
+}
+
+/* MOBILE */
+@media(max-width:900px){
+  .topbar{
+    flex-wrap:wrap;
+  }
+  .search{
+    order:3;
+    max-width:100%;
+    width:100%;
+  }
+  .seller-card{
+    grid-template-columns:1fr;
+  }
+  .seller-main{
+    align-items:flex-start;
+  }
+  .stats-box{
+    grid-template-columns:repeat(3,1fr);
+  }
+  .live-hero{
+    grid-template-columns:1fr;
+  }
+  .live-comments{
+    display:none;
+  }
+  .product-row{
+    grid-template-columns:repeat(2,1fr);
+  }
+  .promo{
+    grid-template-columns:1fr;
+  }
+  .trust-row{
+    grid-template-columns:1fr 1fr;
+  }
+}
+@media(max-width:560px){
+  .page{
+    padding:14px 12px 120px;
+  }
+  .logo{
+    font-size:24px;
+  }
+  .top-actions .icon-btn:nth-child(1),
+  .top-actions .icon-btn:nth-child(2){
+    display:none;
+  }
+  .seller-card{
+    padding:18px;
+    border-radius:22px;
+  }
+  .seller-main{
+    flex-direction:column;
+    text-align:center;
+    align-items:center;
+  }
+  .avatar{
+    width:128px;
+    height:128px;
+  }
+  .seller-name{
+    font-size:30px;
+  }
+  .seller-meta{
+    justify-content:center;
+  }
+  .seller-buttons{
+    width:100%;
+  }
+  .main-btn{
+    flex:1;
+    min-width:0;
+  }
+  .stats-box{
+    grid-template-columns:1fr;
+  }
+  .live-title{
+    font-size:26px;
+  }
+  .product-img{
+    height:180px;
+  }
+  .promo-prizes{
+    grid-template-columns:1fr;
+  }
+  .trust-row{
+    grid-template-columns:1fr;
+  }
+  .trust{
+    border-right:0;
+    border-bottom:1px solid rgba(255,255,255,.08);
+  }
+}
+</style>
+</head>
+
+<body>
+
+<div class="page">
+
+  <header class="topbar">
+    <a class="logo" href="#">
+      <div class="logo-mark">N</div>
+      <span>Nak<b>ly</b></span>
+    </a>
+
+    <div class="search">
+      <input type="search" placeholder="Cari produk dalam kedai ini...">
+      <button>⌕</button>
+    </div>
+
+    <div class="top-actions">
+      <button class="icon-btn">↗ Kongsi</button>
+      <button class="icon-btn">♡ Follow</button>
+      <button class="icon-btn">🛒 Cart</button>
+    </div>
+  </header>
+
+  <section class="seller-card">
+    <div class="seller-main">
+      <div class="avatar-wrap">
+        <img class="avatar" src="https://images.unsplash.com/photo-1595211877493-41a4e5f236b3?q=80&w=600&auto=format&fit=crop" alt="Cik B">
+        <div class="live-badge">LIVE</div>
+      </div>
+
+      <div>
+        <h1 class="seller-name">Cik B <span class="verified">●</span></h1>
+
+        <div class="seller-meta">
+          <span class="star">★ 4.9</span>
+          <span>(2.3k)</span>
+          <span>•</span>
+          <span>12.5k Followers</span>
+        </div>
+
+        <div class="seller-meta">
+          <span>📍 Kedah, Malaysia</span>
+          <span>•</span>
+          <span>Aktif 3 minit lalu</span>
+        </div>
+
+        <p class="seller-desc">
+          Menjual koleksi wanita pilihan dengan harga berpatutan 💕
+        </p>
+
+        <div class="seller-buttons">
+          <button class="main-btn btn-red">💬 Chat</button>
+          <button class="main-btn btn-green">WhatsApp</button>
+          <button class="main-btn btn-dark">♡ Follow</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="stats-box">
+      <div class="stat">
+        <div class="stat-ico">🛍️</div>
+        <div>
+          <b>1200+</b>
+          <span>Order Selesai</span>
+        </div>
+      </div>
+
+      <div class="stat">
+        <div class="stat-ico">⭐</div>
+        <div>
+          <b>98%</b>
+          <span>Rating Positif</span>
+        </div>
+      </div>
+
+      <div class="stat">
+        <div class="stat-ico">🏆</div>
+        <div>
+          <b>2 Tahun</b>
+          <span>Bersama Nakly</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="live-hero">
+    <div class="viewer">👥 3.2k</div>
+
+    <div class="live-left">
+      <div class="live-pill"><span class="dot"></span> LIVE SEKARANG</div>
+
+      <div class="live-title">
+        Jom Shopping LIVE<br>
+        Bersama Cik B 💕
+      </div>
+
+      <div class="live-sub">3.2k sedang menonton</div>
+
+      <button class="watch-btn">▶ Tonton LIVE</button>
+    </div>
+
+    <div class="live-comments">
+      <div class="comment">👩 Anis: nak yang ni kak</div>
+      <div class="comment">👩 Siti: datang lagi sesiapa?</div>
+      <div class="comment">👩 Fara: lock warna ni kak</div>
+      <div class="comment">👩 Aina: free postage ke?</div>
+    </div>
+  </section>
+
+  <div class="cat-row">
+    <button class="cat active"><div class="ico">▦</div>Semua Produk</button>
+    <button class="cat"><div class="ico">👗</div>Baju Kurung</button>
+    <button class="cat"><div class="ico">🧕</div>Tudung</button>
+    <button class="cat"><div class="ico">👚</div>Set Outfit</button>
+    <button class="cat"><div class="ico">👜</div>Beg Tangan</button>
+    <button class="cat"><div class="ico">👠</div>Kasut</button>
+    <button class="cat"><div class="ico">♡</div>Aksesori</button>
+    <button class="cat"><div class="ico">%</div>Sale</button>
+  </div>
+
+  <div class="section-head">
+    <h2>🔥 BEST SELLER</h2>
+    <a href="#">Lihat Semua ›</a>
+  </div>
+
+  <section class="product-row">
+    <div class="product-card">
+      <div class="product-img">
+        <span class="tag">LIVE</span>
+        <img src="https://images.unsplash.com/photo-1618244972963-dbee1a7edc95?q=80&w=700&auto=format&fit=crop">
+      </div>
+      <div class="product-body">
+        <div class="product-name">Kurung Moden Rania Maroon</div>
+        <div class="price">RM69.00</div>
+        <div class="product-meta">★ 4.9 • 1.2k terjual</div>
+        <div class="buy-row">
+          <button class="buy-btn">+ Beli</button>
+          <button class="cart-btn">🛒</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="product-card">
+      <div class="product-img">
+        <span class="tag yellow">BEST SELLER</span>
+        <img src="https://images.unsplash.com/photo-1622122201714-77da0ca8e5d2?q=80&w=700&auto=format&fit=crop">
+      </div>
+      <div class="product-body">
+        <div class="product-name">Kurung Pahang Premium Beige</div>
+        <div class="price">RM89.00</div>
+        <div class="product-meta">★ 4.9 • 890 terjual</div>
+        <div class="buy-row">
+          <button class="buy-btn">+ Beli</button>
+          <button class="cart-btn">🛒</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="product-card">
+      <div class="product-img">
+        <span class="tag green">NEW</span>
+        <img src="https://images.unsplash.com/photo-1583391733956-6c78276477e2?q=80&w=700&auto=format&fit=crop">
+      </div>
+      <div class="product-body">
+        <div class="product-name">Kurung Hana Light Blue</div>
+        <div class="price">RM65.00</div>
+        <div class="product-meta">★ 4.8 • 456 terjual</div>
+        <div class="buy-row">
+          <button class="buy-btn">+ Beli</button>
+          <button class="cart-btn">🛒</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="product-card">
+      <div class="product-img">
+        <span class="tag">LIVE</span>
+        <img src="https://images.unsplash.com/photo-1598554747436-c9293d6a588f?q=80&w=700&auto=format&fit=crop">
+      </div>
+      <div class="product-body">
+        <div class="product-name">Kurung Sofia Dusty Pink</div>
+        <div class="price">RM75.00</div>
+        <div class="product-meta">★ 4.8 • 732 terjual</div>
+        <div class="buy-row">
+          <button class="buy-btn">+ Beli</button>
+          <button class="cart-btn">🛒</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="product-card">
+      <div class="product-img">
+        <span class="tag">-20%</span>
+        <img src="https://images.unsplash.com/photo-1603217040830-34473db521a3?q=80&w=700&auto=format&fit=crop">
+      </div>
+      <div class="product-body">
+        <div class="product-name">Kurung Zaleha Emerald Green</div>
+        <div class="price">RM63.20 <span class="old">RM79.00</span></div>
+        <div class="product-meta">★ 4.8 • 321 terjual</div>
+        <div class="buy-row">
+          <button class="buy-btn">+ Beli</button>
+          <button class="cart-btn">🛒</button>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="promo">
+    <div>
+      <h3>BELI & MENANG</h3>
+      <p>Hadiah bernilai RM10,000! Setiap pembelian layak untuk cabutan bertuah.</p>
+      <button class="watch-btn" style="background:linear-gradient(135deg,#facc15,#f59e0b);color:#111;">Info Lanjut</button>
+    </div>
+
+    <div class="promo-prizes">
+      <div class="prize">
+        <b>Gold Bar 1g</b>
+        <span>x5 Pemenang</span>
+      </div>
+
+      <div class="prize">
+        <b>iPhone 15</b>
+        <span>x2 Pemenang</span>
+      </div>
+
+      <div class="prize">
+        <b>Voucher RM100</b>
+        <span>x20 Pemenang</span>
+      </div>
+    </div>
+  </section>
+
+  <section class="trust-row">
+    <div class="trust">
+      <div class="ico">🛡️</div>
+      <div>
+        <b>Trusted Seller</b>
+        <span>Jualan 100% original</span>
+      </div>
+    </div>
+
+    <div class="trust">
+      <div class="ico">🚚</div>
+      <div>
+        <b>Penghantaran Pantas</b>
+        <span>1-2 hari ke Semenanjung</span>
+      </div>
+    </div>
+
+    <div class="trust">
+      <div class="ico">🎁</div>
+      <div>
+        <b>Packaging Cantik</b>
+        <span>Hadiah percuma disertakan</span>
+      </div>
+    </div>
+
+    <div class="trust">
+      <div class="ico">↩️</div>
+      <div>
+        <b>7 Hari Return</b>
+        <span>Jika barang rosak / salah</span>
+      </div>
+    </div>
+  </section>
+
+</div>
+
+<button class="float-chat">💬</button>
+
+<nav class="bottom-nav">
+  <a class="nav-item active" href="#">
+    <span class="nav-ico">🏠</span>
+    Utama
+  </a>
+
+  <a class="nav-item" href="#">
+    <span class="nav-ico">▦</span>
+    Kategori
+  </a>
+
+  <a class="nav-item live-center" href="#">
+    <span class="nav-ico">📡</span>
+    LIVE
+  </a>
+
+  <a class="nav-item" href="#">
+    <span class="nav-ico">💬</span>
+    Chat
+  </a>
+
+  <a class="nav-item" href="#">
+    <span class="nav-ico">👤</span>
+    Akaun
+  </a>
+</nav>
+
+<script>
+document.querySelectorAll(".cat").forEach(btn=>{
+  btn.addEventListener("click",()=>{
+    document.querySelectorAll(".cat").forEach(b=>b.classList.remove("active"));
+    btn.classList.add("active");
+  });
+});
+
+document.querySelectorAll(".buy-btn").forEach(btn=>{
+  btn.addEventListener("click",()=>{
+    alert("Demo: item masuk cart / checkout.");
+  });
+});
+</script>
+
+</body>
+</html>

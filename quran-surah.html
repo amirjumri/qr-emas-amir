@@ -390,6 +390,54 @@ body.swipe-peek{background:#e5e7eb}
   background:rgba(251,191,36,.10);
   border:1px solid rgba(251,191,36,.25);
 }
+
+.brush-toolbar{
+  width:100%;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  gap:8px;
+  flex-wrap:wrap;
+  margin:0 0 12px;
+  padding:10px;
+  border-radius:999px;
+  background:rgba(2,6,23,.96);
+  border:2px solid rgba(251,191,36,.85);
+  box-shadow:0 0 25px rgba(250,204,21,.30);
+}
+.brush-label{
+  color:#fde68a;
+  font-size:13px;
+  font-weight:900;
+  margin-right:4px;
+}
+.brush-btn{
+  border:0;
+  border-radius:999px;
+  padding:10px 13px;
+  font-size:13px;
+  font-weight:900;
+  cursor:pointer;
+  background:#334155;
+  color:white;
+}
+.brush-btn.active{
+  background:linear-gradient(90deg,#f59e0b,#fde68a);
+  color:#111827;
+}
+.brush-preview{
+  width:32px;
+  height:32px;
+  border-radius:999px;
+  background:radial-gradient(circle,#fff8b8 0,#fbbf24 48%,rgba(245,158,11,.30) 76%);
+  box-shadow:0 0 16px rgba(250,204,21,.75);
+}
+@media(max-width:640px){
+  .brush-toolbar{border-radius:20px;gap:6px}
+  .brush-label{width:100%;text-align:center;margin:0}
+  .brush-btn{padding:9px 11px;font-size:12px}
+}
+
 .trace-wrap{
   position:relative;
   height:520px;
@@ -641,13 +689,22 @@ body.swipe-peek{background:#e5e7eb}
   <div class="trace-box">
     <button class="modal-close" id="btnCloseModal">×</button>
 
-    <div class="modal-top">
-      <div class="modal-title" id="modalTitle">بِسْمِ</div>
-      <div class="modal-sub" id="modalSub">Blok 1A • Dengan nama</div>
-      <div class="unlock-pill" id="unlockPill">🔓 Ikut turutan ayat</div>
-    </div>
+  <div class="modal-top">
+  <div class="modal-title" id="modalTitle">بِسْمِ</div>
+  <div class="modal-sub" id="modalSub">Blok 1A • Dengan nama</div>
+  <div class="unlock-pill" id="unlockPill">🔓 Ikut turutan ayat</div>
+</div>
 
-    <div class="trace-wrap" id="traceWrap">
+<div class="brush-toolbar" id="brushToolbar">
+  <span class="brush-label">Saiz dakwat:</span>
+  <button type="button" class="brush-btn" data-brush="28">Kecil</button>
+  <button type="button" class="brush-btn active" data-brush="35">Biasa</button>
+  <button type="button" class="brush-btn" data-brush="40">Besar</button>
+  <button type="button" class="brush-btn" data-brush="45">MAX</button>
+  <div class="brush-preview" id="brushPreview"></div>
+</div>
+
+<div class="trace-wrap" id="traceWrap">
       <canvas id="ghostCanvas" class="canvas-layer"></canvas>
       <canvas id="inkCanvas" class="canvas-layer"></canvas>
       <canvas id="drawCanvas" class="canvas-layer"></canvas>
@@ -966,6 +1023,34 @@ const btnPrev = $("btnPrev");
 const btnNext = $("btnNext");
 const btnClear = $("btnClear");
 
+const brushPreview = $("brushPreview");
+let USER_BRUSH_SIZE = Number(localStorage.getItem("trace_brush_size") || 45);
+
+function updateBrushUI(){
+  document.querySelectorAll(".brush-btn").forEach(btn=>{
+    const v = Number(btn.dataset.brush || 45);
+    btn.classList.toggle("active", v === USER_BRUSH_SIZE);
+  });
+
+  if (brushPreview){
+    const size = Math.max(22, Math.min(56, USER_BRUSH_SIZE * 0.56));
+    brushPreview.style.width = size + "px";
+    brushPreview.style.height = size + "px";
+  }
+}
+
+document.querySelectorAll(".brush-btn").forEach(btn=>{
+  btn.addEventListener("click", function(e){
+    e.preventDefault();
+    e.stopPropagation();
+
+    USER_BRUSH_SIZE = Number(this.dataset.brush || 45);
+    localStorage.setItem("trace_brush_size", USER_BRUSH_SIZE);
+
+    updateBrushUI();
+    showToast("Saiz dakwat: " + this.textContent);
+  });
+});
 let surahData = null;
 let flatWords = [];
 let currentIndex = 0;
@@ -1414,7 +1499,9 @@ function openWord(idx){
   modalSub.textContent = `Blok ${currentWord.id} • ${currentWord.meaning}`;
   unlockPill.textContent = currentIndex === 0 ? "🔓 Blok pertama dibuka" : `🔓 Dibuka selepas ${flatWords[currentIndex - 1].id} siap`;
 
-  setTimeout(()=>{
+updateBrushUI();
+
+setTimeout(()=>{
     setupCanvasSize();
     renderTraceWord();
     updateButtons();
@@ -1447,7 +1534,7 @@ function setupCanvasSize(){
 
   dctx.lineCap = "round";
   dctx.lineJoin = "round";
-  dctx.lineWidth = Math.max(16, cssW / 48) * BRUSH_EXTRA;
+  dctx.lineWidth = USER_BRUSH_SIZE;
   dctx.strokeStyle = "rgba(255,255,255,1)";
 
   textMaskCanvas.width = Math.floor(cssW * dpr);
@@ -1751,12 +1838,13 @@ function hidePenDot(){
 }
 
 function drawDot(x,y,r){
+  const realSize = Math.max(8, USER_BRUSH_SIZE * 0.42);
+
   dctx.beginPath();
-  dctx.arc(x,y,r,0,Math.PI*2);
+  dctx.arc(x,y,realSize,0,Math.PI*2);
   dctx.fillStyle = "rgba(255,255,255,1)";
   dctx.fill();
 }
-
 function drawSmoothLine(x1,y1,x2,y2){
   const dx = x2 - x1;
   const dy = y2 - y1;
@@ -1776,7 +1864,7 @@ function drawSmoothLine(x1,y1,x2,y2){
       dctx.moveTo(prevX,prevY);
       dctx.lineTo(x,y);
       dctx.stroke();
-      drawDot(x,y,Math.max(5, cssW / 110));
+      drawDot(x,y,USER_BRUSH_SIZE * 0.22);
       prevX = x;
       prevY = y;
     }
@@ -1797,7 +1885,7 @@ function startDraw(e){
   activePointerId = e.pointerId || null;
   lastX = p.x;
   lastY = p.y;
-  drawDot(lastX,lastY,Math.max(11, cssW / 75));
+  drawDot(lastX,lastY,USER_BRUSH_SIZE * 0.45);
   showPenDot(lastX,lastY);
   redrawInkClipped();
 }

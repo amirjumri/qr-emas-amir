@@ -1,0 +1,294 @@
+<!doctype html>
+<html lang="ms">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>AI Live Comment Panel • Emas Amir</title>
+
+<style>
+*{box-sizing:border-box}
+body{
+  margin:0;
+  font-family:system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+  background:#070707;
+  color:#fff;
+}
+.app{
+  min-height:100vh;
+  padding:16px;
+}
+.panel{
+  min-height:calc(100vh - 32px);
+  border:1px solid rgba(234,179,8,.35);
+  border-radius:24px;
+  background:linear-gradient(180deg,#171717,#090909);
+  box-shadow:0 20px 60px rgba(0,0,0,.45);
+  overflow:hidden;
+}
+.head{
+  padding:16px 18px;
+  border-bottom:1px solid rgba(234,179,8,.25);
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+}
+.body{padding:16px}
+.gold{color:#facc15}
+.small{font-size:13px;color:#aaa}
+.actions{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:10px;
+  margin-bottom:12px;
+}
+button{
+  border:0;
+  border-radius:14px;
+  padding:12px 14px;
+  font-weight:900;
+  cursor:pointer;
+}
+.btn-dark{
+  background:#1f2937;
+  color:#fff;
+  border:1px solid rgba(255,255,255,.12);
+}
+.btn-red{
+  background:#dc2626;
+  color:#fff;
+}
+.card{
+  border:1px solid rgba(250,204,21,.25);
+  background:#111;
+  border-radius:18px;
+  padding:14px;
+  margin-top:12px;
+}
+.comment-feed{
+  height:calc(100vh - 190px);
+  overflow:auto;
+  padding:10px;
+  border-radius:20px;
+  background:#050505;
+  border:1px solid rgba(250,204,21,.22);
+}
+.comment-item{
+  display:flex;
+  gap:10px;
+  padding:10px 8px;
+  border-bottom:1px solid rgba(255,255,255,.07);
+}
+.avatar{
+  width:34px;
+  height:34px;
+  border-radius:50%;
+  background:linear-gradient(135deg,#facc15,#ec4899);
+  color:#111;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  font-weight:900;
+  flex:0 0 auto;
+}
+.comment-content{
+  flex:1;
+  min-width:0;
+}
+.comment-name{
+  font-weight:900;
+  font-size:13px;
+  color:#fff;
+}
+.comment-text{
+  margin-top:3px;
+  font-size:15px;
+  color:#f3f4f6;
+  line-height:1.35;
+  word-break:break-word;
+}
+.comment-time{
+  font-size:11px;
+  color:#9ca3af;
+  margin-top:4px;
+}
+.status{
+  display:inline-flex;
+  padding:6px 10px;
+  border-radius:999px;
+  font-size:12px;
+  font-weight:900;
+  background:#16a34a;
+}
+</style>
+</head>
+
+<body>
+
+<div class="app">
+  <section class="panel">
+    <div class="head">
+      <div>
+        <b>AI Live Comment Panel</b><br>
+        <span class="small">Terima komen sebenar dari TikTok</span>
+      </div>
+      <span id="statusBadge" class="status">READY</span>
+    </div>
+
+    <div class="body">
+
+      <div class="actions">
+        <button class="btn-dark" onclick="openTikTok()">BUKA TIKTOK</button>
+        <button class="btn-red" onclick="clearComments()">CLEAR COMMENT</button>
+      </div>
+
+      <div class="card">
+        <b class="gold">Live Comment Detected</b>
+        <div class="small" id="scanInfo">Menunggu komen dari TikTok...</div>
+      </div>
+
+      <div id="commentFeed" class="comment-feed">
+        <div class="small">Komen TikTok akan keluar di sini.</div>
+      </div>
+
+    </div>
+  </section>
+</div>
+
+<script>
+let comments = [];
+let seen = new Set();
+
+function openTikTok(){
+  window.open("https://www.tiktok.com", "tiktok_live_window", "width=520,height=900,left=0,top=0");
+}
+
+function cleanText(s){
+  return String(s || "")
+    .replace(/\s+/g, " ")
+    .trim();
+}
+
+function makeKey(name, comment){
+  return String(name + "|" + comment)
+    .toLowerCase()
+    .replace(/[^a-z0-9]/g, "");
+}
+
+function isSystemComment(name, comment){
+  const t = cleanText(name + " " + comment).toLowerCase();
+
+  if(!t) return true;
+
+  const bad = [
+    "joined",
+    "shared the live",
+    "share the live",
+    "viewers",
+    "viewer",
+    "followed the host",
+    "sent a gift",
+    "sent gift",
+    "gifted",
+    "live goal",
+    "recharge"
+  ];
+
+  return bad.some(x => t.includes(x));
+}
+
+function receiveComment(name, comment, isoTime){
+  name = cleanText(name);
+  comment = cleanText(comment);
+
+  if(!name || !comment) return;
+  if(isSystemComment(name, comment)) return;
+
+  const key = makeKey(name, comment);
+  if(seen.has(key)) return;
+
+  seen.add(key);
+
+  const d = isoTime ? new Date(isoTime) : new Date();
+
+  comments.push({
+    name,
+    comment,
+    time:d.toLocaleTimeString("ms-MY", {
+      hour:"2-digit",
+      minute:"2-digit",
+      second:"2-digit"
+    })
+  });
+
+  if(comments.length > 150){
+    comments = comments.slice(-150);
+  }
+
+  document.getElementById("scanInfo").textContent =
+    "Jumlah komen diterima: " + comments.length;
+
+  renderComments();
+}
+
+function renderComments(){
+  const feed = document.getElementById("commentFeed");
+
+  if(!comments.length){
+    feed.innerHTML = `<div class="small">Komen TikTok akan keluar di sini.</div>`;
+    return;
+  }
+
+  feed.innerHTML = comments.map(c => {
+    const initial = (c.name || "U").charAt(0).toUpperCase();
+
+    return `
+      <div class="comment-item">
+        <div class="avatar">${escapeHTML(initial)}</div>
+        <div class="comment-content">
+          <div class="comment-name">@${escapeHTML(c.name)}</div>
+          <div class="comment-text">${escapeHTML(c.comment)}</div>
+          <div class="comment-time">${escapeHTML(c.time)}</div>
+        </div>
+      </div>
+    `;
+  }).join("");
+
+  feed.scrollTop = feed.scrollHeight;
+}
+
+function clearComments(){
+  comments = [];
+  seen = new Set();
+  document.getElementById("scanInfo").textContent = "Comment cleared. Menunggu komen dari TikTok...";
+  renderComments();
+}
+
+function escapeHTML(s){
+  return String(s || "")
+    .replaceAll("&","&amp;")
+    .replaceAll("<","&lt;")
+    .replaceAll(">","&gt;")
+    .replaceAll('"',"&quot;")
+    .replaceAll("'","&#039;");
+}
+
+if(typeof chrome !== "undefined" && chrome.runtime && chrome.runtime.onMessage){
+  chrome.runtime.onMessage.addListener((msg) => {
+    if(!msg || msg.type !== "EA_TIKTOK_COMMENT") return;
+
+    receiveComment(msg.name, msg.comment, msg.time);
+  });
+}
+
+window.addEventListener("message", (event) => {
+  const msg = event.data;
+  if(!msg || msg.type !== "EA_TIKTOK_COMMENT") return;
+
+  receiveComment(msg.name, msg.comment, msg.time);
+});
+
+renderComments();
+</script>
+
+</body>
+</html>

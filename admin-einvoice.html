@@ -1,0 +1,1002 @@
+<!doctype html>
+<html lang="ms">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <link rel="stylesheet" href="/global.css">
+  <title>Admin E-Invoice • Emas Amir</title>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="auth.js?v=13.1"></script>
+  <script src="admin-guard.js?v=1"></script>
+
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+
+  <style>
+    body{background:#fff}
+    .container-narrow{max-width:1280px}
+    .auth-pill{border:1px solid #e5e7eb;border-radius:999px;padding:.2rem .6rem;background:#fafafa;color:#555}
+    .btn-chip{border:1px solid #e5e7eb;background:#f8fafc;padding:6px 10px;border-radius:999px;font-size:.9rem;text-decoration:none;color:#111}
+    .btn-chip.btn-primary{background:#0d6efd;color:#fff;border-color:#0d6efd}
+    .table-sticky thead th{position:sticky;top:0;background:#fff;z-index:5}
+    .toast-wrap{position:fixed;right:16px;bottom:16px;z-index:1080}
+    .mini{font-size:12px;color:#6b7280}
+    .mono{font-family:ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,monospace}
+    .status-pill{display:inline-flex;align-items:center;border-radius:999px;padding:3px 8px;font-size:12px;font-weight:700}
+    .st-none{background:#f3f4f6;color:#374151}
+    .st-queued{background:#fef3c7;color:#92400e}
+    .st-submitted{background:#dbeafe;color:#1d4ed8}
+    .st-valid{background:#dcfce7;color:#166534}
+    .st-failed{background:#fee2e2;color:#991b1b}
+  </style>
+</head>
+
+<body>
+<div class="container container-narrow py-3">
+
+  <div class="d-flex justify-content-between align-items-center mb-2">
+    <div class="small auth-pill" id="authStatus">Memuatkan…</div>
+    <div class="d-flex flex-wrap gap-2">
+      <a class="btn-chip" href="index.html">Halaman Utama</a>
+      <a class="btn-chip" href="admin.html">Admin</a>
+      <a class="btn-chip" href="admin-j916.html">Admin 916</a>
+      <a class="btn-chip" href="admin-j999.html">Admin 999</a>
+      <a class="btn-chip" href="admintabung-simpan.html">Admin Tabung</a>
+      <button id="btnLogin" class="btn btn-outline-secondary btn-chip" type="button">Log masuk</button>
+      <button id="btnLogout" class="btn btn-outline-secondary btn-chip" type="button" style="display:none">Log keluar</button>
+    </div>
+  </div>
+
+  <hr class="mb-3">
+
+  <div class="d-flex align-items-center justify-content-between gap-2 flex-wrap">
+    <div>
+      <h1 class="h4 m-0">Admin E-Invoice</h1>
+      <div class="mini">Fasa 1: J916 sahaja • Papar order PAID sahaja • Filter ikut bulan</div>
+    </div>
+
+    <div class="d-flex gap-2 flex-wrap">
+      <button type="button" class="btn-chip" data-filter="ALL">Semua</button>
+      <button type="button" class="btn-chip" data-filter="NONE">Belum Submit</button>
+      <button type="button" class="btn-chip" data-filter="QUEUED">Consolidated</button>
+      <button type="button" class="btn-chip" data-filter="VALID">Valid</button>
+      <button type="button" class="btn-chip" data-filter="FAILED">Failed</button>
+    </div>
+  </div>
+
+  <div class="row g-2 my-3">
+    <div class="col-12 col-md-3">
+      <select id="monthFilter" class="form-select">
+        <option value="">Semua Bulan</option>
+        <option value="1">Januari</option>
+        <option value="2">Februari</option>
+        <option value="3">Mac</option>
+        <option value="4">April</option>
+        <option value="5">Mei</option>
+        <option value="6">Jun</option>
+        <option value="7">Julai</option>
+        <option value="8">Ogos</option>
+        <option value="9">September</option>
+        <option value="10">Oktober</option>
+        <option value="11">November</option>
+        <option value="12">Disember</option>
+      </select>
+    </div>
+
+    <div class="col-12 col-md-2">
+      <select id="yearFilter" class="form-select">
+        <option value="2026">2026</option>
+        <option value="2027">2027</option>
+        <option value="2028">2028</option>
+      </select>
+    </div>
+
+    <div class="col-12 col-md-5">
+      <div class="input-group">
+        <span class="input-group-text">Cari</span>
+        <input id="searchBox" class="form-control" placeholder="Nama / Phone / Order Code / Kod barang">
+      </div>
+    </div>
+
+    <div class="col-12 col-md-2">
+      <button id="refreshBtn" class="btn btn-outline-secondary w-100" type="button">Refresh</button>
+    </div>
+  </div>
+
+  <div class="alert alert-light border py-2 mb-3">
+    <div class="d-flex justify-content-between align-items-center flex-wrap gap-2">
+      <div>
+        <b id="periodLabel">Semua Bulan</b>
+        <div class="mini">Nota: consolidated nanti ikut bulan yang dipilih.</div>
+      </div>
+      <button class="btn btn-outline-warning btn-sm" type="button" onclick="markVisibleAsConsolidated()">
+        Masuk Consolidated Semua Dalam Page Ini
+      </button>
+    </div>
+  </div>
+
+  <div class="row g-2 mb-3">
+    <div class="col-6 col-md-3">
+      <div class="border rounded-3 p-2">
+        <div class="mini">Jumlah PAID</div>
+        <div class="fw-bold" id="sumTotal">0</div>
+      </div>
+    </div>
+    <div class="col-6 col-md-3">
+      <div class="border rounded-3 p-2">
+        <div class="mini">Jumlah RM Page Ini</div>
+        <div class="fw-bold" id="sumRM">RM 0.00</div>
+      </div>
+    </div>
+    <div class="col-6 col-md-2">
+      <div class="border rounded-3 p-2">
+        <div class="mini">Belum Submit</div>
+        <div class="fw-bold" id="sumNone">0</div>
+      </div>
+    </div>
+    <div class="col-6 col-md-2">
+      <div class="border rounded-3 p-2">
+        <div class="mini">Valid</div>
+        <div class="fw-bold" id="sumValid">0</div>
+      </div>
+    </div>
+    <div class="col-6 col-md-2">
+      <div class="border rounded-3 p-2">
+        <div class="mini">Consolidated Queue</div>
+        <div class="fw-bold" id="sumQueued">0</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="table-responsive">
+    <table class="table table-sm align-middle table-sticky">
+      <thead>
+        <tr>
+          <th style="width:120px">Tarikh</th>
+          <th>Order</th>
+          <th>Pelanggan</th>
+          <th>Jumlah</th>
+          <th>Mode</th>
+          <th>Status E-Invoice</th>
+          <th style="width:360px" class="text-end">Tindakan</th>
+        </tr>
+      </thead>
+      <tbody id="ordersTbody">
+        <tr><td colspan="7" class="text-center text-muted py-4">Memuatkan…</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="d-flex justify-content-between align-items-center">
+    <small class="text-muted" id="resultInfo">0 rekod</small>
+    <div class="d-flex gap-2">
+      <button class="btn btn-outline-secondary btn-sm" id="prevPageBtn" type="button">Sebelumnya</button>
+      <button class="btn btn-outline-secondary btn-sm" id="nextPageBtn" type="button">Seterusnya</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast-wrap">
+  <div class="toast align-items-center text-bg-dark border-0" id="mainToast" role="status" aria-live="polite" aria-atomic="true">
+    <div class="d-flex">
+      <div class="toast-body" id="toastMsg">Berjaya.</div>
+      <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Tutup"></button>
+    </div>
+  </div>
+</div>
+
+<div class="modal fade" id="detailModal" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered modal-lg">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Detail E-Invoice</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Tutup"></button>
+      </div>
+      <div class="modal-body">
+        <pre id="detailText" class="small bg-light p-3 rounded" style="white-space:pre-wrap;max-height:60vh;overflow:auto"></pre>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-light" data-bs-dismiss="modal">Tutup</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+
+<script>
+const SB_URL = "https://dduizetstqqjrpsezbpi.supabase.co";
+const SB_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJIUzI1NiIsInJlZiI6ImRkdWl6ZXRzdHFxanJwc2V6YnBpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTg3MzI0ODQsImV4cCI6MjA3NDMwODQ4NH0.CrlHXrmHtKgR9qc2192U6quRb5lpFEeOSgwG0Lb8KRM";
+
+window.sb = window.sb || window.supabase.createClient(SB_URL, SB_KEY);
+const sb = window.sb;
+
+const $ = (id)=>document.getElementById(id);
+
+const PAGE_SIZE = 30;
+let currentPage = 1;
+let currentFilter = "ALL";
+let state = {
+  allItems: [],
+  items: [],
+  total: 0,
+  hasNext: false,
+  hasPrev: false
+};
+function showToast(msg){
+  $("toastMsg").textContent = msg || "Berjaya.";
+  new bootstrap.Toast($("mainToast"), { delay: 2200 }).show();
+}
+
+function fmtMY(s){
+  if (!s) return "-";
+  try{
+    return new Date(s).toLocaleString("ms-MY", { hour12:false });
+  }catch(_){
+    return String(s);
+  }
+}
+
+function moneyRM(v){
+  const n = Number(v || 0);
+  return "RM " + n.toFixed(2);
+}
+
+function clean(v){
+  return String(v || "").trim();
+}
+
+function upper(v){
+  return clean(v).toUpperCase();
+}
+
+function safeHtml(v){
+  return String(v ?? "")
+    .replaceAll("&","&amp;")
+    .replaceAll("<","&lt;")
+    .replaceAll(">","&gt;")
+    .replaceAll('"',"&quot;")
+    .replaceAll("'","&#039;");
+}
+
+function normalize(msisdn){
+  if(!msisdn) return null;
+  let x = String(msisdn).replace(/\D/g,"");
+  if(x.startsWith("60")) return x;
+  if(x.startsWith("0")) return "6" + x;
+  return "60" + x;
+}
+
+function monthName(m){
+  const names = {
+    1:"Januari",2:"Februari",3:"Mac",4:"April",5:"Mei",6:"Jun",
+    7:"Julai",8:"Ogos",9:"September",10:"Oktober",11:"November",12:"Disember"
+  };
+  return names[Number(m)] || "Semua Bulan";
+}
+
+function getMonthRange(year, month){
+  const y = Number(year);
+  const m = Number(month);
+
+  if(!Number.isFinite(y) || !Number.isFinite(m) || m < 1 || m > 12){
+    return null;
+  }
+
+  const start = new Date(Date.UTC(y, m - 1, 1, 0, 0, 0));
+  const end = new Date(Date.UTC(y, m, 1, 0, 0, 0));
+
+  return {
+    start: start.toISOString(),
+    end: end.toISOString()
+  };
+}
+
+function updatePeriodLabel(){
+  const month = $("monthFilter")?.value || "";
+  const year = $("yearFilter")?.value || "";
+
+  if(month){
+    $("periodLabel").textContent = `${monthName(month)} ${year}`;
+  }else{
+    $("periodLabel").textContent = `Semua Bulan ${year}`;
+  }
+}
+
+function getEinvoiceStatus(r){
+  return upper(r.einvoice_status || "NONE") || "NONE";
+}
+
+function getEinvoiceMode(r){
+  return upper(r.einvoice_mode || "");
+}
+
+function statusPill(status){
+  const st = upper(status || "NONE");
+  const cls = {
+    NONE: "st-none",
+    QUEUED: "st-queued",
+    SUBMITTED: "st-submitted",
+    VALID: "st-valid",
+    FAILED: "st-failed"
+  }[st] || "st-none";
+
+  const label = {
+    NONE: "BELUM SUBMIT",
+    QUEUED: "CONSOLIDATED QUEUE",
+    SUBMITTED: "SUBMITTED",
+    VALID: "VALID",
+    FAILED: "FAILED"
+  }[st] || st;
+
+  return `<span class="status-pill ${cls}">${label}</span>`;
+}
+
+function buildReceiptUrl(r, orderCode){
+  const bill = clean(r.bill_id_text || r.bill_id || "");
+
+  if(bill){
+    return `${location.origin}/resit-j916.html?bill_id=${encodeURIComponent(bill)}`;
+  }
+
+  return `${location.origin}/resit-j916.html?order=${encodeURIComponent(orderCode)}`;
+}
+
+/* TOPBAR AUTH */
+(function(){
+  const pill = $("authStatus");
+  const login = $("btnLogin");
+  const logout = $("btnLogout");
+
+  try{
+    const a = (window.auth_get && window.auth_get()) || null;
+    if(a){
+      pill.textContent = "Log masuk (admin) — " + (a.phone || a.msisdn || "");
+      login.style.display = "none";
+      logout.style.display = "";
+      logout.onclick = ()=>{
+        window.auth_clear && window.auth_clear();
+        location.reload();
+      };
+    }else{
+      pill.textContent = "Tidak log masuk";
+      login.style.display = "";
+      logout.style.display = "none";
+      login.onclick = ()=>location.href = "login.html#login";
+    }
+  }catch(_){}
+})();
+
+async function fallbackRequireAdmin(){
+  const a = (window.auth_get && window.auth_get()) || null;
+  if(!a){
+    location.href = "login.html#login";
+    return false;
+  }
+
+  const phone = normalize(a.phone || a.msisdn || a.username || "");
+  if(!phone){
+    alert("Akses terhad.");
+    location.href = "index.html";
+    return false;
+  }
+
+  const { data, error } = await sb
+    .from("admin_users")
+    .select("phone,is_active")
+    .eq("phone", phone)
+    .eq("is_active", true)
+    .maybeSingle();
+
+  if(error || !data){
+    alert("Akses terhad (bukan admin).");
+    location.href = "index.html";
+    return false;
+  }
+
+  return true;
+}
+
+/* LOAD PAID J916 */
+async function loadOrders(){
+  updatePeriodLabel();
+
+  const qText = clean($("searchBox")?.value || "").toLowerCase();
+  const month = $("monthFilter")?.value || "";
+  const year = $("yearFilter")?.value || new Date().getFullYear();
+
+  const fields = `
+    reference,
+    id,
+    order_code,
+    code,
+    name,
+    weight_g,
+    unit_rm,
+    qty,
+    status,
+    created_at,
+    paid_at,
+    customer_name,
+    phone,
+    amount_cents,
+    pay_method,
+    subtotal_rm,
+    shipping_rm,
+    pay_disc_rm,
+    coupon_disc_rm,
+    grand_total_rm,
+    bill_id,
+    bill_id_text,
+    checkout_group,
+    shipping_address1,
+    shipping_address2,
+    shipping_address3,
+    postcode,
+    city,
+    state,
+    customer_id,
+    einvoice_mode,
+    einvoice_status,
+    einvoice_submission_uid,
+    einvoice_uuid,
+    einvoice_long_id,
+    einvoice_code_number,
+    einvoice_qr_url,
+    einvoice_error,
+    einvoice_payload,
+    einvoice_submitted_at,
+    einvoice_validated_at,
+    einvoice_updated_at
+  `;
+
+  const range = getMonthRange(year, month);
+
+  let startISO = null;
+  let endISO = null;
+
+  if(range){
+    startISO = range.start;
+    endISO = range.end;
+  }else if(year){
+    const y = Number(year);
+    if(Number.isFinite(y)){
+      startISO = new Date(Date.UTC(y, 0, 1, 0, 0, 0)).toISOString();
+      endISO = new Date(Date.UTC(y + 1, 0, 1, 0, 0, 0)).toISOString();
+    }
+  }
+
+  let qA = sb
+    .from("j916_orders")
+    .select(fields)
+    .eq("status", "PAID")
+    .not("paid_at", "is", null)
+    .order("paid_at", { ascending:false });
+
+  let qB = sb
+    .from("j916_orders")
+    .select(fields)
+    .eq("status", "PAID")
+    .is("paid_at", null)
+    .order("created_at", { ascending:false });
+
+  if(startISO && endISO){
+    qA = qA.gte("paid_at", startISO).lt("paid_at", endISO);
+    qB = qB.gte("created_at", startISO).lt("created_at", endISO);
+  }
+
+  const [ra, rb] = await Promise.all([
+    qA.range(0, 4999),
+    qB.range(0, 4999)
+  ]);
+
+  if(ra.error) throw ra.error;
+  if(rb.error) throw rb.error;
+
+  let all = [
+    ...(Array.isArray(ra.data) ? ra.data : []),
+    ...(Array.isArray(rb.data) ? rb.data : [])
+  ];
+
+  all = all.map(r => ({
+    ...r,
+    effective_ts: r.paid_at || r.created_at
+  }));
+
+  if(currentFilter !== "ALL"){
+    all = all.filter(r => {
+      const st = getEinvoiceStatus(r);
+      if(currentFilter === "NONE") return st === "NONE";
+      return st === currentFilter;
+    });
+  }
+
+  if(qText){
+    all = all.filter(r => {
+      const hay = [
+        r.order_code,
+        r.code,
+        r.name,
+        r.customer_name,
+        r.phone,
+        r.bill_id_text,
+        r.bill_id,
+        r.pay_method
+      ].map(x => String(x || "")).join(" ").toLowerCase();
+
+      return hay.includes(qText);
+    });
+  }
+
+  all.sort((a,b) => {
+    return new Date(b.effective_ts || b.created_at) - new Date(a.effective_ts || a.created_at);
+  });
+
+  const start = (currentPage - 1) * PAGE_SIZE;
+  const end = start + PAGE_SIZE;
+  const pageItems = all.slice(start, end);
+
+  state = {
+    allItems: all,
+    items: pageItems,
+    total: all.length,
+    hasPrev: currentPage > 1,
+    hasNext: end < all.length
+  };
+
+  render(pageItems);
+  updateSummary();
+}
+function getTotalRM(r){
+  const g = Number(r.grand_total_rm || 0);
+  if(Number.isFinite(g) && g > 0) return g;
+
+  const cents = Number(r.amount_cents || 0);
+  if(Number.isFinite(cents) && cents > 0) return cents / 100;
+
+  const sub = Number(r.subtotal_rm || 0);
+  const ship = Number(r.shipping_rm || 0);
+  const pd = Number(r.pay_disc_rm || 0);
+  const cd = Number(r.coupon_disc_rm || 0);
+  const calc = sub + ship - pd - cd;
+  if(Number.isFinite(calc) && calc > 0) return calc;
+
+  const unit = Number(r.unit_rm || 0);
+  const qty = Number(r.qty || 1);
+  return unit * qty;
+}
+
+function updateSummary(){
+  const allItems = state.allItems || state.items || [];
+  const pageItems = state.items || [];
+
+  const totalRM = allItems.reduce((sum, x)=>sum + getTotalRM(x), 0);
+
+  $("sumTotal").textContent = allItems.length;
+  $("sumRM").textContent = moneyRM(totalRM);
+  $("sumNone").textContent = allItems.filter(x => getEinvoiceStatus(x) === "NONE").length;
+  $("sumValid").textContent = allItems.filter(x => getEinvoiceStatus(x) === "VALID").length;
+  $("sumQueued").textContent = allItems.filter(x => getEinvoiceStatus(x) === "QUEUED").length;
+
+  const from = allItems.length ? ((currentPage - 1) * PAGE_SIZE) + 1 : 0;
+  const to = ((currentPage - 1) * PAGE_SIZE) + pageItems.length;
+
+  $("resultInfo").textContent = `${from}-${to} daripada ${allItems.length} rekod`;
+  $("prevPageBtn").disabled = !state.hasPrev;
+  $("nextPageBtn").disabled = !state.hasNext;
+}
+function render(items){
+  const tb = $("ordersTbody");
+
+  if(!items.length){
+    tb.innerHTML = `<tr><td colspan="7" class="text-center text-muted py-4">Tiada rekod PAID.</td></tr>`;
+    updateSummary();
+    return;
+  }
+
+  tb.innerHTML = items.map(r=>{
+    const status = getEinvoiceStatus(r);
+    const mode = getEinvoiceMode(r);
+    const totalRM = getTotalRM(r);
+    const orderCode = clean(r.order_code || String(r.reference || "").slice(0,8));
+    const uuid = clean(r.einvoice_uuid);
+    const subUid = clean(r.einvoice_submission_uid);
+    const receiptUrl = buildReceiptUrl(r, orderCode);
+
+    let actions = "";
+
+    const receiptBtn = `
+      <a class="btn btn-outline-secondary btn-sm" target="_blank" href="${receiptUrl}"
+         onclick="try{ localStorage.setItem('j916_last_bill_id','${safeHtml(r.bill_id_text || r.bill_id || "")}'); localStorage.setItem('j916_last_order','${safeHtml(orderCode)}'); }catch(_){ }">
+        Resit
+      </a>
+    `;
+
+    if(status === "VALID"){
+      actions = `
+        <button class="btn btn-outline-success btn-sm" type="button" onclick="viewEinvoice('${safeHtml(orderCode)}')">Lihat</button>
+        ${receiptBtn}
+      `;
+    }else if(status === "FAILED"){
+      actions = `
+        <button class="btn btn-danger btn-sm" type="button" onclick="submitIndividual('${safeHtml(orderCode)}', this)">Retry Individual</button>
+        <button class="btn btn-outline-dark btn-sm" type="button" onclick="viewEinvoice('${safeHtml(orderCode)}')">Error</button>
+        ${receiptBtn}
+      `;
+    }else if(status === "QUEUED"){
+      actions = `
+        <button class="btn btn-warning btn-sm" type="button" disabled>Queued</button>
+        <button class="btn btn-outline-danger btn-sm" type="button" onclick="removeConsolidated('${safeHtml(orderCode)}', this)">Buang Queue</button>
+        ${receiptBtn}
+      `;
+    }else if(status === "SUBMITTED"){
+      actions = `
+        <button class="btn btn-outline-primary btn-sm" type="button" onclick="viewEinvoice('${safeHtml(orderCode)}')">Submitted</button>
+        ${receiptBtn}
+      `;
+    }else{
+      actions = `
+        <button class="btn btn-primary btn-sm" type="button" onclick="submitIndividual('${safeHtml(orderCode)}', this)">Individual</button>
+        <button class="btn btn-outline-warning btn-sm" type="button" onclick="markConsolidated('${safeHtml(orderCode)}', this)">Consolidated</button>
+        ${receiptBtn}
+      `;
+    }
+
+    return `
+      <tr>
+        <td>
+          <div>${fmtMY(r.paid_at || r.created_at)}</div>
+          <div class="mini">J916</div>
+        </td>
+
+        <td>
+          <div class="fw-semibold mono">${safeHtml(orderCode)}</div>
+          <div class="mini">Kod: ${safeHtml(r.code || "-")}</div>
+          <div class="mini">${safeHtml(r.name || "-")}</div>
+          <div class="mini">${Number(r.weight_g || 0).toFixed(2)}g</div>
+        </td>
+
+        <td>
+          <div>${safeHtml(r.customer_name || "-")}</div>
+          <div class="mini">${safeHtml(r.phone || "-")}</div>
+          <div class="mini">${safeHtml([r.postcode,r.city,r.state].filter(Boolean).join(", ") || "-")}</div>
+        </td>
+
+        <td>
+          <div class="fw-semibold">${moneyRM(totalRM)}</div>
+          <div class="mini">${safeHtml(upper(r.pay_method || "-"))}</div>
+        </td>
+
+        <td>
+          <div>${mode ? safeHtml(mode) : "-"}</div>
+        </td>
+
+        <td>
+          ${statusPill(status)}
+          ${uuid ? `<div class="mini mono mt-1">UUID: ${safeHtml(uuid.slice(0,18))}…</div>` : ""}
+          ${subUid ? `<div class="mini mono">SUB: ${safeHtml(subUid.slice(0,18))}…</div>` : ""}
+        </td>
+
+        <td class="text-end">
+          <div class="btn-group btn-group-sm flex-wrap">
+            ${actions}
+          </div>
+        </td>
+      </tr>
+    `;
+  }).join("");
+
+  updateSummary();
+}
+
+/* INDIVIDUAL SUBMIT */
+window.submitIndividual = async function(orderCode, btn){
+  const order = (state.items || []).find(x => clean(x.order_code) === clean(orderCode));
+  if(!order){
+    alert("Order tidak dijumpai.");
+    return;
+  }
+
+  if(!confirm(`Submit Individual E-Invoice untuk order ${orderCode}?`)){
+    return;
+  }
+
+  const oldText = btn?.textContent || "";
+  if(btn){
+    btn.disabled = true;
+    btn.textContent = "Submitting…";
+  }
+
+  try{
+    await sb
+      .from("j916_orders")
+      .update({
+        einvoice_mode: "INDIVIDUAL",
+        einvoice_status: "SUBMITTED",
+        einvoice_updated_at: new Date().toISOString()
+      })
+      .eq("order_code", orderCode);
+
+    const res = await fetch("/.netlify/functions/einvoice-submit-j916", {
+      method: "POST",
+      headers: { "Content-Type":"application/json" },
+      body: JSON.stringify({
+        order_code: orderCode,
+        source: "J916",
+        mode: "INDIVIDUAL"
+      })
+    });
+
+    const json = await res.json().catch(()=>({}));
+
+    if(!res.ok || json.ok === false){
+      await sb
+        .from("j916_orders")
+        .update({
+          einvoice_mode: "INDIVIDUAL",
+          einvoice_status: "FAILED",
+          einvoice_error: json,
+          einvoice_updated_at: new Date().toISOString()
+        })
+        .eq("order_code", orderCode);
+
+      throw new Error(json.message || json.error || "Submit e-Invoice gagal.");
+    }
+
+    const result = json.result || json;
+
+    const accepted = Array.isArray(result.acceptedDocuments)
+      ? result.acceptedDocuments[0]
+      : null;
+
+    await sb
+      .from("j916_orders")
+      .update({
+        einvoice_mode: "INDIVIDUAL",
+        einvoice_status: "VALID",
+        einvoice_submission_uid: result.submissionUid || result.submission_uid || null,
+        einvoice_uuid: accepted?.uuid || result.uuid || null,
+        einvoice_long_id: accepted?.longId || result.longId || null,
+        einvoice_code_number: accepted?.invoiceCodeNumber || orderCode,
+        einvoice_payload: json,
+        einvoice_error: null,
+        einvoice_submitted_at: new Date().toISOString(),
+        einvoice_validated_at: new Date().toISOString(),
+        einvoice_updated_at: new Date().toISOString()
+      })
+      .eq("order_code", orderCode);
+
+    showToast("E-Invoice Individual berjaya VALID.");
+    await loadOrders();
+
+  }catch(e){
+    alert("Ralat: " + (e?.message || e));
+    await loadOrders();
+  }finally{
+    if(btn){
+      btn.disabled = false;
+      btn.textContent = oldText || "Individual";
+    }
+  }
+};
+
+/* CONSOLIDATED QUEUE */
+window.markConsolidated = async function(orderCode, btn){
+  if(!confirm(`Masukkan order ${orderCode} ke queue Consolidated?`)){
+    return;
+  }
+
+  const oldText = btn?.textContent || "";
+  if(btn){
+    btn.disabled = true;
+    btn.textContent = "Simpan…";
+  }
+
+  try{
+    const { error } = await sb
+      .from("j916_orders")
+      .update({
+        einvoice_mode: "CONSOLIDATED",
+        einvoice_status: "QUEUED",
+        einvoice_updated_at: new Date().toISOString()
+      })
+      .eq("order_code", orderCode)
+      .eq("status", "PAID");
+
+    if(error) throw error;
+
+    showToast("Order masuk queue Consolidated.");
+    await loadOrders();
+
+  }catch(e){
+    alert("Ralat: " + (e?.message || e));
+  }finally{
+    if(btn){
+      btn.disabled = false;
+      btn.textContent = oldText || "Consolidated";
+    }
+  }
+};
+
+window.markVisibleAsConsolidated = async function(){
+  const items = (state.items || []).filter(x => getEinvoiceStatus(x) === "NONE");
+  if(!items.length){
+    alert("Tiada order BELUM SUBMIT dalam page ini.");
+    return;
+  }
+
+  const ok = confirm(`Masukkan ${items.length} order dalam page ini ke queue Consolidated?`);
+  if(!ok) return;
+
+  try{
+    const codes = items.map(x => x.order_code).filter(Boolean);
+
+    const { error } = await sb
+      .from("j916_orders")
+      .update({
+        einvoice_mode: "CONSOLIDATED",
+        einvoice_status: "QUEUED",
+        einvoice_updated_at: new Date().toISOString()
+      })
+      .in("order_code", codes)
+      .eq("status", "PAID");
+
+    if(error) throw error;
+
+    showToast(`${codes.length} order masuk queue Consolidated.`);
+    await loadOrders();
+
+  }catch(e){
+    alert("Ralat: " + (e?.message || e));
+  }
+};
+
+window.removeConsolidated = async function(orderCode, btn){
+  if(!confirm(`Buang order ${orderCode} daripada queue Consolidated?`)){
+    return;
+  }
+
+  const oldText = btn?.textContent || "";
+  if(btn){
+    btn.disabled = true;
+    btn.textContent = "Buang…";
+  }
+
+  try{
+    const { error } = await sb
+      .from("j916_orders")
+      .update({
+        einvoice_mode: null,
+        einvoice_status: "NONE",
+        einvoice_updated_at: new Date().toISOString()
+      })
+      .eq("order_code", orderCode)
+      .eq("einvoice_status", "QUEUED");
+
+    if(error) throw error;
+
+    showToast("Order dibuang daripada queue.");
+    await loadOrders();
+
+  }catch(e){
+    alert("Ralat: " + (e?.message || e));
+  }finally{
+    if(btn){
+      btn.disabled = false;
+      btn.textContent = oldText || "Buang Queue";
+    }
+  }
+};
+
+window.viewEinvoice = function(orderCode){
+  const order = (state.items || []).find(x => clean(x.order_code) === clean(orderCode));
+  if(!order){
+    alert("Order tidak dijumpai.");
+    return;
+  }
+
+  const detail = {
+    order_code: order.order_code,
+    source: "J916",
+    mode: order.einvoice_mode,
+    status: order.einvoice_status,
+    submission_uid: order.einvoice_submission_uid,
+    uuid: order.einvoice_uuid,
+    long_id: order.einvoice_long_id,
+    code_number: order.einvoice_code_number,
+    qr_url: order.einvoice_qr_url,
+    submitted_at: order.einvoice_submitted_at,
+    validated_at: order.einvoice_validated_at,
+    error: order.einvoice_error,
+    payload: order.einvoice_payload
+  };
+
+  $("detailText").textContent = JSON.stringify(detail, null, 2);
+  new bootstrap.Modal($("detailModal")).show();
+};
+
+/* WIRE */
+$("refreshBtn")?.addEventListener("click", ()=>{
+  currentPage = 1;
+  loadOrders();
+});
+
+$("searchBox")?.addEventListener("keydown", (e)=>{
+  if(e.key === "Enter"){
+    currentPage = 1;
+    loadOrders();
+  }
+});
+
+$("monthFilter")?.addEventListener("change", ()=>{
+  currentPage = 1;
+  loadOrders();
+});
+
+$("yearFilter")?.addEventListener("change", ()=>{
+  currentPage = 1;
+  loadOrders();
+});
+
+$("prevPageBtn")?.addEventListener("click", ()=>{
+  if(currentPage > 1){
+    currentPage--;
+    loadOrders();
+  }
+});
+
+$("nextPageBtn")?.addEventListener("click", ()=>{
+  currentPage++;
+  loadOrders();
+});
+
+document.querySelectorAll("[data-filter]").forEach(btn=>{
+  btn.addEventListener("click", ()=>{
+    currentFilter = btn.getAttribute("data-filter") || "ALL";
+    currentPage = 1;
+
+    document.querySelectorAll("[data-filter]").forEach(b=>{
+      b.classList.toggle("btn-primary", b.getAttribute("data-filter") === currentFilter);
+    });
+
+    loadOrders();
+  });
+});
+
+/* BOOT */
+(async ()=>{
+  const pill = $("authStatus");
+  const set = (t)=> pill && (pill.textContent = t);
+
+  let ok = false;
+
+  if(window.adminGuard && typeof adminGuard.require === "function"){
+    ok = await adminGuard.require({
+      onChecking:()=>set("Mengesahkan akses…"),
+      onDenied:()=>set("Akses ditolak"),
+      onAllowed:(p)=>set("Log masuk (admin) — " + p)
+    });
+  }else{
+    ok = await fallbackRequireAdmin();
+    if(ok) set("Log masuk (admin)");
+  }
+
+  if(!ok) return;
+
+  const now = new Date();
+  $("monthFilter").value = String(now.getMonth() + 1);
+  $("yearFilter").value = String(now.getFullYear());
+
+  currentFilter = "ALL";
+  document.querySelector('[data-filter="ALL"]')?.classList.add("btn-primary");
+
+  try{
+    await loadOrders();
+  }catch(e){
+    console.error(e);
+    alert("Gagal load order PAID: " + (e?.message || e));
+  }
+})();
+</script>
+</body>
+</html>

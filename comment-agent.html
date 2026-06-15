@@ -882,126 +882,6 @@ hr.my-1{
   pointer-events:none;
 }
 
-.live-qr-backdrop{
-  position:fixed;
-  inset:0;
-  background:rgba(2,6,23,.72);
-  z-index:9999999;
-  align-items:center;
-  justify-content:center;
-  padding:18px;
-  backdrop-filter:blur(8px);
-}
-
-.live-qr-card{
-  width:100%;
-  max-width:390px;
-  background:#fff;
-  border-radius:24px;
-  padding:18px;
-  box-shadow:0 24px 70px rgba(0,0,0,.45);
-}
-
-.live-qr-head{
-  display:flex;
-  justify-content:space-between;
-  gap:12px;
-  align-items:flex-start;
-  margin-bottom:14px;
-}
-
-.live-qr-title{
-  font-weight:900;
-  font-size:19px;
-  color:#111827;
-}
-
-.live-qr-sub{
-  color:#6b7280;
-  font-size:13px;
-  line-height:1.35;
-}
-
-.live-qr-close{
-  border:0;
-  background:#f3f4f6;
-  color:#111827;
-  width:42px;
-  height:42px;
-  border-radius:999px;
-  font-weight:900;
-  font-size:20px;
-}
-
-.live-qr-box{
-  background:#f9fafb;
-  border:1px solid #e5e7eb;
-  border-radius:22px;
-  padding:18px;
-  text-align:center;
-}
-
-.live-qr-box img{
-  width:100%;
-  max-width:280px;
-  height:auto;
-  border-radius:16px;
-  background:#fff;
-}
-
-.live-qr-link{
-  width:100%;
-  margin-top:12px;
-  border:1px solid #e5e7eb;
-  border-radius:14px;
-  padding:12px;
-  font-size:13px;
-  color:#374151;
-  background:#f9fafb;
-}
-
-.live-qr-actions{
-  display:grid;
-  grid-template-columns:1fr 1fr;
-  gap:10px;
-  margin-top:12px;
-}
-
-.live-qr-actions .btn{
-  padding:12px 10px;
-}
-
-.live-qr-note{
-  margin-top:12px;
-  font-size:12px;
-  color:#6b7280;
-  text-align:center;
-}
-
-.live-qr-valid{
-  margin:10px 0 12px;
-  border:1px solid #fecaca;
-  background:#fff1f2;
-  color:#991b1b;
-  border-radius:14px;
-  padding:10px 12px;
-  font-size:13px;
-  font-weight:900;
-  text-align:center;
-}
-
-.live-qr-valid.ok{
-  border-color:#fed7aa;
-  background:#fff7ed;
-  color:#9a3412;
-}
-
-.live-qr-valid.expired{
-  border-color:#fecaca;
-  background:#fef2f2;
-  color:#991b1b;
-}
-
   </style>
 </head>
 <body>
@@ -1013,8 +893,8 @@ hr.my-1{
       <div class="top-left">
         <a href="index.html" class="btn btn-outline-secondary icon-btn">🏠</a>
         <div>
-          <div class="brand-title">💬 Komen Live</div>
-          <div class="top-sub">Tonton live • komen • lock barang</div>
+          <div class="brand-title">🎥 Live Agen</div>
+<div class="top-sub">Tonton live agen • komen • lock barang</div>
         </div>
         <span id="loginStatus" class="pill">Memuatkan…</span>
       </div>
@@ -1209,63 +1089,42 @@ hr.my-1{
 <script src="https://cdn.socket.io/4.7.5/socket.io.min.js"></script>
 
   <script>
-// ==========================
-// APP VERSION COMMENT ONLY
-// ==========================
-const APP_VER = "2026-05-17-comment-02";
-const KEY_APP_VER = "ea_comment_app_ver";
-
-if (localStorage.getItem(KEY_APP_VER) !== APP_VER) {
-  localStorage.setItem(KEY_APP_VER, APP_VER);
-
-  // WAJIB: buang multiplier lama dalam app phone
-  localStorage.removeItem("adminLiveMultiplier");
-
-  setTimeout(() => {
-    location.reload();
-  }, 120);
-}   
- // ==========================
+    // ==========================
     // Konfigurasi Supabase
     // ==========================
     const SB_URL = "https://dduizetstqqjrpsezbpi.supabase.co";
     const SB_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRkdWl6ZXRzdHFxanJwc2V6YnBpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTg3MzI0ODQsImV4cCI6MjA3NDMwODQ4NH0.CrlHXrmHtKgR9qc2192U6quRb5lpFEeOSgwG0Lb8KRM";
     const sb = window.supabase.createClient(SB_URL, SB_KEY);
 
-    const CHAT_ROOM = "emasamir-live";
+    const urlParamsAgent = new URLSearchParams(location.search);
+
+let AGENT_SLUG = String(
+  urlParamsAgent.get("agent") ||
+  urlParamsAgent.get("a") ||
+  localStorage.getItem("ea_agent_live_slug") ||
+  ""
+).trim().toLowerCase();
+
+AGENT_SLUG = AGENT_SLUG.replace(/[^a-z0-9_-]/g, "");
+
+const CHAT_ROOM = AGENT_SLUG
+  ? "agent-" + AGENT_SLUG
+  : "emasamir-live";
+
 const SOCKET_URL = "qr-emas-amir-production.up.railway.app";
 let liveSocket = null;
 
-
-function setYoutubeLiveVideoVisible(isVisible){
-  const ytWrap = document.querySelector(".yt-wrap");
-  const frame = document.getElementById("ytLiveFrame");
-
-  if (!ytWrap || !frame) return;
-
-  if (!isVisible){
-    if (!frame.dataset.savedSrc) {
-      frame.dataset.savedSrc = frame.getAttribute("src") || "";
-    }
-
-    frame.removeAttribute("src"); // stop video betul-betul
-    ytWrap.style.display = "none";
-  }else{
-    ytWrap.style.display = "";
-
-    if (!frame.getAttribute("src") && frame.dataset.savedSrc){
-      frame.setAttribute("src", frame.dataset.savedSrc);
-    }
-  }
-}
-
+console.log("[LIVE AGENT ROOM]", {
+  AGENT_SLUG,
+  CHAT_ROOM
+});
 
 async function loadLiveStatusControl(){
   try{
     const { data, error } = await sb
-      .from("live_config")
+      .from("agent_live_config")
       .select("live_status, live_message, share_count")
-      .eq("id", 1)
+      .eq("agent_slug", AGENT_SLUG)
       .maybeSingle();
 
     if (error) throw error;
@@ -1286,36 +1145,21 @@ async function loadLiveStatusControl(){
     if (shareText) shareText.textContent = `Share LIVE: ${shareCount} kali`;
 
     if (status === "ENDED"){
-setYoutubeLiveVideoVisible(false);
       if (badge) badge.innerHTML = `<span class="badge bg-secondary rounded-pill">⚫ LIVE Tamat</span>`;
       if (title) title.textContent = "LIVE Sudah Tamat";
 
-      const finalMsg = msg || "LIVE sudah tamat. Tunggu LIVE seterusnya ya. Sila daftar, buka Chat Ai-Dan dan aktifkan notifikasi untuk dapat alert LIVE berikutnya.";
+      const finalMsg = msg || "LIVE sudah tamat. Tunggu LIVE seterusnya ya.";
 
       if (text) text.innerHTML = finalMsg;
-      if (extra){
-        extra.innerHTML = `
-          Sila daftar akaun, buka Chat Ai-Dan dan aktifkan notifikasi supaya anda dapat alert untuk LIVE berikutnya.
-        `;
-      }
+      if (extra) extra.innerHTML = "Sila buka Chat Ai-Dan dan aktifkan notifikasi untuk alert LIVE berikutnya.";
+      if (endedText) endedText.innerHTML = finalMsg;
+      if (endedOverlay) endedOverlay.style.display = "block";
 
-     if (endedText) endedText.innerHTML = finalMsg;
+      document.body.style.overflow = "hidden";
+      document.getElementById("chatFormOverlay")?.classList.add("d-none");
+      document.getElementById("overlayProduct")?.classList.add("d-none");
 
-// ✅ jangan keluar overlay gelap
-if (endedOverlay) endedOverlay.style.display = "none";
-
-// ✅ tutup video sahaja
-setYoutubeLiveVideoVisible(false);
-
-// ✅ page masih boleh scroll
-document.body.style.overflow = "";
-
-// ✅ kekalkan komen & barang
-document.getElementById("chatFormOverlay")?.classList.remove("d-none");
-document.getElementById("overlayProduct")?.classList.remove("d-none");
-
-    } else {
-setYoutubeLiveVideoVisible(true);
+    }else{
       if (badge) badge.innerHTML = `<span class="badge bg-danger rounded-pill">🔴 Sedang LIVE</span>`;
       if (endedOverlay) endedOverlay.style.display = "none";
 
@@ -1325,9 +1169,10 @@ setYoutubeLiveVideoVisible(true);
     }
 
   }catch(e){
-    console.warn("loadLiveStatusControl error:", e);
+    console.warn("loadLiveStatusControl agent error:", e);
   }
 }
+
 async function addShareCount(){
   try{
     const { data } = await sb
@@ -1398,29 +1243,32 @@ async function loadYoutubeFrame(){
   let videoId = "ekRtZMEz9fM";
 
   try{
-    const { data, error } = await sb
-      .from("live_config")
-      .select("youtube_video_id")
-      .eq("id", 1)
-      .maybeSingle();
+    if (AGENT_SLUG){
+      const { data, error } = await sb
+        .from("agent_live_config")
+        .select("youtube_video_id")
+        .eq("agent_slug", AGENT_SLUG)
+        .maybeSingle();
 
-    if (!error && data && data.youtube_video_id){
-      videoId = String(data.youtube_video_id).trim();
+      if (error) throw error;
+
+      if (data?.youtube_video_id){
+        videoId = String(data.youtube_video_id).trim();
+      }
     }
   }catch(e){
-    console.warn("Gagal baca live_config:", e);
+    console.warn("Gagal baca agent_live_config:", e);
   }
 
   const newSrc =
-  "https://www.youtube.com/embed/" +
-  encodeURIComponent(videoId) +
-  "?playsinline=1&rel=0&modestbranding=1&origin=https://emasamir.app";
+    "https://www.youtube.com/embed/" +
+    encodeURIComponent(videoId) +
+    "?playsinline=1&rel=0&modestbranding=1&origin=https://emasamir.app";
 
-// ✅ set src sekali sahaja, jangan reload iframe YouTube
-if (frame.dataset.videoId !== videoId) {
-  frame.dataset.videoId = videoId;
-  frame.src = newSrc;
-}
+  if (frame.dataset.videoId !== videoId){
+    frame.dataset.videoId = videoId;
+    frame.src = newSrc;
+  }
 }
 
 window.addEventListener("load", loadYoutubeFrame);
@@ -1447,69 +1295,9 @@ const BILLPLZ_FIXED_FEE = 1.10;
 const CREATE_BILL_URL = "https://dduizetstqqjrpsezbpi.functions.supabase.co/functions/v1/create-bill";
 const REDIRECT_URL = "https://emasamir.app/tabung";
 
-const ADMIN_WA = "601113230198";
-const ONSEND_BASE  = "https://onsend.io/api/v1";
-const ONSEND_TOKEN = "76a6f98cfc6e009e5d824e47acd98b9b59a6e5177e14b072fd210276309d91f6";
-
-function confirmURL(type,id){
-  return "https://emasamir.app/tabung-confirm?type=" +
-    encodeURIComponent(type) +
-    "&id=" +
-    encodeURIComponent(id);
-}
-
-function normalizeMsisdnPlain(s){
-  const d = String(s || "").replace(/\D/g, "");
-  if (d.startsWith("60")) return d;
-  if (d.startsWith("0")) return "6" + d;
-  if (/^[1-9]/.test(d)) return "60" + d;
-  return d;
-}
-
-async function sendWA(msisdn, text){
-  const phone_number = normalizeMsisdnPlain(msisdn);
-
-  try{
-    const r = await fetch(ONSEND_BASE + "/send",{
-      method:"POST",
-      headers:{
-        "Accept":"application/json",
-        "Content-Type":"application/json",
-        "Authorization":"Bearer " + ONSEND_TOKEN
-      },
-      body: JSON.stringify({
-        phone_number,
-        message:text,
-        type:"text"
-      })
-    });
-
-    const j = await r.json().catch(()=>({}));
-    console.log("[OnSend]", r.status, j);
-    return r.ok && j.success === true;
-  }catch(e){
-    console.warn("OnSend error:", e);
-    return false;
-  }
-}
-
-async function waNotify(to, text, label=""){
-  const msisdn = normalizeMsisdnPlain(to || "");
-
-  for (let i = 0; i < 3; i++){
-    const ok = await sendWA(msisdn, text);
-    console.log(`[WA ${label}] try ${i+1} =>`, ok);
-
-    if (ok) return true;
-
-    await new Promise(r => setTimeout(r, 1500));
-  }
-
-  return false;
-}
-
 let tabungBuyPrice01 = 0;
 let tabungStockUnits = 0;
+
 function moneyRM(n){
   return "RM " + Number(n || 0).toFixed(2);
 }
@@ -1563,7 +1351,6 @@ function moneyRM(n){
     }
 
     let LIVE916_BY_CODE = new Map();
-let LIVE999_BY_CODE = new Map();
 
 let lcState = {
   code: "",
@@ -1657,350 +1444,28 @@ function setLcCut(mode){
     }
   }
 }
-async function setLcPay(v){
-  lcState.pay = v;
+function setLcPay(method){
+  lcState.pay = method;
 
-  document.getElementById("lcPayQR")
-    ?.classList.toggle("active", v === "QR");
-
-  document.getElementById("lcPayTransfer")
-    ?.classList.toggle("active", v === "TRANSFER");
-
-  document.getElementById("lcPayTabung")
-    ?.classList.toggle("active", v === "TABUNG_TOPUP");
-
-  document.getElementById("lcPayAtome")
-    ?.classList.toggle("active", v === "ATOME");
-
-  const box = document.getElementById("lcTabungBox");
-
-  // =========================
-  // BILA BUKAN TABUNG + TOPUP
-  // WAJIB RESET SUPAYA TOLAK TABUNG TAK MELEKAT
-  // =========================
-  if (v !== "TABUNG_TOPUP"){
-    window.__lcTabungUnits = 0;
-    window.__lcTabungValue = 0;
-    window.__lcTopupValue = 0;
-
-    if (box){
-      box.style.display = "none";
-      box.innerHTML = "";
-    }
-
-    lcRenderTotal();
-    return;
-  }
-
-  if (!box){
-    lcRenderTotal();
-    return;
-  }
-
-  // =========================
-  // TABUNG + TOPUP
-  // =========================
-  box.style.display = "block";
-
-  try{
-    box.innerHTML = `
-      <div class="text-muted small">
-        Mengira baki tabung...
-      </div>
-    `;
-
-    if (!liveUser){
-      throw new Error("Sila login dahulu.");
-    }
-
-    const authId = await getAuthUidForTabungLive();
-
-    if (!authId){
-      throw new Error("Sesi login tamat.");
-    }
-
-    const { data, error } = await sb
-      .from("tabung_txn")
-      .select("units, kind, type, status, user_id, user_auth_id, meta")
-      .or(`user_id.eq.${authId},user_auth_id.eq.${authId}`);
-
-    if (error) throw error;
-
-    let totalUnits = 0;
-
-    (data || []).forEach(r=>{
-      const kind = String(r?.kind || "").toUpperCase();
-      const type = String(r?.type || "").toUpperCase();
-      const status = String(r?.status || "").toUpperCase();
-      const units = Number(r?.units || 0);
-
-      if (!units) return;
-      if (status !== "PAID" && status !== "APPROVED") return;
-
-      if (kind === "BUY"){
-        totalUnits += units;
-        return;
-      }
-
-      if (kind === "SELL" || kind === "WITHDRAW" || kind === "CONVERT_916"){
-        totalUnits -= units;
-        return;
-      }
-
-      if (type === "BONUS"){
-        totalUnits += units;
-        return;
-      }
-    });
-
-    totalUnits = Math.max(0, totalUnits);
-
-    const { data: gp } = await sb
-      .from("gold_prices")
-      .select("price_9999")
-      .order("ddate", { ascending:false })
-      .limit(1)
-      .maybeSingle();
-
-    const price1g = Number(gp?.price_9999 || 0);
-    const unitValue = price1g / 10;
-
-    if (!unitValue || unitValue <= 0){
-      throw new Error("Harga tabung semasa tidak dijumpai.");
-    }
-
-    const livePrice = Number(lcState.price || 0);
-
-    let maxUseUnits = Math.floor(livePrice / unitValue);
-
-    if (maxUseUnits > totalUnits){
-      maxUseUnits = totalUnits;
-    }
-
-    maxUseUnits = Math.max(0, maxUseUnits);
-
-    const tabungValue = maxUseUnits * unitValue;
-    const topup = Math.max(0, livePrice - tabungValue);
-
-    window.__lcTabungUnits = maxUseUnits;
-    window.__lcTabungValue = tabungValue;
-    window.__lcTopupValue = topup;
-
-    lcRenderTotal();
-
-    if (totalUnits <= 0){
-      box.innerHTML = `
-        <div class="fw-bold mb-1">
-          Tabung Emas
-        </div>
-
-        <div class="small text-muted">
-          Belum ada baki Tabung Emas.
-          Simpan emas dulu untuk guna fitur ini ✨
-        </div>
-      `;
-      return;
-    }
-
-    const targetUnits = Math.max(1, Math.floor(livePrice / unitValue));
-    const targetGram = targetUnits / 10;
-
-    const cukupUnits = Math.max(0, totalUnits - targetUnits);
-    const kurangUnits = Math.max(0, targetUnits - totalUnits);
-
-    const planBaseUnits = kurangUnits > 0 ? kurangUnits : targetUnits;
-    const planBaseGram = planBaseUnits / 10;
-
-    const plan3 = Math.max(1, Math.ceil(planBaseUnits / 3));
-    const plan6 = Math.max(1, Math.ceil(planBaseUnits / 6));
-    const plan9 = Math.max(1, Math.ceil(planBaseUnits / 9));
-
-    const plan3RM = plan3 * unitValue;
-    const plan6RM = plan6 * unitValue;
-    const plan9RM = plan9 * unitValue;
-
-    const showPlan9 = planBaseUnits >= 10 && plan9 < plan6;
-
-    box.innerHTML = `
-      <div class="fw-bold mb-2" style="font-size:15px;">
-        🎯 Gunakan Tabung Untuk Item Ini
-      </div>
-
-      <div class="small mb-1">
-        Harga item:
-        <b class="text-danger">${moneyRM(livePrice)}</b>
-      </div>
-
-      <div class="small mb-1">
-        Harga tabung semasa:
-        <b>${moneyRM(unitValue)} / 0.1g</b>
-      </div>
-
-      <div class="small mb-2">
-        Item ini memerlukan:
-        <b>${targetUnits} unit</b>
-        (${targetGram.toFixed(1)}g)
-      </div>
-
-      <div class="small mb-1">
-        Baki tabung anda:
-        <b>${totalUnits} unit (${(totalUnits / 10).toFixed(1)}g)</b>
-      </div>
-
-      <div class="small mb-1">
-        ${
-          kurangUnits > 0
-            ? `Lagi diperlukan: <b>${kurangUnits} unit (${(kurangUnits / 10).toFixed(1)}g)</b>`
-            : `Baki selepas guna: <b>${cukupUnits} unit (${(cukupUnits / 10).toFixed(1)}g)</b>`
-        }
-      </div>
-
-      <div class="small mb-1">
-        Digunakan:
-        <b>${maxUseUnits} unit</b>
-        = <b>${moneyRM(tabungValue)}</b>
-      </div>
-
-      <div class="small mb-3">
-        Tambah bayaran:
-        <b class="text-danger">${moneyRM(topup)}</b> sahaja
-      </div>
-
-      <div style="height:1px;background:#e5e7eb;margin:10px 0 12px;"></div>
-
-      <div class="fw-bold mb-1">
-        📆 Cadangan Simpanan
-      </div>
-
-      <div class="small text-muted mb-2">
-        ${
-          kurangUnits > 0
-            ? `Untuk cukupkan baki lagi <b>${planBaseUnits} unit (${planBaseGram.toFixed(1)}g)</b>.`
-            : `Untuk capai item macam ini dari kosong: <b>${planBaseUnits} unit (${planBaseGram.toFixed(1)}g)</b>.`
-        }
-      </div>
-
-      <div class="rounded-3 p-2 mb-2" style="background:#fff;border:1px solid #fde68a;">
-        <div class="fw-bold" style="color:#92400e;">Pelan 3 Bulan</div>
-        <div class="small">±${plan3} keping / bulan</div>
-        <div class="small fw-bold">±${moneyRM(plan3RM)} / bulan</div>
-      </div>
-
-      <div class="rounded-3 p-2 mb-2" style="background:#fff;border:1px solid #d1fae5;">
-        <div class="fw-bold" style="color:#065f46;">Pelan 6 Bulan</div>
-        <div class="small">±${plan6} keping / bulan</div>
-        <div class="small fw-bold">±${moneyRM(plan6RM)} / bulan</div>
-      </div>
-
-      ${
-        showPlan9
-          ? `
-            <div class="rounded-3 p-2 mb-2" style="background:#fff;border:1px solid #dbeafe;">
-              <div class="fw-bold" style="color:#1d4ed8;">Pelan 9 Bulan</div>
-              <div class="small">±${plan9} keping / bulan</div>
-              <div class="small fw-bold">±${moneyRM(plan9RM)} / bulan</div>
-            </div>
-          `
-          : ``
-      }
-
-      <div class="small text-muted mt-2">
-        Nota:<br>
-        Baki kecil boleh ditambah melalui QR atau Transfer.<br>
-        Nilai RM berubah mengikut harga emas semasa.
-      </div>
-    `;
-
-  }catch(e){
-    console.warn("TABUNG TOPUP ERROR:", e);
-
-    window.__lcTabungUnits = 0;
-    window.__lcTabungValue = 0;
-    window.__lcTopupValue = 0;
-
-    lcRenderTotal();
-
-    box.innerHTML = `
-      <div class="small text-danger">
-        ${e?.message || e}
-      </div>
-    `;
-  }
+  document.getElementById("lcPayQR")?.classList.toggle("active", method === "QR");
+  document.getElementById("lcPayTransfer")?.classList.toggle("active", method === "TRANSFER");
+  document.getElementById("lcPayAtome")?.classList.toggle("active", method === "ATOME");
 }
 
 function lcRenderTotal(){
-  const itemPrice = Number(lcState.price || 0);
-  const normalShipFee = lcState.ship === "POST" ? 10 : 0;
-  const payMethod = String(lcState.pay || "").toUpperCase();
-
-  const useTabung = payMethod === "TABUNG_TOPUP";
-  const useAtome = payMethod === "ATOME";
-
-  const tabungValue = useTabung ? Number(window.__lcTabungValue || 0) : 0;
-
-  let displaySubtotal = itemPrice;
-  let displayShipFee = normalShipFee;
-  let total = itemPrice + normalShipFee - tabungValue;
-
-  // =========================
-  // ATOME:
-  // Jangan papar caj 8%.
-  // Terus jadikan subtotal harga akhir Atome.
-  // Formula: (harga item + pos) x 1.08
-  // =========================
-  if (useAtome){
-    const atomeFinal = (itemPrice + normalShipFee) * 1.08;
-
-    displaySubtotal = Math.round(atomeFinal);
-    displayShipFee = 0;
-    total = displaySubtotal;
-  }
-
-  total = Math.max(0, total);
+  const subtotal = Number(lcState.price || 0);
+  const shipFee = lcState.ship === "POST" ? 10 : 0;
+  const total = subtotal + shipFee;
 
   const subEl = document.getElementById("lcSubtotal");
   const shipEl = document.getElementById("lcShipFee");
   const totalEl = document.getElementById("lcTotal");
 
-  if (subEl) subEl.textContent = lcMoney(displaySubtotal);
-if (shipEl) shipEl.textContent = lcMoney(displayShipFee);
-if (totalEl) totalEl.textContent = lcMoney(total);
-
-const itemPriceText = document.getElementById("lcItemPriceText");
-if (itemPriceText){
-  itemPriceText.textContent = useAtome
-    ? lcMoney(total)
-    : lcMoney(itemPrice);
+  if (subEl) subEl.textContent = lcMoney(subtotal);
+  if (shipEl) shipEl.textContent = lcMoney(shipFee);
+  if (totalEl) totalEl.textContent = lcMoney(total);
 }
 
-  const box = totalEl?.closest(".rounded-4");
-
-  if (box && shipEl){
-    let atomeRow = document.getElementById("lcAtomeChargeRow");
-    let atomeNote = document.getElementById("lcAtomeNoteRow");
-    let tabungRow = document.getElementById("lcTabungDeductRow");
-
-    // Buang semua row caj Atome lama
-    atomeRow?.remove();
-    atomeNote?.remove();
-
-    if (useTabung && tabungValue > 0){
-      if (!tabungRow){
-        tabungRow = document.createElement("div");
-        tabungRow.id = "lcTabungDeductRow";
-        tabungRow.className = "d-flex justify-content-between text-success";
-        shipEl.closest(".d-flex").insertAdjacentElement("afterend", tabungRow);
-      }
-
-      tabungRow.innerHTML = `
-        <span>Tolak Tabung</span>
-        <b>- ${lcMoney(tabungValue)}</b>
-      `;
-    }else{
-      tabungRow?.remove();
-    }
-  }
-}
 function closeLiveCheckout(){
   const modal = document.getElementById("liveCheckoutModal");
   if (modal) modal.style.display = "none";
@@ -2073,7 +1538,7 @@ lcState = {
         <div class="fw-bold">${name}</div>
         <div class="small text-muted mono">${c}</div>
         <div class="small text-muted">${detail || "-"}</div>
-        <div id="lcItemPriceText" class="fw-black text-danger mt-1" style="font-weight:900;">${lcMoney(p)}</div>
+        <div class="fw-black text-danger mt-1" style="font-weight:900;">${lcMoney(p)}</div>
       </div>
     `;
   }
@@ -2100,367 +1565,6 @@ function openLiveLock(code, priceRm){
   openLiveCheckout(code, priceRm);
 }
 
-function getLiveExpiryMs(row){
-  const candidates = [
-    row?.live_until,
-    row?.expires_at,
-    row?.expire_at,
-    row?.expired_at,
-    row?.ends_at,
-    row?.end_at,
-    row?.valid_until,
-    row?.live_end_at,
-    row?.spotlight_until,
-    row?.ts_end
-  ];
-
-  for (const v of candidates){
-    if (!v) continue;
-    const ms = new Date(v).getTime();
-    if (Number.isFinite(ms) && ms > 0) return ms;
-  }
-
-  return 0;
-}
-
-function formatValidUntil(ms){
-  if (!ms) return "";
-  return new Date(ms).toLocaleTimeString("ms-MY", {
-    hour:"numeric",
-    minute:"2-digit",
-    hour12:true
-  });
-}
-
-function openLiveShareQR(type, code){
-  const cleanCode = String(code || "").trim();
-  const is999 = String(type || "").toUpperCase() === "999";
-
-  const row = is999
-    ? (
-        LIVE999_BY_CODE.get(cleanCode) ||
-        LIVE999_BY_CODE.get(cleanCode.toLowerCase()) ||
-        LIVE999_BY_CODE.get(cleanCode.toUpperCase()) ||
-        {}
-      )
-    : (
-        LIVE916_BY_CODE.get(cleanCode.toUpperCase()) ||
-        {}
-      );
-
-  const expiryMs = getLiveExpiryMs(row);
-  const expParam = expiryMs ? ("&exp=" + encodeURIComponent(String(expiryMs))) : "";
-
-  const url =
-    "https://emasamir.app/live-lock.html" +
-    "?type=" + encodeURIComponent(type) +
-    "&code=" + encodeURIComponent(cleanCode) +
-    expParam;
-
-  const qrUrl =
-    "https://api.qrserver.com/v1/create-qr-code/?size=520x520&margin=18&data=" +
-    encodeURIComponent(url);
-
-  const modal = document.getElementById("liveQrModal");
-  const img = document.getElementById("liveQrImg");
-  const link = document.getElementById("liveQrLink");
-  const shareBtn = document.getElementById("liveQrShareBtn");
-  const copyBtn = document.getElementById("liveQrCopyBtn");
-  const validBox = document.getElementById("liveQrValidUntil");
-
-  if (!modal || !img || !link){
-    if (navigator.share){
-      navigator.share({
-        title: "Lock Barang LIVE Emas Amir",
-        text: "Scan / tekan link ini untuk terus lock barang LIVE.",
-        url
-      }).catch(()=>{});
-      return;
-    }
-
-    navigator.clipboard.writeText(url)
-      .then(()=>alert("Link lock barang telah disalin."))
-      .catch(()=>prompt("Copy link ini:", url));
-
-    return;
-  }
-
-  img.src = qrUrl;
-
-  if (validBox){
-    if (expiryMs){
-      const expired = Date.now() > expiryMs;
-      validBox.style.display = "";
-      validBox.className = "live-qr-valid " + (expired ? "expired" : "ok");
-      validBox.textContent = expired
-        ? "⛔ QR / LIVE ini sudah tamat"
-        : "⏰ Valid sampai " + formatValidUntil(expiryMs);
-    }else{
-      validBox.style.display = "none";
-      validBox.textContent = "";
-    }
-  }
-
-  const info = document.getElementById("liveQrItemInfo");
-
-  if(info){
-
-    if (is999){
-
-      const berat =
-        Number(row?.weight_g || 0) > 0
-          ? `${Number(row.weight_g).toFixed(2)}g`
-          : "-";
-
-      const nama = `${kind999Label(row?.kind)} ${berat}`;
-
-      const design =
-        row?.design_name ||
-        row?.card_type ||
-        "-";
-
-      const market = Number(row?.market_price_rm || row?.live_price_rm || 0);
-
-      const payDisc = market * 0.05;
-
-      const aiDanType = String(row.__ai_dan_discount_type || "").toUpperCase();
-      const aiDanValue = Number(row.__ai_dan_discount_value || 0);
-
-      const afterPay = Math.max(0, market - payDisc);
-
-      let aiDanDisc = 0;
-
-      if (aiDanType === "PERCENT") {
-        aiDanDisc = afterPay * (aiDanValue / 100);
-      } else if (aiDanType === "AMOUNT" || aiDanType === "FIXED") {
-        aiDanDisc = Math.min(afterPay, aiDanValue);
-      }
-
-      const hargaLive = Math.max(0, market - payDisc - aiDanDisc);
-      const jimat = Math.max(0, market - hargaLive);
-
-      info.innerHTML = `
-        <div style="
-          background:#f8fafc;
-          border:1px solid #e5e7eb;
-          border-radius:14px;
-          padding:12px;
-        ">
-          <div style="font-weight:900;font-size:16px;">
-            ${nama}
-          </div>
-
-          <div class="small text-muted mt-1">
-            ${design}
-          </div>
-
-          <div class="small mt-2">
-            ⚖️ Berat: <b>${berat}</b>
-          </div>
-
-          <div style="margin-top:8px;">
-            ${
-              market > hargaLive
-                ? `
-                  <div style="
-                    color:#6b7280;
-                    font-size:14px;
-                    text-decoration:line-through;
-                    font-weight:700;
-                  ">
-                    RM ${market.toFixed(2)}
-                  </div>
-                `
-                : ""
-            }
-
-            <div style="
-              color:#dc3545;
-              font-size:22px;
-              font-weight:900;
-              line-height:1.1;
-            ">
-              RM ${hargaLive.toFixed(2)}
-            </div>
-
-            ${
-              jimat > 0
-                ? `
-                  <div style="
-                    color:#f59e0b;
-                    font-size:13px;
-                    font-weight:800;
-                    margin-top:3px;
-                  ">
-                    Jimat RM ${jimat.toFixed(2)}
-                  </div>
-                `
-                : ""
-            }
-          </div>
-        </div>
-      `;
-
-    }else{
-
-      const berat =
-        Number(row?.weight_g || 0) > 0
-          ? `${Number(row.weight_g).toFixed(2)}g`
-          : "-";
-
-      const panjang =
-        row?.length_cm
-          ? `${row.length_cm}cm`
-          : "-";
-
-      const lebar =
-        row?.width_cm
-          ? `${row.width_cm}cm`
-          : "-";
-
-      const nama =
-        row?.name ||
-        row?.product_name ||
-        row?.design_name ||
-        code;
-
-      const basePerG = Number(row?.base_price_per_g ?? row?.price_per_g_current ?? 0);
-const baseUpah = Number(row?.base_upah_rm ?? row?.upah_default_rm ?? 0);
-
-const ovPerG_raw = row?.ov_price_per_g ?? row?.override_price_per_g ?? row?.price_per_g_live;
-const ovUpah_raw = row?.ov_upah_rm ?? row?.upah_override_rm ?? row?.upah_live;
-
-const perG_eff = ovPerG_raw != null ? Number(ovPerG_raw) : basePerG;
-const upah_eff = ovUpah_raw != null ? Number(ovUpah_raw) : baseUpah;
-
-localStorage.removeItem("adminLiveMultiplier");
-
-const harga = (perG_eff * Number(row?.weight_g || 0)) + upah_eff;
-      const hargaAsal = Number(
-        row?.market_price_rm ||
-        row?.normal_price_rm ||
-        row?.original_price_rm ||
-        0
-      );
-
-      info.innerHTML = `
-        <div style="
-          background:#f8fafc;
-          border:1px solid #e5e7eb;
-          border-radius:14px;
-          padding:12px;
-        ">
-          <div style="
-            font-weight:900;
-            font-size:16px;
-          ">
-            ${nama}
-          </div>
-
-          <div class="small text-muted mt-1">
-            ${code}
-          </div>
-
-          <div class="small mt-2">
-            ⚖️ Berat: <b>${berat}</b><br>
-            📏 Panjang: <b>${panjang}</b><br>
-            ↔️ Lebar: <b>${lebar}</b>
-          </div>
-
-          <div style="
-            margin-top:8px;
-            color:#dc3545;
-            font-size:22px;
-            font-weight:900;
-          ">
-            ${
-              hargaAsal > harga
-                ? `
-                  <div style="
-                    color:#6b7280;
-                    font-size:14px;
-                    text-decoration:line-through;
-                    font-weight:700;
-                  ">
-                    RM ${hargaAsal.toFixed(2)}
-                  </div>
-                `
-                : ""
-            }
-
-            <div style="
-              color:#dc3545;
-              font-size:22px;
-              font-weight:900;
-            ">
-              RM ${harga.toFixed(2)}
-            </div>
-          </div>
-        </div>
-      `;
-    }
-  }
-
-  link.value = url;
-
-  if (shareBtn){
-    shareBtn.onclick = async function(){
-      try{
-        if (navigator.share){
-          const blob = await fetch(qrUrl).then(r => r.blob());
-
-          const file = new File(
-            [blob],
-            "emasamir-live-lock-qr.png",
-            { type:"image/png" }
-          );
-
-          if (navigator.canShare && navigator.canShare({ files:[file] })) {
-            await navigator.share({
-              title: "Lock Barang LIVE Emas Amir",
-              text: expiryMs
-                ? "Scan QR atau tekan link untuk lock barang LIVE. Valid sampai " + formatValidUntil(expiryMs) + "."
-                : "Scan QR atau tekan link untuk terus lock barang LIVE.",
-              url,
-              files:[file]
-            });
-          } else {
-            await navigator.share({
-              title: "Lock Barang LIVE Emas Amir",
-              text: expiryMs
-                ? "Tekan link ini untuk lock barang LIVE. Valid sampai " + formatValidUntil(expiryMs) + "."
-                : "Tekan link ini untuk terus lock barang LIVE.",
-              url
-            });
-          }
-        }else{
-          await navigator.clipboard.writeText(url);
-          alert("Link lock barang telah disalin.");
-        }
-      }catch(e){}
-    };
-  }
-
-  if (copyBtn){
-    copyBtn.onclick = async function(){
-      try{
-        await navigator.clipboard.writeText(url);
-        copyBtn.textContent = "✅ Link disalin";
-        setTimeout(()=>copyBtn.textContent = "📋 Copy Link", 1200);
-      }catch(e){
-        prompt("Copy link ini:", url);
-      }
-    };
-  }
-
-  modal.style.display = "flex";
-  document.body.style.overflow = "hidden";
-}
-function closeLiveQrModal(){
-  const modal = document.getElementById("liveQrModal");
-  if (modal) modal.style.display = "none";
-  document.body.style.overflow = "";
-}
 function kind999Label(kind){
   const k = String(kind || "").toLowerCase();
   if(k === "coin") return "Gold Coin";
@@ -2720,7 +1824,9 @@ const res = await chatSendLive({
   name: liveUser?.name || "Pelanggan", // ✅ TAMBAH NI
   is_logged_in: true,
   action: "live999_checkout_submit",
-  source: "comment_live_999",
+  source: "agent_live_916",
+agent_slug: AGENT_SLUG,
+room: CHAT_ROOM,
   message: live999Msg,
 
   live_code: String(row.live_code || ""),
@@ -2796,8 +1902,6 @@ const discountRm = payDisc + aiDanDisc;
 const live = Math.max(0, market - discountRm);
 const jimat = Math.max(0, market - live);
 
-
-
   const uid = "j999_" + String(row.live_code || row.design_id || Math.random()).replace(/[^a-zA-Z0-9]/g, "_");
   const qtyId = uid + "_qty";
   const oldId = uid + "_old";
@@ -2857,19 +1961,11 @@ const jimat = Math.max(0, market - live);
             </select>
           </div>
 
-          <div class="d-grid gap-2">
-  <button type="button"
-          class="btn btn-warning fw-bold w-100"
-          onclick='openLiveLock999(${safeJson}, document.getElementById("${qtyId}")?.value || 1)'>
-    Beli GoldBar/Coin Sekarang
-  </button>
-
-  <button type="button"
-          class="btn btn-outline-light w-100"
-          onclick="openLiveShareQR('999','${row.kind}|${row.design_id}|${row.card_type || 'READY'}')">
-    📱 Share / QR
-  </button>
-</div>
+          <button type="button"
+                  class="btn btn-warning fw-bold w-100"
+                  onclick='openLiveLock999(${safeJson}, document.getElementById("${qtyId}")?.value || 1)'>
+            Beli GoldBar/Coin Sekarang
+          </button>
         </div>
       </div>
     </div>
@@ -2891,7 +1987,6 @@ async function loadLive999Cards(){
     if(error) throw error;
 
     const rows = Array.isArray(data) ? data : [];
-
 
     if(!rows.length){
       grid.innerHTML = "";
@@ -2929,28 +2024,6 @@ async function loadLive999Cards(){
       }
     }
 
-LIVE999_BY_CODE = new Map();
-
-rows.forEach(row => {
-  const key1 = `${row.kind}|${row.design_id}|${row.card_type || "READY"}`;
-  const key2 = `${row.kind}|${row.weight_g}|${row.design_id}|${row.card_type || "READY"}`;
-  const key3 = String(row.live_code || "");
-
-  LIVE999_BY_CODE.set(key1, row);
-  LIVE999_BY_CODE.set(key1.toLowerCase(), row);
-  LIVE999_BY_CODE.set(key1.toUpperCase(), row);
-
-  LIVE999_BY_CODE.set(key2, row);
-  LIVE999_BY_CODE.set(key2.toLowerCase(), row);
-  LIVE999_BY_CODE.set(key2.toUpperCase(), row);
-
-  if (key3){
-    LIVE999_BY_CODE.set(key3, row);
-    LIVE999_BY_CODE.set(key3.toLowerCase(), row);
-    LIVE999_BY_CODE.set(key3.toUpperCase(), row);
-  }
-});
-
     empty.style.display = "none";
     grid.innerHTML = rows.map(j999Card).join("");
 
@@ -2964,19 +2037,12 @@ rows.forEach(row => {
 async function getAuthUidForTabungLive(){
   try{
     const r = await sb.auth.getUser();
-    const uid = r?.data?.user?.id || null;
-    if (uid) return uid;
-  }catch(e){}
-
-  try{
-    const a = (window.auth_get && window.auth_get()) || null;
-
-    if (a?.id) return a.id;
-    if (a?.customer_id) return a.customer_id;
-  }catch(e){}
-
-  return null;
+    return r?.data?.user?.id || null;
+  }catch(e){
+    return null;
+  }
 }
+
 async function getTabungLiveCustomer(){
   const raw = liveUser?.phone || "";
   const digits = String(raw || "").replace(/\D/g, "");
@@ -3205,98 +2271,6 @@ async function submitLiveCheckoutToAiDan(){
     const cut = String(lcState.cut || "NO").toUpperCase();
     const payMethod = String(lcState.pay || "TRANSFER").toUpperCase();
 
-const useTabungTopup = payMethod === "TABUNG_TOPUP";
-
-const tabungUnitsUsed = useTabungTopup
-  ? Number(window.__lcTabungUnits || 0)
-  : 0;
-
-const tabungValueRm = useTabungTopup
-  ? Number(window.__lcTabungValue || 0)
-  : 0;
-
-const topupRm = useTabungTopup
-  ? Number(window.__lcTopupValue || 0)
-  : Number(lcState.price || 0);
-
-const shipFee = ship === "POST" ? 10 : 0;
-
-const finalTopupRm = useTabungTopup
-  ? Number((topupRm + shipFee).toFixed(2))
-  : (
-      payMethod === "ATOME"
-        ? Math.round((Number(lcState.price || 0) + shipFee) * 1.08)
-        : Number((Number(lcState.price || 0) + shipFee).toFixed(2))
-    );let tabungRequestId = "";
-
-if (useTabungTopup && tabungUnitsUsed > 0){
-  const authId = await getAuthUidForTabungLive();
-  if (!authId) throw new Error("Sesi login tamat. Sila login semula.");
-
-  const cust = await getTabungLiveCustomer();
-
-  const custName = cust?.name || liveUser?.name || "Pelanggan";
-  const custPhone = cust?.phone || String(liveUser?.phone || liveUser?.msisdn || "").replace(/\D/g, "");
-
-  const unitPriceUsed = tabungValueRm / tabungUnitsUsed;
-
-  const respTabung = await sb.rpc("tabung_request_convert916_simple_v1", {
-    p_user_id: authId,
-    p_units: tabungUnitsUsed,
-    p_price_per_unit: unitPriceUsed,
-    p_name: custName,
-    p_phone: custPhone,
-    p_notes:
-      "LIVE Tabung + Topup | Item " +
-      String(lcState.code || "") +
-      " | Nilai tabung " +
-      lcMoney(tabungValueRm) +
-      " | Topup " +
-      lcMoney(finalTopupRm)
-  });
-
-  if (respTabung.error) throw respTabung.error;
-
-  tabungRequestId =
-    respTabung.data?.id ||
-    respTabung.data?.request_id ||
-    (typeof respTabung.data === "string" ? respTabung.data : "");
-
-  if (!tabungRequestId){
-    throw new Error("Server tidak pulangkan id transaksi tabung.");
-  }
-
-  const link = confirmURL("CONVERT_916", tabungRequestId);
-
-  const msgAdmin = [
-    "*Permohonan LIVE Tabung + Topup*",
-    `ID: ${tabungRequestId}`,
-    `Nama: ${custName}`,
-    `No: ${custPhone}`,
-    `Item LIVE: ${String(lcState.code || "-")}`,
-    `Harga item: ${lcMoney(Number(lcState.price || 0))}`,
-    `Guna tabung: ${(tabungUnitsUsed / 10).toFixed(1)} g (${tabungUnitsUsed} unit)`,
-    `Nilai tabung: ${lcMoney(tabungValueRm)}`,
-    `Topup customer perlu bayar: ${lcMoney(finalTopupRm)}`,
-    "",
-    "✅ Sahkan di:",
-    link,
-    ""
-  ].join("\n");
-
-  const msgCust = [
-    "Permohonan Tabung + Topup diterima.",
-    `ID: ${tabungRequestId}`,
-    `Item LIVE: ${String(lcState.code || "-")}`,
-    `Guna tabung: ${(tabungUnitsUsed / 10).toFixed(1)} g (${tabungUnitsUsed} unit)`,
-    `Nilai tabung: ${lcMoney(tabungValueRm)}`,
-    `Baki topup perlu dibayar: ${lcMoney(finalTopupRm)}`,
-    "Admin akan semak dan sahkan permohonan anda."
-  ].join("\n");
-
-  await waNotify(ADMIN_WA, msgAdmin, "ADMIN LIVE TABUNG TOPUP");
-  await waNotify(custPhone, msgCust, "CUST LIVE TABUNG TOPUP");
-}
     const address = String(document.getElementById("lcAddress")?.value || "").trim();
     const pickupWhen = String(document.getElementById("lcPickupWhen")?.value || "").trim();
     const currentLength = String(document.getElementById("lcCurrentLen")?.value || "").trim();
@@ -3335,33 +2309,24 @@ if (useTabungTopup && tabungUnitsUsed > 0){
   is_logged_in: true,
 
   action: "live_checkout_submit",
-  source: "comment_live_916",
+  source: "agent_live_916",
+agent_slug: AGENT_SLUG,
+room: CHAT_ROOM,
 
   // ✅ BETUL — flow LIVE 916
   message:
     "LIVE_CHECKOUT_SUBMIT" +
     "|code=" + encodeURIComponent(String(lcState.code || "")) +
-    "|price_rm=" + encodeURIComponent(String(finalTopupRm || 0)) +
+    "|price_rm=" + encodeURIComponent(String(lcState.price || 0)) +
     "|ship=" + encodeURIComponent(ship) +
     "|address=" + encodeURIComponent(ship === "POST" ? address : "") +
     "|pickup_when=" + encodeURIComponent(ship === "PICKUP" ? pickupWhen : "") +
     "|cut=" + encodeURIComponent(cut) +
     "|cut_to=" + encodeURIComponent(cutTo) +
-    "|pay_method=" + encodeURIComponent(payMethod) +
-"|tabung_units_used=" + encodeURIComponent(String(tabungUnitsUsed)) +
-"|tabung_value_rm=" + encodeURIComponent(String(tabungValueRm)) +
-"|topup_rm=" + encodeURIComponent(String(finalTopupRm)) +
-"|tabung_request_id=" + encodeURIComponent(String(tabungRequestId)) +
-"|tabung_note=" + encodeURIComponent(
-  useTabungTopup
-    ? (
-        "Tolak Tabung " + lcMoney(tabungValueRm) +
-        " | Customer perlu topup " + lcMoney(finalTopupRm)
-      )
-    : ""
-),
+    "|pay_method=" + encodeURIComponent(payMethod),
+
   code: String(lcState.code || ""),
-  price_rm: Number(finalTopupRm || 0),
+  price_rm: Number(lcState.price || 0),
 
   ship,
   address: ship === "POST" ? address : "",
@@ -3370,12 +2335,7 @@ if (useTabungTopup && tabungUnitsUsed > 0){
   cut,
   cut_to: cut === "YES" ? cutTo : "",
 
-  pay_method: payMethod,
-
-tabung_units_used: tabungUnitsUsed,
-tabung_value_rm: tabungValueRm,
-topup_rm: finalTopupRm,
-tabung_request_id: tabungRequestId
+  pay_method: payMethod
 });
 
     const threadId = res.thread_id;
@@ -3847,10 +2807,7 @@ const detailText = liveDimText(row);
         row?.upah_default_rm ?? 0
       );
       const g = berat;
-      const LIVE_MULTIPLIER =
-  Number(localStorage.getItem("adminLiveMultiplier") || 1) || 1;
-
-const calc = (pg,g,u)=>((pg*g)+u)*LIVE_MULTIPLIER;
+      const calc = (pg,g,u)=>((pg*g)+u)*1.08;
 
       const normalRM = (
         row?.normal_price_rm != null
@@ -3864,7 +2821,11 @@ const calc = (pg,g,u)=>((pg*g)+u)*LIVE_MULTIPLIER;
       const perG_eff = (ovPerG_raw != null) ? Number(ovPerG_raw) : basePerG;
       const upah_eff = (ovUpah_raw != null) ? Number(ovUpah_raw) : baseUpah;
 
-     const liveRM = calc(perG_eff, g, upah_eff);
+      const liveRM = (
+  row?.live_price_rm != null
+    ? Number(row.live_price_rm)
+    : calc(perG_eff, g, upah_eff)
+);
 
 // ✅ Kiraan ansuran 3 bulan
 const monthly3 = liveRM / 3;
@@ -3909,7 +2870,6 @@ const ansuranHTML = `
     </div>
   </div>
 `;
-
       const hasDrop = (liveRM > 0 && normalRM > 0 && (normalRM - liveRM) > 0.005);
       const hargaHTML = hasDrop
         ? `<div class="price-wrap h6 mt-1 mb-2">
@@ -3925,25 +2885,17 @@ const ansuranHTML = `
             <div class="p-3">
               <div class="d-flex align-items-center justify-content-between">
                 <span class="badge-live">LIVE</span>
-                <small class="text-white mono fw-bold">${code}</small>
+                <small class="text-muted mono">${code}</small>
               </div>
               <div class="mt-1">${name}</div>
               <div class="small live-spec">${detailText || ("Berat " + berat.toFixed(2) + "g")}</div>
               ${hargaHTML}
-<!--${ansuranHTML} -->
-              <div class="d-grid gap-2">
-  <button type="button"
-          class="btn btn-danger w-100"
-          onclick="openLiveLock('${code}', ${liveRM.toFixed(2)})">
-    Lock Sekarang
-  </button>
-
-  <button type="button"
-          class="btn btn-outline-light w-100"
-          onclick="openLiveShareQR('916','${code}')">
-    📱 Share / QR
-  </button>
-</div>
+${ansuranHTML}
+              <button type="button"
+                      class="btn btn-danger w-100"
+                      onclick="openLiveLock('${code}', ${liveRM.toFixed(2)})">
+                Lock Sekarang
+              </button>
             </div>
           </div>
         </div>
@@ -3986,10 +2938,7 @@ const detailText = liveDimText(row);
         row?.upah_default_rm ?? 0
       );
       const g = berat;
-      const LIVE_MULTIPLIER =
-  Number(localStorage.getItem("adminLiveMultiplier") || 1) || 1;
-
-const calc = (pg,g,u)=>((pg*g)+u)*LIVE_MULTIPLIER;
+      const calc = (pg,g,u)=>((pg*g)+u)*1.08;
 
       const ovPerG_raw = (row?.ov_price_per_g ?? row?.override_price_per_g ?? row?.price_per_g_live);
       const ovUpah_raw = (row?.ov_upah_rm     ?? row?.upah_override_rm     ?? row?.upah_live);
@@ -4056,10 +3005,9 @@ const normalRM = (
     if (codes.length){
       const { data: itemRows, error: itemErr } = await sb
         .from("j916_items")
-.select(`
+        .select(`
   code,
   design:j916_designs (
-    name,
     img1_url,
     img2_url,
     img3_url,
@@ -4083,20 +3031,13 @@ const img2 = d?.img2_url || d?.img2 || "";
 const img3 = d?.img3_url || d?.img3 || "";
 const video = d?.video_url || "";
 
-mediaMap.set(c, {
-  name: d?.name || "",
-  img1,
-  img2,
-  img3,
-  video
-});
+mediaMap.set(c, { img1, img2, img3, video });
         });
 
         rows.forEach(r=>{
           const c = String(r?.code || "").toUpperCase().trim();
           const m = mediaMap.get(c);
 
-if (m?.name) r.design_name = m.name;
          if (m?.img1) r._img1_from_items = fixMediaUrl(m.img1);
 if (m?.img2) r._img2_from_items = fixMediaUrl(m.img2);
 if (m?.img3) r._img3_from_items = fixMediaUrl(m.img3);
@@ -4118,10 +3059,6 @@ if (m?.video) r._video_from_items = fixMediaUrl(m.video);
 
     LIVE916_BY_CODE = new Map(
   rows.map(r => [String(r?.code || "").toUpperCase().trim(), r])
-);
-
-LIVE999_BY_CODE = new Map(
-  rows.map(r => [String(r?.live_code || r?.code || "").toUpperCase().trim(), r])
 );
 
 liveEmpty.style.display = "none";
@@ -4389,10 +3326,13 @@ function liveDimText(row){
   }
 
   liveSocket.emit("live_comment", {
-    name: dispName,
-    phone4,
-    message: msg
-  });
+  room: CHAT_ROOM,
+  agent_slug: AGENT_SLUG,
+  source: "agent_live",
+  name: dispName,
+  phone4,
+  message: msg
+});
 }
 
     overlayForm?.addEventListener("submit", async (ev)=>{
@@ -4420,17 +3360,30 @@ function liveDimText(row){
     liveSocket.on("connect", ()=>{
       console.log("LIVE SOCKET CONNECTED:", liveSocket.id);
       setChatStatus("Socket live aktif.");
-      liveSocket.emit("join_live");
+      liveSocket.emit("join_live", {
+  room: CHAT_ROOM,
+  agent_slug: AGENT_SLUG,
+  source: "agent_live"
+});
     });
 
-    liveSocket.on("live_comment_new", (row)=>{
-      if(row.id && shownIds.has(row.id)) return;
+   liveSocket.on("live_comment_new", (row)=>{
+  console.log("RECEIVED:", row);
 
-      registerSeen(row);
-      renderPanelMessage(row);
-      renderOverlayMessage(row);
-      updateChatCount();
-    });
+  const rowRoom = String(row?.room || "").trim();
+
+  // ✅ WAJIB: asingkan komen ikut room
+  // comment-agent?agent=amir-jumri hanya terima room agent-amir-jumri
+  // comment biasa hanya terima room emasamir-live
+  if (rowRoom !== CHAT_ROOM) return;
+
+  if(row.id && shownIds.has(row.id)) return;
+
+  registerSeen(row);
+  renderPanelMessage(row);
+  renderOverlayMessage(row);
+  updateChatCount();
+});
 
     liveSocket.on("live_comment_error", (err)=>{
       console.warn("live_comment_error:", err);
@@ -4695,52 +3648,13 @@ connectLiveSocket();
     </div>
 
     <div class="mb-3">
-  <div class="fw-bold mb-2">Cara Bayar</div>
-
-  <div class="d-flex gap-2 flex-wrap">
-    <button id="lcPayQR"
-            type="button"
-            class="live-choice flex-fill"
-            onclick="setLcPay('QR')">
-      QR
-    </button>
-
-    <button id="lcPayTransfer"
-            type="button"
-            class="live-choice flex-fill active"
-            onclick="setLcPay('TRANSFER')">
-      Transfer
-    </button>
-
-    <button id="lcPayTabung"
-            type="button"
-            class="live-choice flex-fill"
-            onclick="setLcPay('TABUNG_TOPUP')">
-      Tabung + Topup
-    </button>
-
-    
-    <button id="lcPayAtome"
-            type="button"
-            class="live-choice flex-fill"
-            onclick="setLcPay('ATOME')">
-      Atome
-    </button>
-    
-  </div>
-</div>
-
-<!-- TABUNG INFO -->
-<div id="lcTabungBox"
-     class="mb-3"
-     style="
-       display:none;
-       background:#fffbea;
-       border:1px solid #fde68a;
-       border-radius:18px;
-       padding:14px;
-     ">
-</div>
+      <div class="fw-bold mb-2">Cara Bayar</div>
+      <div class="d-flex gap-2">
+        <button id="lcPayQR" type="button" class="live-choice flex-fill" onclick="setLcPay('QR')">QR</button>
+        <button id="lcPayTransfer" type="button" class="live-choice flex-fill active" onclick="setLcPay('TRANSFER')">Transfer</button>
+        <button id="lcPayAtome" type="button" class="live-choice flex-fill" onclick="setLcPay('ATOME')">Atome</button>
+      </div>
+    </div>
 
     <div class="rounded-4 p-3 mb-3" style="background:#f9fafb;border:1px solid #e5e7eb;">
       <div class="d-flex justify-content-between">
@@ -5097,39 +4011,5 @@ connectLiveSocket();
   window.addEventListener("resize", restorePos);
 })();
 </script>
-<div id="liveQrModal" class="live-qr-backdrop" style="display:none;">
-  <div class="live-qr-card">
-    <div class="live-qr-head">
-      <div>
-        <div class="live-qr-title">📱 Share / QR Lock LIVE</div>
-        <div class="live-qr-sub">Customer scan QR untuk terus buka checkout item ini.</div>
-<div id="liveQrItemInfo" class="mb-3"></div>
-<div id="liveQrValidUntil" class="live-qr-valid ok" style="display:none;"></div>
-      </div>
-
-      <button type="button" class="live-qr-close" onclick="closeLiveQrModal()">✕</button>
-    </div>
-
-    <div class="live-qr-box">
-      <img id="liveQrImg" src="" alt="QR Lock LIVE">
-    </div>
-
-    <input id="liveQrLink" class="live-qr-link" readonly>
-
-    <div class="live-qr-actions">
-      <button id="liveQrShareBtn" type="button" class="btn btn-danger fw-bold rounded-pill">
-        📤 Share
-      </button>
-
-      <button id="liveQrCopyBtn" type="button" class="btn btn-outline-dark fw-bold rounded-pill">
-        📋 Copy Link
-      </button>
-    </div>
-
-    <div class="live-qr-note">
-      Tip: Host boleh tunjuk QR ini masa live. Customer scan terus lock barang.
-    </div>
-  </div>
-</div>
 </body>
 </html>

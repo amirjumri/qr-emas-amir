@@ -9,7 +9,6 @@
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="auth.js?v=13.1"></script>
-  <script src="admin-guard.js?v=1"></script>
   <script src="https://cdn.socket.io/4.7.5/socket.io.min.js"></script>
 
 
@@ -685,9 +684,9 @@
 
 .live-control-box{
   flex:0 0 auto;
-  height:300px;
-  min-height:220px;
-  max-height:55vh;
+  height:170px;
+  min-height:115px;
+  max-height:45vh;
   overflow-y:auto;
   resize:vertical;
   position:relative;
@@ -696,6 +695,7 @@
   padding:10px 12px;
   background:#fff;
 }
+
 .live-small-card{
   padding:7px;
   border-radius:12px;
@@ -806,37 +806,6 @@ body.chat-popup-open .order-chat-list{
   background:#eff6ff;
   color:#1d4ed8;
   border-color:#bfdbfe;
-} 
-
-.bulk-live-box{
-  border:1px solid #bfdbfe;
-  background:#eff6ff;
-  border-radius:14px;
-  padding:10px;
-  margin-bottom:10px;
-}
-
-.bulk-live-list{
-  max-height:180px;
-  overflow-y:auto;
-  border:1px solid #dbeafe;
-  background:#fff;
-  border-radius:12px;
-  padding:8px;
-  margin-top:8px;
-}
-
-.bulk-live-row{
-  display:flex;
-  justify-content:space-between;
-  gap:8px;
-  border-bottom:1px solid #f1f5f9;
-  padding:6px 0;
-  font-size:12px;
-}
-
-.bulk-live-row:last-child{
-  border-bottom:0;
 }
   </style>
 </head>
@@ -912,12 +881,6 @@ body.chat-popup-open .order-chat-list{
                 Papar Live di halaman utama
               </label>
             </div>
-<div class="form-check form-switch mt-2">
-  <input id="atomeLiveInput" class="form-check-input" type="checkbox">
-  <label class="form-check-label small text-light" for="atomeLiveInput">
-    Benarkan Atome di checkout LIVE
-  </label>
-</div>
           </div>
 
           <div class="active-live-item">
@@ -984,26 +947,14 @@ body.chat-popup-open .order-chat-list{
             <h2 class="panel-title">🛒 Stok 916</h2>
             <div id="stockStatus" class="panel-sub">Memuatkan stok…</div>
           </div>
-          <div class="d-flex gap-2">
-  <button id="btnQuickAddStock" class="btn btn-sm btn-success rounded-pill fw-bold" type="button">
-    + Stok Cepat
-  </button>
-  <button id="btnReloadStock" class="btn btn-sm btn-outline-primary rounded-pill" type="button">Reload</button>
-</div>
+          <button id="btnReloadStock" class="btn btn-sm btn-outline-primary rounded-pill" type="button">Reload</button>
         </div>
 
         <div class="panel-body">
           <div class="filter-grid">
-           <div class="full">
-  <input id="stockQ" class="form-control form-control-sm" placeholder="Cari kod / nama / kategori…">
-</div>
-
-<div class="full">
-  <label class="form-label small mb-1">Pilih Design</label>
-  <select id="filterDesign" class="form-select form-select-sm">
-    <option value="">Semua design</option>
-  </select>
-</div>
+            <div class="full">
+              <input id="stockQ" class="form-control form-control-sm" placeholder="Cari kod / nama / kategori…">
+            </div>
 
             <div>
               <label class="form-label small mb-1">Min</label>
@@ -1059,51 +1010,9 @@ body.chat-popup-open .order-chat-list{
             </div>
           </div>
 
-          <div class="bulk-live-box">
-  <div class="fw-bold mb-1">⚡ Mode Nama Barang</div>
-
-  <label class="form-label small mb-1">Pilih nama/design barang</label>
-  <select id="bulkDesignSelect" class="form-select form-select-sm">
-    <option value="">Pilih design...</option>
-  </select>
-
-<div class="row g-2 mt-1">
-  <div class="col-6">
-    <label class="form-label small mb-1">Harga/g</label>
-    <input id="bulkHarga916" class="form-control form-control-sm" type="number" step="0.01">
-  </div>
-
-  <div class="col-6">
-    <label class="form-label small mb-1">Upah semua</label>
-    <input id="bulkUpah" class="form-control form-control-sm" type="number" step="0.01" placeholder="cth 120">
-  </div>
-
-  <div class="col-12">
-    <label class="form-label small mb-1">Tempoh Live</label>
-    <select id="bulkLiveDuration" class="form-select form-select-sm">
-      <option value="300">5 minit</option>
-      <option value="900">15 minit</option>
-      <option value="1800" selected>30 minit</option>
-      <option value="3600">1 jam</option>
-      <option value="7200">2 jam</option>
-    </select>
-  </div>
-</div>
-
-  <div id="bulkDesignList" class="bulk-live-list">
-    <div class="small text-muted">Pilih design dulu.</div>
-  </div>
-
-  <button id="btnBulkLiveDesign" class="btn btn-sm btn-danger rounded-pill fw-bold w-100 mt-2" type="button">
-    🔴 Live Semua Item Design Ini
-  </button>
-
-  <div id="bulkLiveMsg" class="small text-muted mt-2"></div>
-</div>
-
-<div id="liveSmallList" class="live-small-list">
-  <div class="small text-muted">Belum ada item live.</div>
-</div>
+          <div id="liveSmallList" class="live-small-list">
+            <div class="small text-muted">Belum ada item live.</div>
+          </div>
         </div>
       </div>
     </section>
@@ -1187,16 +1096,6 @@ body.chat-popup-open .order-chat-list{
             <label class="form-label small">Harga Live Anggaran</label>
             <div id="modalLivePrice" class="form-control bg-light fw-bold">RM 0.00</div>
           </div>
-<div class="col-12">
-  <label class="form-label small">Tempoh Live</label>
-  <select id="modalLiveDuration" class="form-select">
-    <option value="300">5 minit</option>
-    <option value="900">15 minit</option>
-    <option value="1800">30 minit</option>
-    <option value="3600">1 jam</option>
-    <option value="7200">2 jam</option>
-  </select>
-</div>
         </div>
 
         <div id="modalMsg" class="small text-muted mt-2"></div>
@@ -1214,62 +1113,6 @@ body.chat-popup-open .order-chat-list{
   </div>
 </div>
 
-<div class="modal fade" id="quickStockModal" tabindex="-1" aria-hidden="true">
-  <div class="modal-dialog modal-dialog-centered">
-    <div class="modal-content rounded-4">
-      <div class="modal-header">
-        <h5 class="modal-title fw-bold">+ Stok Cepat 916</h5>
-        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Tutup"></button>
-      </div>
-
-      <div class="modal-body">
-        <div class="row g-2">
-          <div class="col-6">
-            <label class="form-label small">Kod Unik</label>
-            <input id="qsCode" class="form-control" placeholder="cth RT100999">
-          </div>
-
-          <div class="col-6">
-            <label class="form-label small">Berat (g)</label>
-            <input id="qsWeight" class="form-control" type="number" step="0.01" min="0.01">
-          </div>
-
-          <div class="col-12">
-            <label class="form-label small">Design</label>
-            <select id="qsDesign" class="form-select"></select>
-          </div>
-
-          <div class="col-6">
-            <label class="form-label small">Panjang (cm)</label>
-            <input id="qsLength" class="form-control" type="number" step="0.1" min="0">
-          </div>
-
-          <div class="col-6">
-            <label class="form-label small">Lebar (cm)</label>
-            <input id="qsWidth" class="form-control" type="number" step="0.1" min="0">
-          </div>
-
-          <div class="col-12">
-            <label class="form-label small">Upah Override RM</label>
-            <input id="qsUpah" class="form-control" type="number" step="0.01" min="0" placeholder="Kosong = ikut design">
-          </div>
-        </div>
-
-        <div id="qsMsg" class="small text-muted mt-2"></div>
-      </div>
-
-      <div class="modal-footer">
-        <button id="btnQuickSaveOnly" class="btn btn-outline-primary rounded-pill" type="button">
-          Simpan Sahaja
-        </button>
-        <button id="btnQuickSaveLive" class="btn btn-danger rounded-pill fw-bold" type="button">
-          Simpan & Live Kan
-        </button>
-      </div>
-    </div>
-  </div>
-</div>
-
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 
 <script>
@@ -1278,7 +1121,8 @@ const SB_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJ
 
 const sb = window.supabase.createClient(SB_URL, SB_KEY);
 
-const CHAT_ROOM = "emasamir-live";
+let AGENT_SLUG = "";
+let CHAT_ROOM = ""; // akan set lepas load agent
 const SOCKET_URL = "qr-emas-amir-production.up.railway.app";
 
 const ADMIN_WA = "60168055916";
@@ -1291,12 +1135,6 @@ let currentAdmin = null;
 let adminPhone = "";
 
 let ALL_STOCK = [];
-
-let STOCK_PAGE_SIZE = 200;
-let STOCK_PAGE = 0;
-let STOCK_LOADING = false;
-let STOCK_HAS_MORE = true;
-
 let FILTERED_STOCK = [];
 let LIVE_MAP = {};
 let LIVE_SELECTED_ROW = null;
@@ -1728,26 +1566,20 @@ async function loadPrice916(){
 async function loadYoutubeConfig(){
   try{
     const { data, error } = await sb
-      .from("live_config")
-      .select("youtube_video_id, show_home_live")
-      .eq("id", 1)
+      .from("agent_live_config")
+      .select("youtube_video_id")
+      .eq("agent_slug", AGENT_SLUG)
       .maybeSingle();
 
     if (error) throw error;
 
     const videoId = String(data?.youtube_video_id || "ekRtZMEz9fM").trim();
-    const showHome = data?.show_home_live === true;
 
     $("ytVideoIdInput").value = videoId;
-    $("showHomeLiveInput").checked = showHome;
-
     setYoutubeFrame(videoId);
-
-    await loadAtomeLiveSetting();
   }catch(e){
     console.warn("loadYoutubeConfig error:", e);
     setYoutubeFrame("ekRtZMEz9fM");
-    await loadAtomeLiveSetting();
   }
 }
 function setYoutubeFrame(videoId){
@@ -1766,162 +1598,67 @@ async function saveYoutubeConfig(){
   const videoId = String($("ytVideoIdInput")?.value || "").trim();
   const showHomeLive = $("showHomeLiveInput")?.checked === true;
 
-  if (!videoId && showHomeLive){
-    alert("Sila masukkan Video ID YouTube dahulu.");
-    return;
-  }
-
   try{
     const { error } = await sb
-      .from("live_config")
+      .from("agent_live_config")
       .upsert({
-        id: 1,
+        agent_slug: AGENT_SLUG,
         youtube_video_id: videoId,
-        show_home_live: showHomeLive
+        show_home_live: showHomeLive,
+        live_status: showHomeLive ? "LIVE" : "ENDED",
+        live_message: showHomeLive
+          ? ""
+          : "LIVE sudah tamat. Tunggu LIVE seterusnya ya. Sila daftar, buka Chat Ai-Dan dan aktifkan notifikasi untuk dapat alert LIVE berikutnya."
+      }, {
+        onConflict: "agent_slug"
       });
 
     if (error) throw error;
 
     setYoutubeFrame(videoId || "ekRtZMEz9fM");
-    alert("Setting YouTube Live disimpan.");
+
+    alert(showHomeLive
+      ? "LIVE agent dibuka ✅"
+      : "LIVE agent ditutup ✅"
+    );
+
   }catch(e){
-    alert("Gagal simpan YouTube Live: " + (e?.message || e));
+    alert("Gagal simpan YouTube Live agent: " + (e?.message || e));
   }
 }
-
-async function loadAtomeLiveSetting(){
-  try{
-    const { data, error } = await sb
-      .from("live_payment_settings")
-      .select("atome_enabled")
-      .eq("id", 1)
-      .maybeSingle();
-
-    if (error) throw error;
-
-    const el = $("atomeLiveInput");
-    if (el) el.checked = data?.atome_enabled === true;
-  }catch(e){
-    console.warn("loadAtomeLiveSetting error:", e);
-
-    const el = $("atomeLiveInput");
-    if (el) el.checked = false;
-  }
-}
-
-async function saveAtomeLiveSetting(){
-  const enabled = $("atomeLiveInput")?.checked === true;
-
-  try{
-    const { error } = await sb
-      .from("live_payment_settings")
-      .upsert({
-        id: 1,
-        atome_enabled: enabled,
-        updated_at: new Date().toISOString()
-      });
-
-    if (error) throw error;
-
-    alert(enabled ? "Atome LIVE sudah ON." : "Atome LIVE sudah OFF.");
-  }catch(e){
-    alert("Gagal simpan Atome LIVE: " + (e?.message || e));
-  }
-}
-
-function buildDesignFilterOptions(){
-  const sel = $("filterDesign");
-  if (!sel) return;
-
-  const map = new Map();
-
-  (ALL_STOCK || []).forEach(row => {
-    const name = String(row?.name || row?.product_name || row?.design_name || "").trim();
-    const id = String(row?.design_id || name).trim();
-
-    if (name && id) map.set(id, name);
-  });
-
-  const current = sel.value || "";
-
-  sel.innerHTML =
-    `<option value="">Semua design</option>` +
-    [...map.entries()]
-      .sort((a,b) => a[1].localeCompare(b[1]))
-      .map(([id,name]) => `
-        <option value="${escapeHtml(id)}">${escapeHtml(name)}</option>
-      `).join("");
-
-  sel.value = current; 
- buildBulkDesignOptions();
-}
-
-async function loadStock(reset=true){
+async function loadStock(){
   const q = String($("stockQ")?.value || "").trim();
   const stockStatus = $("stockStatus");
 
-  if (STOCK_LOADING) return;
-  STOCK_LOADING = true;
-
-  if (reset){
-    STOCK_PAGE = 0;
-    STOCK_HAS_MORE = true;
-    ALL_STOCK = [];
-    if (stockStatus) stockStatus.textContent = "Memuatkan stok…";
-    if ($("stockList")) $("stockList").innerHTML = `<div class="empty-box">Memuatkan stok…</div>`;
-  }
-
-  if (!STOCK_HAS_MORE){
-    STOCK_LOADING = false;
-    return;
-  }
+  if (stockStatus) stockStatus.textContent = "Memuatkan stok…";
 
   try{
-    const from = STOCK_PAGE * STOCK_PAGE_SIZE;
-    const to = from + STOCK_PAGE_SIZE - 1;
-
-    const { data, error } = await sb
-      .rpc("j916_admin_items_list_v1", {
-        p_query: q || null
-      })
-      .range(from, to);
+    const { data, error } = await sb.rpc("j916_admin_items_list_v1", {
+      p_query: q || null
+    });
 
     if (error) throw error;
 
-    const rows = Array.isArray(data) ? data : [];
+    ALL_STOCK = Array.isArray(data) ? data : [];
 
-    await attachItemMedia(rows);
-
-    ALL_STOCK = reset ? rows : ALL_STOCK.concat(rows);
-buildDesignFilterOptions();
-
-    if (rows.length < STOCK_PAGE_SIZE){
-      STOCK_HAS_MORE = false;
-    }else{
-      STOCK_PAGE++;
-    }
+    await attachItemMedia(ALL_STOCK);
 
     applyStockFilters();
 
     if (stockStatus){
-      stockStatus.textContent = `${ALL_STOCK.length} item dimuatkan${STOCK_HAS_MORE ? " • scroll bawah untuk tambah lagi" : " • semua sudah dimuatkan"}`;
+      stockStatus.textContent = `${ALL_STOCK.length} item dimuatkan`;
     }
-
   }catch(e){
     console.warn("loadStock error:", e);
-
-    if (reset){
-      ALL_STOCK = [];
-      applyStockFilters();
-    }
+    ALL_STOCK = [];
+    applyStockFilters();
 
     if (stockStatus){
       stockStatus.textContent = "Ralat muat stok.";
     }
-  }finally{
-    STOCK_LOADING = false;
   }
 }
+
 async function attachItemMedia(rows){
   try{
     const codes = (rows || [])
@@ -1979,8 +1716,7 @@ async function attachItemMedia(rows){
 
 function applyStockFilters(){
   const term = String($("stockQ")?.value || "").trim().toLowerCase();
-  const designFilter = String($("filterDesign")?.value || "").trim().toLowerCase();
-  const status = String($("filterStatus")?.value || "AVAILABLE").trim().toUpperCase();
+  const status = String($("filterStatus")?.value || "AVAILABLE");
   const min = Number($("filterMin")?.value || 0);
   const max = Number($("filterMax")?.value || 0);
   const budget = Number($("filterBudget")?.value || 0);
@@ -1988,26 +1724,17 @@ function applyStockFilters(){
   FILTERED_STOCK = ALL_STOCK.filter(row => {
     const code = String(row?.code || "").toLowerCase();
     const name = String(row?.name || row?.product_name || row?.design_name || "").toLowerCase();
-    const designName = String(row?.design_name || row?.product_name || row?.name || "").trim().toLowerCase();
-    const designId = String(row?.design_id || "").trim().toLowerCase();
-
     const cat = getRowCat(row);
     const sizeVal = rowSizeValue(row);
     const price = getRowPrice(row);
 
-    if (status !== "ALL" && String(row?.status || "").toUpperCase() !== status) return false;
+
+
+    if (status !== "ALL" && String(row?.status || "") !== status) return false;
     if (currentCat && cat !== currentCat) return false;
 
-    if (designFilter){
-      const okDesign =
-        designId === designFilter ||
-        designName === designFilter;
-
-      if (!okDesign) return false;
-    }
-
     if (term){
-      const hay = `${code} ${name} ${designName} ${cat}`.toLowerCase();
+      const hay = `${code} ${name} ${cat}`.toLowerCase();
       if (!hay.includes(term)) return false;
     }
 
@@ -2020,6 +1747,7 @@ function applyStockFilters(){
 
   renderStockList();
 }
+
 function renderStockList(){
   const list = $("stockList");
   if (!list) return;
@@ -2029,21 +1757,7 @@ function renderStockList(){
     return;
   }
 
-  list.innerHTML = FILTERED_STOCK.map(row => stockCardHTML(row)).join("");
-
-  if (STOCK_HAS_MORE){
-    list.innerHTML += `
-      <div class="empty-box" id="stockLoadMoreHint">
-        Scroll bawah untuk muat lagi stok…
-      </div>
-    `;
-  }else{
-    list.innerHTML += `
-      <div class="empty-box">
-        Semua stok sudah dimuatkan.
-      </div>
-    `;
-  }
+  list.innerHTML = FILTERED_STOCK.slice(0, 120).map(row => stockCardHTML(row)).join("");
 
   list.querySelectorAll("[data-stock-id]").forEach(card => {
     card.addEventListener("click", () => {
@@ -2092,7 +1806,9 @@ function stockCardHTML(row){
       </div>
     </div>
   `;
-}function isRowSuggested(row){
+}
+
+function isRowSuggested(row){
   if (!lastAiIntent) return false;
 
   const cat = getRowCat(row);
@@ -2426,7 +2142,11 @@ function connectSocket(){
 
     liveSocket.on("connect", () => {
       $("chatStatus").textContent = "Socket live aktif.";
-      liveSocket.emit("join_live");
+      liveSocket.emit("join_live", {
+  room: CHAT_ROOM,
+  agent_slug: AGENT_SLUG,
+  source: "agent_live"
+});
     });
 
     liveSocket.on("disconnect", () => {
@@ -2434,6 +2154,10 @@ function connectSocket(){
     });
 
     liveSocket.on("live_comment_new", row => {
+
+  // filter ikut room
+  if (row?.room && row.room !== CHAT_ROOM) return;
+
   renderChatMessage(row, false);
 
   const customerKey = getAiCustomerKey(row || {});
@@ -2528,13 +2252,8 @@ function renderModalPrice(){
   $("modalLivePrice").textContent = money(liveRM);
 }
 
-async function setLiveSpotlight(itemId, active, seconds){
-  seconds = Number(seconds || 300);
-
-  if (!active){
-    seconds = 0;
-  }
-
+async function setLiveSpotlight(itemId, active){
+  const seconds = 300;
   window._LIVE_SECONDS = seconds;
 
   const { error } = await sb.rpc("j916_live_spotlight_set_v1", {
@@ -2545,6 +2264,7 @@ async function setLiveSpotlight(itemId, active, seconds){
 
   if (error) throw error;
 }
+
 async function setLiveOverride(itemId, h916, upah){
   const minutes = Math.ceil((window._LIVE_SECONDS || 300) / 60);
 
@@ -2598,9 +2318,7 @@ async function liveOnSelected(){
   msg.textContent = "Sedang live kan item…";
 
   try{
-    const liveSeconds = Number($("modalLiveDuration")?.value || 300);
-
-await setLiveSpotlight(id, true, liveSeconds);
+    await setLiveSpotlight(id, true);
     await setLiveOverride(id, h916, upah);
 
     LIVE_MAP[id] = {
@@ -2637,7 +2355,7 @@ async function liveOff(id){
   if (!confirm("Live Off item ini?")) return;
 
   try{
-    await setLiveSpotlight(id, false, 0);
+    await setLiveSpotlight(id, false);
     await clearLiveOverride(id);
 
     if (LIVE_MAP[id]) delete LIVE_MAP[id];
@@ -2649,161 +2367,6 @@ async function liveOff(id){
     await loadStock();
   }catch(e){
     alert("Ralat Live Off: " + (e?.message || e));
-  }
-}
-
-function getDesignKey(row){
-  const name = String(row?.name || row?.product_name || row?.design_name || "").trim();
-  const id = String(row?.design_id || name).trim();
-  return id || name || "";
-}
-
-function getDesignName(row){
-  return String(row?.name || row?.product_name || row?.design_name || row?.code || "").trim();
-}
-
-function buildBulkDesignOptions(){
-  const sel = $("bulkDesignSelect");
-  if (!sel) return;
-
-  const map = new Map();
-
-  (ALL_STOCK || []).forEach(row => {
-    if (String(row?.status || "").toUpperCase() !== "AVAILABLE") return;
-
-    const key = getDesignKey(row);
-    const name = getDesignName(row);
-
-    if (!key || !name) return;
-
-    if (!map.has(key)){
-      map.set(key, {
-        name,
-        count:0
-      });
-    }
-
-    map.get(key).count++;
-  });
-
-  const current = sel.value || "";
-
-  sel.innerHTML =
-    `<option value="">Pilih design...</option>` +
-    [...map.entries()]
-      .sort((a,b) => a[1].name.localeCompare(b[1].name))
-      .map(([key, obj]) => `
-        <option value="${escapeHtml(key)}">
-          ${escapeHtml(obj.name)} (${obj.count} item)
-        </option>
-      `).join("");
-
-  sel.value = current;
-
-  renderBulkDesignList();
-}
-
-function getBulkDesignRows(){
-  const key = String($("bulkDesignSelect")?.value || "").trim();
-  if (!key) return [];
-
-  return (ALL_STOCK || []).filter(row => {
-    if (String(row?.status || "").toUpperCase() !== "AVAILABLE") return false;
-    return getDesignKey(row) === key;
-  });
-}
-
-function renderBulkDesignList(){
-  const box = $("bulkDesignList");
-  if (!box) return;
-
-  const rows = getBulkDesignRows();
-
-  if (!$("bulkHarga916")?.value && window._price916){
-    $("bulkHarga916").value = Number(window._price916 || 0).toFixed(2);
-  }
-
-  if (!rows.length){
-    box.innerHTML = `<div class="small text-muted">Pilih design dulu / tiada item available.</div>`;
-    return;
-  }
-
-  const upah = Number($("bulkUpah")?.value || 0);
-  const h916 = Number($("bulkHarga916")?.value || window._price916 || 0);
-
-  box.innerHTML = rows.map(row => {
-    const price = calcLivePrice(h916, Number(row.weight_g || 0), upah);
-
-    return `
-      <div class="bulk-live-row">
-        <div>
-          <b class="mono">${escapeHtml(row.code || "-")}</b><br>
-          <span class="text-muted">${Number(row.weight_g || 0).toFixed(2)}g</span>
-        </div>
-        <div class="text-end fw-bold text-danger">
-          ${money(price)}
-        </div>
-      </div>
-    `;
-  }).join("");
-}
-
-async function bulkLiveDesign(){
-  const rows = getBulkDesignRows();
-  const msg = $("bulkLiveMsg");
-  const btn = $("btnBulkLiveDesign");
-
-  const h916 = Number($("bulkHarga916")?.value || 0);
-  const upah = Number($("bulkUpah")?.value || 0);
-  const liveSeconds = Number($("bulkLiveDuration")?.value || 1800);
-
-  if (!rows.length){
-    alert("Tiada item untuk design ini.");
-    return;
-  }
-
-  if (!h916){
-    alert("Harga/g tidak sah.");
-    return;
-  }
-
-  if (!confirm(`Live kan ${rows.length} item design ini dengan upah RM ${upah.toFixed(2)}?`)){
-    return;
-  }
-
-  btn.disabled = true;
-  if (msg) msg.textContent = "Sedang live kan semua item...";
-
-  try{
-    for (const row of rows){
-      const id = String(row.id || "");
-      if (!id) continue;
-
-      await setLiveSpotlight(id, true, liveSeconds);
-      await setLiveOverride(id, h916, upah);
-
-      LIVE_MAP[id] = {
-        id,
-        code: row.code,
-        name: row.name || row.product_name || row.design_name || row.code,
-        weight_g: Number(row.weight_g || 0),
-        harga916: h916,
-        upah,
-        base_upah: getRowUpah(row),
-        row
-      };
-    }
-
-    renderLiveSmallList();
-    renderActiveLiveBox();
-    renderStockList();
-
-    if (msg) msg.textContent = `Berjaya live kan ${rows.length} item ✅`;
-  }catch(e){
-    if (msg) msg.textContent = "❌ " + (e?.message || e);
-    alert("Ralat live semua: " + (e?.message || e));
-  }finally{
-    btn.disabled = false;
   }
 }
 
@@ -2854,16 +2417,7 @@ function renderLiveSmallList(){
               ${money(liveRM)}
             </div>
 
-            <div class="mt-2">
-  <textarea
-    class="form-control form-control-sm"
-    rows="2"
-    placeholder="Nota admin sementara... contoh: QR dah bagi"
-    data-live-note="${escapeHtml(L.id)}"
-  >${escapeHtml(L.note || "")}</textarea>
-</div>
-
-<div class="d-flex gap-2 mt-2">
+            <div class="d-flex gap-2 mt-2">
   <button class="btn btn-sm btn-primary rounded-pill flex-fill"
           type="button"
           data-live-save-price="${escapeHtml(L.id)}">
@@ -2936,9 +2490,6 @@ async function saveLiveSmallPrice(id){
     LIVE_MAP[id].harga916 = h;
     LIVE_MAP[id].upah = u;
 
-LIVE_MAP[id].note =
-  String(document.querySelector(`[data-live-note="${id}"]`)?.value || "").trim();
-
     renderLiveSmallList();
     renderActiveLiveBox();
     renderStockList();
@@ -2971,11 +2522,6 @@ function renderActiveLiveBox(){
           <div class="active-code">${escapeHtml(L.code)}</div>
           <div class="small text-light opacity-75">${escapeHtml(L.name || "-")}</div>
           <div class="fw-bold text-warning">${money(liveRM)}</div>
-${L.note ? `
-  <div class="small text-info mt-1">
-    📝 ${escapeHtml(L.note)}
-  </div>
-` : ``}
         </div>
       </div>
     `;
@@ -3620,132 +3166,11 @@ async function sendThreadMessage(){
   }
 }
 
-let QUICK_DESIGNS = [];
-
-async function loadQuickDesigns(){
-  const sel = $("qsDesign");
-  if (!sel) return;
-
-  sel.innerHTML = `<option value="">Memuatkan design…</option>`;
-
-  try{
-    const { data, error } = await sb.rpc("j916_admin_products_list_v1");
-    if (error) throw error;
-
-    QUICK_DESIGNS = (Array.isArray(data) ? data : [])
-      .filter(r => r.is_active !== false)
-      .map(r => ({
-        id: r.id,
-        name: r.name || "-",
-        cat_code: r.cat_code || r.category || "",
-        upah: Number(r.upah_default_rm ?? r.wage_default ?? 0)
-      }));
-
-    sel.innerHTML = QUICK_DESIGNS.length
-      ? QUICK_DESIGNS.map(r => `
-          <option value="${escapeHtml(r.id)}">
-            ${escapeHtml(r.cat_code ? `[${r.cat_code}] ` : "")}${escapeHtml(r.name)}
-          </option>
-        `).join("")
-      : `<option value="">Tiada design aktif</option>`;
-
-  }catch(e){
-    sel.innerHTML = `<option value="">Ralat load design</option>`;
-    console.warn("loadQuickDesigns error:", e);
-  }
-}
-
-function openQuickStockModal(){
-  $("qsCode").value = "";
-  $("qsWeight").value = "";
-  $("qsLength").value = "";
-  $("qsWidth").value = "";
-  $("qsUpah").value = "";
-  $("qsMsg").textContent = "";
-
-  loadQuickDesigns();
-  bootstrap.Modal.getOrCreateInstance($("quickStockModal")).show();
-}
-
-async function quickSaveStock(goLive){
-  const code = String($("qsCode")?.value || "").trim().toUpperCase();
-  const designId = String($("qsDesign")?.value || "").trim();
-  const weight = Number($("qsWeight")?.value || 0);
-  const length = Number($("qsLength")?.value || 0);
-  const width = Number($("qsWidth")?.value || 0);
-  const upahRaw = String($("qsUpah")?.value || "").trim();
-  const upah = upahRaw === "" ? null : Number(upahRaw || 0);
-
-  if (!code){
-    alert("Kod unik diperlukan.");
-    return;
-  }
-
-  if (!designId){
-    alert("Pilih design dahulu.");
-    return;
-  }
-
-  if (!weight || weight <= 0){
-    alert("Berat tidak sah.");
-    return;
-  }
-
-  const msg = $("qsMsg");
-  const btnOnly = $("btnQuickSaveOnly");
-  const btnLive = $("btnQuickSaveLive");
-
-  btnOnly.disabled = true;
-  btnLive.disabled = true;
-  msg.textContent = "Menyimpan stok…";
-
-  try{
-    const payload = {
-      p_id: null,
-      p_code: code,
-      p_design_id: designId,
-      p_weight_g: weight,
-      p_length_cm: length,
-      p_width_cm: width,
-      p_upah_override_rm: upah,
-      p_status: "AVAILABLE",
-      p_is_active: true,
-      p_rfid: null
-    };
-
-    const { error } = await sb.rpc("j916_admin_items_upsert_v1", payload);
-    if (error) throw error;
-
-    msg.textContent = "Stok berjaya disimpan ✅";
-
-    await loadStock(true);
-
-    const newRow = ALL_STOCK.find(r => String(r.code || "").toUpperCase() === code);
-
-    if (goLive && newRow){
-      bootstrap.Modal.getOrCreateInstance($("quickStockModal")).hide();
-      openLiveAction(newRow);
-    }else{
-      $("stockQ").value = code;
-      await loadStock(true);
-      bootstrap.Modal.getOrCreateInstance($("quickStockModal")).hide();
-    }
-
-  }catch(e){
-    msg.textContent = "Ralat: " + (e?.message || e);
-  }finally{
-    btnOnly.disabled = false;
-    btnLive.disabled = false;
-  }
-}
-
-
 function setupEvents(){
   $("btnReloadVideo")?.addEventListener("click", loadYoutubeConfig);
   $("btnSaveYt")?.addEventListener("click", saveYoutubeConfig);
-$("atomeLiveInput")?.addEventListener("change", saveAtomeLiveSetting);
 $("btnReloadOrderChats")?.addEventListener("click", loadRecentOrderChats);
-  $("btnReloadStock")?.addEventListener("click", () => loadStock(true));
+  $("btnReloadStock")?.addEventListener("click", loadStock);
 $("chatPopupSend")?.addEventListener("click", sendThreadMessage);
 
 $("btnPopupPaidChat")?.addEventListener("click", () => setPopupPaidChat(true));
@@ -3753,23 +3178,12 @@ $("btnPopupClearPaidChat")?.addEventListener("click", () => setPopupPaidChat(fal
 $("btnPopupManual")?.addEventListener("click", setPopupModeManual);
 $("btnPopupBackAi")?.addEventListener("click", setPopupBackToAi);
 
-$("btnQuickAddStock")?.addEventListener("click", openQuickStockModal);
-$("btnQuickSaveOnly")?.addEventListener("click", () => quickSaveStock(false));
-$("btnQuickSaveLive")?.addEventListener("click", () => quickSaveStock(true));
-$("bulkDesignSelect")?.addEventListener("change", renderBulkDesignList);
-$("bulkHarga916")?.addEventListener("input", renderBulkDesignList);
-$("bulkUpah")?.addEventListener("input", renderBulkDesignList);
-$("btnBulkLiveDesign")?.addEventListener("click", bulkLiveDesign);
-
-$("filterDesign")?.addEventListener("change", applyStockFilters);
 $("chatPopupInput")?.addEventListener("keypress", e=>{
   if (e.key === "Enter"){
     e.preventDefault();
     sendThreadMessage();
   }
 });
-
-
 
 $("chatPopupModal")?.addEventListener("hidden.bs.modal", ()=>{
   ACTIVE_THREAD_ID = "";
@@ -3780,20 +3194,8 @@ $("chatPopupModal")?.addEventListener("hidden.bs.modal", ()=>{
 });
   $("stockQ")?.addEventListener("input", () => {
     clearTimeout(window.__stockDeb);
-    window.__stockDeb = setTimeout(() => loadStock(true), 300);
+    window.__stockDeb = setTimeout(loadStock, 300);
   });
-
-$("stockList")?.addEventListener("scroll", () => {
-  const list = $("stockList");
-  if (!list || STOCK_LOADING || !STOCK_HAS_MORE) return;
-
-  const nearBottom =
-    list.scrollTop + list.clientHeight >= list.scrollHeight - 350;
-
-  if (nearBottom){
-    loadStock(false);
-  }
-});
 
   ["filterMin","filterMax","filterBudget","filterStatus"].forEach(id => {
     $(id)?.addEventListener("input", applyStockFilters);
@@ -3851,44 +3253,61 @@ $("stockList")?.addEventListener("scroll", () => {
   });
 }
 
+
 async function boot(){
   const authStatus = $("authStatus");
 
-  let ok = false;
+  if (authStatus) authStatus.textContent = "Semak akaun agent...";
 
-  if (window.adminGuard && typeof adminGuard.require === "function"){
-    ok = await adminGuard.require({
-      onChecking:() => {
-        if (authStatus) authStatus.textContent = "Mengesahkan akses…";
-      },
-      onDenied:() => {
-        if (authStatus) authStatus.textContent = "Akses ditolak";
-      },
-      onAllowed:(phone) => {
-  adminPhone = normalizePhoneDigits(phone);
-  if (authStatus) authStatus.textContent = "Admin — " + phone;
-}
-    });
-  }else{
-    const a = (window.auth_get && window.auth_get()) || null;
+  try{
+    const { data: userRes } = await sb.auth.getUser();
+    const user = userRes?.user;
 
-    if (!a){
+    if (!user){
       location.href = "login.html#login";
       return;
     }
 
-    currentAdmin = a;
+    const { data: agent, error } = await sb
+      .from("agents")
+      .select("id, slug, name, status, phone")
+      .eq("user_id", user.id)
+      .maybeSingle();
 
-    if (authStatus){
-      authStatus.textContent = "Admin — " + (a.phone || a.msisdn || "");
+    if (error) throw error;
+
+    if (!agent){
+      alert("Akaun ini bukan agent.");
+      location.href = "index.html";
+      return;
     }
 
-    ok = true;
+    if (String(agent.status || "").toUpperCase() !== "ACTIVE"){
+      alert("Agent belum aktif.");
+      location.href = "index.html";
+      return;
+    }
 
+    if (!agent.slug){
+      alert("Agent tiada slug.");
+      location.href = "index.html";
+      return;
+    }
 
+    AGENT_SLUG = String(agent.slug).trim().toLowerCase();
+    CHAT_ROOM = "agent-" + AGENT_SLUG;
+    adminPhone = normalizePhoneDigits(agent.phone || "");
+
+    if (authStatus){
+      authStatus.textContent = "Agent — " + (agent.name || AGENT_SLUG);
+    }
+
+  }catch(e){
+    console.error(e);
+    alert("Ralat auth agent");
+    location.href = "login.html#login";
+    return;
   }
-
-  if (!ok) return;
 
   if ($("btnLogout")) $("btnLogout").style.display = "";
 
@@ -3898,7 +3317,7 @@ async function boot(){
 
   setupEvents();
 
-await loadRecentOrderChats();
+  await loadRecentOrderChats();
   await loadPrice916();
   await loadYoutubeConfig();
   await loadStock();
@@ -3908,19 +3327,21 @@ await loadRecentOrderChats();
   connectSocket();
 
   setInterval(loadChatInitial, 60000);
-  setInterval(() => loadStock(true), 90000);
-setInterval(()=>{
-  if (!ACTIVE_THREAD_ID && document.visibilityState === "visible"){
-    loadRecentOrderChats();
-  }
-}, 45000);
+  setInterval(loadStock, 90000);
 
-setInterval(()=>{
-  const modalOpen = document.body.classList.contains("chat-popup-open");
-  if (ACTIVE_THREAD_ID && modalOpen && document.visibilityState === "visible"){
-    loadThreadMessages(ACTIVE_THREAD_ID, true);
-  }
-}, 12000);}
+  setInterval(()=>{
+    if (!ACTIVE_THREAD_ID && document.visibilityState === "visible"){
+      loadRecentOrderChats();
+    }
+  }, 45000);
+
+  setInterval(()=>{
+    const modalOpen = document.body.classList.contains("chat-popup-open");
+    if (ACTIVE_THREAD_ID && modalOpen && document.visibilityState === "visible"){
+      loadThreadMessages(ACTIVE_THREAD_ID, true);
+    }
+  }, 12000);
+}
 
 boot();
 </script>

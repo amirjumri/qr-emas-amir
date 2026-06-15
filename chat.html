@@ -1106,6 +1106,129 @@ body{
 }
 .parcel-actions{margin-top:8px;display:flex;gap:8px;flex-wrap:wrap}
 
+/* ===== PENDING ORDER CARD DALAM CHAT ===== */
+.ea-chat-pending-card{
+  display:none;
+  margin:10px 0 14px;
+  padding:16px;
+  border-radius:24px;
+  color:#fff;
+  background:
+    radial-gradient(circle at 90% 0%, rgba(250,204,21,.18), transparent 36%),
+    linear-gradient(180deg,#1f1b12,#08090f);
+  border:1px solid rgba(250,204,21,.28);
+  box-shadow:0 16px 42px rgba(0,0,0,.22);
+}
+
+.ea-chat-pending-card.show{
+  display:block;
+}
+
+.ea-chat-pending-title{
+  display:flex;
+  align-items:center;
+  gap:8px;
+  color:#fb7185;
+  font-size:20px;
+  font-weight:950;
+  margin-bottom:12px;
+}
+
+.ea-chat-pending-item{
+  display:flex;
+  gap:12px;
+  align-items:center;
+  margin-bottom:12px;
+}
+
+.ea-chat-pending-img{
+  width:92px;
+  height:92px;
+  border-radius:20px;
+  object-fit:cover;
+  background:#111827;
+  border:1px solid rgba(255,255,255,.14);
+}
+
+.ea-chat-pending-name{
+  font-size:16px;
+  font-weight:950;
+  line-height:1.2;
+}
+
+.ea-chat-pending-sub{
+  color:#cbd5e1;
+  font-size:13px;
+  margin-top:4px;
+}
+
+.ea-chat-pending-price{
+  color:#f8c94d;
+  font-size:26px;
+  font-weight:950;
+  margin-top:7px;
+}
+
+.ea-chat-bank-box{
+  margin-top:12px;
+  padding:12px;
+  border-radius:16px;
+  background:rgba(255,255,255,.08);
+  border:1px solid rgba(255,255,255,.12);
+}
+
+.ea-chat-bank-title{
+  color:#fde68a;
+  font-weight:950;
+  margin-bottom:6px;
+}
+
+.ea-chat-bank-line{
+  color:#f8fafc;
+  font-size:14px;
+  line-height:1.45;
+}
+
+.ea-chat-pending-note{
+  margin-top:12px;
+  background:rgba(225,29,72,.14);
+  border:1px solid rgba(225,29,72,.28);
+  color:#fecdd3;
+  border-radius:14px;
+  padding:10px 12px;
+  font-size:13px;
+  font-weight:800;
+}
+
+.ea-chat-pending-actions{
+  display:grid;
+  grid-template-columns:1fr;
+  gap:10px;
+  margin-top:12px;
+}
+
+.ea-chat-pending-btn{
+  width:100%;
+  min-height:48px;
+  border:0;
+  border-radius:14px;
+  background:linear-gradient(135deg,#e11d48,#be123c);
+  color:#fff;
+  font-size:14px;
+  font-weight:950;
+}
+
+.ea-chat-qr-btn{
+  width:100%;
+  min-height:46px;
+  border:1px solid rgba(250,204,21,.40);
+  border-radius:14px;
+  background:rgba(250,204,21,.12);
+  color:#fde68a;
+  font-size:14px;
+  font-weight:950;
+}
+
 </style>
 </head>
 <body>
@@ -1117,7 +1240,11 @@ body{
     <div class="text-muted">Pembantu sistem lock live (AI-DAN)</div>
   </div>
   <div class="chat-actions">
-    <button id="btnReset" class="btn btn-outline-secondary btn-sm">Reset</button>
+   <button id="btnReset"
+        class="btn btn-outline-secondary btn-sm"
+        style="display:none">
+  Reset
+</button>
     <button id="btnClearHistory" class="btn btn-outline-secondary btn-sm">Clear</button>
     <a href="index.html" class="btn btn-outline-secondary btn-sm">Home</a>
   </div>
@@ -1160,6 +1287,16 @@ body{
 </div>
 
 <div id="activeParcelBox" class="parcel-box" style="display:none"></div>
+
+<div id="eaChatPendingHero" class="ea-chat-pending-card">
+  <div class="ea-chat-pending-title">
+  <span id="eaPendingTitleIcon">⚠️</span>
+  <span id="eaPendingTitleText">ORDER BELUM BAYAR</span>
+</div>
+
+  <div id="eaChatPendingBody"></div>
+</div>
+
       <div id="flowBanner" class="mt-2" style="display:none">
         <div class="p-3 bg-white border rounded-4">
           <div class="d-flex align-items-start justify-content-between gap-2">
@@ -1258,6 +1395,28 @@ body{
   </div>
 </div>
 
+<div id="qrModal" class="modal-overlay" aria-hidden="true">
+  <div class="modal-box" style="height:min(820px,95vh)">
+    <div class="modal-topbar">
+      <div class="modal-title">QR Maybank Emas Amir</div>
+
+      <div class="modal-actions">
+        <button id="btnQrClose" class="btn-mini" type="button">
+          Tutup
+        </button>
+      </div>
+    </div>
+
+    <div class="modal-body">
+      <iframe
+        id="qrFrame"
+        class="modal-iframe"
+        src="about:blank">
+      </iframe>
+    </div>
+  </div>
+</div>
+
 <div id="notifCoachmark" class="notif-coachmark" style="display:none;">
   <div class="notif-coachmark-overlay"></div>
 
@@ -1351,6 +1510,10 @@ const btnNotifCoachmarkEnable = $("btnNotifCoachmarkEnable");
   const btnModalReload = $("btnModalReload");
   const btnModalBack   = $("btnModalBack");
 
+const qrModal = $("qrModal");
+const qrFrame = $("qrFrame");
+const btnQrClose = $("btnQrClose");
+
   let pendingFile = null;
 const __linkPreviewCache = new Map();
 let __threadSyncTimer = null;
@@ -1410,9 +1573,348 @@ let __firstRenderDone = false;
       desc: "Teruskan bayaran ansuran Atome untuk order Emas Amir.",
       image: makePreviewSvgDataUrl("Atome", "Bayaran ansuran", "💳")
     }
-  };
+  }; 
 
+const EA_CHAT_BANK_NAME = "MAYBANK";
+const EA_CHAT_BANK_ACC_NAME = "EMAS AMIR SDN BHD";
+const EA_CHAT_BANK_ACC_NO = "552031155695";
+const EA_CHAT_BANK_QR_URL = "https://emasamir.app/qr-maybank.html";
+
+function eaChatPendingSafe(v){
+  return String(v || "")
+    .replace(/&/g,"&amp;")
+    .replace(/</g,"&lt;")
+    .replace(/>/g,"&gt;")
+    .replace(/"/g,"&quot;")
+    .replace(/'/g,"&#039;");
+}
+
+function eaChatPendingMoney(n){
+  return "RM " + Number(n || 0).toFixed(2);
+}
+
+function eaChatPendingPhoneVariants(raw){
+  const d = String(raw || "").replace(/\D/g,"");
+  if (!d) return [];
+
+  const p0 = d.startsWith("0") ? d : (d.startsWith("60") ? "0" + d.slice(2) : "0" + d);
+  const p60 = d.startsWith("60") ? d : (d.startsWith("0") ? "6" + d : "60" + d);
+
+  return Array.from(new Set([raw, d, p0, p60, "+" + p60].filter(Boolean)));
+}
+
+  async function eaLoadChatPendingHero(){
+  const hero = document.getElementById("eaChatPendingHero");
+  const body = document.getElementById("eaChatPendingBody");
+
+  if (!hero || !body) return;
+
+  hero.classList.remove("show");
+  body.innerHTML = "";
+
+  try{
+    if (!window.sb) return;
+
+    const auth = getAuthUser();
+    const phone =
+      auth?.phone ||
+      auth?.msisdn ||
+      localStorage.getItem(KEY_PHONE) ||
+      "";
+
+    if (!phone) return;
+
+    const phones = eaChatPendingPhoneVariants(phone);
+    if (!phones.length) return;
+
+    const { data, error } = await window.sb
+      .from("j916_orders")
+      .select("*")
+      .in("phone", phones)
+      .eq("status", "PENDING")
+      .order("created_at", { ascending:false })
+      .limit(3);
+
+    if (error) throw error;
+
+const pendingList = Array.isArray(data) ? data : [];
+if (!pendingList.length) return;
+
+const titleTextEl = document.getElementById("eaPendingTitleText");
+const titleIconEl = document.getElementById("eaPendingTitleIcon");
+
+const orderIds = pendingList
+  .map(o => String(o.id || "").trim())
+  .filter(Boolean);
+
+const orderCodes = pendingList
+  .map(o => String(o.order_code || "").trim())
+  .filter(Boolean);
+
+const slipMap = new Map();
+
+if (orderIds.length){
+  try{
+    const { data: slipRows } = await window.sb
+      .from("customer_slips")
+      .select("order_code,status,created_at")
+      .in("order_code", orderIds)
+      .order("created_at", { ascending:false });
+
+    (slipRows || []).forEach(s=>{
+      const oid = String(s.order_code || "").trim();
+      if (!oid) return;
+      if (!slipMap.has(oid)) slipMap.set(oid, s);
+    });
+  }catch(e){
+    console.warn("load slips pending hero error:", e);
+  }
+}
+
+let paidChatRefs = [];
+
+try{
+  const threadId = localStorage.getItem(KEY_THREAD) || "";
+  if (threadId){
+    const { data: th } = await window.sb
+      .from("chat_threads")
+      .select("meta")
+      .eq("id", threadId)
+      .maybeSingle();
+
+    const meta = th && typeof th.meta === "object" ? th.meta : {};
+    paidChatRefs = Array.isArray(meta.paid_chat_order_refs)
+      ? meta.paid_chat_order_refs.map(x => String(x || "").trim())
+      : [];
+  }
+}catch(e){
+  console.warn("load paid chat refs error:", e);
+}
+
+let EA_PAYMENT_COUNTDOWN_TIMER = null;
+
+function eaStopPaymentCountdown(){
+  if (EA_PAYMENT_COUNTDOWN_TIMER){
+    clearInterval(EA_PAYMENT_COUNTDOWN_TIMER);
+    EA_PAYMENT_COUNTDOWN_TIMER = null;
+  }
+}
+
+function eaFormatLeft(ms){
+  const total = Math.max(0, Math.floor(ms / 1000));
+  const h = Math.floor(total / 3600);
+  const m = Math.floor((total % 3600) / 60);
+  const s = total % 60;
+
+  if (h > 0){
+    return `${h}j ${String(m).padStart(2,"0")}m ${String(s).padStart(2,"0")}s`;
+  }
+
+  return `${String(m).padStart(2,"0")}:${String(s).padStart(2,"0")}`;
+}
+
+function eaStartPaymentCountdown(deadlineAt){
+  eaStopPaymentCountdown();
+
+  const el = document.getElementById("eaPaymentCountdown");
+  if (!el || !deadlineAt) return;
+
+  const deadline = new Date(deadlineAt).getTime();
+  if (!Number.isFinite(deadline)) return;
+
+  function tick(){
+    const left = deadline - Date.now();
+
+    if (left <= 0){
+      el.textContent = "⏳ Masa bayaran telah tamat. Sila tunggu status dikemas kini.";
+      eaStopPaymentCountdown();
+      return;
+    }
+
+    el.textContent = "⏳ Masa bayaran berbaki: " + eaFormatLeft(left);
+  }
+
+  tick();
+  EA_PAYMENT_COUNTDOWN_TIMER = setInterval(tick, 1000);
+}
+
+function orderHasSlip(order){
+  const oid = String(order.id || "").trim();
+  return oid && slipMap.has(oid);
+}
+
+function orderIsPaidChat(order){
+  const oc = String(order.order_code || "").trim();
+  const shortId = String(order.id || "").trim().slice(0, 7);
+  return paidChatRefs.includes(oc) || paidChatRefs.includes(shortId);
+}
+
+    const codes = pendingList
+      .map(r => String(r.code || "").toUpperCase().trim())
+      .filter(Boolean);
+
+    const imgMap = new Map();
+
+    if (codes.length){
+      try{
+        const { data:itemRows } = await window.sb
+          .from("j916_items")
+          .select(`
+            code,
+            design:j916_designs (
+              name,
+              img1_url,
+              img1
+            )
+          `)
+          .in("code", codes);
+
+        (itemRows || []).forEach(item=>{
+          const c = String(item.code || "").toUpperCase().trim();
+          imgMap.set(c, {
+            name: item?.design?.name || "",
+            img: item?.design?.img1_url || item?.design?.img1 || ""
+          });
+        });
+      }catch(e){}
+    }
+
+    const itemsHTML = pendingList.map(order=>{
+      const code = order.code || order.order_code || "-";
+      const codeKey = String(code).toUpperCase().trim();
+      const m = imgMap.get(codeKey) || {};
+
+      const name =
+        m.name ||
+        order.name ||
+        order.item_name ||
+        order.product_name ||
+        "Barang LIVE 916";
+
+      const berat = Number(order.weight_g || 0);
+      const panjang = Number(order.length_cm || 0);
+
+      const total = Number(
+        order.grand_total_rm ??
+        order.total_rm ??
+        order.unit_rm ??
+        0
+      );
+
+      const spec = [
+        berat > 0 ? "Berat " + berat.toFixed(2) + "g" : "",
+        panjang > 0 ? "Panjang " + panjang + "cm" : ""
+      ].filter(Boolean).join(" • ");
+
+      const img = m.img || "";
+
+      return `
+        <div class="ea-chat-pending-item">
+          <img class="ea-chat-pending-img"
+               src="${eaChatPendingSafe(img || "https://placehold.co/200x200?text=" + encodeURIComponent(code))}"
+               alt="${eaChatPendingSafe(code)}">
+
+          <div style="min-width:0;flex:1;">
+            <div class="ea-chat-pending-name">${eaChatPendingSafe(name)}</div>
+            <div class="ea-chat-pending-sub">${eaChatPendingSafe(code)}</div>
+            <div class="ea-chat-pending-sub">${eaChatPendingSafe(spec || "Order pending")}</div>
+            <div class="ea-chat-pending-price">${eaChatPendingMoney(total)}</div>
+          </div>
+        </div>
+      `;
+    }).join("");
+
+    body.innerHTML = `
+      ${itemsHTML}
+
+      <div class="ea-chat-bank-box">
+        <div class="ea-chat-bank-title">🏦 Maklumat Bayaran Rasmi</div>
+        <div class="ea-chat-bank-line">Bank: <b>${eaChatPendingSafe(EA_CHAT_BANK_NAME)}</b></div>
+        <div class="ea-chat-bank-line">Nama Akaun: <b>${eaChatPendingSafe(EA_CHAT_BANK_ACC_NAME)}</b></div>
+        <div class="ea-chat-bank-line">No Akaun: <b class="mono">${eaChatPendingSafe(EA_CHAT_BANK_ACC_NO)}</b></div>
+      </div>
+
+      ${(() => {
+  const hasAnyProof = pendingList.some(o => orderHasSlip(o) || orderIsPaidChat(o));
+
+if (titleTextEl){
+  titleTextEl.textContent = hasAnyProof
+    ? "BUKTI BAYARAN DIHANTAR"
+    : "ORDER BELUM BAYAR";
+}
+
+if (titleIconEl){
+  titleIconEl.textContent = hasAnyProof
+    ? "✅"
+    : "⚠️";
+}
+  if (hasAnyProof){
+    return `
+      <div class="ea-chat-pending-note" style="background:rgba(22,163,74,.16);border-color:rgba(34,197,94,.35);color:#bbf7d0">
+        ✅ Bukti bayaran sudah dihantar. Sila tunggu admin semak dan paid-kan order anda.
+      </div>
+    `;
+  }
+
+  return `
+    <div class="ea-chat-pending-note">
+      Anda ada <b>${pendingList.length}</b> order belum bayar. Sila sambung bayaran dalam Ai-Dan.
+      <div id="eaPaymentCountdown" style="margin-top:8px;color:#fde68a;font-weight:950"></div>
+    </div>
+  `;
+})()}
+
+      <div class="ea-chat-pending-actions">
+        <button type="button"
+        class="ea-chat-qr-btn"
+        onclick="openQrModal()">
+  🧾 Buka QR Maybank
+</button>
+
+        <button type="button" class="ea-chat-pending-btn" onclick="document.getElementById('txt').focus();document.getElementById('txt').value='saya dah bayar nak hantar slip';">
+          💬 Detail Bayaran Dan Hantar Slip Bayaran Dalam Ai-Dan
+        </button>
+      </div>
+    `;
+
+    hero.classList.add("show");
+
+const countdownOrder = pendingList.find(o =>
+  !orderHasSlip(o) &&
+  !orderIsPaidChat(o) &&
+  o.payment_timer_disabled !== true &&
+  o.payment_deadline_at
+);
+
+if (countdownOrder){
+  eaStartPaymentCountdown(countdownOrder.payment_deadline_at);
+}else{
+  eaStopPaymentCountdown();
+}
+
+  }catch(e){
+    console.warn("eaLoadChatPendingHero error:", e);
+    hero.classList.remove("show");
+  }
+}
   function setStatus(s){ statusEl.textContent = s || ""; }
+
+function openQrModal(){
+  if (!qrModal || !qrFrame) return;
+  qrFrame.src = "https://emasamir.app/qr-maybank.html";
+  qrModal.classList.add("show");
+}
+
+function closeQrModal(){
+  if (!qrModal || !qrFrame) return;
+  qrModal.classList.remove("show");
+  qrFrame.src = "about:blank";
+}
+
+window.openQrModal = openQrModal;
+window.closeQrModal = closeQrModal;
+
+btnQrClose?.addEventListener("click", closeQrModal);
 
 function isNearBottom(el, gap = 120){
     return (el.scrollHeight - el.scrollTop - el.clientHeight) < gap;
@@ -1581,18 +2083,19 @@ function isNearBottom(el, gap = 120){
 
     if (r.ok && j.ok === true && j.active === true) {
       btnEnableNotif.textContent = "Notifikasi Aktif ✅";
-      notifState.textContent = "Push notification sudah aktif.";
+      notifState.textContent = "Push notification aktif untuk nombor ini.";
       return;
     }
   } catch (e) {
     console.warn("[push-device-status error]", e);
   }
 
-  btnEnableNotif.textContent = "Aktifkan Notifikasi";
+  btnEnableNotif.textContent = "Notifikasi Aktif ✅";
   notifState.textContent =
     nativePlatform === "android"
-      ? "App Android menyokong notifikasi. Tekan untuk daftar peranti ini."
-      : "App iPhone menyokong notifikasi. Tekan untuk daftar peranti ini.";
+      ? "Telefon ini sudah benarkan notifikasi. Jika tukar nombor, tekan sekali lagi hanya untuk sambung nombor ini."
+      : "iPhone ini sudah benarkan notifikasi. Jika tukar nombor, tekan sekali lagi hanya untuk sambung nombor ini.";
+
   return;
 }
 
@@ -2312,15 +2815,15 @@ const KEY_NOTIF_COACHMARK_SEEN = "ea_notif_coachmark_seen";
   }
 
   function setInputLocked(locked, hintText){
-    if (window.__qr_active && locked === false) return;
-    txt.disabled = !!locked;
-    btnSend.disabled = !!locked;
-    if (locked){
-      txt.placeholder = hintText || "Sila tekan pilihan di bawah 👇";
-    } else {
-      txt.placeholder = "Taip mesej…";
-    }
-  }
+
+  // HIDE MODE
+  txt.disabled = false;
+  btnSend.disabled = false;
+  txt.placeholder = "Taip mesej…";
+
+  // kekalkan function hidup tanpa lock input
+  return;
+}
 
   function normalizeQuickReplies(quicks){
     if (!Array.isArray(quicks)) return [];
@@ -2349,9 +2852,11 @@ const KEY_NOTIF_COACHMARK_SEEN = "ea_notif_coachmark_seen";
     return [];
   }
 
-  function buildQuickReplyButtons(quicks){
-    const clean = normalizeQuickReplies(quicks);
-    if (!clean.length) return null;
+ function buildQuickReplyButtons(quicks){
+  return null;
+
+  const clean = normalizeQuickReplies(quicks);
+  if (!clean.length) return null;
 
     const wrap = document.createElement("div");
     wrap.style.marginTop = "8px";
@@ -5050,8 +5555,9 @@ if (silentBuilder) {
       }, 1200);
 
       refreshFlowSnapshot().catch(()=>{});
-      renderLoginBox();
+renderLoginBox();
 refreshActiveParcelBox().catch(()=>{});
+eaLoadChatPendingHero().catch(()=>{});
       setStatus("");
     }catch(e){
       setStatus("Ralat: " + (e.message||e));
@@ -5304,6 +5810,7 @@ showLiveCheckoutSyncNotice();
 
 refreshFlowSnapshot().catch(()=>{});
 refreshActiveParcelBox().catch(()=>{});
+eaLoadChatPendingHero().catch(()=>{});
 
 requireLoginGate();
 
@@ -5323,6 +5830,7 @@ markThreadRead("open_chat").catch(()=>{});
     syncThreadMessages(true)
   .then(() => {
     refreshActiveParcelBox().catch(()=>{});
+    eaLoadChatPendingHero().catch(()=>{});
 
     if (isLiveCheckoutDoneLanding()){
       scrollChatToBottom(true);

@@ -1,0 +1,14 @@
+{
+  "manifest_version": 3,
+  "name": "Emas Amir TikTok Live Comment Reader",
+  "version": "1.0.2",
+  "description": "Baca komen TikTok Live dan hantar ke AI Panel Emas Amir.",
+  "permissions": ["tabs", "scripting"],
+  "host_permissions": [
+    "https://www.tiktok.com/*",
+    "http://localhost:*/*"
+  ],
+  "background": {
+    "service_worker": "background.js"
+  }
+}

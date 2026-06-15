@@ -814,15 +814,62 @@ const loginCoachmark = $("loginCoachmark");
 
   const ensureSupabaseSession = window.ensureSupabaseSession || ensureSupabaseSessionFallback;
 
-  const qs = new URLSearchParams(location.search);
-  const nextUrl = qs.get("next");
-  const initialThreadId = qs.get("thread") || "";
-  const back = $("backLink");
-  if (back && nextUrl) back.href = nextUrl;
+ const qs = new URLSearchParams(location.search);
 
-  function goBack(){
-    location.href = "account.html";
+const nextUrl = qs.get("next");
+const returnUrl = qs.get("return");
+const initialThreadId = qs.get("thread") || "";
+
+const back = $("backLink");
+
+if (back){
+  if (returnUrl){
+    back.href = returnUrl;
+  }else if (nextUrl){
+    back.href = nextUrl;
   }
+}
+
+function safeReturnUrl(url){
+  const u = String(url || "").trim();
+
+  if (!u) return "";
+
+  // benarkan relative link
+  if (
+    u.startsWith("live-lock.html") ||
+    u.startsWith("/live-lock.html") ||
+    u.startsWith("comment.html") ||
+    u.startsWith("/comment.html")
+  ){
+    return u;
+  }
+
+  // benarkan domain sendiri sahaja
+  try{
+    const parsed = new URL(u, location.origin);
+
+    if (
+      parsed.origin === location.origin ||
+      parsed.hostname === "emasamir.app"
+    ){
+      return parsed.href;
+    }
+  }catch(e){}
+
+  return "";
+}
+
+function goBack(){
+  const target = safeReturnUrl(returnUrl || nextUrl);
+
+  if (target){
+    location.href = target;
+    return;
+  }
+
+  location.href = "account.html";
+}
 
   function setTabFromHash(){
     const h = location.hash || "#login";

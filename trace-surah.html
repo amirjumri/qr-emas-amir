@@ -1,1341 +1,2598 @@
 <!doctype html>
+
 <html lang="ms">
+
 <head>
+
 <meta charset="utf-8">
+
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+
 <title>Al-Fatihah Trace</title>
 
 <style>
+
 *{box-sizing:border-box}
+
 html,body{min-height:100%}
+
 body{
+
   margin:0;
-  background:
-    radial-gradient(circle at top,#334155 0,#0f172a 38%,#020617 100%);
+
+  background:radial-gradient(circle at top,#334155 0,#0f172a 38%,#020617 100%);
+
   color:#fff;
+
   font-family:system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+
   overscroll-behavior:none;
+
 }
-.app{
-  max-width:920px;
-  margin:0 auto;
-  padding:16px;
-}
-.top{
-  text-align:center;
-  padding:18px 8px 14px;
-}
-.top h1{
-  margin:0;
-  font-size:28px;
-  font-weight:900;
-}
-.top p{
-  margin:7px 0 0;
-  color:#cbd5e1;
-  font-size:14px;
-}
+
+.app{max-width:920px;margin:0 auto;padding:16px}
+
+.top{text-align:center;padding:18px 8px 14px}
+
+.top h1{margin:0;font-size:28px;font-weight:900}
+
+.top p{margin:7px 0 0;color:#cbd5e1;font-size:14px}
+
 .main-card{
+
   background:rgba(15,23,42,.88);
+
   border:1px solid rgba(255,255,255,.14);
+
   border-radius:28px;
+
   padding:16px;
+
   box-shadow:0 22px 70px rgba(0,0,0,.38);
+
 }
+
 .surah-title{
+
   text-align:center;
+
   direction:rtl;
+
   font-family:"Times New Roman","Amiri",serif;
+
   font-size:28px;
+
   font-weight:900;
+
   border:1px solid rgba(255,255,255,.18);
+
   background:rgba(255,255,255,.04);
+
   border-radius:20px;
+
   padding:14px;
+
   margin-bottom:16px;
+
 }
+
 .summary{
+
   display:grid;
+
   grid-template-columns:1fr auto;
+
   gap:12px;
+
   align-items:center;
+
   background:rgba(255,255,255,.04);
+
   border:1px solid rgba(255,255,255,.12);
+
   border-radius:20px;
+
   padding:12px;
+
   margin-bottom:16px;
+
 }
-.summary-text{
-  color:#e5e7eb;
-  font-size:14px;
-}
+
+.summary-text{color:#e5e7eb;font-size:14px}
+
 .total-bar{
+
   height:13px;
+
   border-radius:999px;
+
   overflow:hidden;
+
   background:#1e293b;
+
   border:1px solid rgba(255,255,255,.10);
+
   margin-top:8px;
+
 }
+
 .total-fill{
+
   height:100%;
+
   width:0%;
+
   background:linear-gradient(90deg,#f59e0b,#fde68a);
+
   transition:.25s ease;
+
 }
+
 .btn-reset{
+
   border:0;
+
   border-radius:14px;
+
   padding:12px 14px;
+
   font-weight:900;
+
   background:#ef4444;
+
   color:white;
+
   cursor:pointer;
+
 }
+
 .ayah-card{
+
   background:
+
     radial-gradient(circle at top right,rgba(251,191,36,.10),transparent 35%),
+
     linear-gradient(180deg,rgba(255,255,255,.075),rgba(255,255,255,.025));
+
   border:1px solid rgba(255,255,255,.15);
+
   border-radius:24px;
+
   padding:18px;
+
   margin-bottom:14px;
+
 }
+
 .ayah-head{
+
   display:flex;
+
   justify-content:space-between;
+
   gap:10px;
+
   align-items:center;
+
   margin-bottom:10px;
+
 }
+
 .ayah-badge{
+
   background:rgba(251,191,36,.12);
+
   border:1px solid rgba(251,191,36,.35);
+
   color:#fde68a;
+
   padding:7px 11px;
+
   border-radius:999px;
+
   font-weight:900;
+
   font-size:12px;
+
 }
-.ayah-percent{
-  color:#cbd5e1;
-  font-size:13px;
-  font-weight:800;
-}
+
+.ayah-percent{color:#cbd5e1;font-size:13px;font-weight:800}
+
 .ayah-full{
+
   direction:rtl;
+
   text-align:center;
+
   font-family:"Times New Roman","Amiri",serif;
+
   font-size:38px;
+
   font-weight:900;
+
   line-height:1.75;
+
   color:#fff;
+
   text-shadow:0 0 16px rgba(255,255,255,.10);
+
 }
+
 .ayah-full span{
+
   display:inline-block;
+
   margin:0 4px;
+
   color:#fff;
+
   transition:.2s ease;
+
 }
+
 .ayah-full span.word-done-main{
+
   color:#facc15;
-  text-shadow:
-    0 0 8px rgba(250,204,21,.45),
-    0 0 18px rgba(245,158,11,.28);
+
+  text-shadow:0 0 8px rgba(250,204,21,.45),0 0 18px rgba(245,158,11,.28);
+
 }
+
 .ayah-meaning{
+
   text-align:center;
+
   margin-top:8px;
+
   color:#cbd5e1;
+
   font-size:14px;
+
   line-height:1.5;
+
 }
+
 .word-row{
+
   display:flex;
+
   flex-wrap:wrap;
+
   gap:10px;
+
   direction:rtl;
+
   justify-content:center;
+
   margin-top:16px;
+
 }
+
 .word-chip{
+
   border:1px solid rgba(255,255,255,.15);
+
   background:rgba(15,23,42,.80);
+
   color:#fff;
+
   border-radius:999px;
+
   padding:11px 17px;
+
   font-family:"Times New Roman","Amiri",serif;
+
   font-size:25px;
+
   font-weight:900;
+
   cursor:pointer;
+
   box-shadow:0 10px 26px rgba(0,0,0,.18);
+
   transition:.15s;
+
 }
-.word-chip:hover{
-  transform:translateY(-1px);
-  border-color:rgba(251,191,36,.60);
-}
+
+.word-chip:hover{transform:translateY(-1px);border-color:rgba(251,191,36,.60)}
+
 .word-chip.done{
+
   background:linear-gradient(90deg,#f59e0b,#fde68a);
+
   color:#111827;
+
   border-color:rgba(251,191,36,.80);
+
 }
-.word-chip.locked{
-  opacity:.42;
-  filter:grayscale(.4);
-  cursor:not-allowed;
-}
-.word-chip.active{
-  outline:3px solid rgba(251,191,36,.35);
-}
+
+.word-chip.locked{opacity:.42;filter:grayscale(.4);cursor:not-allowed}
+
+.word-chip.active{outline:3px solid rgba(251,191,36,.35)}
+
 .meaning-card{
+
   margin-top:16px;
+
   background:rgba(15,23,42,.88);
+
   border:1px solid rgba(255,255,255,.14);
+
   border-radius:24px;
+
   padding:18px;
+
 }
-.meaning-card h2{
-  margin:0 0 10px;
-  font-size:18px;
-}
-.meaning-card ol{
-  margin:0;
-  padding-left:22px;
-  line-height:1.65;
-  color:#e5e7eb;
-  font-size:14px;
-}
+
+.meaning-card h2{margin:0 0 10px;font-size:18px}
+
+.meaning-card ol{margin:0;padding-left:22px;line-height:1.65;color:#e5e7eb;font-size:14px}
+
 .note{
+
   margin-top:12px;
+
   color:#fde68a;
+
   background:rgba(251,191,36,.10);
+
   border:1px solid rgba(251,191,36,.28);
+
   border-radius:999px;
+
   display:inline-block;
+
   padding:7px 11px;
+
   font-size:12px;
+
 }
+
 .trace-modal{
+
   position:fixed;
+
   inset:0;
+
   z-index:99999;
+
   display:none;
+
   align-items:center;
+
   justify-content:center;
+
   padding:12px;
-  background:
-    radial-gradient(circle at center,rgba(251,191,36,.18),transparent 38%),
-    rgba(0,0,0,.76);
+
+  background:radial-gradient(circle at center,rgba(251,191,36,.18),transparent 38%),rgba(0,0,0,.76);
+
   backdrop-filter:blur(9px);
+
 }
-.trace-modal.show{
-  display:flex;
-}
+
+.trace-modal.show{display:flex}
+
 .trace-box{
+
   width:min(1040px,100%);
+
   max-height:96vh;
+
   overflow:auto;
+
   background:linear-gradient(180deg,#111827,#020617);
+
   border:1px solid rgba(255,255,255,.18);
+
   border-radius:30px;
+
   padding:16px;
+
   box-shadow:0 35px 100px rgba(0,0,0,.65);
+
   position:relative;
+
 }
+
 .modal-close{
+
   position:absolute;
+
   top:12px;
+
   right:12px;
+
   width:46px;
+
   height:46px;
+
   border:0;
+
   border-radius:999px;
+
   background:#ef4444;
+
   color:white;
+
   font-size:28px;
+
   font-weight:900;
+
   cursor:pointer;
-  z-index:20;
+
+  z-index:30;
+
 }
+
 .modal-top{
+
   text-align:center;
-  padding:8px 54px 14px;
+
+  padding:8px 54px 10px;
+
 }
+
 .modal-title{
+
   direction:rtl;
+
   font-family:"Times New Roman","Amiri",serif;
+
   font-size:46px;
+
   line-height:1.35;
+
   font-weight:900;
+
   color:#fff;
+
 }
-.modal-sub{
-  margin-top:4px;
-  color:#cbd5e1;
-  font-size:14px;
-}
+
+.modal-sub{margin-top:4px;color:#cbd5e1;font-size:14px}
+
 .unlock-pill{
+
   display:inline-flex;
+
   gap:7px;
+
   align-items:center;
+
   justify-content:center;
+
   margin-top:8px;
+
   padding:7px 12px;
+
   border-radius:999px;
+
   font-size:12px;
+
   font-weight:900;
+
   color:#fde68a;
+
   background:rgba(251,191,36,.10);
+
   border:1px solid rgba(251,191,36,.25);
+
 }
-.trace-wrap{
-  position:relative;
-  height:520px;
-  border-radius:26px;
-  overflow:hidden;
-  background:
-    radial-gradient(circle at center,rgba(251,191,36,.12),transparent 55%),
-    #050816;
-  border:1px solid rgba(255,255,255,.15);
-  touch-action:none;
-  user-select:none;
-}
-.canvas-layer{
-  position:absolute;
-  inset:0;
+
+/* BUTTON SAIZ DAKWAT - MEMANG KELUAR ATAS CANVAS */
+
+.brush-toolbar{
+
   width:100%;
-  height:100%;
-  touch-action:none;
-}
-#inkCanvas{z-index:1}
-#ghostCanvas{z-index:2}
-#drawCanvas{
-  z-index:3;
-  opacity:0;
-}
-.pen-dot{
-  position:absolute;
-  z-index:5;
-  width:30px;
-  height:30px;
-  border-radius:999px;
-  pointer-events:none;
-  display:none;
-  transform:translate(-50%,-50%);
-  background:radial-gradient(circle,#fff8b8 0,#fbbf24 45%,rgba(245,158,11,.05) 72%);
-  box-shadow:0 0 14px rgba(250,204,21,.85),0 0 34px rgba(245,158,11,.40);
-}
-.hint{
-  position:absolute;
-  left:12px;
-  right:12px;
-  bottom:12px;
-  z-index:4;
-  text-align:center;
-  color:#94a3b8;
-  font-size:12px;
-  pointer-events:none;
-}
-.trace-progress{
-  margin-top:14px;
-}
-.progress-row{
+
   display:flex;
-  justify-content:space-between;
-  color:#e5e7eb;
-  font-size:14px;
-  font-weight:800;
-  margin-bottom:7px;
-}
-.bar{
-  height:14px;
+
+  align-items:center;
+
+  justify-content:center;
+
+  gap:8px;
+
+  flex-wrap:wrap;
+
+  margin:0 0 12px;
+
+  padding:10px;
+
   border-radius:999px;
-  overflow:hidden;
-  background:#1e293b;
-  border:1px solid rgba(255,255,255,.12);
+
+  background:rgba(2,6,23,.96);
+
+  border:2px solid rgba(251,191,36,.85);
+
+  box-shadow:0 0 25px rgba(250,204,21,.30);
+
 }
-.bar-fill{
-  height:100%;
-  width:0%;
-  background:linear-gradient(90deg,#f59e0b,#fde68a);
-  border-radius:999px;
-  transition:.2s;
-}
-.controls{
-  display:grid;
-  grid-template-columns:1fr 1fr 1fr;
-  gap:10px;
-  margin-top:14px;
-}
-.controls button{
-  border:0;
-  border-radius:16px;
-  padding:14px 10px;
-  font-weight:900;
-  cursor:pointer;
-  font-size:15px;
-}
-.prev{background:#334155;color:white}
-.clear{background:#ef4444;color:white}
-.next{background:#f59e0b;color:#111827}
-.controls button:disabled{
-  opacity:.45;
-  cursor:not-allowed;
-  filter:grayscale(.3);
-}
-.trace-info{
-  text-align:center;
-  margin-top:12px;
-  color:#e5e7eb;
-  font-size:14px;
-  line-height:1.5;
-}
-.toast-mini{
-  position:fixed;
-  left:50%;
-  bottom:calc(18px + env(safe-area-inset-bottom));
-  transform:translateX(-50%) translateY(20px);
-  z-index:100000;
-  background:rgba(15,23,42,.96);
+
+.brush-label{
+
   color:#fde68a;
-  border:1px solid rgba(251,191,36,.35);
-  box-shadow:0 18px 55px rgba(0,0,0,.45);
-  border-radius:999px;
-  padding:12px 16px;
+
   font-size:13px;
+
   font-weight:900;
-  opacity:0;
+
+  margin-right:4px;
+
+}
+
+.brush-btn{
+
+  border:0;
+
+  border-radius:999px;
+
+  padding:10px 13px;
+
+  font-size:13px;
+
+  font-weight:900;
+
+  cursor:pointer;
+
+  background:#334155;
+
+  color:white;
+
+}
+
+.brush-btn.active{
+
+  background:linear-gradient(90deg,#f59e0b,#fde68a);
+
+  color:#111827;
+
+}
+
+.brush-preview{
+
+  width:32px;
+
+  height:32px;
+
+  border-radius:999px;
+
+  background:radial-gradient(circle,#fff8b8 0,#fbbf24 48%,rgba(245,158,11,.30) 76%);
+
+  box-shadow:0 0 16px rgba(250,204,21,.75);
+
+}
+
+.trace-wrap{
+
+  position:relative;
+
+  height:520px;
+
+  border-radius:26px;
+
+  overflow:hidden;
+
+  background:radial-gradient(circle at center,rgba(251,191,36,.12),transparent 55%),#050816;
+
+  border:1px solid rgba(255,255,255,.15);
+
+  touch-action:none;
+
+  user-select:none;
+
+}
+
+.canvas-layer{
+
+  position:absolute;
+
+  inset:0;
+
+  width:100%;
+
+  height:100%;
+
+  touch-action:none;
+
+}
+
+#inkCanvas{z-index:1}
+
+#ghostCanvas{z-index:2}
+
+#drawCanvas{z-index:3;opacity:0}
+
+.pen-dot{
+
+  position:absolute;
+
+  z-index:5;
+
+  width:30px;
+
+  height:30px;
+
+  border-radius:999px;
+
   pointer-events:none;
-  transition:.25s ease;
+
+  display:none;
+
+  transform:translate(-50%,-50%);
+
+  background:radial-gradient(circle,#fff8b8 0,#fbbf24 45%,rgba(245,158,11,.05) 72%);
+
+  box-shadow:0 0 14px rgba(250,204,21,.85),0 0 34px rgba(245,158,11,.40);
+
 }
-.toast-mini.show{
-  opacity:1;
-  transform:translateX(-50%) translateY(0);
+
+.hint{
+
+  position:absolute;
+
+  left:12px;
+
+  right:12px;
+
+  bottom:12px;
+
+  z-index:4;
+
+  text-align:center;
+
+  color:#94a3b8;
+
+  font-size:12px;
+
+  pointer-events:none;
+
 }
-.confetti-piece{
-  position:fixed;
-  z-index:100001;
-  width:8px;
+
+.trace-progress{margin-top:14px}
+
+.progress-row{
+
+  display:flex;
+
+  justify-content:space-between;
+
+  color:#e5e7eb;
+
+  font-size:14px;
+
+  font-weight:800;
+
+  margin-bottom:7px;
+
+}
+
+.bar{
+
   height:14px;
-  border-radius:3px;
+
+  border-radius:999px;
+
+  overflow:hidden;
+
+  background:#1e293b;
+
+  border:1px solid rgba(255,255,255,.12);
+
+}
+
+.bar-fill{
+
+  height:100%;
+
+  width:0%;
+
+  background:linear-gradient(90deg,#f59e0b,#fde68a);
+
+  border-radius:999px;
+
+  transition:.2s;
+
+}
+
+.controls{
+
+  display:grid;
+
+  grid-template-columns:1fr 1fr 1fr;
+
+  gap:10px;
+
+  margin-top:14px;
+
+}
+
+.controls button{
+
+  border:0;
+
+  border-radius:16px;
+
+  padding:14px 10px;
+
+  font-weight:900;
+
+  cursor:pointer;
+
+  font-size:15px;
+
+}
+
+.prev{background:#334155;color:white}
+
+.clear{background:#ef4444;color:white}
+
+.next{background:#f59e0b;color:#111827}
+
+.controls button:disabled{opacity:.45;cursor:not-allowed;filter:grayscale(.3)}
+
+.trace-info{
+
+  text-align:center;
+
+  margin-top:12px;
+
+  color:#e5e7eb;
+
+  font-size:14px;
+
+  line-height:1.5;
+
+}
+
+.toast-mini{
+
+  position:fixed;
+
+  left:50%;
+
+  bottom:calc(18px + env(safe-area-inset-bottom));
+
+  transform:translateX(-50%) translateY(20px);
+
+  z-index:100000;
+
+  background:rgba(15,23,42,.96);
+
+  color:#fde68a;
+
+  border:1px solid rgba(251,191,36,.35);
+
+  box-shadow:0 18px 55px rgba(0,0,0,.45);
+
+  border-radius:999px;
+
+  padding:12px 16px;
+
+  font-size:13px;
+
+  font-weight:900;
+
+  opacity:0;
+
   pointer-events:none;
+
+  transition:.25s ease;
+
+}
+
+.toast-mini.show{
+
+  opacity:1;
+
+  transform:translateX(-50%) translateY(0);
+
+}
+
+.confetti-piece{
+
+  position:fixed;
+
+  z-index:100001;
+
+  width:8px;
+
+  height:14px;
+
+  border-radius:3px;
+
+  pointer-events:none;
+
   animation:confettiDrop .9s ease forwards;
+
 }
+
 @keyframes confettiDrop{
+
   0%{transform:translateY(-20px) rotate(0deg);opacity:1}
+
   100%{transform:translateY(160px) rotate(250deg);opacity:0}
+
 }
+
 @media(max-width:640px){
+
   .app{padding:12px}
+
   .top h1{font-size:23px}
+
   .main-card{padding:12px;border-radius:22px}
+
   .surah-title{font-size:24px}
+
   .summary{grid-template-columns:1fr}
+
   .ayah-card{padding:14px;border-radius:20px}
+
   .ayah-full{font-size:31px}
+
   .word-chip{font-size:24px;padding:10px 15px}
+
   .trace-modal{align-items:flex-start;padding:8px;padding-top:max(8px,env(safe-area-inset-top))}
-  .trace-box{border-radius:24px;padding:12px;max-height:calc(100vh - 16px - env(safe-area-inset-top));}
+
+  .trace-box{border-radius:24px;padding:12px;max-height:calc(100vh - 16px - env(safe-area-inset-top))}
+
   .modal-close{top:8px;right:8px;width:44px;height:44px}
-  .modal-top{padding:8px 50px 12px}
+
+  .modal-top{padding:8px 50px 10px}
+
   .modal-title{font-size:42px}
+
   .trace-wrap{height:430px}
+
+  .brush-toolbar{border-radius:20px;gap:6px}
+
+  .brush-label{width:100%;text-align:center;margin:0}
+
+  .brush-btn{padding:9px 11px;font-size:12px}
+
   .controls{grid-template-columns:1fr 1fr 1fr}
+
   .controls button{padding:13px 6px;font-size:14px}
+
 }
+
 </style>
+
 </head>
 
 <body>
+
 <div class="app">
+
   <div class="top">
+
     <h1>Al-Fatihah Trace</h1>
+
     <p>Tekan perkataan → trace besar → progress autosave</p>
+
   </div>
 
   <div class="main-card">
+
     <div class="surah-title">سُورَةُ الْفَاتِحَةِ</div>
 
     <div class="summary">
+
       <div class="summary-text">
+
         <b id="totalText">Progress: 0%</b>
+
         <div class="total-bar"><div class="total-fill" id="totalFill"></div></div>
+
       </div>
+
       <button class="btn-reset" id="btnResetAll">Reset Progress</button>
+
     </div>
 
     <div id="ayahList"></div>
+
   </div>
 
   <div class="meaning-card">
+
     <h2>Maksud Bahasa Melayu</h2>
+
     <ol>
+
       <li>Dengan nama Allah Yang Maha Pemurah lagi Maha Mengasihani.</li>
+
       <li>Segala puji tertentu bagi Allah, Tuhan yang memelihara dan mentadbirkan sekalian alam.</li>
+
       <li>Yang Maha Pemurah lagi Maha Mengasihani.</li>
+
       <li>Yang Menguasai pemerintahan hari pembalasan.</li>
+
       <li>Engkaulah sahaja yang kami sembah, dan kepada Engkaulah sahaja kami memohon pertolongan.</li>
+
       <li>Tunjukilah kami jalan yang lurus.</li>
+
       <li>Iaitu jalan orang-orang yang Engkau telah kurniakan nikmat kepada mereka, bukan jalan orang-orang yang Engkau murkai, dan bukan pula jalan orang-orang yang sesat.</li>
+
     </ol>
+
     <div class="note">Nota: semak semula teks dan terjemahan dengan rujukan rasmi sebelum publish.</div>
+
   </div>
+
 </div>
 
 <div class="trace-modal" id="traceModal">
+
   <div class="trace-box">
+
     <button class="modal-close" id="btnCloseModal">×</button>
 
     <div class="modal-top">
+
       <div class="modal-title" id="modalTitle">بِسْمِ</div>
+
       <div class="modal-sub" id="modalSub">Blok 1A • Dengan nama</div>
+
       <div class="unlock-pill" id="unlockPill">🔓 Ikut turutan ayat</div>
+
+    </div>
+
+    <div class="brush-toolbar" id="brushToolbar">
+
+      <span class="brush-label">Saiz dakwat:</span>
+
+      <button type="button" class="brush-btn" data-brush="25">Kecil</button>
+
+      <button type="button" class="brush-btn active" data-brush="45">Biasa</button>
+
+      <button type="button" class="brush-btn" data-brush="75">Besar</button>
+
+      <button type="button" class="brush-btn" data-brush="100">MAX</button>
+
+      <div class="brush-preview" id="brushPreview"></div>
+
     </div>
 
     <div class="trace-wrap" id="traceWrap">
+
       <canvas id="ghostCanvas" class="canvas-layer"></canvas>
+
       <canvas id="inkCanvas" class="canvas-layer"></canvas>
+
       <canvas id="drawCanvas" class="canvas-layer"></canvas>
+
       <div class="pen-dot" id="penDot"></div>
+
       <div class="hint">Ikut atas tulisan putih. Dakwat emas hanya muncul dalam huruf.</div>
+
     </div>
 
     <div class="trace-progress">
+
       <div class="progress-row">
+
         <span id="traceLabel">Blok 1A</span>
+
         <span id="scoreLabel">0%</span>
+
       </div>
+
       <div class="bar"><div class="bar-fill" id="barFill"></div></div>
+
     </div>
 
     <div class="controls">
+
       <button class="prev" id="btnPrev">Sebelum</button>
+
       <button class="clear" id="btnClear">Padam</button>
+
       <button class="next" id="btnNext">Seterusnya</button>
+
     </div>
 
     <div class="trace-info" id="infoText"></div>
+
   </div>
+
 </div>
 
 <div class="toast-mini" id="toastMini"></div>
 
 <script>
+
 const surah = [
+
   {
+
     no:1,
+
     full:"بِسْمِ اللَّهِ الرَّحْمَٰنِ الرَّحِيمِ",
+
     meaning:"Dengan nama Allah Yang Maha Pemurah lagi Maha Mengasihani.",
+
     words:[
+
       { id:"1A", arabic:"بِسْمِ", meaning:"Dengan nama" },
+
       { id:"1B", arabic:"اللَّهِ", meaning:"Allah" },
+
       { id:"1C", arabic:"الرَّحْمَٰنِ", meaning:"Yang Maha Pemurah" },
+
       { id:"1D", arabic:"الرَّحِيمِ", meaning:"lagi Maha Mengasihani" }
+
     ]
+
   },
+
   {
+
     no:2,
+
     full:"الْحَمْدُ لِلَّهِ رَبِّ الْعَالَمِينَ",
+
     meaning:"Segala puji tertentu bagi Allah, Tuhan yang memelihara dan mentadbirkan sekalian alam.",
+
     words:[
+
       { id:"2A", arabic:"الْحَمْدُ", meaning:"Segala puji" },
+
       { id:"2B", arabic:"لِلَّهِ", meaning:"bagi Allah" },
+
       { id:"2C", arabic:"رَبِّ", meaning:"Tuhan" },
+
       { id:"2D", arabic:"الْعَالَمِينَ", meaning:"sekalian alam" }
+
     ]
+
   },
+
   {
+
     no:3,
+
     full:"الرَّحْمَٰنِ الرَّحِيمِ",
+
     meaning:"Yang Maha Pemurah lagi Maha Mengasihani.",
+
     words:[
+
       { id:"3A", arabic:"الرَّحْمَٰنِ", meaning:"Yang Maha Pemurah" },
+
       { id:"3B", arabic:"الرَّحِيمِ", meaning:"lagi Maha Mengasihani" }
+
     ]
+
   },
+
   {
+
     no:4,
+
     full:"مَالِكِ يَوْمِ الدِّينِ",
+
     meaning:"Yang Menguasai pemerintahan hari pembalasan.",
+
     words:[
+
       { id:"4A", arabic:"مَالِكِ", meaning:"Yang Menguasai" },
+
       { id:"4B", arabic:"يَوْمِ", meaning:"hari" },
+
       { id:"4C", arabic:"الدِّينِ", meaning:"pembalasan" }
+
     ]
+
   },
+
   {
+
     no:5,
+
     full:"إِيَّاكَ نَعْبُدُ وَإِيَّاكَ نَسْتَعِينُ",
+
     meaning:"Engkaulah sahaja yang kami sembah, dan kepada Engkaulah sahaja kami memohon pertolongan.",
+
     words:[
+
       { id:"5A", arabic:"إِيَّاكَ", meaning:"Engkaulah sahaja" },
+
       { id:"5B", arabic:"نَعْبُدُ", meaning:"kami sembah" },
+
       { id:"5C", arabic:"وَإِيَّاكَ", meaning:"dan kepada Engkaulah" },
+
       { id:"5D", arabic:"نَسْتَعِينُ", meaning:"kami memohon pertolongan" }
+
     ]
+
   },
+
   {
+
     no:6,
+
     full:"اهْدِنَا الصِّرَاطَ الْمُسْتَقِيمَ",
+
     meaning:"Tunjukilah kami jalan yang lurus.",
+
     words:[
+
       { id:"6A", arabic:"اهْدِنَا", meaning:"Tunjukilah kami" },
+
       { id:"6B", arabic:"الصِّرَاطَ", meaning:"jalan" },
+
       { id:"6C", arabic:"الْمُسْتَقِيمَ", meaning:"yang lurus" }
+
     ]
+
   },
+
   {
+
     no:7,
+
     full:"صِرَاطَ الَّذِينَ أَنْعَمْتَ عَلَيْهِمْ غَيْرِ الْمَغْضُوبِ عَلَيْهِمْ وَلَا الضَّالِّينَ",
+
     meaning:"Iaitu jalan orang-orang yang Engkau telah kurniakan nikmat kepada mereka, bukan jalan orang-orang yang Engkau murkai, dan bukan pula jalan orang-orang yang sesat.",
+
     words:[
+
       { id:"7A", arabic:"صِرَاطَ", meaning:"Jalan" },
+
       { id:"7B", arabic:"الَّذِينَ", meaning:"orang-orang yang" },
+
       { id:"7C", arabic:"أَنْعَمْتَ", meaning:"Engkau beri nikmat" },
+
       { id:"7D", arabic:"عَلَيْهِمْ", meaning:"kepada mereka" },
+
       { id:"7E", arabic:"غَيْرِ", meaning:"bukan" },
+
       { id:"7F", arabic:"الْمَغْضُوبِ", meaning:"orang yang dimurkai" },
+
       { id:"7G", arabic:"عَلَيْهِمْ", meaning:"ke atas mereka" },
+
       { id:"7H", arabic:"وَلَا", meaning:"dan bukan" },
+
       { id:"7I", arabic:"الضَّالِّينَ", meaning:"orang yang sesat" }
+
     ]
+
   }
+
 ];
 
-const STORAGE_KEY = "alquran_trace_alfatihah_v2_padu";
-const COMPLETE_THRESHOLD = 96;
+const STORAGE_KEY = "alquran_trace_alfatihah_v3_brush_button";
+
+const COMPLETE_THRESHOLD = 94;
+
 const AUTO_NEXT_DELAY = 850;
-const MIN_STROKE_DISTANCE = 1.4;
-const BRUSH_EXTRA = 0.72;
+
+const MIN_STROKE_DISTANCE = 1.2;
+
+const HIT_RADIUS = 28;
 
 const ayahList = document.getElementById("ayahList");
+
 const totalText = document.getElementById("totalText");
+
 const totalFill = document.getElementById("totalFill");
+
 const traceModal = document.getElementById("traceModal");
+
 const modalTitle = document.getElementById("modalTitle");
+
 const modalSub = document.getElementById("modalSub");
+
 const unlockPill = document.getElementById("unlockPill");
+
 const ghostCanvas = document.getElementById("ghostCanvas");
+
 const inkCanvas = document.getElementById("inkCanvas");
+
 const drawCanvas = document.getElementById("drawCanvas");
+
 const penDot = document.getElementById("penDot");
+
 const toastMini = document.getElementById("toastMini");
-const gctx = ghostCanvas.getContext("2d");
+
+const gctx = ghostCanvas.getContext("2d", { willReadFrequently:true });
+
 const ictx = inkCanvas.getContext("2d", { willReadFrequently:true });
+
 const dctx = drawCanvas.getContext("2d", { willReadFrequently:true });
+
 const traceLabel = document.getElementById("traceLabel");
+
 const scoreLabel = document.getElementById("scoreLabel");
+
 const barFill = document.getElementById("barFill");
+
 const infoText = document.getElementById("infoText");
+
 const btnPrev = document.getElementById("btnPrev");
+
 const btnNext = document.getElementById("btnNext");
+
 const btnClear = document.getElementById("btnClear");
 
+const brushPreview = document.getElementById("brushPreview");
+
 let flatWords = [];
+
 let currentIndex = 0;
+
 let currentWord = null;
+
 let drawing = false;
+
 let lastX = 0;
+
 let lastY = 0;
+
 let dpr = 1;
+
 let cssW = 0;
+
 let cssH = 0;
+
 let maskPixels = 1;
+
 let completed = false;
+
 let autoNextTimer = null;
+
 let toastTimer = null;
+
 let audioUnlocked = false;
+
 let audioCtx = null;
+
 let activePointerId = null;
+
 let saveData = loadSave();
 
+let USER_BRUSH_SIZE = Number(localStorage.getItem("trace_brush_size") || 45);
+
 let textMaskCanvas = document.createElement("canvas");
+
 let textMaskCtx = textMaskCanvas.getContext("2d", { willReadFrequently:true });
 
-function flattenWords(){
-  flatWords = [];
-  surah.forEach(ayah=>{
-    ayah.words.forEach((word, wi)=>{
-      flatWords.push({
-        ayahNo:ayah.no,
-        ayahFull:ayah.full,
-        ayahMeaning:ayah.meaning,
-        wordIndex:wi,
-        id:word.id,
-        arabic:word.arabic,
-        meaning:word.meaning
-      });
-    });
+function updateBrushUI(){
+
+  document.querySelectorAll(".brush-btn").forEach(btn=>{
+
+    const v = Number(btn.dataset.brush || 45);
+
+    btn.classList.toggle("active", v === USER_BRUSH_SIZE);
+
   });
+
+  if (brushPreview){
+
+    const size = Math.max(22, Math.min(56, USER_BRUSH_SIZE * 0.56));
+
+    brushPreview.style.width = size + "px";
+
+    brushPreview.style.height = size + "px";
+
+  }
+
+}
+
+document.querySelectorAll(".brush-btn").forEach(btn=>{
+
+  btn.addEventListener("click", function(e){
+
+    e.preventDefault();
+
+    e.stopPropagation();
+
+    USER_BRUSH_SIZE = Number(this.dataset.brush || 45);
+
+    localStorage.setItem("trace_brush_size", USER_BRUSH_SIZE);
+
+    updateBrushUI();
+
+    showToast("Saiz dakwat: " + this.textContent);
+
+  });
+
+});
+
+updateBrushUI();
+
+function flattenWords(){
+
+  flatWords = [];
+
+  surah.forEach(ayah=>{
+
+    ayah.words.forEach((word, wi)=>{
+
+      flatWords.push({
+
+        ayahNo:ayah.no,
+
+        ayahFull:ayah.full,
+
+        ayahMeaning:ayah.meaning,
+
+        wordIndex:wi,
+
+        id:word.id,
+
+        arabic:word.arabic,
+
+        meaning:word.meaning
+
+      });
+
+    });
+
+  });
+
 }
 
 function loadSave(){
+
   try{
+
     const raw = localStorage.getItem(STORAGE_KEY);
+
     if (!raw) return {};
+
     return JSON.parse(raw) || {};
+
   }catch(e){
+
     return {};
+
   }
+
 }
 
 function saveProgress(){
+
   localStorage.setItem(STORAGE_KEY, JSON.stringify(saveData));
+
 }
 
 function getWordPct(id){
+
   const v = Number(saveData[id] || 0);
+
   return Math.max(0, Math.min(100, v));
+
 }
 
 function isDone(id){
+
   return getWordPct(id) >= COMPLETE_THRESHOLD;
+
 }
 
 function isUnlockedIndex(idx){
+
   if (idx <= 0) return true;
+
   return isDone(flatWords[idx - 1].id);
+
 }
 
 function getFirstUnlockedIndex(){
-  for (let i=0;i<flatWords.length;i++){
-    if (!isDone(flatWords[i].id)) return i;
-  }
-  return flatWords.length - 1;
-}
 
-function setWordPct(id,pct){
-  const old = getWordPct(id);
-  saveData[id] = Math.max(old, Math.max(0, Math.min(100, Math.round(pct))));
-  saveProgress();
-  renderAyahCards();
+  for (let i=0;i<flatWords.length;i++){
+
+    if (!isDone(flatWords[i].id)) return i;
+
+  }
+
+  return flatWords.length - 1;
+
 }
 
 function escapeAttr(str){
+
   return String(str || "").replace(/'/g,"&#39;").replace(/"/g,"&quot;");
+
 }
 
 function renderAyahCards(){
+
   ayahList.innerHTML = surah.map(ayah=>{
+
     const total = ayah.words.length;
+
     const done = ayah.words.filter(w=>isDone(w.id)).length;
+
     const pct = Math.round((done / total) * 100);
 
     return `
+
       <div class="ayah-card">
+
         <div class="ayah-head">
+
           <div class="ayah-badge">Ayat ${ayah.no}</div>
+
           <div class="ayah-percent">${done}/${total} siap • ${pct}%</div>
+
         </div>
 
         <div class="ayah-full">
+
           ${ayah.words.map(w=>{
+
             const doneClass = isDone(w.id) ? "word-done-main" : "";
+
             return `<span class="${doneClass}">${w.arabic}</span>`;
+
           }).join(" ")}
+
         </div>
+
         <div class="ayah-meaning">${ayah.meaning}</div>
 
         <div class="word-row">
+
           ${ayah.words.map(w=>{
+
             const idx = flatWords.findIndex(x=>x.id === w.id);
+
             const doneClass = isDone(w.id) ? "done" : "";
+
             const activeClass = currentWord && currentWord.id === w.id ? "active" : "";
+
             const lockedClass = isUnlockedIndex(idx) ? "" : "locked";
+
             return `<button class="word-chip ${doneClass} ${activeClass} ${lockedClass}" onclick="openWordById('${escapeAttr(w.id)}')">${w.arabic}</button>`;
+
           }).join("")}
+
         </div>
+
       </div>
+
     `;
+
   }).join("");
 
   updateTotalProgress();
+
 }
 
 function updateTotalProgress(){
+
   const total = flatWords.length || 1;
+
   const done = flatWords.filter(w=>isDone(w.id)).length;
+
   const pct = Math.round((done / total) * 100);
+
   totalText.textContent = `Progress: ${done}/${total} blok siap • ${pct}%`;
+
   totalFill.style.width = pct + "%";
+
 }
 
 function showToast(msg){
+
   clearTimeout(toastTimer);
+
   toastMini.textContent = msg;
+
   toastMini.classList.add("show");
+
   toastTimer = setTimeout(()=>toastMini.classList.remove("show"),1600);
+
 }
 
 function unlockAudio(){
+
   if (audioUnlocked) return;
+
   try{
+
     const AC = window.AudioContext || window.webkitAudioContext;
+
     if (!AC) return;
+
     audioCtx = audioCtx || new AC();
+
     if (audioCtx.state === "suspended") audioCtx.resume();
+
     audioUnlocked = true;
+
   }catch(e){}
+
 }
 
 function beep(freq=880,dur=.08,type="sine",gain=.045){
+
   try{
+
     unlockAudio();
+
     if (!audioCtx) return;
+
     const o = audioCtx.createOscillator();
+
     const g = audioCtx.createGain();
+
     o.type = type;
+
     o.frequency.value = freq;
+
     g.gain.value = gain;
+
     o.connect(g);
+
     g.connect(audioCtx.destination);
+
     const now = audioCtx.currentTime;
+
     g.gain.setValueAtTime(gain,now);
+
     g.gain.exponentialRampToValueAtTime(0.0001,now+dur);
+
     o.start(now);
+
     o.stop(now+dur+.02);
+
   }catch(e){}
+
 }
 
 function playCompleteSound(){
+
   beep(740,.07,"sine",.05);
+
   setTimeout(()=>beep(990,.09,"sine",.05),80);
+
   setTimeout(()=>beep(1320,.11,"sine",.05),170);
+
 }
 
 function confetti(){
+
   const colors = ["#f59e0b","#fde68a","#facc15","#fff7ad"];
+
   for (let i=0;i<24;i++){
+
     const el = document.createElement("div");
+
     el.className = "confetti-piece";
+
     el.style.left = (18 + Math.random()*64) + "vw";
+
     el.style.top = (18 + Math.random()*12) + "vh";
+
     el.style.background = colors[Math.floor(Math.random()*colors.length)];
+
     el.style.animationDelay = (Math.random()*0.18) + "s";
+
     document.body.appendChild(el);
+
     setTimeout(()=>el.remove(),1200);
+
   }
+
 }
 
 function openWordById(id){
+
   const idx = flatWords.findIndex(x=>x.id === id);
+
   if (idx < 0) return;
+
   if (!isUnlockedIndex(idx)){
+
     const prev = flatWords[idx - 1];
+
     showToast(`🔒 Siapkan blok ${prev.id} dulu`);
+
     openWord(getFirstUnlockedIndex());
+
     return;
+
   }
+
   openWord(idx);
+
 }
 
 function openWord(idx){
+
   clearTimeout(autoNextTimer);
+
   currentIndex = Math.max(0, Math.min(flatWords.length - 1, idx));
 
   if (!isUnlockedIndex(currentIndex)){
+
     currentIndex = getFirstUnlockedIndex();
+
   }
 
   currentWord = flatWords[currentIndex];
+
   traceModal.classList.add("show");
+
   document.body.style.overflow = "hidden";
+
   modalTitle.textContent = currentWord.arabic;
+
   modalSub.textContent = `Blok ${currentWord.id} • ${currentWord.meaning}`;
+
   unlockPill.textContent = currentIndex === 0 ? "🔓 Blok pertama dibuka" : `🔓 Dibuka selepas ${flatWords[currentIndex - 1].id} siap`;
 
+  updateBrushUI();
+
   setTimeout(()=>{
+
     setupCanvasSize();
+
     renderTraceWord();
+
     updateButtons();
+
   },80);
+
 }
 
 function closeModal(){
+
   clearTimeout(autoNextTimer);
+
   traceModal.classList.remove("show");
+
   document.body.style.overflow = "";
+
   clearTraceOnlyCanvas();
+
   currentWord = null;
+
   hidePenDot();
+
   renderAyahCards();
+
 }
 
 function setupCanvasSize(){
+
   const rect = drawCanvas.getBoundingClientRect();
+
   dpr = window.devicePixelRatio || 1;
+
   cssW = rect.width;
+
   cssH = rect.height;
+
   if (!cssW || !cssH) return;
 
   [ghostCanvas, inkCanvas, drawCanvas].forEach(c=>{
+
     c.width = Math.floor(cssW * dpr);
+
     c.height = Math.floor(cssH * dpr);
+
     const ctx = c.getContext("2d");
+
     ctx.setTransform(dpr,0,0,dpr,0,0);
+
   });
 
-  dctx.lineCap = "round";
-  dctx.lineJoin = "round";
-  dctx.lineWidth = Math.max(16, cssW / 48) * BRUSH_EXTRA;
-  dctx.strokeStyle = "rgba(255,255,255,1)";
-
   textMaskCanvas.width = Math.floor(cssW * dpr);
+
   textMaskCanvas.height = Math.floor(cssH * dpr);
+
   textMaskCtx.setTransform(dpr,0,0,dpr,0,0);
+
 }
 
 function getFontSize(text){
+
   if (!cssW) return 80;
+
   if (text.length <= 4) return Math.min(205, cssW / 2.15);
+
   if (text.length <= 7) return Math.min(185, cssW / 3.05);
+
   if (text.length <= 11) return Math.min(162, cssW / 4.05);
+
   return Math.min(142, cssW / 5.25);
+
 }
 
 function getTextY(){
+
   return cssH / 2 - 14;
+
 }
 
-function drawArabicText(ctx, fillStyle, strokeStyle, lineWidth){
+function drawArabicText(ctx, fillStyle, strokeStyle, strokeWidth){
+
   if (!currentWord) return;
+
   const text = currentWord.arabic;
+
   ctx.save();
-  ctx.clearRect(0,0,cssW,cssH);
+
+  ctx.direction = "rtl";
+
+  ctx.textAlign = "center";
+
+  ctx.textBaseline = "middle";
+
+  let fs = getFontSize(text);
+
+  ctx.font = `900 ${fs}px "Times New Roman","Amiri",serif`;
+
+  while (ctx.measureText(text).width > cssW - 46 && fs > 52){
+
+    fs -= 4;
+
+    ctx.font = `900 ${fs}px "Times New Roman","Amiri",serif`;
+
+  }
+
+  const x = cssW / 2;
+
+  const y = getTextY();
+
+  ctx.lineJoin = "round";
+
+  ctx.lineCap = "round";
+
+  ctx.lineWidth = strokeWidth || 2;
+
+  ctx.strokeStyle = strokeStyle || "rgba(255,255,255,.55)";
+
+  ctx.strokeText(text,x,y);
+
+  ctx.fillStyle = fillStyle || "rgba(255,255,255,.12)";
+
+  ctx.fillText(text,x,y);
+
+  ctx.restore();
+
+}
+
+
+
+function drawArabicText(ctx, fillColor, strokeColor, strokeWidth){
+
+  if (!currentWord) return;
+
+  const text = currentWord.arabic;
+
+  ctx.save();
+
   ctx.direction = "rtl";
   ctx.textAlign = "center";
   ctx.textBaseline = "middle";
+
   let fs = getFontSize(text);
+
   ctx.font = `900 ${fs}px "Times New Roman","Amiri",serif`;
+
   while (ctx.measureText(text).width > cssW - 46 && fs > 52){
     fs -= 4;
     ctx.font = `900 ${fs}px "Times New Roman","Amiri",serif`;
   }
+
   const x = cssW / 2;
   const y = getTextY();
-  if (strokeStyle){
-    ctx.lineWidth = lineWidth || 2;
-    ctx.strokeStyle = strokeStyle;
-    ctx.strokeText(text,x,y);
-  }
-  ctx.fillStyle = fillStyle;
+
+  ctx.lineJoin = "round";
+  ctx.lineCap = "round";
+
+  ctx.strokeStyle = strokeColor || "rgba(255,255,255,.45)";
+  ctx.lineWidth = strokeWidth || 2;
+
+  ctx.strokeText(text,x,y);
+
+  ctx.fillStyle = fillColor || "#fff";
   ctx.fillText(text,x,y);
+
   ctx.restore();
 }
+
 
 function drawArabicMaskOnly(ctx){
+
   if (!currentWord) return;
+
   const text = currentWord.arabic;
+
   ctx.save();
+
   ctx.direction = "rtl";
+
   ctx.textAlign = "center";
+
   ctx.textBaseline = "middle";
+
   let fs = getFontSize(text);
+
   ctx.font = `900 ${fs}px "Times New Roman","Amiri",serif`;
+
   while (ctx.measureText(text).width > cssW - 46 && fs > 52){
+
     fs -= 4;
+
     ctx.font = `900 ${fs}px "Times New Roman","Amiri",serif`;
+
   }
+
   const x = cssW / 2;
+
   const y = getTextY();
+
+  ctx.lineJoin = "round";
+
+  ctx.lineCap = "round";
+
+  ctx.strokeStyle = "rgba(255,255,255,1)";
+
+  ctx.lineWidth = Math.max(85, fs * 0.42);
+
+  ctx.strokeText(text,x,y);
+
   ctx.fillStyle = "rgba(255,255,255,1)";
+
   ctx.fillText(text,x,y);
+
   ctx.restore();
+
 }
 
 function renderGhost(){
+
   if (!cssW || !cssH) return;
+
   gctx.clearRect(0,0,cssW,cssH);
+
   drawArabicText(gctx, "rgba(255,255,255,.11)", "rgba(255,255,255,.55)", 2.2);
+
   gctx.save();
+
   gctx.direction = "rtl";
+
   gctx.textAlign = "center";
+
   gctx.textBaseline = "top";
+
   gctx.font = `800 18px "Times New Roman","Amiri",serif`;
+
   gctx.fillStyle = "rgba(255,255,255,.58)";
+
   gctx.fillText("● ابدأ من اليمين", cssW / 2, 18);
+
   gctx.restore();
+
   countMaskPixels();
+
 }
 
 function countMaskPixels(){
+
   if (!cssW || !cssH) return;
+
   textMaskCtx.clearRect(0,0,cssW,cssH);
+
   drawArabicMaskOnly(textMaskCtx);
+
   const w = textMaskCanvas.width;
+
   const h = textMaskCanvas.height;
+
   if (!w || !h) return;
+
   const data = textMaskCtx.getImageData(0,0,w,h).data;
+
   let count = 0;
+
   for (let i=3;i<data.length;i+=4){
+
     if (data[i] > 20) count++;
+
   }
+
   maskPixels = Math.max(1,count);
+
 }
 
-
 function getCoverageStats(){
+
   const w = inkCanvas.width;
+
   const h = inkCanvas.height;
-  if (!w || !h) return { pixelPct:0, cellPct:0, finalPct:0 };
+
+  if (!w || !h) return { pixelPct:0, cellPct:0, finalPct:0, corePct:0 };
 
   const ink = ictx.getImageData(0,0,w,h).data;
+
   const mask = textMaskCtx.getImageData(0,0,w,h).data;
 
   let maskCount = 0;
+
   let inkCount = 0;
 
   for (let i=3;i<mask.length;i+=4){
+
     if (mask[i] > 20){
+
       maskCount++;
+
       if (ink[i] > 25) inkCount++;
+
     }
+
   }
 
   const pixelPct = maskCount ? Math.round((inkCount / maskCount) * 100) : 0;
 
-  /*
-    Grid check ni penting:
-    Kalau budak trace bahagian besar sahaja, pixel boleh cepat tinggi.
-    Tapi baris kecil / titik / harakat belum kena, cellPct masih rendah.
-  */
-  const cols = 24;
-  const rows = 16;
+  const cols = 30;
+
+  const rows = 20;
+
   let activeCells = 0;
+
   let doneCells = 0;
 
+  let coreCells = 0;
+
+  let coreDoneCells = 0;
+
   for (let cy=0; cy<rows; cy++){
+
     for (let cx=0; cx<cols; cx++){
+
       const x0 = Math.floor((cx / cols) * w);
+
       const x1 = Math.floor(((cx + 1) / cols) * w);
+
       const y0 = Math.floor((cy / rows) * h);
+
       const y1 = Math.floor(((cy + 1) / rows) * h);
 
       let m = 0;
+
       let k = 0;
+
       for (let y=y0; y<y1; y+=2){
-        let off = (y * w + x0) * 4 + 3;
-        for (let x=x0; x<x1; x+=2, off+=8){
+
+        for (let x=x0; x<x1; x+=2){
+
+          const off = (y * w + x) * 4 + 3;
+
           if (mask[off] > 20){
+
             m++;
+
             if (ink[off] > 25) k++;
+
           }
+
         }
+
       }
 
       if (m >= 5){
+
         activeCells++;
-        if ((k / m) >= 0.42) doneCells++;
+
+        const ratio = k / m;
+
+        if (ratio >= 0.48) doneCells++;
+
+        if (m >= 14){
+
+          coreCells++;
+
+          if (ratio >= 0.52) coreDoneCells++;
+
+        }
+
       }
+
     }
+
   }
 
   const cellPct = activeCells ? Math.round((doneCells / activeCells) * 100) : 0;
-  const finalPct = Math.min(pixelPct, cellPct);
 
-  return { pixelPct, cellPct, finalPct };
-}
+  const corePct = coreCells ? Math.round((coreDoneCells / coreCells) * 100) : 0;
 
-function redrawInkClipped(){
-  if (!cssW || !cssH) return;
-  const temp = document.createElement("canvas");
-  temp.width = inkCanvas.width;
-  temp.height = inkCanvas.height;
-  const t = temp.getContext("2d", { willReadFrequently:true });
-  t.setTransform(dpr,0,0,dpr,0,0);
-  t.drawImage(drawCanvas,0,0,cssW,cssH);
-  t.globalCompositeOperation = "source-in";
-  const grad = t.createLinearGradient(0,0,cssW,0);
-  grad.addColorStop(0,"#f59e0b");
-  grad.addColorStop(.45,"#fff7ad");
-  grad.addColorStop(1,"#fbbf24");
-  t.fillStyle = grad;
-  t.fillRect(0,0,cssW,cssH);
-  t.globalCompositeOperation = "destination-in";
-  drawArabicMaskOnly(t);
-  ictx.clearRect(0,0,cssW,cssH);
-  ictx.drawImage(temp,0,0,cssW,cssH);
-  updateTraceProgress();
+  const finalPct = Math.min(pixelPct, cellPct, corePct);
+
+  return { pixelPct, cellPct, finalPct, corePct };
+
 }
 
 function updateTraceProgress(){
+
   if (!cssW || !cssH || !currentWord) return;
 
   const stats = getCoverageStats();
-  let pct = Math.max(0, Math.min(100, stats.finalPct));
+
+  let pct = Math.max(0, Math.min(99, stats.finalPct));
+
   const savedPct = getWordPct(currentWord.id);
 
-  // Jangan paksa ikut savedPct untuk kira selesai. Ini elak belum habis tapi terus 100%.
-  const displayPct = Math.max(savedPct >= COMPLETE_THRESHOLD ? COMPLETE_THRESHOLD : savedPct, pct);
+  const displayPct = Math.max(
+
+    savedPct >= COMPLETE_THRESHOLD ? COMPLETE_THRESHOLD - 1 : savedPct,
+
+    pct
+
+  );
 
   scoreLabel.textContent = displayPct + "%";
+
   barFill.style.width = displayPct + "%";
 
-  // Simpan progress kasar sahaja. 100% hanya bila betul-betul lengkap.
   saveData[currentWord.id] = Math.max(savedPct, Math.min(displayPct, COMPLETE_THRESHOLD - 1));
+
   saveProgress();
 
-  const enoughPixel = stats.pixelPct >= 97;
-  const enoughArea  = stats.cellPct >= COMPLETE_THRESHOLD;
+  const enoughPixel = stats.pixelPct >= 96;
 
-  if (enoughPixel && enoughArea && !completed){
+  const enoughCell  = stats.cellPct >= 94;
+
+  const enoughCore  = stats.corePct >= 92;
+
+  if (enoughPixel && enoughCell && enoughCore && !completed){
+
     markCompleteAndAutoNext();
+
   }
+
 }
 
 function markCompleteAndAutoNext(){
+
   if (!currentWord) return;
+
   completed = true;
+
   saveData[currentWord.id] = 100;
+
   saveProgress();
+
   showCompletedGold();
+
   scoreLabel.textContent = "Selesai ✓";
+
   barFill.style.width = "100%";
+
   renderAyahCards();
+
   updateButtons();
+
   playCompleteSound();
+
   confetti();
 
   if (currentIndex < flatWords.length - 1){
+
     showToast("✅ Siap! Auto next...");
+
     clearTimeout(autoNextTimer);
+
     autoNextTimer = setTimeout(()=>openWord(currentIndex + 1), AUTO_NEXT_DELAY);
+
   } else {
+
     showToast("🎉 Alhamdulillah semua siap!");
+
   }
+
 }
 
 function clearTraceOnlyCanvas(){
+
   if (!cssW || !cssH) return;
+
   dctx.clearRect(0,0,cssW,cssH);
+
   ictx.clearRect(0,0,cssW,cssH);
+
 }
 
 function showCompletedGold(){
+
   if (!cssW || !cssH || !currentWord) return;
+
   ictx.clearRect(0,0,cssW,cssH);
+
   const grad = ictx.createLinearGradient(0,0,cssW,0);
+
   grad.addColorStop(0,"#f59e0b");
+
   grad.addColorStop(.45,"#fff7ad");
+
   grad.addColorStop(1,"#fbbf24");
+
   ictx.save();
+
   ictx.fillStyle = grad;
+
   drawArabicMaskOnly(ictx);
+
   ictx.restore();
+
 }
 
 function clearTraceCurrent(){
+
   if (!currentWord) return;
+
   clearTimeout(autoNextTimer);
+
   delete saveData[currentWord.id];
+
   saveProgress();
+
   completed = false;
+
   clearTraceOnlyCanvas();
+
   scoreLabel.textContent = "0%";
+
   barFill.style.width = "0%";
+
   renderAyahCards();
+
   updateButtons();
+
 }
 
 function renderTraceWord(){
+
   if (!currentWord) return;
+
   traceLabel.textContent = `Blok ${currentWord.id}`;
+
   infoText.innerHTML = `<b>${currentWord.arabic}</b><br>${currentWord.meaning}<br><span style="color:#94a3b8">Ayat ${currentWord.ayahNo}: ${currentWord.ayahMeaning}</span>`;
+
   completed = isDone(currentWord.id);
+
   renderGhost();
+
   clearTraceOnlyCanvas();
+
   const saved = getWordPct(currentWord.id);
 
   if (saved >= COMPLETE_THRESHOLD){
+
     completed = true;
+
     showCompletedGold();
+
     scoreLabel.textContent = "Selesai ✓";
+
     barFill.style.width = "100%";
+
   } else {
+
     completed = false;
+
     scoreLabel.textContent = saved + "%";
+
     barFill.style.width = saved + "%";
+
   }
+
 }
 
 function updateButtons(){
+
   btnPrev.disabled = currentIndex <= 0;
+
   btnNext.disabled = currentIndex >= flatWords.length - 1 || !isDone(currentWord?.id);
+
   btnNext.textContent = isDone(currentWord?.id) ? "Seterusnya" : "Siapkan Dulu";
+
 }
 
 function getPoint(e){
+
   const rect = drawCanvas.getBoundingClientRect();
+
   const p = e.touches && e.touches.length ? e.touches[0] : e;
+
   return { x:p.clientX - rect.left, y:p.clientY - rect.top };
+
 }
 
 function isInsideArabicText(x,y){
+
   const px = Math.floor(x * dpr);
+
   const py = Math.floor(y * dpr);
+
   if (px < 0 || py < 0 || px >= textMaskCanvas.width || py >= textMaskCanvas.height) return false;
-  const data = textMaskCtx.getImageData(px,py,1,1).data;
-  return data[3] > 20;
+
+  const center = textMaskCtx.getImageData(px,py,1,1).data;
+
+  if (center[3] > 20) return true;
+
+  const r = Math.floor(HIT_RADIUS * dpr);
+
+  const step = Math.max(2, Math.floor(r / 3));
+
+  for (let yy = py - r; yy <= py + r; yy += step){
+
+    for (let xx = px - r; xx <= px + r; xx += step){
+
+      if (xx < 0 || yy < 0 || xx >= textMaskCanvas.width || yy >= textMaskCanvas.height) continue;
+
+      const dx = xx - px;
+
+      const dy = yy - py;
+
+      if ((dx * dx + dy * dy) > (r * r)) continue;
+
+      const data = textMaskCtx.getImageData(xx,yy,1,1).data;
+
+      if (data[3] > 20) return true;
+
+    }
+
+  }
+
+  return false;
+
 }
 
 function showPenDot(x,y){
+
   penDot.style.display = "block";
+
   penDot.style.left = x + "px";
+
   penDot.style.top = y + "px";
+
 }
 
 function hidePenDot(){
+
   penDot.style.display = "none";
+
 }
 
 function drawDot(x,y,r){
+
   dctx.beginPath();
-  dctx.arc(x,y,r,0,Math.PI*2);
+
+  dctx.arc(x,y,Math.max(10, r || 10),0,Math.PI*2);
+
   dctx.fillStyle = "rgba(255,255,255,1)";
+
   dctx.fill();
+
+}
+
+function paintGoldStroke(x1,y1,x2,y2){
+
+  if (!cssW || !cssH || !currentWord) return;
+
+  const temp = document.createElement("canvas");
+
+  temp.width = inkCanvas.width;
+
+  temp.height = inkCanvas.height;
+
+  const t = temp.getContext("2d", { willReadFrequently:true });
+
+  t.setTransform(dpr,0,0,dpr,0,0);
+
+  const brushScale = USER_BRUSH_SIZE / 100;
+
+  t.lineCap = "round";
+
+  t.lineJoin = "round";
+
+  t.lineWidth = Math.max(70, cssW * brushScale * 1.35);
+
+  t.strokeStyle = "#fff";
+
+  t.beginPath();
+
+  t.moveTo(x1,y1);
+
+  t.lineTo(x2,y2);
+
+  t.stroke();
+
+  t.beginPath();
+
+  t.arc(x2,y2,Math.max(45, cssW * brushScale),0,Math.PI*2);
+
+  t.fillStyle = "#fff";
+
+  t.fill();
+
+  t.globalCompositeOperation = "destination-in";
+
+  drawArabicMaskOnly(t);
+
+  t.globalCompositeOperation = "source-in";
+
+  const grad = t.createLinearGradient(0,0,cssW,0);
+
+  grad.addColorStop(0,"#f59e0b");
+
+  grad.addColorStop(.35,"#fde68a");
+
+  grad.addColorStop(.55,"#fff7ad");
+
+  grad.addColorStop(1,"#facc15");
+
+  t.fillStyle = grad;
+
+  t.fillRect(0,0,cssW,cssH);
+
+  ictx.drawImage(temp,0,0,cssW,cssH);
+
+  updateTraceProgress();
+
 }
 
 function drawSmoothLine(x1,y1,x2,y2){
+
   const dx = x2 - x1;
+
   const dy = y2 - y1;
+
   const dist = Math.hypot(dx,dy);
+
   if (dist < MIN_STROKE_DISTANCE) return;
 
-  const steps = Math.max(1, Math.ceil(dist / 4));
+  const steps = Math.max(1, Math.ceil(dist / 2));
+
   let prevX = x1;
+
   let prevY = y1;
 
-  for (let i=1;i<=steps;i++){
+  for(let i=1;i<=steps;i++){
+
     const t = i / steps;
+
     const x = x1 + dx * t;
+
     const y = y1 + dy * t;
-    if (isInsideArabicText(x,y)){
-      dctx.beginPath();
-      dctx.moveTo(prevX,prevY);
-      dctx.lineTo(x,y);
-      dctx.stroke();
-      drawDot(x,y,Math.max(5, cssW / 110));
+
+    if(isInsideArabicText(x,y)){
+
+      paintGoldStroke(prevX,prevY,x,y);
+
       prevX = x;
+
       prevY = y;
+
     }
+
   }
+
 }
 
 function startDraw(e){
+
   e.preventDefault();
+
   unlockAudio();
+
   if (completed) return;
+
   const p = getPoint(e);
+
   if (!isInsideArabicText(p.x,p.y)){
+
     drawing = false;
+
     hidePenDot();
+
     return;
+
   }
+
   drawing = true;
+
   activePointerId = e.pointerId || null;
+
   lastX = p.x;
+
   lastY = p.y;
-  drawDot(lastX,lastY,Math.max(11, cssW / 75));
+
+  drawDot(lastX,lastY,Math.max(8, cssW / 90));
+
+  paintGoldStroke(lastX,lastY,lastX + .1,lastY + .1);
+
   showPenDot(lastX,lastY);
-  redrawInkClipped();
+
 }
 
 function moveDraw(e){
+
   if (!drawing) return;
+
   e.preventDefault();
+
   const p = getPoint(e);
+
   showPenDot(p.x,p.y);
 
   if (!isInsideArabicText(p.x,p.y)){
+
     lastX = p.x;
+
     lastY = p.y;
+
     return;
+
   }
 
   drawSmoothLine(lastX,lastY,p.x,p.y);
+
   lastX = p.x;
+
   lastY = p.y;
-  redrawInkClipped();
+
 }
 
 function stopDraw(e){
+
   if (e) e.preventDefault();
+
   drawing = false;
+
   activePointerId = null;
+
   hidePenDot();
+
 }
 
 drawCanvas.addEventListener("mousedown",startDraw);
+
 drawCanvas.addEventListener("mousemove",moveDraw);
+
 drawCanvas.addEventListener("mouseup",stopDraw);
+
 drawCanvas.addEventListener("mouseleave",stopDraw);
+
 drawCanvas.addEventListener("touchstart",startDraw,{passive:false});
+
 drawCanvas.addEventListener("touchmove",moveDraw,{passive:false});
+
 drawCanvas.addEventListener("touchend",stopDraw,{passive:false});
+
 drawCanvas.addEventListener("touchcancel",stopDraw,{passive:false});
 
 if (window.PointerEvent){
+
   drawCanvas.addEventListener("pointerdown",function(e){
+
     if (e.pointerType === "mouse") return;
+
     try{drawCanvas.setPointerCapture(e.pointerId)}catch(err){}
+
     startDraw(e);
+
   },{passive:false});
+
   drawCanvas.addEventListener("pointermove",function(e){
+
     if (e.pointerType === "mouse") return;
+
     if (activePointerId !== null && e.pointerId !== activePointerId) return;
+
     moveDraw(e);
+
   },{passive:false});
+
   drawCanvas.addEventListener("pointerup",function(e){
+
     if (e.pointerType === "mouse") return;
+
     stopDraw(e);
+
   },{passive:false});
+
   drawCanvas.addEventListener("pointercancel",function(e){
+
     if (e.pointerType === "mouse") return;
+
     stopDraw(e);
+
   },{passive:false});
+
 }
 
 document.getElementById("btnCloseModal").onclick = closeModal;
+
 traceModal.addEventListener("click",function(e){
+
   if (e.target === traceModal) closeModal();
+
 });
+
 btnClear.onclick = clearTraceCurrent;
+
 btnNext.onclick = function(){
+
   if (!currentWord) return;
+
   if (!isDone(currentWord.id)){
+
     showToast("Siapkan trace dulu sampai penuh ✍️");
+
     return;
+
   }
-  if (currentIndex < flatWords.length - 1) openWord(currentIndex + 1);
+
+  if (currentIndex < flatWords.length - 1){
+
+    openWord(currentIndex + 1);
+
+  }
+
 };
+
 btnPrev.onclick = function(){
-  if (currentIndex > 0) openWord(currentIndex - 1);
+
+  if (currentIndex > 0){
+
+    openWord(currentIndex - 1);
+
+  }
+
 };
+
 document.getElementById("btnResetAll").onclick = function(){
+
   const ok = confirm("Padam semua progress trace Al-Fatihah?");
+
   if (!ok) return;
+
   saveData = {};
+
   saveProgress();
+
   renderAyahCards();
+
   showToast("Progress sudah reset");
+
 };
 
 window.addEventListener("resize",function(){
+
   if (traceModal.classList.contains("show")){
+
     setupCanvasSize();
+
     renderTraceWord();
+
     updateButtons();
+
   }
+
 });
 
 document.addEventListener("visibilitychange",function(){
+
   if (document.hidden) stopDraw();
+
 });
 
 flattenWords();
+
 renderAyahCards();
+
 </script>
+
 </body>
+
 </html>

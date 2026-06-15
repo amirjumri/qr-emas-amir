@@ -1,0 +1,5595 @@
+<!doctype html>
+<html lang="ms">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Barang LIVE Sekarang • Emas Amir</title>
+
+<link rel="stylesheet" href="/global.css">
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="/auth.js?v=13.1"></script>
+
+<style>
+*{box-sizing:border-box}
+html,body{
+  margin:0;
+  min-height:100%;
+  padding-top:env(safe-area-inset-top,0px);
+  padding-bottom:env(safe-area-inset-bottom,0px);
+  font-family:system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+  background:#070707;
+  color:#fff;
+}
+.page{
+  max-width:980px;
+  margin:0 auto;
+  padding:16px 14px 90px;
+}
+.topbar{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  gap:10px;
+  margin-bottom:14px;
+}
+.brand-title{
+  font-weight:900;
+  font-size:21px;
+}
+.sub{
+  color:#9ca3af;
+  font-size:13px;
+}
+.hero{
+  border:1px solid rgba(250,204,21,.28);
+  border-radius:24px;
+  padding:18px;
+  background:
+    radial-gradient(circle at top left,rgba(250,204,21,.24),transparent 36%),
+    linear-gradient(180deg,#151515,#080808);
+  box-shadow:0 18px 50px rgba(0,0,0,.45);
+  margin-bottom:18px;
+}
+.hero h1{
+  font-size:24px;
+  font-weight:950;
+  margin:8px 0 4px;
+}
+.live-pill{
+  display:inline-flex;
+  align-items:center;
+  gap:7px;
+  background:linear-gradient(135deg,#e11d48,#be123c);
+  color:#fff;
+  border-radius:999px;
+  padding:7px 12px;
+  font-size:12px;
+  font-weight:900;
+}
+.stat-row{
+  display:grid;
+  grid-template-columns:repeat(3,1fr);
+  gap:10px;
+  margin-top:14px;
+}
+.stat{
+  border:1px solid rgba(255,255,255,.10);
+  border-radius:16px;
+  background:rgba(255,255,255,.06);
+  padding:12px;
+}
+.stat b{
+  display:block;
+  font-size:22px;
+  color:#facc15;
+}
+.stat span{
+  font-size:12px;
+  color:#cbd5e1;
+}
+.controls{
+  display:flex;
+  gap:8px;
+  flex-wrap:wrap;
+  margin:14px 0 18px;
+}
+.controls .btn{
+  border-radius:999px;
+  font-weight:800;
+}
+.search-box{
+  flex:1;
+  min-width:190px;
+  border-radius:999px;
+  border:1px solid rgba(255,255,255,.15);
+  background:#111827;
+  color:#fff;
+  padding:10px 14px;
+  outline:none;
+}
+.section-title{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  gap:10px;
+  margin:22px 0 12px;
+}
+.section-title h5{
+  font-weight:950;
+  margin:0;
+}
+.grid{
+  display:grid;
+  grid-template-columns:repeat(3,1fr);
+  gap:14px;
+}
+.live-card{
+  border:1px solid rgba(255,255,255,.12);
+  border-radius:18px;
+  overflow:hidden;
+  background:linear-gradient(180deg,#111827,#020617);
+  box-shadow:0 14px 35px rgba(0,0,0,.35);
+}
+.live-card.gold{
+  border-color:rgba(250,204,21,.32);
+}
+.live-card.red{
+  border-color:rgba(225,29,72,.35);
+}
+.media,
+.live-media{
+  position:relative;
+  width:100%;
+  height:220px;
+  background:#030712;
+  overflow:hidden;
+  cursor:pointer;
+}
+
+.media img,
+.live-media img,
+.live-media video{
+  width:100%;
+  height:220px;
+  object-fit:cover;
+  object-position:center center;
+  display:block;
+  background:#030712;
+}
+
+.media.gold img{
+  object-fit:contain;
+  padding:16px;
+  background:#fff;
+}
+
+.live-media-img{
+  width:100%;
+  height:220px;
+  object-fit:cover;
+  display:block;
+}
+
+.live916-video-frame{
+  width:100%;
+  height:220px;
+  border:0;
+  display:block;
+  background:#030712;
+  transform:scale(2.45);
+  transform-origin:center center;
+  pointer-events:none;
+}.card-body-live{
+  padding:14px;
+}
+.badge-live{
+  display:inline-flex;
+  background:#e11d48;
+  color:#fff;
+  border-radius:999px;
+  padding:4px 9px;
+  font-size:11px;
+  font-weight:900;
+}
+.badge-gold{
+  background:#f59e0b;
+  color:#111827;
+}
+.code{
+  font-family:ui-monospace,Menlo,Consolas,monospace;
+  font-weight:900;
+  margin-top:8px;
+}
+.name{
+  font-weight:900;
+  margin-top:8px;
+  min-height:24px;
+}
+.spec{
+  color:#cbd5e1;
+  font-size:13px;
+  min-height:20px;
+}
+.price-old{
+  color:#9ca3af;
+  text-decoration:line-through;
+  font-weight:700;
+  margin-top:8px;
+}
+.price-new{
+  color:#fb923c;
+  font-size:23px;
+  font-weight:950;
+  line-height:1.1;
+  text-shadow:0 0 10px rgba(251,146,60,.45);
+}
+.save{
+  color:#22c55e;
+  font-size:13px;
+  font-weight:900;
+  min-height:18px;
+}
+.card-actions{
+  display:grid;
+  grid-template-columns:1fr;
+  gap:8px;
+  margin-top:12px;
+}
+.card-actions .btn{
+  border-radius:12px;
+  font-weight:900;
+}
+.empty{
+  border:1px dashed rgba(255,255,255,.18);
+  border-radius:18px;
+  padding:22px;
+  color:#9ca3af;
+  text-align:center;
+}
+.bottom-nav{
+  position:fixed;
+  left:50%;
+  bottom:0;
+  transform:translateX(-50%);
+  width:min(520px,100vw);
+  background:rgba(2,6,23,.95);
+  border-top:1px solid rgba(255,255,255,.12);
+  border-radius:22px 22px 0 0;
+  padding:10px 14px calc(10px + env(safe-area-inset-bottom,0px));
+  display:grid;
+  grid-template-columns:repeat(4,1fr);
+  gap:4px;
+  z-index:999;
+}
+.bottom-nav a{
+  color:#9ca3af;
+  text-align:center;
+  font-size:11px;
+  font-weight:800;
+}
+.bottom-nav .ico{
+  font-size:22px;
+}
+.bottom-nav a.active{
+  color:#facc15;
+}
+@media(max-width:800px){
+  .grid{grid-template-columns:repeat(2,1fr)}
+}
+@media(max-width:560px){
+  .page{padding-left:12px;padding-right:12px}
+  .grid{grid-template-columns:1fr}
+  .media{height:240px}
+  .stat-row{grid-template-columns:1fr 1fr 1fr}
+  .stat{padding:10px}
+  .stat b{font-size:19px}
+}
+.live-checkout-backdrop{
+  position:fixed;
+  inset:0;
+  background:rgba(2,6,23,.72);
+  display:none;
+  align-items:flex-end;
+  justify-content:center;
+  z-index:999999;
+  backdrop-filter:blur(6px);
+}
+.live-checkout-sheet{
+  width:100%;
+  max-width:520px;
+  max-height:92vh;
+  overflow:auto;
+  background:#fff;
+  color:#111827;
+  border-radius:24px 24px 0 0;
+  box-shadow:0 -20px 60px rgba(0,0,0,.35);
+  padding:16px;
+}
+.live-checkout-handle{
+  width:48px;
+  height:5px;
+  border-radius:999px;
+  background:#d1d5db;
+  margin:0 auto 12px;
+}
+.live-checkout-item{
+  display:flex;
+  gap:12px;
+  align-items:center;
+  padding:12px;
+  border:1px solid #e5e7eb;
+  border-radius:16px;
+  background:#f9fafb;
+}
+.live-checkout-img{
+  width:76px;
+  height:76px;
+  border-radius:14px;
+  object-fit:cover;
+  background:#e5e7eb;
+}
+.live-choice{
+  border:1px solid #d1d5db;
+  border-radius:14px;
+  padding:10px 12px;
+  background:#fff;
+  font-weight:800;
+}
+.live-choice.active{
+  border-color:#e11d48;
+  background:#fff1f2;
+  color:#be123c;
+}
+.live-submit-bar{
+  position:sticky;
+  bottom:0;
+  background:#fff;
+  padding-top:12px;
+  border-top:1px solid #eef2f7;
+} 
+
+.inline-login-backdrop{
+  position:fixed;
+  inset:0;
+  background:rgba(2,6,23,.78);
+  display:none;
+  align-items:flex-end;
+  justify-content:center;
+  z-index:1000000;
+  backdrop-filter:blur(7px);
+}
+.inline-login-sheet{
+  width:100%;
+  max-width:520px;
+  height:88vh;
+  background:#fff;
+  color:#111827;
+  border-radius:24px 24px 0 0;
+  overflow:hidden;
+  box-shadow:0 -24px 70px rgba(0,0,0,.45);
+}
+.inline-login-head{
+  height:62px;
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:10px;
+  padding:10px 14px;
+  border-bottom:1px solid #e5e7eb;
+}
+.inline-login-title{
+  font-weight:900;
+  font-size:16px;
+}
+.inline-login-actions{
+  display:flex;
+  gap:8px;
+}
+.inline-login-frame{
+  width:100%;
+  height:calc(100% - 62px);
+  border:0;
+  display:block;
+  background:#fff;
+} 
+.aidan-popup{
+  position:fixed;
+  right:14px;
+  bottom:92px;
+  width:min(430px, calc(100vw - 24px));
+  height:min(760px, calc(100vh - 115px));
+  background:#fff;
+  border:1px solid rgba(255,255,255,.18);
+  border-radius:22px;
+  overflow:hidden;
+  box-shadow:0 28px 80px rgba(0,0,0,.45);
+  z-index:1000001;
+  display:none;
+}
+.aidan-popup-head{
+  height:52px;
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:10px;
+  padding:12px 14px;
+  background:#111827;
+  color:#fff;
+  font-weight:900;
+}
+.aidan-popup-close{
+  border:0;
+  background:rgba(255,255,255,.12);
+  color:#fff;
+  width:34px;
+  height:34px;
+  border-radius:999px;
+  font-weight:900;
+}
+.aidan-popup iframe{
+  width:100%;
+  height:calc(100% - 52px);
+  border:0;
+  background:#fff;
+}
+@media(max-width:560px){
+  .aidan-popup{
+    left:0;
+    right:0;
+    bottom:0;
+    width:100vw;
+    height:92vh;
+    border-radius:24px 24px 0 0;
+  }
+} 
+.top-actions{
+  display:flex;
+  align-items:center;
+  justify-content:flex-end;
+  gap:8px;
+  flex-wrap:wrap;
+}
+
+.ea-pill,
+.ea-chip-btn,
+.home-btn{
+  border:1px solid rgba(255,255,255,.28);
+  background:rgba(255,255,255,.08);
+  color:#fff;
+  border-radius:999px;
+  padding:9px 14px;
+  font-weight:900;
+  font-size:13px;
+  text-decoration:none;
+}
+
+.ea-pill-admin{
+  color:#86efac;
+  border-color:rgba(34,197,94,.5);
+}
+
+.ea-chip-danger{
+  color:#fecaca;
+  border-color:rgba(244,63,94,.55);
+}
+
+.home-btn{
+  font-size:22px;
+  width:58px;
+  height:58px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  padding:0;
+} 
+.app-download-box{
+  margin:0 0 18px;
+  border:1px dashed rgba(244,63,94,.85);
+  background:
+    radial-gradient(circle at top,rgba(244,63,94,.22),transparent 34%),
+    linear-gradient(180deg,rgba(255,255,255,.09),rgba(255,255,255,.04));
+  border-radius:22px;
+  padding:16px 14px;
+  text-align:center;
+  position:relative;
+  overflow:hidden;
+  animation:appBoxGlow 2.8s ease-in-out infinite;
+}
+
+.app-download-box:before{
+  content:"";
+  position:absolute;
+  inset:-70%;
+  background:linear-gradient(120deg,transparent 35%,rgba(255,255,255,.16),transparent 65%);
+  transform:rotate(12deg);
+  animation:appShine 3.6s linear infinite;
+  pointer-events:none;
+}
+
+@keyframes appBoxGlow{
+  0%,100%{box-shadow:0 0 0 rgba(244,63,94,0);}
+  50%{box-shadow:0 0 28px rgba(244,63,94,.22);}
+}
+
+@keyframes appShine{
+  0%{transform:translateX(-55%) rotate(12deg);}
+  100%{transform:translateX(55%) rotate(12deg);}
+}
+
+.app-download-box > *{
+  position:relative;
+  z-index:1;
+}
+
+.app-download-title{
+  font-size:20px;
+  font-weight:950;
+  color:#fff;
+  animation:appTitlePop 1.8s ease-in-out infinite;
+}
+
+@keyframes appTitlePop{
+  0%,100%{transform:scale(1);}
+  50%{transform:scale(1.035);}
+}
+
+.app-phone-hint{
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  gap:7px;
+  margin:10px auto 14px;
+  padding:9px 14px;
+  border-radius:999px;
+  background:rgba(250,204,21,.12);
+  border:1px solid rgba(250,204,21,.35);
+  color:#fde68a;
+  font-size:13px;
+  font-weight:900;
+  animation:appHintPulse 1.4s ease-in-out infinite;
+}
+
+@keyframes appHintPulse{
+  0%,100%{transform:translateY(0);}
+  50%{transform:translateY(-3px);}
+}
+
+.store-btn{
+  flex:1;
+  text-decoration:none;
+  color:#fff;
+  font-weight:900;
+  transition:.18s ease;
+}
+
+.store-btn:hover{
+  transform:translateY(-4px) scale(1.02);
+  filter:brightness(1.08);
+}.app-download-sep{
+  display:flex;
+  align-items:center;
+  gap:10px;
+  margin:4px 0 14px;
+}
+.app-download-sep:before,
+.app-download-sep:after{
+  content:"";
+  flex:1;
+  border-top:2px dashed #ef4056;
+}
+.app-download-sep span{
+  background:#ef4056;
+  color:#fff;
+  font-weight:900;
+  font-size:12px;
+  padding:6px 14px;
+  border-radius:999px;
+}
+.app-download-title{
+  font-size:20px;
+  font-weight:950;
+  color:#fff;
+}
+.app-download-text{
+  font-size:14px;
+  color:#d1d5db;
+  line-height:1.45;
+  margin:8px 0 14px;
+}
+.store-row{
+  display:flex;
+  gap:12px;
+  justify-content:center;
+}
+.store-btn{
+  flex:1;
+  text-decoration:none;
+  color:#fff;
+  font-weight:900;
+}
+.store-badge{
+  width:100%;
+  max-width:170px;
+  height:auto;
+  border-radius:10px;
+  display:block;
+  margin:0 auto 7px;
+}
+.store-label{
+  font-size:13px;
+  line-height:1.25;
+  color:#fb7185;
+}
+.scam-note{
+  margin-top:16px;
+  border:1px solid rgba(250,204,21,.35);
+  background:rgba(250,204,21,.08);
+  color:#fde68a;
+  border-radius:16px;
+  padding:12px;
+  font-size:13px;
+  line-height:1.5;
+  text-align:left;
+}
+@media(max-width:380px){
+  .store-row{gap:8px}
+  .app-download-title{font-size:17px}
+}
+.live-confirm-backdrop{
+  position:fixed;
+  inset:0;
+  background:rgba(2,6,23,.78);
+  display:none;
+  align-items:flex-end;
+  justify-content:center;
+  z-index:1000002;
+  backdrop-filter:blur(7px);
+}
+.live-confirm-sheet{
+  width:100%;
+  max-width:520px;
+  max-height:92vh;
+  overflow:auto;
+  background:#fff;
+  color:#111827;
+  border-radius:24px 24px 0 0;
+  box-shadow:0 -24px 70px rgba(0,0,0,.45);
+  padding:16px;
+}
+.live-confirm-item{
+  display:flex;
+  gap:12px;
+  padding:12px;
+  border:1px solid #e5e7eb;
+  border-radius:18px;
+  background:#f9fafb;
+}
+.live-confirm-img{
+  width:78px;
+  height:78px;
+  border-radius:15px;
+  object-fit:cover;
+  background:#e5e7eb;
+}
+.live-confirm-note{
+  border:1px solid #fecaca;
+  background:#fff1f2;
+  color:#991b1b;
+  border-radius:16px;
+  padding:12px;
+  font-size:14px;
+  line-height:1.45;
+}
+.pending-card-live{
+  display:flex;
+  gap:10px;
+  padding:10px;
+  border:1px solid #e5e7eb;
+  border-radius:15px;
+  background:#fff;
+  margin-top:8px;
+}
+.pending-card-live img{
+  width:58px;
+  height:58px;
+  border-radius:12px;
+  object-fit:cover;
+  background:#e5e7eb;
+} 
+/* ===== FLOATING LIVE MINI VIDEO ===== */
+.live-mini-float{
+  position:fixed;
+  right:14px;
+  bottom:92px;
+  width:178px;
+  background:#020617;
+  border:1px solid rgba(250,204,21,.45);
+  border-radius:20px;
+  overflow:hidden;
+  box-shadow:0 18px 55px rgba(0,0,0,.55);
+  z-index:1000003;
+  animation:liveMiniFloat 2.4s ease-in-out infinite;
+}
+
+@keyframes liveMiniFloat{
+  0%,100%{transform:translateY(0);}
+  50%{transform:translateY(-8px);}
+}
+
+.live-mini-head{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:8px;
+  padding:8px 9px;
+  background:linear-gradient(135deg,#e11d48,#be123c);
+  color:#fff;
+  font-size:12px;
+  font-weight:950;
+}
+
+.live-mini-close{
+  border:0;
+  width:24px;
+  height:24px;
+  border-radius:999px;
+  background:rgba(255,255,255,.18);
+  color:#fff;
+  font-weight:900;
+  line-height:1;
+}
+
+.live-mini-video{
+  width:100%;
+  aspect-ratio:16/9;
+  background:#000;
+  cursor:pointer;
+}
+
+.live-mini-video iframe{
+  width:100%;
+  height:100%;
+  border:0;
+  display:block;
+  pointer-events:none;
+}
+
+.live-mini-foot{
+  padding:9px;
+  background:#020617;
+}
+
+.live-mini-foot button{
+  width:100%;
+  border:0;
+  border-radius:999px;
+  padding:8px 10px;
+  background:#facc15;
+  color:#111827;
+  font-size:12px;
+  font-weight:950;
+}
+
+.live-mini-restore{
+  position:fixed;
+  right:14px;
+  bottom:92px;
+  border:0;
+  border-radius:999px;
+  padding:10px 14px;
+  background:linear-gradient(135deg,#e11d48,#be123c);
+  color:#fff;
+  font-size:13px;
+  font-weight:950;
+  box-shadow:0 14px 40px rgba(0,0,0,.45);
+  z-index:1000003;
+  display:none;
+}
+
+.live-mini-popup-backdrop{
+  position:fixed;
+  inset:0;
+  display:none;
+  align-items:flex-end;
+  justify-content:center;
+  background:rgba(2,6,23,.72);
+  backdrop-filter:blur(7px);
+  z-index:1000004;
+}
+
+.live-mini-popup{
+  width:100%;
+  max-width:520px;
+  background:#020617;
+  color:#fff;
+  border-radius:24px 24px 0 0;
+  border:1px solid rgba(250,204,21,.35);
+  box-shadow:0 -22px 70px rgba(0,0,0,.55);
+  overflow:hidden;
+}
+
+.live-mini-popup-head{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  gap:10px;
+  padding:13px 14px;
+  background:#111827;
+  font-weight:950;
+}
+
+.live-mini-popup-close{
+  border:0;
+  width:36px;
+  height:36px;
+  border-radius:999px;
+  background:rgba(255,255,255,.12);
+  color:#fff;
+  font-weight:900;
+}
+
+.live-mini-popup-video{
+  width:100%;
+  aspect-ratio:16/9;
+  background:#000;
+}
+
+.live-mini-popup-video{
+  position:relative;
+}
+
+.live-mini-popup-video iframe{
+  width:100%;
+  height:100%;
+  border:0;
+  display:block;
+  pointer-events:auto;
+}
+.live-mini-video-lock{
+  position:absolute;
+  inset:0;
+  z-index:5;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  background:rgba(0,0,0,.05);
+}
+.live-mini-popup-body{
+  padding:12px;
+}
+
+.live-mini-comments{
+  height:170px;
+  overflow-y:auto;
+  background:rgba(0,0,0,.45);
+  border:1px solid rgba(255,255,255,.10);
+  border-radius:16px;
+  padding:10px;
+  margin-bottom:10px;
+}
+
+.live-mini-comment{
+  background:rgba(255,255,255,.08);
+  border-radius:12px;
+  padding:7px 9px;
+  margin-bottom:7px;
+}
+
+.live-mini-comment-name{
+  color:#facc15;
+  font-size:12px;
+  font-weight:900;
+}
+
+.live-mini-comment-text{
+  color:#fff;
+  font-size:13px;
+  line-height:1.35;
+}
+
+.live-mini-form{
+  display:flex;
+  gap:8px;
+  background:#fff;
+  border-radius:999px;
+  padding:7px;
+}
+
+.live-mini-form input{
+  flex:1;
+  border:0;
+  outline:none;
+  padding:9px 12px;
+  border-radius:999px;
+  font-size:15px;
+  color:#111827;
+}
+
+.live-mini-form button{
+  border:0;
+  border-radius:999px;
+  background:#e11d48;
+  color:#fff;
+  padding:9px 14px;
+  font-weight:950;
+}
+
+.live-mini-status{
+  color:#9ca3af;
+  font-size:12px;
+  margin-bottom:8px;
+}
+@media(max-width:560px){
+  .live-mini-float{
+    width:152px;
+    right:10px;
+    bottom:86px;
+  }
+
+  .live-mini-head{
+    font-size:11px;
+    padding:7px 8px;
+  }
+
+  .live-mini-foot button{
+    font-size:11px;
+    padding:7px 8px;
+  }
+
+  .live-mini-restore{
+    right:10px;
+    bottom:86px;
+  }
+} 
+
+.live-mini-popup-backdrop.is-minimized{
+  background:transparent;
+  backdrop-filter:none;
+  pointer-events:none;
+
+  align-items:flex-end;
+  justify-content:flex-end;
+
+  padding:0 12px calc(90px + env(safe-area-inset-bottom,0px)) 12px;
+}
+
+.live-mini-popup-backdrop.is-minimized .live-mini-popup{
+  width:260px !important;
+  max-width:260px !important;
+}
+.live-mini-popup-backdrop.is-minimized .live-mini-popup-body{
+  display:none;
+}
+
+.live-mini-popup-backdrop.is-minimized .live-mini-popup-head{
+  padding:8px;
+  font-size:12px;
+}
+
+.live-mini-popup-backdrop.is-minimized .live-mini-popup-video{
+  aspect-ratio:16/9;
+}
+/* FIX POPUP LIVE MINI MOBILE */
+.live-mini-popup-backdrop{
+  align-items:flex-start;
+  padding-top:calc(env(safe-area-inset-top,0px) + 70px);
+}
+
+.live-mini-popup-backdrop.is-minimized{
+  align-items:flex-end !important;
+  justify-content:flex-end !important;
+  padding-top:0 !important;
+  padding-right:12px !important;
+  padding-bottom:calc(90px + env(safe-area-inset-bottom,0px)) !important;
+  padding-left:12px !important;
+}
+
+.live-mini-popup-backdrop.is-minimized .live-mini-popup{
+  width:190px !important;
+  max-width:190px !important;
+  max-height:auto !important;
+  border-radius:18px !important;
+}
+
+.live-mini-popup-backdrop.is-minimized .live-mini-popup-body{
+  display:none !important;
+}
+
+.live-mini-popup-backdrop.is-minimized .live-mini-popup-video{
+  aspect-ratio:16/9 !important;
+}
+
+.live-mini-popup{
+  max-height:calc(100vh - 110px);
+  overflow:auto;
+  border-radius:22px;
+}
+
+.live-mini-popup-video{
+  aspect-ratio:16/8.3;
+}
+
+.live-mini-comments{
+  height:130px;
+}
+
+.live-mini-popup-body{
+  padding-bottom:calc(90px + env(safe-area-inset-bottom,0px));
+}
+
+.live-mini-form{
+  position:sticky;
+  bottom:calc(78px + env(safe-area-inset-bottom,0px));
+  z-index:10;
+  box-shadow:0 10px 30px rgba(0,0,0,.35);
+}
+
+@media(max-width:560px){
+  .live-mini-popup-backdrop{
+    padding-left:8px;
+    padding-right:8px;
+  }
+
+  .live-mini-popup{
+    width:100%;
+  }
+}
+ 
+/* FIX: bagi butang + boleh ditekan masa live minimized */
+.live-mini-popup-backdrop.is-minimized .live-mini-popup,
+.live-mini-popup-backdrop.is-minimized .live-mini-popup-head,
+.live-mini-popup-backdrop.is-minimized .live-mini-popup-close,
+.live-mini-popup-backdrop.is-minimized #liveMiniToggleBtn{
+  pointer-events:auto !important;
+}
+
+.live-mini-popup-backdrop.is-minimized #liveMiniToggleBtn{
+  cursor:pointer;
+  z-index:20;
+} 
+/* ===== TABUNG LIVE CARD ===== */
+.tabung-live-box{
+  max-width:420px;
+  margin:22px 0 18px;
+  border:1px solid rgba(34,197,94,.35);
+  border-radius:18px;
+  background:linear-gradient(180deg,#052e16,#020617);
+  color:#e5e7eb;
+  padding:16px;
+  box-shadow:0 14px 35px rgba(0,0,0,.35);
+}
+.tabung-live-title{font-weight:950;font-size:18px}
+.tabung-live-price{font-size:24px;font-weight:950;color:#22c55e}
+.tabung-live-note{color:#9ca3af;font-size:13px}
+
+/* Billplz dalam popup */
+.tabung-bill-backdrop{
+  position:fixed;
+  inset:0;
+  display:none;
+  align-items:flex-end;
+  justify-content:center;
+  background:rgba(2,6,23,.78);
+  z-index:1000005;
+  backdrop-filter:blur(7px);
+}
+.tabung-bill-sheet{
+  width:100%;
+  max-width:520px;
+  height:92vh;
+  background:#fff;
+  color:#111827;
+  border-radius:24px 24px 0 0;
+  overflow:hidden;
+  box-shadow:0 -24px 70px rgba(0,0,0,.45);
+}
+.tabung-bill-head{
+  height:58px;
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  padding:10px 14px;
+  background:#111827;
+  color:#fff;
+  font-weight:950;
+}
+.tabung-bill-close{
+  border:0;
+  width:36px;
+  height:36px;
+  border-radius:999px;
+  background:rgba(255,255,255,.14);
+  color:#fff;
+  font-weight:900;
+}
+.tabung-bill-frame{
+  width:100%;
+  height:calc(100% - 58px);
+  border:0;
+  background:#fff;
+} 
+.tabung-live-box{
+  position:relative;
+  z-index:50;
+}
+
+.tabung-live-box input,
+.tabung-live-box button{
+  position:relative;
+  z-index:60;
+  pointer-events:auto !important;
+  touch-action:manipulation;
+}
+
+.tabung-unit-input{
+  font-size:20px;
+  height:54px;
+}
+
+.tabung-buy-btn{
+  min-height:56px;
+  font-size:18px;
+  border-radius:14px;
+}
+
+@media(max-width:560px){
+  .page{
+    padding-bottom:190px;
+  }
+
+  .tabung-live-box{
+    max-width:100%;
+    margin-bottom:120px;
+  }
+} 
+.tabung-live-box{
+  position:relative;
+  z-index:50;
+}
+
+.tabung-live-box input,
+.tabung-live-box button{
+  position:relative;
+  z-index:60;
+  pointer-events:auto !important;
+  touch-action:manipulation;
+}
+
+.tabung-unit-input{
+  font-size:20px;
+  height:54px;
+  cursor:pointer;
+  background:#fff !important;
+}
+
+.tabung-buy-btn{
+  min-height:58px;
+  font-size:18px;
+  border-radius:14px;
+  touch-action:manipulation;
+  -webkit-tap-highlight-color:transparent;
+}
+
+/* Picker Unit macam tabung.html */
+.tabung-picker-backdrop{
+  position:fixed;
+  inset:0;
+  display:none;
+  align-items:flex-end;
+  justify-content:center;
+  background:rgba(2,6,23,.72);
+  z-index:10000020;
+  backdrop-filter:blur(7px);
+}
+
+.tabung-picker-card{
+  width:100%;
+  max-width:520px;
+  background:#fff;
+  color:#111827;
+  border-radius:24px 24px 0 0;
+  overflow:hidden;
+  box-shadow:0 -24px 70px rgba(0,0,0,.45);
+}
+
+.tabung-picker-head{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  padding:14px;
+}
+
+.tabung-picker-title{
+  font-weight:900;
+  font-size:16px;
+}
+
+.tabung-picker-x,
+.tabung-picker-ok{
+  border:0;
+  width:44px;
+  height:44px;
+  border-radius:999px;
+  font-weight:900;
+  font-size:20px;
+}
+
+.tabung-picker-x{
+  background:#f3f4f6;
+  color:#111827;
+}
+
+.tabung-picker-ok{
+  background:#f59e0b;
+  color:#111827;
+}
+
+.tabung-picker-body{
+  padding:8px 14px 18px;
+}
+
+.tabung-wheel-wrap{
+  position:relative;
+  height:210px;
+  border-radius:18px;
+  background:#0b0b0c;
+  overflow:hidden;
+}
+
+.tabung-wheel{
+  height:210px;
+  overflow-y:auto;
+  -webkit-overflow-scrolling:touch;
+  scroll-snap-type:y mandatory;
+  padding:72px 0;
+}
+
+.tabung-wheel::-webkit-scrollbar{
+  display:none;
+}
+
+.tabung-wheel-item{
+  height:44px;
+  scroll-snap-align:center;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  color:#b9b9bb;
+  font-size:24px;
+  user-select:none;
+}
+
+.tabung-wheel-item.active{
+  color:#fff;
+  font-weight:900;
+}
+
+.tabung-wheel-highlight{
+  position:absolute;
+  left:0;
+  right:0;
+  top:50%;
+  transform:translateY(-50%);
+  height:44px;
+  border-top:1px solid rgba(255,255,255,.14);
+  border-bottom:1px solid rgba(255,255,255,.14);
+  pointer-events:none;
+  background:linear-gradient(to bottom,rgba(255,255,255,.06),rgba(255,255,255,.02),rgba(255,255,255,.06));
+}
+
+.tabung-wheel-fade-top{
+  position:absolute;
+  left:0;
+  right:0;
+  top:0;
+  height:70px;
+  background:linear-gradient(to bottom,rgba(11,11,12,1),rgba(11,11,12,0));
+  pointer-events:none;
+}
+
+.tabung-wheel-fade-bot{
+  position:absolute;
+  left:0;
+  right:0;
+  bottom:0;
+  height:70px;
+  background:linear-gradient(to top,rgba(11,11,12,1),rgba(11,11,12,0));
+  pointer-events:none;
+}
+
+@media(max-width:560px){
+  .page{
+    padding-bottom:190px;
+  }
+
+  .tabung-live-box{
+    max-width:100%;
+    margin-bottom:120px;
+  }
+} 
+
+/* ===== CARA LOCK VIDEO POPUP ===== */
+.lock-video-backdrop{
+  position:fixed;
+  inset:0;
+  display:none;
+  align-items:center;
+  justify-content:center;
+  background:rgba(2,6,23,.78);
+  backdrop-filter:blur(7px);
+  z-index:10000030;
+  padding:14px;
+}
+
+.lock-video-card{
+  width:100%;
+  max-width:520px;
+  background:#020617;
+  color:#fff;
+  border:1px solid rgba(250,204,21,.35);
+  border-radius:24px;
+  overflow:hidden;
+  box-shadow:0 24px 80px rgba(0,0,0,.55);
+}
+
+.lock-video-head{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  gap:10px;
+  padding:13px 14px;
+  background:#111827;
+  font-weight:950;
+}
+
+.lock-video-close{
+  border:0;
+  width:38px;
+  height:38px;
+  border-radius:999px;
+  background:rgba(255,255,255,.12);
+  color:#fff;
+  font-weight:900;
+}
+
+.lock-video-frame{
+  width:100%;
+  aspect-ratio:16/9;
+  background:#000;
+}
+
+.lock-video-frame iframe{
+  width:100%;
+  height:100%;
+  border:0;
+  display:block;
+  background:#000;
+}
+
+.lock-video-body{
+  padding:12px 14px 16px;
+  color:#d1d5db;
+  font-size:14px;
+  line-height:1.45;
+}
+
+.lock-video-float{
+  position:fixed;
+  left:14px;
+  right:auto;
+  bottom:92px;
+  z-index:10000031;
+  border:0;
+  border-radius:999px;
+  padding:12px 16px;
+  background:linear-gradient(135deg,#facc15,#fb923c);
+  color:#111827;
+  font-weight:950;
+  box-shadow:0 16px 40px rgba(0,0,0,.35);
+  display:none;
+} 
+/* ===== LIVE MEDIA FULLSCREEN GALLERY — sama macam comment ===== */
+.live-media{
+  cursor:pointer;
+}
+
+.live-zoom-hint{
+  position:absolute;
+  left:12px;
+  top:12px;
+  z-index:5;
+  background:rgba(15,23,42,.88);
+  color:#fff;
+  border:1px solid rgba(255,255,255,.25);
+  border-radius:999px;
+  padding:7px 11px;
+  font-size:12px;
+  font-weight:900;
+  box-shadow:0 8px 24px rgba(0,0,0,.35);
+  pointer-events:none;
+}
+
+.live-gallery-backdrop{
+  position:fixed;
+  inset:0;
+  background:rgba(2,6,23,.96);
+  z-index:10000050;
+  display:none;
+  align-items:center;
+  justify-content:center;
+  padding:14px;
+}
+
+.live-gallery-card{
+  width:100%;
+  max-width:980px;
+  height:92vh;
+  display:flex;
+  flex-direction:column;
+  color:#fff;
+}
+
+.live-gallery-top{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:10px;
+  padding:6px 2px 12px;
+}
+
+.live-gallery-title{
+  font-weight:900;
+  font-size:15px;
+}
+
+.live-gallery-count{
+  font-size:12px;
+  color:#cbd5e1;
+}
+
+.live-gallery-close{
+  border:0;
+  background:#fff;
+  color:#111827;
+  position:fixed;
+  top:calc(env(safe-area-inset-top,0px) + 54px);
+  right:14px;
+  z-index:10000060;
+  width:56px;
+  height:56px;
+  border-radius:999px;
+  font-size:26px;
+  font-weight:900;
+  box-shadow:0 12px 35px rgba(0,0,0,.45);
+}
+
+.live-gallery-stage{
+  position:relative;
+  flex:1;
+  min-height:0;
+  border-radius:18px;
+  background:#020617;
+  overflow:hidden;
+  border:1px solid rgba(255,255,255,.12);
+  display:flex;
+  align-items:center;
+  justify-content:center;
+}
+
+.live-gallery-stage img{
+  max-width:100%;
+  max-height:100%;
+  width:auto;
+  height:auto;
+  object-fit:contain;
+  display:block;
+}
+
+.live-gallery-stage iframe{
+  width:100%;
+  height:100%;
+  border:0;
+  display:block;
+  background:#020617;
+  pointer-events:none;
+}
+
+.live-gallery-nav{
+  position:absolute;
+  top:50%;
+  transform:translateY(-50%);
+  width:44px;
+  height:56px;
+  border:0;
+  border-radius:999px;
+  background:rgba(255,255,255,.88);
+  color:#111827;
+  font-size:28px;
+  font-weight:900;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  z-index:5;
+}
+
+.live-gallery-prev{left:10px}
+.live-gallery-next{right:10px}
+
+.live-gallery-thumbs{
+  display:flex;
+  gap:8px;
+  overflow-x:auto;
+  padding:10px 2px 2px;
+}
+
+.live-gallery-thumb{
+  width:62px;
+  height:52px;
+  border-radius:10px;
+  border:2px solid transparent;
+  background:#111827;
+  overflow:hidden;
+  flex:0 0 auto;
+}
+
+.live-gallery-thumb.active{
+  border-color:#e11d48;
+}
+
+.live-gallery-thumb img{
+  width:100%;
+  height:100%;
+  object-fit:cover;
+}
+
+.live-gallery-thumb-video{
+  width:100%;
+  height:100%;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  color:#fff;
+  font-size:22px;
+  background:#111827;
+} 
+/* ===== INFO TABUNG POPUP LIVE NOW ===== */
+.tabung-info-live-btn{
+  border:1px solid rgba(250,204,21,.45);
+  background:rgba(250,204,21,.14);
+  color:#fde68a;
+  border-radius:999px;
+  padding:8px 12px;
+  font-size:12px;
+  font-weight:950;
+  white-space:nowrap;
+}
+
+.tabung-info-backdrop{
+  position:fixed;
+  inset:0;
+  display:none;
+  align-items:flex-end;
+  justify-content:center;
+  background:rgba(2,6,23,.78);
+  backdrop-filter:blur(8px);
+  z-index:10000040;
+}
+
+.tabung-info-sheet{
+  width:100%;
+  max-width:560px;
+  max-height:92vh;
+  overflow:auto;
+  background:#fff;
+  color:#111827;
+  border-radius:24px 24px 0 0;
+  box-shadow:0 -24px 70px rgba(0,0,0,.45);
+}
+
+.tabung-info-head{
+  position:sticky;
+  top:0;
+  z-index:2;
+  background:#fff;
+  display:flex;
+  justify-content:space-between;
+  align-items:flex-start;
+  gap:12px;
+  padding:16px;
+  border-bottom:1px solid #e5e7eb;
+}
+
+.tabung-info-badge{
+  display:inline-flex;
+  background:#dcfce7;
+  color:#166534;
+  border-radius:999px;
+  padding:6px 10px;
+  font-size:12px;
+  font-weight:950;
+}
+
+.tabung-info-title{
+  font-size:20px;
+  font-weight:950;
+  margin-top:8px;
+}
+
+.tabung-info-close{
+  border:0;
+  width:42px;
+  height:42px;
+  border-radius:999px;
+  background:#f3f4f6;
+  color:#111827;
+  font-size:20px;
+  font-weight:950;
+}
+
+.tabung-info-body{
+  padding:16px;
+}
+
+.tabung-info-hero,
+.tabung-info-card,
+.tabung-info-syariah{
+  border-radius:18px;
+  padding:14px;
+  margin-bottom:12px;
+}
+
+.tabung-info-hero{
+  background:linear-gradient(180deg,#ecfdf5,#f8fafc);
+  border:1px solid #bbf7d0;
+}
+
+.tabung-info-card{
+  background:#f9fafb;
+  border:1px solid #e5e7eb;
+}
+
+.tabung-info-syariah{
+  background:#fffbeb;
+  border:1px solid #fde68a;
+}
+
+.tabung-info-card-title{
+  font-weight:950;
+  margin-bottom:6px;
+}
+
+.tabung-info-body ul{
+  margin:8px 0 0;
+  padding-left:18px;
+}
+
+.tabung-info-body li{
+  margin-bottom:6px;
+  line-height:1.4;
+}
+
+.tabung-info-foot{
+  position:sticky;
+  bottom:0;
+  background:#fff;
+  padding:12px 16px calc(12px + env(safe-area-inset-bottom,0px));
+  border-top:1px solid #e5e7eb;
+} 
+.smart-live-filter{
+  display:flex;
+  gap:8px;
+  overflow-x:auto;
+  padding:0 2px 12px;
+  margin-top:-6px;
+  -webkit-overflow-scrolling:touch;
+  scroll-behavior:smooth;
+  touch-action:pan-x;
+}
+.smart-live-filter::-webkit-scrollbar{display:none}
+
+.smart-live-chip{
+  flex:0 0 auto;
+  border:1px solid rgba(255,255,255,.18);
+  background:#111827;
+  color:#fff;
+  border-radius:999px;
+  padding:9px 13px;
+  font-size:13px;
+  font-weight:900;
+  white-space:nowrap;
+}
+
+.smart-live-chip.active{
+  background:#facc15;
+  color:#111827;
+  border-color:#facc15;
+}
+</style>
+</head>
+
+<body>
+<div class="page">
+
+  <div class="topbar">
+    <div>
+      <div class="brand-title">🔴 Barang LIVE Sekarang</div>
+      <div class="sub">Semua item yang host tengah LIVE</div>
+    </div>
+   <div class="top-actions">
+  <span id="loginStatus" class="ea-pill">Memuatkan…</span>
+  <span id="adminBadge" class="ea-pill ea-pill-admin" style="display:none;">Admin ✅</span>
+
+  <button id="btnAdmin" class="ea-chip-btn ea-chip-danger" type="button" style="display:none">Admin</button>
+
+  <a href="/account.html" id="btnAccount" class="ea-chip-btn" style="display:none">Akaun</a>
+
+  <a href="/login.html#login" id="btnLogin" class="ea-chip-btn">Log masuk</a>
+
+  <button id="btnLogout" class="ea-chip-btn" type="button" style="display:none">Log keluar</button>
+
+  <a href="/index.html" class="home-btn">🏠</a>
+</div>
+  </div>
+
+  <div class="hero">
+    <span class="live-pill">🔴 LIVE AKTIF</span>
+    <h1>Semua Barang LIVE</h1>
+    <div class="sub">Pilih barang, tekan lock / beli, terus masuk checkout LIVE.</div>
+
+    <div class="stat-row">
+      <div class="stat">
+        <b id="totalLive">0</b>
+        <span>Total LIVE</span>
+      </div>
+      <div class="stat">
+        <b id="total916">0</b>
+        <span>Barang 916</span>
+      </div>
+      <div class="stat">
+        <b id="total999">0</b>
+        <span>GoldBar/Coin</span>
+      </div>
+    </div>
+  </div>
+
+<div class="app-download-box">
+  <div class="app-download-sep">
+    <span>ATAU LEBIH MUDAH</span>
+  </div>
+
+ <div class="app-download-title">
+  🚀 Jangan lupa download app Emas Amir!
+</div>
+
+<div class="app-download-text">
+  🛒 Nak beli? Terus lock barang LIVE di bawah sekarang.
+
+  📱 Lepas lock, download app Emas Amir untuk urusan yang lebih cepat dan lebih mudah. Semak order, chat Ai-Dan, lihat status bayaran dan dapatkan notifikasi terus dalam telefon anda.
+
+  Ribuan pelanggan Emas Amir sudah menggunakan app kami. Giliran anda pula 🚀
+</div>
+<div class="app-phone-hint">
+  📱 Klik ikut phone anda — iPhone tekan App Store, Android tekan Google Play
+</div>
+
+  <div class="store-row">
+    <a class="store-btn"
+       href="https://apps.apple.com/us/app/emas-amir/id6761734657"
+       target="_blank" rel="noopener">
+      <img class="store-badge"
+           src="https://developer.apple.com/assets/elements/badges/download-on-the-app-store.svg"
+           alt="Download on the App Store">
+      <div class="store-label">Download di<br>App Store</div>
+    </a>
+
+    <a class="store-btn"
+       href="https://play.google.com/store/apps/details?id=com.emasamir.app"
+       target="_blank" rel="noopener">
+      <img class="store-badge"
+           src="https://upload.wikimedia.org/wikipedia/commons/7/78/Google_Play_Store_badge_EN.svg"
+           alt="Get it on Google Play">
+      <div class="store-label">Dapatkan di<br>Google Play</div>
+    </a>
+  </div>
+
+  <div class="scam-note">
+    <b>⚠️ Nota penting:</b><br>
+    ⚠️ NOTA KESELAMATAN PENTING
+
+Untuk keselamatan anda, Emas Amir hanya menggunakan saluran rasmi berikut:
+
+📱 Admin 916 : 016-8055 916
+📱 Admin 999.9 : 011-13230198
+
+Selain daripada nombor di atas, sila anggap sebagai tidak rasmi dan dapatkan pengesahan terlebih dahulu.
+
+Emas Amir tidak akan menghubungi anda melalui akaun TikTok peribadi untuk meminta bayaran. Kami juga tidak menggunakan akaun bank personal milik individu untuk menerima pembayaran pelanggan.
+
+✅ Semua bayaran rasmi hanya dibuat ke akaun:
+MAYBANK EMAS AMIR SDN BHD
+
+Jangan sesekali membuat bayaran ke akaun peribadi walaupun individu tersebut mengaku sebagai staf, admin atau wakil Emas Amir.
+
+Hati-hati dengan scammer yang menyamar sebagai pihak kami. Semak dahulu sebelum membuat pembayaran.
+
+Sayangi duit anda. RM200 pun tetap duit, RM20 pun tetap duit. Biarlah lambat sedikit, asalkan selamat.
+  </div>
+</div>
+
+
+
+<div class="controls">
+    <input id="searchInput" class="search-box" placeholder="Cari code / nama / berat...">
+    <button id="btnAll" class="btn btn-warning">Semua</button>
+    <button id="btn916" class="btn btn-outline-light">916</button>
+    <button id="btn999" class="btn btn-outline-light">999.9</button>
+    <button id="btnRefresh" class="btn btn-outline-info">Refresh</button>
+  </div>
+
+  <div id="smartLiveFilter" class="smart-live-filter"></div>
+
+  <div class="section-title">
+    <h5>🛒 Senarai Barang LIVE</h5>
+    <small id="lastLoad" class="text-muted">Memuatkan…</small>
+  </div>
+
+  <div id="liveGrid" class="grid"></div>
+  <div id="liveEmpty" class="empty" style="display:none;">
+    Belum ada barang LIVE sekarang.
+  </div>
+
+  <!-- Tabung Live Sekarang -->
+  <div id="tabungLiveWrap" class="tabung-live-box" style="display:none;">
+    <div class="d-flex justify-content-between align-items-start gap-2">
+  <div>
+    <div class="d-flex align-items-center gap-2 flex-wrap mb-2">
+      <div class="badge bg-success rounded-pill">🟢 TABUNG LIVE</div>
+
+      <button
+        type="button"
+        class="tabung-info-live-btn"
+        onclick="openTabungInfoLive()">
+        ℹ️ Info Tabung
+      </button>
+    </div>
+
+    <div class="tabung-live-title">Beli Tabung Emas 999.9</div>
+    <div class="tabung-live-note">Min 1 unit • 1 unit = 0.1g</div>
+  </div>
+
+  <div class="text-end">
+    <div class="tabung-live-note">Harga 0.1g</div>
+    <div id="tabungLivePrice" class="tabung-live-price">RM 0.00</div>
+  </div>
+</div>
+
+    <div class="mt-3">
+      <label class="form-label small">Unit (0.1g)</label>
+      <input
+        id="tabungLiveUnit"
+        class="form-control tabung-unit-input"
+        type="number"
+        step="1"
+        min="1"
+        value="1"
+        readonly
+        inputmode="none">
+      <div class="small text-muted mt-1">
+        Tekan kotak unit untuk pilih jumlah.
+      </div>
+    </div>
+
+    <div class="mt-3">
+      <div class="tabung-live-note">Jumlah</div>
+      <div id="tabungLiveTotal" class="fw-bold fs-5">RM 0.00</div>
+    </div>
+
+   <button
+  id="btnTabungLiveBuy"
+  type="button"
+  class="btn btn-success fw-bold w-100 mt-3 tabung-buy-btn">
+  Beli Tabung Sekarang
+</button>
+
+    <div id="tabungLiveMsg" class="small text-muted mt-2"></div>
+  </div>
+</div>
+
+<!-- Picker Unit Tabung LIVE -->
+<div id="tabungPickerModal" class="tabung-picker-backdrop">
+  <div class="tabung-picker-card">
+    <div class="tabung-picker-head">
+      <button type="button" class="tabung-picker-x" onclick="closeTabungPicker()">✕</button>
+      <div class="tabung-picker-title">Pilih Unit</div>
+      <button type="button" class="tabung-picker-ok" onclick="applyTabungPicker()">✓</button>
+    </div>
+
+    <div class="tabung-picker-body">
+      <div class="tabung-wheel-wrap">
+        <div class="tabung-wheel-fade-top"></div>
+        <div id="tabungPickerWheel" class="tabung-wheel"></div>
+        <div class="tabung-wheel-highlight"></div>
+        <div class="tabung-wheel-fade-bot"></div>
+      </div>
+      <div class="small text-muted mt-2">
+        Scroll naik/turun untuk pilih jumlah unit. 1 unit = 0.1g.
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Info Tabung LIVE popup -->
+<div id="tabungInfoLivePopup" class="tabung-info-backdrop" onclick="if(event.target===this) closeTabungInfoLive()">
+  <div class="tabung-info-sheet">
+    <div class="tabung-info-head">
+      <div>
+        <div class="tabung-info-badge">💰 TABUNG EMAS AMIR</div>
+        <div class="tabung-info-title">Simpan Emas 999.9 Dari 0.1g</div>
+      </div>
+
+      <button type="button" class="tabung-info-close" onclick="closeTabungInfoLive()">✕</button>
+    </div>
+
+    <div class="tabung-info-body">
+      <div class="tabung-info-hero">
+        <div class="tabung-info-card-title">Kenapa Tabung Emas Amir diwujudkan?</div>
+        <div>
+          Harga emas semakin tinggi. Jadi Emas Amir menyediakan kemudahan simpanan emas bermula serendah <b>0.1g</b>
+          supaya pelanggan boleh mula menyimpan emas secara berperingkat.
+        </div>
+      </div>
+
+      <div class="tabung-info-card">
+        <div class="tabung-info-card-title">🏪 Adakah emas fizikal benar-benar ada?</div>
+        <ul>
+          <li>Ya, setiap tabungan pelanggan disokong oleh emas fizikal.</li>
+          <li>Setiap 0.1g direkod sebagai pegangan pelanggan.</li>
+          <li>Emas Amir menyimpan emas pelanggan sebagai amanah.</li>
+        </ul>
+      </div>
+
+      <div class="tabung-info-card">
+        <div class="tabung-info-card-title">📦 Apa itu Keluar Fizikal?</div>
+        <ul>
+          <li>Pelanggan boleh tukar baki tabung kepada emas fizikal seperti bar atau coin.</li>
+          <li>Boleh keluar apabila cukup minimum seperti 0.5g atau 1g.</li>
+          <li>Hanya perlu bayar kos proses / upah kad fizikal.</li>
+        </ul>
+      </div>
+
+      <div class="tabung-info-card">
+        <div class="tabung-info-card-title">💸 Apa itu Jual?</div>
+        <ul>
+          <li>Pelanggan boleh jual balik baki tabung mengikut harga jual balik semasa.</li>
+          <li>Permohonan akan disahkan admin sebelum bayaran dibuat.</li>
+        </ul>
+      </div>
+
+      <div class="tabung-info-card">
+        <div class="tabung-info-card-title">🔁 Tukar ke Emas 916</div>
+        <ul>
+          <li>Nilai tabung boleh digunakan untuk membeli barang kemas 916.</li>
+          <li>Nilai dikira berdasarkan harga beli semasa.</li>
+          <li>Sesuai untuk pelanggan yang menabung dahulu, kemudian tukar kepada barang kemas.</li>
+        </ul>
+      </div>
+
+      <div class="tabung-info-syariah">
+        <div class="tabung-info-card-title">🕌 Ringkas Syariah</div>
+        <ul>
+          <li>Emas yang dibeli adalah emas sebenar.</li>
+          <li>Pemilikan pelanggan direkod dengan jelas.</li>
+          <li>Harga jual beli dipaparkan dengan jelas.</li>
+          <li>Tiada unsur riba atau ketidakjelasan yang disengajakan.</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="tabung-info-foot">
+      <button type="button" class="btn btn-dark fw-bold w-100" onclick="closeTabungInfoLive()">
+        Saya Faham
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- Billplz Tabung dalam popup -->
+<div id="tabungBillPopup" class="tabung-bill-backdrop">
+  <div class="tabung-bill-sheet">
+    <div class="tabung-bill-head">
+      <div>💳 Bayaran Tabung Billplz</div>
+      <button type="button" class="tabung-bill-close" onclick="closeTabungBillPopup()">✕</button>
+    </div>
+    <iframe id="tabungBillFrame" class="tabung-bill-frame" src="about:blank"></iframe>
+  </div>
+</div>
+ 
+<div id="liveCheckoutModal" class="live-checkout-backdrop">
+  <div class="live-checkout-sheet">
+    <div class="live-checkout-handle"></div>
+
+    <div class="d-flex justify-content-between align-items-center mb-2">
+      <div>
+        <div class="fw-black" style="font-weight:900;font-size:20px;">Checkout LIVE</div>
+        <div class="text-muted small">Semak item & terus submit ke Ai-Dan</div>
+      </div>
+      <button
+  type="button"
+  class="btn btn-light rounded-pill"
+  onclick="event.preventDefault(); event.stopPropagation(); closeLiveCheckout();"
+>✕</button>
+    </div>
+
+    <div id="liveCheckoutItem" class="live-checkout-item mb-3"></div>
+
+    <div class="mb-3">
+      <div class="fw-bold mb-2">Penghantaran</div>
+      <div class="d-flex gap-2">
+        <button id="lcShipPickup" type="button" class="live-choice flex-fill" onclick="setLcShip('PICKUP')">Ambil Kedai</button>
+        <button id="lcShipPost" type="button" class="live-choice flex-fill active" onclick="setLcShip('POST')">Pos</button>
+      </div>
+    </div>
+
+    <div id="lcAddressBox" class="mb-3">
+      <div class="fw-bold mb-1">Alamat</div>
+      <textarea id="lcAddress" class="form-control" rows="3" placeholder="Alamat penuh + poskod + bandar + negeri"></textarea>
+    </div>
+
+    <div id="lcCutSection" class="mb-3">
+  <div class="fw-bold mb-2">Potong panjang?</div>
+
+  <div class="d-flex gap-2">
+    <button id="lcCutNo" type="button" class="live-choice flex-fill active" onclick="setLcCut('NO')">Tak Potong</button>
+    <button id="lcCutYes" type="button" class="live-choice flex-fill" onclick="setLcCut('YES')">Potong</button>
+  </div>
+
+  <div id="lcCutBox" class="mt-3" style="display:none;">
+    <div class="row g-2">
+      <div class="col-6">
+        <label class="small text-muted">Panjang asal</label>
+        <input id="lcCurrentLen" class="form-control bg-light fw-bold" readonly>
+      </div>
+      <div class="col-6">
+        <label class="small text-muted">Potong jadi</label>
+        <input id="lcCutTo" class="form-control" placeholder="55cm">
+      </div>
+    </div>
+  </div>
+</div>
+
+<div id="lcPickupBox" class="mb-3" style="display:none;">
+  <div class="fw-bold mb-1">Masa ambil kedai</div>
+  <input id="lcPickupWhen" class="form-control" placeholder="Contoh: hari ni / esok petang / 3pm">
+</div>
+
+   <div class="mb-3">
+  <div class="fw-bold mb-2">Cara Bayar</div>
+
+  <div class="d-flex gap-2 flex-wrap">
+    <button id="lcPayQR" type="button" class="live-choice flex-fill" onclick="setLcPay('QR')">
+      QR
+    </button>
+
+    <button id="lcPayTransfer" type="button" class="live-choice flex-fill active" onclick="setLcPay('TRANSFER')">
+      Transfer
+    </button>
+
+    <button id="lcPayTabung" type="button" class="live-choice flex-fill" onclick="setLcPay('TABUNG_TOPUP')">
+      Tabung + Topup
+    </button>
+
+    <button id="lcPayAtome" type="button" class="live-choice flex-fill" onclick="setLcPay('ATOME')">
+      Atome
+    </button>
+  </div>
+</div>
+
+<div id="lcTabungBox"
+     class="mb-3"
+     style="
+       display:none;
+       background:#fffbea;
+       border:1px solid #fde68a;
+       border-radius:18px;
+       padding:14px;
+     ">
+</div>
+
+    <div class="rounded-4 p-3 mb-3" style="background:#f9fafb;border:1px solid #e5e7eb;">
+      <div class="d-flex justify-content-between">
+        <span>Subtotal</span>
+        <b id="lcSubtotal">RM 0.00</b>
+      </div>
+      <div class="d-flex justify-content-between">
+        <span>Caj pos</span>
+        <b id="lcShipFee">RM 10.00</b>
+      </div>
+      <hr>
+      <div class="d-flex justify-content-between fs-5">
+        <b>Total anggaran</b>
+        <b id="lcTotal" class="text-danger">RM 0.00</b>
+      </div>
+    </div>
+
+    <div id="lcMsg" class="small text-muted mb-2"></div>
+
+    <div class="live-submit-bar">
+      <button id="btnSubmitLiveCheckout" type="button" class="btn btn-danger fw-bold w-100 rounded-pill py-3" onclick="submitLiveCheckoutToAiDan()">
+        Submit Lock & Dapat Detail Bayaran
+      </button>
+    </div>
+  </div>
+</div>
+
+<div id="liveConfirmModal" class="live-confirm-backdrop">
+  <div class="live-confirm-sheet">
+    <div class="live-checkout-handle"></div>
+
+    <div class="d-flex justify-content-between align-items-center mb-2">
+      <div>
+        <div style="font-weight:950;font-size:20px;">Sahkan Belian LIVE</div>
+        <div class="text-muted small">Semak dahulu sebelum order dibuat</div>
+      </div>
+      <button type="button" class="btn btn-light rounded-pill" onclick="closeLiveConfirmModal()">✕</button>
+    </div>
+
+    <div id="liveConfirmContent"></div>
+
+    <div class="d-flex gap-2 mt-3">
+      <button type="button" class="btn btn-light fw-bold flex-fill rounded-pill py-3" onclick="closeLiveConfirmModal()">
+        Semak Balik
+      </button>
+
+      <button id="btnConfirmCreateLiveOrder" type="button" class="btn btn-danger fw-bold flex-fill rounded-pill py-3" onclick="submitLiveCheckoutConfirmed()">
+        Ya, Teruskan Buat Order
+      </button>
+    </div>
+  </div>
+</div>
+ 
+<div id="inlineLoginModal" class="inline-login-backdrop">
+  <div class="inline-login-sheet">
+    <div class="inline-login-head">
+      <div>
+        <div class="inline-login-title">Daftar / Login dulu</div>
+        <div class="text-muted small">Lepas login, lock akan sambung semula.</div>
+      </div>
+
+      <div class="inline-login-actions">
+        <button type="button" class="btn btn-sm btn-outline-danger rounded-pill" onclick="loadInlineLogin('signup')">
+          Daftar
+        </button>
+        <button type="button" class="btn btn-sm btn-outline-dark rounded-pill" onclick="loadInlineLogin('login')">
+          Login
+        </button>
+        <button type="button" class="btn btn-sm btn-light rounded-pill" onclick="closeInlineLoginModal()">
+          ✕
+        </button>
+      </div>
+    </div>
+
+    <iframe id="inlineLoginFrame" class="inline-login-frame" src="about:blank"></iframe>
+  </div>
+</div>
+
+<div id="aidanPopup" class="aidan-popup">
+  <div class="aidan-popup-head">
+    <div>💬 Chat dengan Ai-Dan</div>
+    <button type="button" class="aidan-popup-close" onclick="closeAidanPopup()">✕</button>
+  </div>
+
+  <iframe id="aidanPopupFrame" src=""></iframe>
+</div>
+ 
+<!-- FLOATING LIVE MINI VIDEO -->
+<div id="liveMiniFloat" class="live-mini-float">
+  <div class="live-mini-head">
+    <span>🔴 LIVE SEKARANG</span>
+    <button type="button" class="live-mini-close" onclick="hideLiveMini()">×</button>
+  </div>
+
+  <div class="live-mini-video" onclick="openLiveMiniPopup()">
+    <iframe
+      id="liveMiniFrame"
+      src="https://www.youtube.com/embed/ekRtZMEz9fM?playsinline=1&rel=0&modestbranding=1&origin=https://emasamir.app"
+      allow="encrypted-media; picture-in-picture"
+      referrerpolicy="strict-origin-when-cross-origin">
+    </iframe>
+  </div>
+
+  <div class="live-mini-foot">
+    <button type="button" onclick="openLiveMiniPopup()">💬 Komen sini kalau berani</button>
+  </div>
+</div>
+
+<button id="liveMiniRestore" class="live-mini-restore" type="button" onclick="showLiveMini()">
+  🔴 Buka LIVE
+</button>
+
+<div id="liveMiniPopupBackdrop" class="live-mini-popup-backdrop">
+  <div class="live-mini-popup">
+   <div class="live-mini-popup-head">
+  <div>🔴 LIVE Emas Amir</div>
+
+  <div style="display:flex;gap:8px;">
+    <button
+  id="liveMiniToggleBtn"
+  type="button"
+  class="live-mini-popup-close"
+  onclick="event.stopPropagation(); toggleLiveMiniPopup();"
+>—</button>
+    <button type="button" class="live-mini-popup-close" onclick="closeLiveMiniPopup()">✕</button>
+  </div>
+</div>
+
+   <div class="live-mini-popup-video" onclick="restoreLiveMiniPopup()">
+  <iframe
+  id="liveMiniPopupFrame"
+  src=""
+  allow="encrypted-media; picture-in-picture"
+  referrerpolicy="strict-origin-when-cross-origin"
+  allowfullscreen>
+</iframe>
+
+ 
+
+  <div class="live-mini-popup-body">
+  <div class="live-mini-status" id="liveMiniChatStatus">
+    Menyambung komen LIVE…
+  </div>
+
+  <div id="liveMiniComments" class="live-mini-comments">
+    <div class="live-mini-status">
+      Komen LIVE akan muncul di sini.
+    </div>
+  </div>
+
+  <form id="liveMiniForm" class="live-mini-form">
+    <input
+      id="liveMiniInput"
+      type="text"
+      autocomplete="off"
+      placeholder="💬 Tulis komen di sini...">
+    <button type="submit">Hantar</button>
+   </form>
+</div>
+  </div>
+</div>
+</div>
+
+<div id="lockVideoPopup" class="lock-video-backdrop">
+  <div class="lock-video-card">
+    <div class="lock-video-head">
+      <div>🎥 Cara Lock Barang LIVE</div>
+      <button type="button" class="lock-video-close" onclick="closeLockVideoPopup()">✕</button>
+    </div>
+
+    <div class="lock-video-frame">
+      <iframe
+  id="lockVideoPlayer"
+  src=""
+  allow="autoplay; fullscreen; picture-in-picture"
+  allowfullscreen
+  style="width:100%;height:100%;border:0;display:block;background:#000;">
+</iframe>
+    </div>
+
+    <div class="lock-video-body">
+      Tonton video ringkas ini dahulu. Lepas faham, pilih barang LIVE di bawah, tekan lock / beli, isi detail dan submit.
+    </div>
+  </div>
+</div>
+
+<button
+  id="lockVideoFloatBtn"
+  type="button"
+  class="lock-video-float"
+  onclick="openLockVideoPopup()">
+  🎥 Cara Lock
+</button>
+
+<nav class="bottom-nav">
+  <a href="/index.html">
+    <div class="ico">🏠</div>
+    <div>Utama</div>
+  </a>
+  <a href="/live-now.html">
+    <div class="ico">📺</div>
+    <div>Komen</div>
+  </a>
+  <a href="/live-now.html" class="active">
+    <div class="ico">🛒</div>
+    <div>Live</div>
+  </a>
+  <a href="/chat.html">
+    <div class="ico">💬</div>
+    <div>Chat</div>
+  </a>
+</nav>
+
+<script>
+const SB_URL = "https://dduizetstqqjrpsezbpi.supabase.co";
+const SB_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdWRkdWl6ZXRzdHFxanJwc2V6YnBpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTg3MzI0ODQsImV4cCI6MjA3NDMwODQ4NH0.CrlHXrmHtKgR9qc2192U6quRb5lpFEeOSgwG0Lb8KRM";
+
+window.sb = window.sb || supabase.createClient(SB_URL, SB_KEY);
+
+const sb = window.sb;
+
+const ADMIN_WA = "601113230198";
+const ONSEND_BASE  = "https://onsend.io/api/v1";
+const ONSEND_TOKEN = "76a6f98cfc6e009e5d824e47acd98b9b59a6e5177e14b072fd210276309d91f6";
+
+function confirmURL(type,id){
+  return "https://emasamir.app/tabung-confirm?type=" +
+    encodeURIComponent(type) +
+    "&id=" +
+    encodeURIComponent(id);
+}
+
+function normalizeMsisdnPlain(s){
+  const d = String(s || "").replace(/\D/g, "");
+  if (d.startsWith("60")) return d;
+  if (d.startsWith("0")) return "6" + d;
+  if (/^[1-9]/.test(d)) return "60" + d;
+  return d;
+}
+
+async function sendWA(msisdn, text){
+  const phone_number = normalizeMsisdnPlain(msisdn);
+
+  try{
+    const r = await fetch(ONSEND_BASE + "/send",{
+      method:"POST",
+      headers:{
+        "Accept":"application/json",
+        "Content-Type":"application/json",
+        "Authorization":"Bearer " + ONSEND_TOKEN
+      },
+      body: JSON.stringify({
+        phone_number,
+        message:text,
+        type:"text"
+      })
+    });
+
+    const j = await r.json().catch(()=>({}));
+    console.log("[OnSend]", r.status, j);
+    return r.ok && j.success === true;
+  }catch(e){
+    console.warn("OnSend error:", e);
+    return false;
+  }
+}
+
+async function waNotify(to, text, label=""){
+  const msisdn = normalizeMsisdnPlain(to || "");
+
+  for (let i = 0; i < 3; i++){
+    const ok = await sendWA(msisdn, text);
+    console.log(`[WA ${label}] try ${i+1} =>`, ok);
+
+    if (ok) return true;
+
+    await new Promise(r => setTimeout(r, 1500));
+  }
+
+  return false;
+}
+
+let ALL_ROWS = [];let CURRENT_FILTER = "ALL"; 
+
+let LIVE_ATOME_ENABLED = false;
+
+async function loadLivePaymentSettings(){
+  try{
+    const { data, error } = await sb
+      .from("live_payment_settings")
+      .select("atome_enabled")
+      .eq("id", 1)
+      .maybeSingle();
+
+    if (error) throw error;
+
+    LIVE_ATOME_ENABLED = !!data?.atome_enabled;
+  }catch(e){
+    console.warn("loadLivePaymentSettings error:", e);
+    LIVE_ATOME_ENABLED = false;
+  }
+}
+
+function money(n){
+  return Number(n || 0).toFixed(2);
+}
+
+function safeTxt(v){
+  return String(v || "")
+    .replace(/&/g,"&amp;")
+    .replace(/</g,"&lt;")
+    .replace(/>/g,"&gt;")
+    .replace(/"/g,"&quot;")
+    .replace(/'/g,"&#039;");
+}
+
+function fmtCm(v){
+  const n = Number(v || 0);
+  if (!Number.isFinite(n) || n <= 0) return "";
+  return n.toFixed(1).replace(/\.0$/, "") + "cm";
+}
+
+function liveDimText(row){
+  const berat = Number(row?.weight_g || 0);
+  const panjang = fmtCm(row?.length_cm ?? row?.panjang_cm ?? row?.current_length_cm);
+  const lebar = fmtCm(row?.width_cm ?? row?.lebar_cm);
+
+  const arr = [];
+  if (berat > 0) arr.push("Berat " + berat.toFixed(2) + "g");
+  if (panjang) arr.push("Panjang " + panjang);
+  if (lebar) arr.push("Lebar " + lebar);
+
+  return arr.join(" • ");
+}
+
+function firstImage916(row){
+  const candidates = [
+    row?._img1_from_items,
+    row?._img_from_items,
+    row?._img_from_rpc,
+    row?.img,
+    row?.img1,
+    row?.product_img1,
+    row?.design_img1,
+    row?.design_img1_url,
+    row?.image_url,
+    row?.img_url,
+    row?.image1,
+    row?.photo_url
+  ];
+
+  return candidates.find(u => u && String(u).trim().length > 5) || "";
+}
+
+function kind999Label(kind){
+  const k = String(kind || "").toLowerCase();
+  if(k === "coin") return "Gold Coin";
+  if(k === "dinar") return "Koleksi Dinar";
+  if(k === "bar") return "Gold Bar";
+  return "Gold 999.9";
+}
+
+let lcState = {
+  type: "",
+  code: "",
+  price: 0,
+  ship: "POST",
+  pay: "TRANSFER",
+cut: "NO",
+length_cm: 0,
+row: null
+};
+
+function getLiveUser(){
+  return (window.auth_get && window.auth_get()) || null;
+}
+
+function getLiveUserPhone(){
+  const auth = getLiveUser();
+  return String(auth?.phone || auth?.msisdn || "").trim();
+}
+
+function lcMoney(n){
+  return "RM " + Number(n || 0).toFixed(2);
+}
+
+function toggleLiveMiniPopup(){
+  const modal = document.getElementById("liveMiniPopupBackdrop");
+
+  if (modal && modal.classList.contains("is-minimized")){
+    restoreLiveMiniPopup();
+  }else{
+    minimizeLiveMiniPopup();
+  }
+}
+
+function minimizeLiveMiniPopup(){
+  const modal = document.getElementById("liveMiniPopupBackdrop");
+
+  if (!modal) return;
+
+  modal.classList.add("is-minimized");
+  modal.style.setProperty("display","flex","important");
+
+  const btn = document.getElementById("liveMiniToggleBtn");
+  if (btn) btn.textContent = "+";
+
+  const floatBox = document.getElementById("liveMiniFloat");
+  if (floatBox){
+    floatBox.style.setProperty("display","none","important");
+  }
+
+  document.querySelector(".bottom-nav")?.style.setProperty("display","none","important");
+
+  document.body.style.overflow = "";
+}
+function restoreLiveMiniPopup(){
+  const modal = document.getElementById("liveMiniPopupBackdrop");
+
+  if (!modal) return;
+
+  modal.classList.remove("is-minimized");
+  modal.style.setProperty("display","flex","important");
+
+  const btn = document.getElementById("liveMiniToggleBtn");
+  if (btn) btn.textContent = "—";
+
+  const floatBox = document.getElementById("liveMiniFloat");
+  if (floatBox){
+    floatBox.style.setProperty("display","none","important");
+  }
+
+  document.querySelector(".bottom-nav")?.style.setProperty("display","none","important");
+
+  document.body.style.overflow = "hidden";
+}
+function closeLiveMiniPopup(){
+  const modal = document.getElementById("liveMiniPopupBackdrop");
+  const frame = document.getElementById("liveMiniPopupFrame");
+  const floatBox = document.getElementById("liveMiniFloat");
+  const restoreBtn = document.getElementById("liveMiniRestore");
+  const toggleBtn = document.getElementById("liveMiniToggleBtn");
+  const miniFrame = document.getElementById("liveMiniFrame");
+
+  if (modal){
+    modal.classList.remove("is-minimized");
+    modal.style.setProperty("display","none","important");
+  }
+
+  if (toggleBtn){
+    toggleBtn.textContent = "—";
+  }
+
+  if (frame){
+    frame.src = "about:blank";
+    setTimeout(()=>{
+      frame.src = "";
+    }, 150);
+  }
+
+  if (floatBox){
+    floatBox.style.removeProperty("display");
+    floatBox.style.setProperty("display","block","important");
+  }
+
+  if (restoreBtn){
+    restoreBtn.style.setProperty("display","none","important");
+  }
+
+  if (miniFrame){
+    miniFrame.src = getLiveMiniYoutubeSrc();
+  }
+
+  document.querySelector(".bottom-nav")?.style.setProperty("display","grid");
+
+  document.body.style.overflow = "";
+}
+document.addEventListener("visibilitychange", ()=>{
+  if (!document.hidden) {
+    const frame = document.getElementById("liveMiniPopupFrame");
+    const modal = document.getElementById("liveMiniPopupBackdrop");
+
+    if (modal && modal.style.display === "flex" && frame){
+      frame.src = getLiveMiniYoutubeSrc();
+    }
+  }
+});
+function setLcShip(mode){
+  lcState.ship = mode;
+
+  document.getElementById("lcShipPickup")?.classList.toggle("active", mode === "PICKUP");
+  document.getElementById("lcShipPost")?.classList.toggle("active", mode === "POST");
+
+  document.getElementById("lcAddressBox").style.display = mode === "POST" ? "" : "none";
+  document.getElementById("lcPickupBox").style.display = mode === "PICKUP" ? "" : "none";
+
+  lcRenderTotal();
+}
+
+async function setLcPay(v){
+  lcState.pay = v;
+
+  document.getElementById("lcPayQR")?.classList.toggle("active", v === "QR");
+  document.getElementById("lcPayTransfer")?.classList.toggle("active", v === "TRANSFER");
+  document.getElementById("lcPayTabung")?.classList.toggle("active", v === "TABUNG_TOPUP");
+  document.getElementById("lcPayAtome")?.classList.toggle("active", v === "ATOME");
+
+  const box = document.getElementById("lcTabungBox");
+
+  if (v !== "TABUNG_TOPUP"){
+    window.__lcTabungUnits = 0;
+    window.__lcTabungValue = 0;
+    window.__lcTopupValue = 0;
+
+    if (box){
+      box.style.display = "none";
+      box.innerHTML = "";
+    }
+
+    lcRenderTotal();
+    return;
+  }
+
+  if (!box){
+    lcRenderTotal();
+    return;
+  }
+
+  box.style.display = "block";
+
+  try{
+    box.innerHTML = `
+      <div class="text-muted small">
+        Mengira baki tabung...
+      </div>
+    `;
+
+    const authId = await getAuthUidForTabungLive();
+
+    if (!authId){
+      throw new Error("Sesi login tamat.");
+    }
+
+    const { data, error } = await sb
+      .from("tabung_txn")
+      .select("units, kind, type, status, user_id, user_auth_id, meta")
+      .or(`user_id.eq.${authId},user_auth_id.eq.${authId}`);
+
+    if (error) throw error;
+
+    let totalUnits = 0;
+
+    (data || []).forEach(r=>{
+      const kind = String(r?.kind || "").toUpperCase();
+      const type = String(r?.type || "").toUpperCase();
+      const status = String(r?.status || "").toUpperCase();
+      const units = Number(r?.units || 0);
+
+      if (!units) return;
+      if (status !== "PAID" && status !== "APPROVED") return;
+
+      if (kind === "BUY"){
+        totalUnits += units;
+        return;
+      }
+
+      if (kind === "SELL" || kind === "WITHDRAW" || kind === "CONVERT_916"){
+        totalUnits -= units;
+        return;
+      }
+
+      if (type === "BONUS"){
+        totalUnits += units;
+        return;
+      }
+    });
+
+    totalUnits = Math.max(0, totalUnits);
+
+    const { data: gp } = await sb
+      .from("gold_prices")
+      .select("price_9999")
+      .order("ddate", { ascending:false })
+      .limit(1)
+      .maybeSingle();
+
+    const price1g = Number(gp?.price_9999 || 0);
+    const unitValue = price1g / 10;
+
+    if (!unitValue || unitValue <= 0){
+      throw new Error("Harga tabung semasa tidak dijumpai.");
+    }
+
+    const livePrice = Number(lcState.price || 0);
+
+    let maxUseUnits = Math.floor(livePrice / unitValue);
+
+    if (maxUseUnits > totalUnits){
+      maxUseUnits = totalUnits;
+    }
+
+    maxUseUnits = Math.max(0, maxUseUnits);
+
+    const tabungValue = maxUseUnits * unitValue;
+    const topup = Math.max(0, livePrice - tabungValue);
+
+    window.__lcTabungUnits = maxUseUnits;
+    window.__lcTabungValue = tabungValue;
+    window.__lcTopupValue = topup;
+
+    lcRenderTotal();
+
+    if (totalUnits <= 0){
+      box.innerHTML = `
+        <div class="fw-bold mb-1">Tabung Emas</div>
+        <div class="small text-muted">
+          Belum ada baki Tabung Emas.
+          Simpan emas dulu untuk guna fitur ini ✨
+        </div>
+      `;
+      return;
+    }
+
+    box.innerHTML = `
+      <div class="fw-bold mb-2" style="font-size:15px;">
+        🎯 Gunakan Tabung Untuk Item Ini
+      </div>
+
+      <div class="small mb-1">
+        Harga item:
+        <b class="text-danger">${lcMoney(livePrice)}</b>
+      </div>
+
+      <div class="small mb-1">
+        Harga tabung semasa:
+        <b>${lcMoney(unitValue)} / 0.1g</b>
+      </div>
+
+      <div class="small mb-1">
+        Baki tabung anda:
+        <b>${totalUnits} unit (${(totalUnits / 10).toFixed(1)}g)</b>
+      </div>
+
+      <div class="small mb-1">
+        Digunakan:
+        <b>${maxUseUnits} unit</b>
+        = <b>${lcMoney(tabungValue)}</b>
+      </div>
+
+      <div class="small mb-2">
+        Tambah bayaran:
+        <b class="text-danger">${lcMoney(topup)}</b> sahaja
+      </div>
+
+      <div class="small text-muted">
+        Nota:<br>
+        Baki kecil boleh ditambah melalui QR atau Transfer.<br>
+        Nilai RM berubah mengikut harga emas semasa.
+      </div>
+    `;
+
+  }catch(e){
+    console.warn("TABUNG TOPUP ERROR:", e);
+
+    window.__lcTabungUnits = 0;
+    window.__lcTabungValue = 0;
+    window.__lcTopupValue = 0;
+
+    lcRenderTotal();
+
+    box.innerHTML = `
+      <div class="small text-danger">
+        ${e?.message || e}
+      </div>
+    `;
+  }
+}
+function setLcCut(mode){
+  lcState.cut = mode;
+
+  document.getElementById("lcCutNo")?.classList.toggle("active", mode === "NO");
+  document.getElementById("lcCutYes")?.classList.toggle("active", mode === "YES");
+
+  document.getElementById("lcCutBox").style.display = mode === "YES" ? "" : "none";
+
+  if (mode === "YES" && lcState.length_cm){
+    document.getElementById("lcCurrentLen").value = lcState.length_cm + "cm";
+  }
+}
+
+function lcRenderTotal(){
+  const itemPrice = Number(lcState.price || 0);
+  const normalShipFee = lcState.ship === "POST" ? 10 : 0;
+  const payMethod = String(lcState.pay || "").toUpperCase();
+
+  const useTabung = payMethod === "TABUNG_TOPUP";
+  const useAtome = payMethod === "ATOME";
+
+  const tabungValue = useTabung ? Number(window.__lcTabungValue || 0) : 0;
+
+  let displaySubtotal = itemPrice;
+  let displayShipFee = normalShipFee;
+  let total = itemPrice + normalShipFee - tabungValue;
+
+  const oldBox = document.getElementById("lc999DiscountBoxLiveNow");
+  if (oldBox) oldBox.remove();
+
+  const oldTabung = document.getElementById("lcTabungDeductRowLiveNow");
+  if (oldTabung) oldTabung.remove();
+
+  if (useAtome){
+    const atomeFinal = (itemPrice + normalShipFee) * 1.08;
+
+    displaySubtotal = Math.round(atomeFinal);
+    displayShipFee = 0;
+    total = displaySubtotal;
+  }
+
+  if (lcState.type === "999" && !useAtome && !useTabung){
+    const row = lcState.row || {};
+
+    const payDisc = itemPrice * 0.05;
+    const afterPay = Math.max(0, itemPrice - payDisc);
+
+    const aiDanType = String(row.__ai_dan_discount_type || "").toUpperCase();
+    const aiDanValue = Number(row.__ai_dan_discount_value || 0);
+
+    let aiDanDisc = 0;
+
+    if (aiDanType === "PERCENT"){
+      aiDanDisc = afterPay * (aiDanValue / 100);
+    }else if (aiDanType === "AMOUNT" || aiDanType === "FIXED"){
+      aiDanDisc = Math.min(afterPay, aiDanValue);
+    }
+
+    total = Math.max(0, itemPrice - payDisc - aiDanDisc + normalShipFee);
+
+    const shipEl = document.getElementById("lcShipFee");
+
+    if (shipEl){
+      const box = document.createElement("div");
+      box.id = "lc999DiscountBoxLiveNow";
+
+      box.innerHTML = `
+        <div class="d-flex justify-content-between text-success">
+          <span>Diskaun bayaran</span>
+          <b>- ${lcMoney(payDisc)}</b>
+        </div>
+        ${
+          aiDanDisc > 0
+            ? `<div class="d-flex justify-content-between text-success">
+                <span>Diskaun Ai-Dan</span>
+                <b>- ${lcMoney(aiDanDisc)}</b>
+              </div>`
+            : ""
+        }
+      `;
+
+      shipEl.closest(".d-flex").insertAdjacentElement("afterend", box);
+    }
+  }
+
+  total = Math.max(0, total);
+
+  const subEl = document.getElementById("lcSubtotal");
+  const shipEl = document.getElementById("lcShipFee");
+  const totalEl = document.getElementById("lcTotal");
+
+  if (subEl) subEl.textContent = lcMoney(displaySubtotal);
+  if (shipEl) shipEl.textContent = lcMoney(displayShipFee);
+  if (totalEl) totalEl.textContent = lcMoney(total);
+
+  const itemPriceText = document.getElementById("lcItemPriceText");
+  if (itemPriceText){
+    itemPriceText.textContent = useAtome
+      ? lcMoney(total)
+      : lcMoney(itemPrice);
+  }
+
+  if (useTabung && tabungValue > 0 && shipEl){
+    const tabungRow = document.createElement("div");
+    tabungRow.id = "lcTabungDeductRowLiveNow";
+    tabungRow.className = "d-flex justify-content-between text-success";
+    tabungRow.innerHTML = `
+      <span>Tolak Tabung</span>
+      <b>- ${lcMoney(tabungValue)}</b>
+    `;
+
+    shipEl.closest(".d-flex").insertAdjacentElement("afterend", tabungRow);
+  }
+}function calc916LivePrice(row){
+  const berat = Number(row?.weight_g || 0);
+
+  const basePerG = Number(row?.base_price_per_g ?? row?.price_per_g_current ?? 0);
+  const baseUpah = Number(row?.base_upah_rm ?? row?.upah_default_rm ?? 0);
+
+  const ovPerG_raw = row?.ov_price_per_g ?? row?.override_price_per_g ?? row?.price_per_g_live;
+  const ovUpah_raw = row?.ov_upah_rm ?? row?.upah_override_rm ?? row?.upah_live;
+
+  const perG_eff = ovPerG_raw != null ? Number(ovPerG_raw) : basePerG;
+  const upah_eff = ovUpah_raw != null ? Number(ovUpah_raw) : baseUpah;
+
+  return (perG_eff * berat) + upah_eff;
+}
+
+let __inlineLoginTimer = null;
+
+function loadInlineLogin(mode){
+  const frame = document.getElementById("inlineLoginFrame");
+  if (!frame) return;
+
+  const hash = mode === "signup" ? "#signup" : "#login";
+  frame.src = "/login.html" + hash;
+}
+
+function closeInlineLoginModal(){
+  const modal = document.getElementById("inlineLoginModal");
+  const frame = document.getElementById("inlineLoginFrame");
+
+  if (modal) modal.style.display = "none";
+  if (frame) frame.src = "about:blank";
+
+  if (__inlineLoginTimer){
+    clearInterval(__inlineLoginTimer);
+    __inlineLoginTimer = null;
+  }
+
+  document.body.style.overflow = "";
+}
+
+function openInlineLoginModal(){
+  const modal = document.getElementById("inlineLoginModal");
+
+  if (!modal){
+    alert("Sila login dahulu.");
+    return;
+  }
+
+  modal.style.display = "flex";
+  document.body.style.overflow = "hidden";
+
+  loadInlineLogin("signup");
+
+  if (__inlineLoginTimer){
+    clearInterval(__inlineLoginTimer);
+  }
+
+  __inlineLoginTimer = setInterval(()=>{
+    const auth = getLiveUser();
+
+    if (!auth) return;
+
+    closeInlineLoginModal();
+
+    const pending = window.__pendingLiveLock;
+    if (pending){
+      window.__pendingLiveLock = null;
+      setTimeout(()=>{
+        openLiveLock(pending.type, pending.code);
+      }, 250);
+    }
+  }, 800);
+}
+
+async function getAuthUidForTabungLive(){
+  try{
+    const r = await sb.auth.getUser();
+    const uid = r?.data?.user?.id || null;
+    if (uid) return uid;
+  }catch(e){}
+
+  try{
+    const a = getLiveUser();
+
+    if (a?.id) return a.id;
+    if (a?.customer_id) return a.customer_id;
+  }catch(e){}
+
+  return null;
+}
+
+async function getTabungLiveCustomer(){
+  const auth = getLiveUser();
+  const raw = auth?.phone || auth?.msisdn || "";
+  const digits = String(raw || "").replace(/\D/g, "");
+  const phone = digits.startsWith("60")
+    ? digits
+    : (digits.startsWith("0") ? "6" + digits : "60" + digits);
+
+  if (!phone) return null;
+
+  const { data, error } = await sb
+    .from("customers")
+    .select("id,name,phone")
+    .eq("phone", phone)
+    .maybeSingle();
+
+  if (error) return null;
+  return data || null;
+}
+
+function lcCleanPhone(){
+  return getLiveUserPhone();
+}
+
+async function lcFillCustomerAddress(){
+  try{
+    const phone = lcCleanPhone();
+    if (!phone) return;
+
+    const digits = String(phone || "").replace(/\D/g, "");
+    const local0 = digits.startsWith("60") ? ("0" + digits.slice(2)) : "";
+    const variants = [digits, "+" + digits, local0].filter(Boolean);
+
+    for (const ph of variants){
+      const { data, error } = await sb
+        .from("customers")
+        .select("alamat,postcode,city,state")
+        .eq("phone", ph)
+        .limit(1)
+        .maybeSingle();
+
+      if (!error && data){
+        const alamat = String(data.alamat || "").trim();
+        const postcode = String(data.postcode || "").trim();
+        const city = String(data.city || "").trim();
+        const state = String(data.state || "").trim();
+
+        let addr = alamat;
+
+        if (postcode && !addr.includes(postcode)) addr += (addr ? ", " : "") + postcode;
+        if (city && !addr.toLowerCase().includes(city.toLowerCase())) addr += (addr ? ", " : "") + city;
+        if (state && !addr.toLowerCase().includes(state.toLowerCase())) addr += (addr ? ", " : "") + state;
+
+        const el = document.getElementById("lcAddress");
+        if (el && addr) el.value = addr;
+        return;
+      }
+    }
+  }catch(e){
+    console.warn("lcFillCustomerAddress error:", e);
+  }
+}
+
+function get999LockCode(row){
+  return `${row.kind}|${row.design_id}|${row.card_type || "READY"}`;
+}
+
+function calc999LivePrice(row){
+  const market = Number(row.market_price_rm || row.live_price_rm || 0);
+
+  const payDisc = market * 0.05;
+  const afterPay = Math.max(0, market - payDisc);
+
+  const aiDanType = String(row.__ai_dan_discount_type || "").toUpperCase();
+  const aiDanValue = Number(row.__ai_dan_discount_value || 0);
+
+  let aiDanDisc = 0;
+
+  if (aiDanType === "PERCENT"){
+    aiDanDisc = afterPay * (aiDanValue / 100);
+  }else if (aiDanType === "AMOUNT" || aiDanType === "FIXED"){
+    aiDanDisc = Math.min(afterPay, aiDanValue);
+  }
+
+  return Math.max(0, market - payDisc - aiDanDisc);
+}
+function openLiveLock(type, code){
+  const t = String(type || "").toUpperCase();
+  const c = String(code || "").toUpperCase().trim();
+
+  const auth = getLiveUser();
+  if (!auth){
+    window.__pendingLiveLock = { type:t, code:c };
+    openInlineLoginModal();
+    return;
+  }
+
+  let row = null;
+  let price = 0;
+  let img = "";
+  let detail = "";
+  let itemName = "";
+
+  if (t === "916"){
+    row = ALL_ROWS.find(r =>
+      r.__type === "916" &&
+      String(r.code || "").toUpperCase().trim() === c
+    );
+
+    if (!row){
+      alert("Item 916 tidak dijumpai. Sila refresh.");
+      return;
+    }
+
+    price = calc916LivePrice(row);
+    img = firstImage916(row);
+    detail = liveDimText(row);
+    itemName = row.name || row.product_name || row.design_name || c;
+  }
+
+  else if (t === "999"){
+    row = ALL_ROWS.find(r =>
+      r.__type === "999" &&
+      String(get999LockCode(r)).toUpperCase().trim() === c
+    );
+
+    if (!row){
+      alert("Item 999.9 tidak dijumpai. Sila refresh.");
+      return;
+    }
+
+    const kindLabel = row.kind_label || kind999Label(row.kind);
+    const weightLabel = row.weight_label || (Number(row.weight_g || 0) + "g");
+
+    price = Number(row.live_price_rm || row.market_price_rm || 0);
+    img = row.image_url || "";
+    detail = row.design_name || row.card_type || "Gold 999.9";
+    document.querySelector("#liveCheckoutModal .fw-black").textContent = "Checkout GoldBar/Coin";
+document.getElementById("btnSubmitLiveCheckout").textContent =
+  "Submit GoldBar/Coin & Dapat Detail Bayaran";
+  }
+
+  else{
+    alert("Jenis item tidak dikenali.");
+    return;
+  }
+
+ lcState = {
+  type: t,
+  code: c,
+  price,
+  ship: "POST",
+  pay: "TRANSFER",
+  cut: "NO",
+  length_cm: Number(row?.length_cm || row?.panjang_cm || row?.current_length_cm || row?.size || 0),
+  row
+};
+
+ document.getElementById("liveCheckoutItem").innerHTML = `
+  <img class="live-checkout-img" src="${img || "https://placehold.co/200x200?text=" + encodeURIComponent(c)}" alt="${safeTxt(c)}">
+  <div style="min-width:0;flex:1;">
+    <div class="fw-bold">${safeTxt(itemName)}</div>
+    <div class="small text-muted mono">${safeTxt(c)}</div>
+    <div class="small text-muted">${safeTxt(detail || "-")}</div>
+    <div id="lcItemPriceText" class="fw-black text-danger mt-1" style="font-weight:900;">${lcMoney(price)}</div>
+  </div>
+`;
+
+  document.getElementById("lcMsg").textContent = "";
+  document.getElementById("btnSubmitLiveCheckout").disabled = false;
+
+  setLcShip("POST");
+  setLcPay("TRANSFER"); 
+setLcCut("NO");
+
+document.getElementById("lcCutSection").style.display = t === "916" ? "" : "none"; 
+
+const payTabung = document.getElementById("lcPayTabung");
+const payAtome = document.getElementById("lcPayAtome");
+
+if (t === "916"){
+  if (payTabung) payTabung.style.display = "";
+
+  if (payAtome){
+    payAtome.style.display = LIVE_ATOME_ENABLED ? "" : "none";
+  }
+
+  if (!LIVE_ATOME_ENABLED && lcState.pay === "ATOME"){
+    lcState.pay = "TRANSFER";
+  }
+}else{  if (payTabung) payTabung.style.display = "none";
+  if (payAtome) payAtome.style.display = "none";
+
+  if (lcState.pay === "TABUNG_TOPUP" || lcState.pay === "ATOME"){
+    lcState.pay = "TRANSFER";
+  }
+}
+
+if (t === "916" && lcState.length_cm){
+  document.getElementById("lcCurrentLen").value = lcState.length_cm + "cm";
+}
+  lcRenderTotal();
+
+  lcFillCustomerAddress();
+
+document.getElementById("liveCheckoutModal").style.display = "flex";
+hideFloatingButtons();
+  document.body.style.overflow = "hidden";
+}
+async function chatSendLive(payload){
+  const res = await fetch("/.netlify/functions/chat-send", {
+    method:"POST",
+    headers:{ "Content-Type":"application/json" },
+    body: JSON.stringify(payload)
+  });
+
+  const raw = await res.text();
+  let j = {};
+  try{ j = JSON.parse(raw); }catch(e){}
+
+  if (!res.ok || !j.ok){
+    throw new Error(j.error || j.message || raw || "Chat-send gagal.");
+  }
+
+  return j;
+}
+
+function closeLiveConfirmModal(){
+  const modal = document.getElementById("liveConfirmModal");
+  if (modal) modal.style.display = "none";
+}
+
+function getLcConfirmDetail(){
+  const row = lcState.row || {};
+  const ship = String(lcState.ship || "POST").toUpperCase();
+  const payMethod = String(lcState.pay || "TRANSFER").toUpperCase();
+
+  const shipFee = ship === "POST" ? 10 : 0;
+  const itemPrice = Number(lcState.price || 0);
+
+  const useTabungTopup = payMethod === "TABUNG_TOPUP";
+  const tabungValueRm = useTabungTopup ? Number(window.__lcTabungValue || 0) : 0;
+  const topupRm = useTabungTopup ? Number(window.__lcTopupValue || 0) : itemPrice;
+
+  const finalTotal = useTabungTopup
+    ? Number((topupRm + shipFee).toFixed(2))
+    : (
+        payMethod === "ATOME"
+          ? Math.round((itemPrice + shipFee) * 1.08)
+          : Number((itemPrice + shipFee).toFixed(2))
+      );
+
+  let img = "";
+  let name = "";
+  let code = String(lcState.code || "");
+  let detail = "";
+
+  if (lcState.type === "916"){
+    img = firstImage916(row);
+    name = row.design_name || row.product_name || row.name || code || "Barang 916";
+    detail = liveDimText(row);
+  }else{
+    img = row.image_url || "";
+    const kindLabel = row.kind_label || kind999Label(row.kind);
+    const weightLabel = row.weight_label || (Number(row.weight_g || 0) + "g");
+    name = `${kindLabel} ${weightLabel}`;
+    code = String(row.live_code || get999LockCode(row) || lcState.code || "");
+    detail = row.design_name || row.card_type || "Gold 999.9";
+  }
+
+  return {
+    row,
+    ship,
+    payMethod,
+    shipFee,
+    itemPrice,
+    finalTotal,
+    img,
+    name,
+    code,
+    detail
+  };
+}
+
+async function fetchLivePendingOrders(){
+  const auth = getLiveUser();
+  const raw = String(getLiveUserPhone() || auth?.phone || auth?.msisdn || "").trim();
+  const d = raw.replace(/\D/g, "");
+
+  if (!d) return [];
+
+  const p0  = d.startsWith("0") ? d : (d.startsWith("60") ? "0" + d.slice(2) : "0" + d);
+  const p60 = d.startsWith("60") ? d : (d.startsWith("0") ? "6" + d : "60" + d);
+
+  const phoneVariants = Array.from(new Set([
+    raw,
+    d,
+    p0,
+    p60,
+    "+" + p60
+  ].filter(Boolean)));
+
+  const all = [];
+
+  try{
+    const { data, error } = await sb
+      .from("j916_orders")
+      .select("*")
+      .in("phone", phoneVariants)
+      .eq("status", "PENDING")
+      .order("created_at", { ascending:false })
+      .limit(10);
+
+    if (!error){
+      (data || []).forEach(r=>{
+        all.push({
+          __table:"j916_orders",
+          __type:"916",
+          ...r
+        });
+      });
+    }
+  }catch(e){
+    console.warn("fetch pending j916_orders error:", e);
+  }
+
+  const codes916 = all
+    .filter(r => r.__type === "916")
+    .map(r => String(r.code || "").toUpperCase().trim())
+    .filter(Boolean);
+
+  if (codes916.length){
+    try{
+      const { data: itemRows, error } = await sb
+        .from("j916_items")
+        .select(`
+          code,
+          design:j916_designs (
+            name,
+            img1_url,
+            img2_url,
+            img3_url,
+            img1,
+            img2,
+            img3
+          )
+        `)
+        .in("code", codes916);
+
+      if (!error && Array.isArray(itemRows)){
+        const imgMap = new Map();
+
+        itemRows.forEach(x=>{
+          const c = String(x.code || "").toUpperCase().trim();
+          const dsg = x.design || {};
+
+          imgMap.set(c, {
+            name: dsg.name || "",
+            img:
+              dsg.img1_url ||
+              dsg.img1 ||
+              dsg.img2_url ||
+              dsg.img2 ||
+              dsg.img3_url ||
+              dsg.img3 ||
+              ""
+          });
+        });
+
+        all.forEach(r=>{
+          const c = String(r.code || "").toUpperCase().trim();
+          const m = imgMap.get(c);
+
+          if (m?.img) r.__pending_img = m.img;
+          if (m?.name && (!r.name || String(r.name).toUpperCase().startsWith("LIVE "))){
+            r.__pending_name = m.name;
+          }
+        });
+      }
+    }catch(e){
+      console.warn("attach pending 916 image error:", e);
+    }
+  }
+
+  try{
+    const { data, error } = await sb
+      .from("goldbar_order")
+      .select("*")
+      .or(`customer_phone.eq.${p60},customer_phone.eq.${p0},phone.eq.${p60},phone.eq.${p0}`)
+      .eq("status", "PENDING")
+      .order("created_at", { ascending:false })
+      .limit(10);
+
+    if (!error){
+      (data || []).forEach(r=>{
+        all.push({
+          __table:"goldbar_order",
+          __type:"999",
+          ...r
+        });
+      });
+    }
+  }catch(e){
+    console.warn("fetch pending goldbar_order error:", e);
+  }
+
+  const seen = new Set();
+
+  return all.filter(r=>{
+    const key = String(r.id || r.reference || r.order_code || r.code || JSON.stringify(r));
+    if (seen.has(key)) return false;
+    seen.add(key);
+    return true;
+  }).slice(0, 8);
+} 
+
+function pendingOrderHTML(list){
+  if (!list.length){
+    return `
+      <div class="small text-muted mt-2">
+        Tiada pending order lain dijumpai.
+      </div>
+    `;
+  }
+
+  return list.map(r=>{
+    const type = r.__type || "";
+    const code = String(r.code || r.live_code || r.item_code || r.design_id || "-");
+
+    const name = String(
+      r.__pending_name ||
+      r.name ||
+      r.item_name ||
+      r.product_name ||
+      r.design_name ||
+      r.title ||
+      (type === "999" ? "Gold 999.9" : "Barang 916")
+    );
+
+    const berat = Number(r.weight_g || r.berat || r.grams || 0);
+    const panjang = fmtCm(r.length_cm || r.panjang_cm || r.current_length_cm || 0);
+
+    const price = Number(
+      r.grand_total_rm ??
+      r.total_rm ??
+      r.unit_rm ??
+      r.price_rm ??
+      r.final_amount ??
+      r.amount_rm ??
+      r.total ??
+      0
+    );
+
+    const img = String(
+      r.__pending_img ||
+      r.image_url ||
+      r.img1_url ||
+      r.img_url ||
+      r.img ||
+      r.product_img1 ||
+      r.design_img1 ||
+      ""
+    );
+
+    const spec = [
+      berat > 0 ? `Berat ${berat.toFixed(2)}g` : "",
+      panjang ? `Panjang ${panjang}` : ""
+    ].filter(Boolean).join(" • ");
+
+    const imgSrc = img || "https://placehold.co/120x120?text=" + encodeURIComponent(code || "ITEM");
+
+    return `
+      <div class="pending-card-live">
+        <img
+          src="${safeTxt(imgSrc)}"
+          alt="${safeTxt(code)}"
+          onerror="this.onerror=null;this.src='https://placehold.co/120x120?text=${encodeURIComponent(code || "ITEM")}'"
+        >
+        <div style="min-width:0;flex:1;">
+          <div class="fw-bold">${safeTxt(name)}</div>
+          <div class="small text-muted">${safeTxt(code)}</div>
+          <div class="small text-muted">${safeTxt(spec || "-")}</div>
+          <div class="fw-bold text-danger">${price > 0 ? lcMoney(price) : "RM -"}</div>
+        </div>
+      </div>
+    `;
+  }).join("");
+} 
+async function submitLiveCheckoutToAiDan(){
+  const btn = document.getElementById("btnSubmitLiveCheckout");
+  const msg = document.getElementById("lcMsg");
+
+  try{
+    const auth = getLiveUser();
+    if (!auth) throw new Error("Sila login dahulu.");
+
+    const phone = getLiveUserPhone();
+    if (!phone) throw new Error("Nombor telefon akaun tidak dijumpai.");
+
+    const ship = String(lcState.ship || "POST").toUpperCase();
+    const payMethod = String(lcState.pay || "TRANSFER").toUpperCase();
+
+    const address = String(document.getElementById("lcAddress")?.value || "").trim();
+    const pickupWhen = String(document.getElementById("lcPickupWhen")?.value || "").trim();
+
+    if (ship === "POST" && address.length < 12){
+      throw new Error("Sila isi alamat penuh dahulu.");
+    }
+
+    if (ship === "PICKUP" && !pickupWhen){
+      throw new Error("Sila isi masa ambil kedai dahulu.");
+    }
+
+    if (lcState.type === "916"){
+      const cut = String(lcState.cut || "NO").toUpperCase();
+      const cutTo = String(document.getElementById("lcCutTo")?.value || "").trim();
+      const currentLength = String(document.getElementById("lcCurrentLen")?.value || "").trim();
+
+      if (cut === "YES"){
+        if (!currentLength || !cutTo){
+          throw new Error("Sila isi panjang asal dan potong jadi berapa cm.");
+        }
+
+        const currNum = Number(String(currentLength).replace(/[^0-9.]/g, ""));
+        const cutNum = Number(String(cutTo).replace(/[^0-9.]/g, ""));
+
+        if (!currNum || !cutNum){
+          throw new Error("Panjang asal / potong jadi mesti nombor cm yang sah.");
+        }
+
+        if (cutNum >= currNum){
+          throw new Error("Potong jadi mesti lebih pendek dari panjang asal.");
+        }
+      }
+    }
+
+    if (btn) btn.disabled = true;
+    if (msg) msg.textContent = "Menyemak pending order...";
+
+    const d = getLcConfirmDetail();
+const pending = await fetchLivePendingOrders();
+const pendingLimitReached = pending.length >= 2;
+
+    let payNote = "";
+
+    if (d.payMethod === "ATOME"){
+  payNote = `
+    Ini adalah bayaran menggunakan <b>Atome</b>.<br>
+    Ansuran bulanan dan tempoh bayaran ditentukan sendiri di aplikasi Atome.
+    Minimum 3 bulan.<br><br>
+
+    Sila lengkapkan proses pembayaran Atome dalam tempoh <b>30 minit</b> selepas order dibuat.<br>
+    Jika perlukan masa tambahan, sila chat dengan admin dalam Ai-Dan sebelum masa tamat.<br><br>
+
+    ⚠️ Order akan dibatalkan secara automatik selepas 30 minit jika pembayaran Atome tidak berjaya diselesaikan dan tiada tambahan masa diberikan oleh admin.
+  `;
+}else{
+  payNote = `
+    Ini adalah <b>belian tunai</b>.<br>
+    Bayaran perlu dibuat dalam tempoh <b>30 minit</b> selepas order dibuat.<br>
+    Jika perlukan masa tambahan, sila chat dengan admin dalam Ai-Dan sebelum masa tamat.<br><br>
+    ⚠️ Order akan dibatalkan secara automatik selepas 30 minit jika tiada bayaran, tiada bukti bayaran dihantar dan tiada tambahan masa diberikan oleh admin.
+  `;
+}
+
+    const content = document.getElementById("liveConfirmContent");
+
+    if (content){
+      content.innerHTML = `
+        <div class="live-confirm-item mb-3">
+          <img class="live-confirm-img" src="${safeTxt(d.img || "https://placehold.co/200x200?text=LIVE")}" alt="${safeTxt(d.code)}">
+          <div style="min-width:0;flex:1;">
+            <div class="fw-bold">${safeTxt(d.name)}</div>
+            <div class="small text-muted">${safeTxt(d.code)}</div>
+            <div class="small text-muted">${safeTxt(d.detail || "-")}</div>
+            <div class="fw-black text-danger mt-1" style="font-weight:950;">${lcMoney(d.itemPrice)}</div>
+          </div>
+        </div>
+
+        <div class="rounded-4 p-3 mb-3" style="background:#f9fafb;border:1px solid #e5e7eb;">
+          <div class="d-flex justify-content-between">
+            <span>Subtotal</span>
+            <b>${lcMoney(d.itemPrice)}</b>
+          </div>
+          <div class="d-flex justify-content-between">
+            <span>Caj pos</span>
+            <b>${lcMoney(d.shipFee)}</b>
+          </div>
+          <hr>
+          <div class="d-flex justify-content-between fs-5">
+            <b>Total anggaran</b>
+            <b class="text-danger">${lcMoney(d.finalTotal)}</b>
+          </div>
+        </div>
+
+        <div class="live-confirm-note mb-3">
+          ${payNote}
+        </div>
+
+       <div class="fw-bold mb-1">
+  Pending order anda
+</div>
+
+${
+  pendingLimitReached
+    ? `<div class="live-confirm-note mb-3">
+         Anda sudah ada <b>2 pending order</b>.<br>
+         Sila selesaikan bayaran dahulu sebelum lock item baru.
+       </div>`
+    : ""
+}
+
+${pendingOrderHTML(pending)}
+      `;
+    }
+
+    const confirmModal = document.getElementById("liveConfirmModal");
+if (confirmModal) confirmModal.style.display = "flex";
+
+const confirmBtn = document.getElementById("btnConfirmCreateLiveOrder");
+
+if (confirmBtn){
+  confirmBtn.disabled = pendingLimitReached;
+  confirmBtn.textContent = pendingLimitReached
+    ? "Selesaikan Pending Order Dulu"
+    : "Ya, Teruskan Buat Order";
+}
+
+if (msg) msg.textContent = "";
+if (btn) btn.disabled = false;
+
+  }catch(e){
+    if (msg) msg.textContent = "❌ " + (e?.message || e);
+    if (btn) btn.disabled = false;
+  }
+}
+
+async function submitLiveCheckoutConfirmed(){
+  const btn = document.getElementById("btnConfirmCreateLiveOrder");
+  const msg = document.getElementById("lcMsg");
+
+  try{
+    const auth = getLiveUser();
+    if (!auth) throw new Error("Sila login dahulu.");
+
+    const phone = getLiveUserPhone();
+    if (!phone) throw new Error("Nombor telefon akaun tidak dijumpai.");
+
+    const ship = String(lcState.ship || "POST").toUpperCase();
+    const payMethod = String(lcState.pay || "TRANSFER").toUpperCase();
+
+    const useTabungTopup = payMethod === "TABUNG_TOPUP";
+
+    const tabungUnitsUsed = useTabungTopup
+      ? Number(window.__lcTabungUnits || 0)
+      : 0;
+
+    const tabungValueRm = useTabungTopup
+      ? Number(window.__lcTabungValue || 0)
+      : 0;
+
+    const topupRm = useTabungTopup
+      ? Number(window.__lcTopupValue || 0)
+      : Number(lcState.price || 0);
+
+    const shipFee = ship === "POST" ? 10 : 0;
+
+    const finalTopupRm = useTabungTopup
+  ? Number((topupRm + shipFee).toFixed(2))
+  : (
+      payMethod === "ATOME"
+        ? Math.round((Number(lcState.price || 0) + shipFee) * 1.08)
+        : Number((Number(lcState.price || 0) + shipFee).toFixed(2))
+    );
+
+    const address = String(document.getElementById("lcAddress")?.value || "").trim();
+    const pickupWhen = String(document.getElementById("lcPickupWhen")?.value || "").trim();
+
+    if (ship === "POST" && address.length < 12){
+      throw new Error("Sila isi alamat penuh dahulu.");
+    }
+
+    if (ship === "PICKUP" && !pickupWhen){
+      throw new Error("Sila isi masa ambil kedai dahulu.");
+    }
+
+    if (useTabungTopup && lcState.type !== "916"){
+      throw new Error("Tabung + Topup hanya untuk item 916.");
+    }
+
+    if (useTabungTopup && tabungUnitsUsed <= 0){
+      throw new Error("Tiada unit Tabung yang boleh digunakan.");
+    }
+
+    if (btn) btn.disabled = true;
+    if (msg) msg.textContent = useTabungTopup
+      ? "Sedang buat permohonan Tabung + Topup…"
+      : "Sedang submit lock ke Ai-Dan…";
+
+    let tabungRequestId = "";
+
+       if (useTabungTopup && tabungUnitsUsed > 0){
+      const authId = await getAuthUidForTabungLive();
+      if (!authId) throw new Error("Sesi login tamat. Sila login semula.");
+
+      const cust = await getTabungLiveCustomer();
+
+      const custName = cust?.name || auth?.name || "Pelanggan";
+      const custPhone = cust?.phone || String(phone || "").replace(/\D/g, "");
+
+      const unitPriceUsed = tabungValueRm / tabungUnitsUsed;
+
+      const respTabung = await sb.rpc("tabung_request_convert916_simple_v1", {
+        p_user_id: authId,
+        p_units: tabungUnitsUsed,
+        p_price_per_unit: unitPriceUsed,
+        p_name: custName,
+        p_phone: custPhone,
+        p_notes:
+          "LIVE Tabung + Topup | Item " +
+          String(lcState.code || "") +
+          " | Nilai tabung " +
+          lcMoney(tabungValueRm) +
+          " | Topup " +
+          lcMoney(finalTopupRm)
+      });
+
+      if (respTabung.error) throw respTabung.error;
+
+      tabungRequestId =
+        respTabung.data?.id ||
+        respTabung.data?.request_id ||
+        (typeof respTabung.data === "string" ? respTabung.data : "");
+
+      if (!tabungRequestId){
+        throw new Error("Server tidak pulangkan id transaksi tabung.");
+      }
+
+      const link = confirmURL("CONVERT_916", tabungRequestId);
+
+      const msgAdmin = [
+        "*Permohonan LIVE Tabung + Topup*",
+        `ID: ${tabungRequestId}`,
+        `Nama: ${custName}`,
+        `No: ${custPhone}`,
+        `Item LIVE: ${String(lcState.code || "-")}`,
+        `Harga item: ${lcMoney(Number(lcState.price || 0))}`,
+        `Guna tabung: ${(tabungUnitsUsed / 10).toFixed(1)} g (${tabungUnitsUsed} unit)`,
+        `Nilai tabung: ${lcMoney(tabungValueRm)}`,
+        `Topup customer perlu bayar: ${lcMoney(finalTopupRm)}`,
+        "",
+        "✅ Sahkan di:",
+        link,
+        ""
+      ].join("\n");
+
+      const msgCust = [
+        "Permohonan Tabung + Topup diterima.",
+        `ID: ${tabungRequestId}`,
+        `Item LIVE: ${String(lcState.code || "-")}`,
+        `Guna tabung: ${(tabungUnitsUsed / 10).toFixed(1)} g (${tabungUnitsUsed} unit)`,
+        `Nilai tabung: ${lcMoney(tabungValueRm)}`,
+        `Baki topup perlu dibayar: ${lcMoney(finalTopupRm)}`,
+        "Admin akan semak dan sahkan permohonan anda."
+      ].join("\n");
+
+      await waNotify(ADMIN_WA, msgAdmin, "ADMIN LIVE TABUNG TOPUP");
+      await waNotify(custPhone, msgCust, "CUST LIVE TABUNG TOPUP");
+    }
+
+    let payload;
+
+    if (lcState.type === "999"){
+      const row = lcState.row || {};
+
+      const live999Msg =
+        "LIVE999_CHECKOUT_SUBMIT" +
+        "|kind=" + encodeURIComponent(String(row.kind || "")) +
+        "|weight_g=" + encodeURIComponent(String(row.weight_g || 0)) +
+        "|design_id=" + encodeURIComponent(String(row.design_id || "")) +
+        "|design_name=" + encodeURIComponent(String(row.design_name || "")) +
+        "|card=" + encodeURIComponent(String(row.card_type || "READY")) +
+        "|qty=1" +
+        "|price_rm=" + encodeURIComponent(String(lcState.price || 0)) +
+        "|ship=" + encodeURIComponent(ship) +
+        "|address=" + encodeURIComponent(ship === "POST" ? address : "") +
+        "|pickup_when=" + encodeURIComponent(ship === "PICKUP" ? pickupWhen : "") +
+        "|pay_method=" + encodeURIComponent(payMethod);
+
+      payload = {
+        phone,
+        name: auth?.name || "Pelanggan",
+        is_logged_in: true,
+        action: "live999_checkout_submit",
+        source: "live_now_999",
+        message: live999Msg,
+
+        live_code: String(row.live_code || ""),
+        kind: String(row.kind || ""),
+        weight_g: Number(row.weight_g || 0),
+        design_id: String(row.design_id || ""),
+        design_name: String(row.design_name || ""),
+        card_type: String(row.card_type || "READY"),
+
+        qty: 1,
+        price_rm: Number(lcState.price || 0),
+
+        ship,
+        address: ship === "POST" ? address : "",
+        pickup_when: ship === "PICKUP" ? pickupWhen : "",
+        pay_method: payMethod
+      };
+    }else{
+      const cut = String(lcState.cut || "NO").toUpperCase();
+      const cutTo = String(document.getElementById("lcCutTo")?.value || "").trim();
+      const currentLength = String(document.getElementById("lcCurrentLen")?.value || "").trim();
+
+      if (cut === "YES"){
+        if (!currentLength || !cutTo){
+          throw new Error("Sila isi panjang asal dan potong jadi berapa cm.");
+        }
+
+        const currNum = Number(String(currentLength).replace(/[^0-9.]/g, ""));
+        const cutNum = Number(String(cutTo).replace(/[^0-9.]/g, ""));
+
+        if (!currNum || !cutNum){
+          throw new Error("Panjang asal / potong jadi mesti nombor cm yang sah.");
+        }
+
+        if (cutNum >= currNum){
+          throw new Error("Potong jadi mesti lebih pendek dari panjang asal.");
+        }
+      }
+
+      payload = {
+        phone,
+        name: auth?.name || "Pelanggan",
+        is_logged_in: true,
+        action: "live_checkout_submit",
+        source: "live_now_916",
+
+       message:
+  "LIVE_CHECKOUT_SUBMIT" +
+  "|code=" + encodeURIComponent(String(lcState.code || "")) +
+  "|price_rm=" + encodeURIComponent(String(lcState.price || 0)) +
+          "|ship=" + encodeURIComponent(ship) +
+          "|address=" + encodeURIComponent(ship === "POST" ? address : "") +
+          "|pickup_when=" + encodeURIComponent(ship === "PICKUP" ? pickupWhen : "") +
+          "|cut=" + encodeURIComponent(cut) +
+          "|cut_to=" + encodeURIComponent(cut === "YES" ? cutTo : "") +
+          "|pay_method=" + encodeURIComponent(payMethod) +
+          "|tabung_request_id=" + encodeURIComponent(tabungRequestId || "") +
+          "|tabung_units=" + encodeURIComponent(String(tabungUnitsUsed || 0)) +
+          "|tabung_value_rm=" + encodeURIComponent(String(tabungValueRm || 0)) +
+          "|topup_rm=" + encodeURIComponent(String(finalTopupRm || 0)),
+
+        code: String(lcState.code || ""),
+        price_rm: Number(lcState.price || 0),
+        ship,
+        address: ship === "POST" ? address : "",
+        pickup_when: ship === "PICKUP" ? pickupWhen : "",
+        cut,
+        cut_to: cut === "YES" ? cutTo : "",
+        pay_method: payMethod,
+
+        tabung_request_id: tabungRequestId || "",
+        tabung_units: Number(tabungUnitsUsed || 0),
+        tabung_value_rm: Number(tabungValueRm || 0),
+        topup_rm: Number(finalTopupRm || 0)
+      };
+    }
+
+    if (msg) msg.textContent = "Sedang submit lock ke Ai-Dan…";
+
+    const res = await chatSendLive(payload);
+
+    const threadId = res.thread_id;
+    if (!threadId) throw new Error("Thread ID tidak diterima.");
+
+    if (msg) msg.textContent = useTabungTopup
+      ? "Berjaya ✅ Permohonan Tabung + Topup dibuat. Buka Ai-Dan untuk detail bayaran."
+      : "Berjaya ✅ Buka Ai-Dan untuk detail bayaran.";
+
+    setTimeout(()=>{
+      closeLiveConfirmModal();
+      closeLiveCheckout();
+
+      if (typeof openAidanPopup === "function"){
+        openAidanPopup(threadId);
+      }else{
+        location.href = "/chat.html?thread=" + encodeURIComponent(threadId) + "&live_checkout_done=1";
+      }
+    }, 600);
+
+  }catch(e){
+    if (msg) msg.textContent = "❌ " + (e?.message || e);
+    if (btn) btn.disabled = false;
+  }
+}
+function fixMediaUrl(url){
+  if(!url) return "";
+  url = String(url).trim();
+  if(url.startsWith("http")) return url;
+  return "";
+}
+
+function convertBunnyEmbedUrl(url){
+  if(!url) return "";
+
+  let u = String(url || "").trim();
+
+  if (u.includes("player.mediadelivery.net/play/")){
+    const clean = u.split("?")[0];
+    const parts = clean.split("/").filter(Boolean);
+    const libraryId = parts[parts.length - 2];
+    const videoId = parts[parts.length - 1];
+
+    if (libraryId && videoId){
+      return `https://iframe.mediadelivery.net/embed/${libraryId}/${videoId}?autoplay=true&muted=true&volume=0&loop=true&preload=true&responsive=true&controls=false`;
+    }
+  }
+
+  if (u.includes("iframe.mediadelivery.net/embed/")){
+    u = u.split("?")[0];
+    return u + "?autoplay=true&muted=true&volume=0&loop=true&preload=false&responsive=true&controls=false";
+  }
+
+  return fixMediaUrl(u);
+}
+
+function getLiveMediaList(row){
+  const videos = [
+    row?._video_from_items,
+    row?._video_from_rpc,
+    row?.video_url,
+    row?.video1_url,
+    row?.video,
+    row?.product_video,
+    row?.design_video
+  ].filter(u => u && String(u).trim().length > 5)
+   .map(url => ({ type:"video", url:convertBunnyEmbedUrl(url) }))
+   .filter(x => x.url);
+
+  const imgs = [
+    row?._img1_from_items,
+    row?._img2_from_items,
+    row?._img3_from_items,
+    row?._img_from_items,
+    row?._img_from_rpc,
+    row?.img1,
+    row?.img2,
+    row?.img3,
+    row?.product_img1,
+    row?.product_img2,
+    row?.product_img3,
+    row?.design_img1,
+    row?.design_img2,
+    row?.design_img3,
+    row?.design_img1_url,
+    row?.design_img2_url,
+    row?.design_img3_url,
+    row?.image_url,
+    row?.img_url,
+    row?.image1,
+    row?.photo_url,
+    row?.img
+  ].filter(u => u && String(u).trim().length > 5)
+   .map(url => ({ type:"img", url:fixMediaUrl(url) }))
+   .filter(x => x.url);
+
+  const seen = new Set();
+
+  return [...videos, ...imgs].filter(x=>{
+    const key = x.type + "|" + x.url;
+    if (seen.has(key)) return false;
+    seen.add(key);
+    return true;
+  });
+}
+
+function withBunnyParams(url){
+  if (!url) return "";
+
+  let u = String(url || "").trim();
+
+  if (!u.includes("iframe.mediadelivery.net/embed/")) return "";
+
+  u = u.split("?")[0];
+
+  return u + "?autoplay=true&muted=true&volume=0&loop=true&preload=true&responsive=true&controls=false";
+}
+
+let LIVE_GALLERY_ITEMS = [];
+let LIVE_GALLERY_INDEX = 0;
+let LIVE_GALLERY_TITLE = "";
+
+function safeGalleryJson(items){
+  return encodeURIComponent(JSON.stringify(items || []));
+}
+
+function openLiveGallery(encodedItems, startIndex, title){
+  try{
+    const items = JSON.parse(decodeURIComponent(encodedItems || "%5B%5D"));
+    LIVE_GALLERY_ITEMS = Array.isArray(items) ? items : [];
+  }catch(e){
+    LIVE_GALLERY_ITEMS = [];
+  }
+
+  LIVE_GALLERY_INDEX = Math.max(0, Number(startIndex || 0) | 0);
+  LIVE_GALLERY_TITLE = String(title || "Media LIVE");
+
+  if (!LIVE_GALLERY_ITEMS.length) return;
+
+  const modal = document.getElementById("liveGalleryModal");
+  const titleEl = document.getElementById("liveGalleryTitle");
+
+  if (titleEl) titleEl.textContent = LIVE_GALLERY_TITLE;
+  if (modal) modal.style.display = "flex";
+
+  document.body.style.overflow = "hidden";
+  renderLiveGallery();
+}
+
+function closeLiveGallery(){
+  const modal = document.getElementById("liveGalleryModal");
+  const stage = document.getElementById("liveGalleryStage");
+
+  if (stage){
+    stage.querySelectorAll("img, iframe").forEach(el => el.remove());
+  }
+
+  if (modal) modal.style.display = "none";
+  document.body.style.overflow = "";
+}
+
+function renderLiveGallery(){
+  const stage = document.getElementById("liveGalleryStage");
+  const thumbs = document.getElementById("liveGalleryThumbs");
+  const count = document.getElementById("liveGalleryCount");
+
+  if (!stage || !thumbs) return;
+
+  if (LIVE_GALLERY_INDEX < 0) LIVE_GALLERY_INDEX = LIVE_GALLERY_ITEMS.length - 1;
+  if (LIVE_GALLERY_INDEX >= LIVE_GALLERY_ITEMS.length) LIVE_GALLERY_INDEX = 0;
+
+  const item = LIVE_GALLERY_ITEMS[LIVE_GALLERY_INDEX];
+
+  stage.querySelectorAll("img, iframe").forEach(el => el.remove());
+
+if (item?.type === "video"){
+  const iframe = document.createElement("iframe");
+
+  iframe.src = withBunnyParams(item.url) || convertBunnyEmbedUrl(item.url) || item.url;
+
+  iframe.setAttribute("sandbox", "allow-scripts allow-same-origin allow-presentation");
+  iframe.style.pointerEvents = "none";
+
+  iframe.allow = "autoplay; fullscreen; picture-in-picture; encrypted-media";
+  iframe.setAttribute("allowfullscreen", "allowfullscreen");
+
+  stage.appendChild(iframe);
+}else{
+  const img = document.createElement("img");
+  img.src = item?.url || "";
+  img.alt = LIVE_GALLERY_TITLE;
+  stage.appendChild(img);
+}
+  if (count){
+    count.textContent = (LIVE_GALLERY_INDEX + 1) + " / " + LIVE_GALLERY_ITEMS.length;
+  }
+
+  thumbs.innerHTML = LIVE_GALLERY_ITEMS.map((x, i)=>{
+    const active = i === LIVE_GALLERY_INDEX ? " active" : "";
+
+    if (x.type === "video"){
+      return `
+        <button type="button" class="live-gallery-thumb${active}" onclick="liveGalleryGo(${i})">
+          <div class="live-gallery-thumb-video">▶</div>
+        </button>
+      `;
+    }
+
+    return `
+      <button type="button" class="live-gallery-thumb${active}" onclick="liveGalleryGo(${i})">
+        <img src="${x.url}" alt="">
+      </button>
+    `;
+  }).join("");
+}
+
+function liveGalleryPrev(){
+  LIVE_GALLERY_INDEX--;
+  renderLiveGallery();
+}
+
+function liveGalleryNext(){
+  LIVE_GALLERY_INDEX++;
+  renderLiveGallery();
+}
+
+function liveGalleryGo(i){
+  LIVE_GALLERY_INDEX = Number(i || 0) | 0;
+  renderLiveGallery();
+}
+
+document.getElementById("liveGalleryModal")?.addEventListener("click", function(ev){
+  if (ev.target === this){
+    closeLiveGallery();
+  }
+});
+
+function buildLiveMedia916(row, code){
+  const slides = getLiveMediaList(row);
+  const title = String(code || "EMAS 916").toUpperCase();
+  const placeholder = "https://placehold.co/640x480?text=" + encodeURIComponent(title);
+
+  const imgs = slides.filter(x => x.type === "img");
+  const videos = slides.filter(x => x.type === "video");
+
+  // ✅ Gambar dulu, video kemudian.
+  // Jadi internet slow pun card tetap buka gambar.
+  const gallerySlides = [...imgs, ...videos];
+
+  if (!gallerySlides.length){
+    gallerySlides.push({ type:"img", url:placeholder });
+  }
+
+  const galleryJson = safeGalleryJson(gallerySlides);
+  const firstImg = imgs[0]?.url || placeholder;
+
+  return `
+    <div class="live-media" onclick="openLiveGallery('${galleryJson}', 0, '${safeTxt(title)}')">
+      <div class="live-zoom-hint">👆 Klik gambar</div>
+      <img
+        class="live-media-img"
+        src="${safeTxt(firstImg)}"
+        alt="${safeTxt(title)}"
+        onerror="if(!this.dataset.f){this.dataset.f=1;this.src='${placeholder}'}">
+    </div>
+  `;
+}
+function render916Card(row){
+  const code = String(row?.code || "").toUpperCase().trim();
+  const name =
+    row?.design_name ||
+    row?.product_name ||
+    row?.name ||
+    code ||
+    "Barang 916";
+
+  const berat = Number(row?.weight_g || 0);
+  const detailText = liveDimText(row);
+
+  const basePerG = Number(row?.base_price_per_g ?? row?.price_per_g_current ?? 0);
+  const baseUpah = Number(row?.base_upah_rm ?? row?.upah_default_rm ?? 0);
+
+  const calc = (pg,g,u)=>(
+    (Number(pg || 0) * Number(g || 0)) + Number(u || 0)
+  );
+
+  const normalRM = row?.normal_price_rm != null
+    ? Number(row.normal_price_rm)
+    : calc(basePerG, berat, baseUpah);
+
+  const ovPerG_raw = row?.ov_price_per_g ?? row?.override_price_per_g ?? row?.price_per_g_live;
+  const ovUpah_raw = row?.ov_upah_rm ?? row?.upah_override_rm ?? row?.upah_live;
+
+  const perG_eff = ovPerG_raw != null ? Number(ovPerG_raw) : basePerG;
+  const upah_eff = ovUpah_raw != null ? Number(ovUpah_raw) : baseUpah;
+
+  const liveRM = calc(perG_eff, berat, upah_eff);
+  const jimat = Math.max(0, normalRM - liveRM);
+
+  const codeSafe = safeTxt(code);
+  const mediaHTML = buildLiveMedia916(row, code);
+
+  return `
+    <div class="live-card red" data-type="916" data-search="${safeTxt((code+' '+name+' '+detailText).toLowerCase())}">
+      ${mediaHTML}
+
+      <div class="card-body-live">
+        <div class="d-flex align-items-center justify-content-between">
+          <span class="badge-live">LIVE 916</span>
+          <small class="text-white mono fw-bold">${safeTxt(code)}</small>
+        </div>
+
+        <div class="name">${safeTxt(name)}</div>
+        <div class="spec">${safeTxt(detailText || (berat ? berat.toFixed(2) + "g" : "Barang 916"))}</div>
+
+        ${
+          normalRM > liveRM
+            ? `<div class="price-old">RM ${money(normalRM)}</div>`
+            : `<div style="height:8px"></div>`
+        }
+
+        <div class="price-new">RM ${money(liveRM)}</div>
+        <div class="save">${jimat > 0 ? "Jimat RM " + money(jimat) : "&nbsp;"}</div>
+
+        <div class="card-actions">
+          <button type="button" class="btn btn-danger"
+            onclick="openLiveLock('916','${codeSafe}')">
+            Lock Sekarang
+          </button>
+        </div>
+      </div>
+    </div>
+  `;
+}
+function render999Card(row){
+  const kindLabel = row.kind_label || kind999Label(row.kind);
+  const weightLabel = row.weight_label || (Number(row.weight_g || 0) + "g");
+  const name = `${kindLabel} ${weightLabel}`;
+  const design = row.design_name || row.card_type || "999.9";
+  const img = row.image_url || "";
+
+  const market = Number(row.market_price_rm || row.live_price_rm || 0);
+
+  const payDisc = market * 0.05;
+  const afterPay = Math.max(0, market - payDisc);
+
+  const aiDanType = String(row.__ai_dan_discount_type || "").toUpperCase();
+  const aiDanValue = Number(row.__ai_dan_discount_value || 0);
+
+  let aiDanDisc = 0;
+
+  if (aiDanType === "PERCENT"){
+    aiDanDisc = afterPay * (aiDanValue / 100);
+  }else if (aiDanType === "AMOUNT" || aiDanType === "FIXED"){
+    aiDanDisc = Math.min(afterPay, aiDanValue);
+  }
+
+  const live = Math.max(0, market - payDisc - aiDanDisc);
+  const jimat = Math.max(0, market - live);
+
+  const lockCode = get999LockCode(row);
+  const lockCodeSafe = safeTxt(lockCode);
+
+  const imageHTML = img
+    ? `<img src="${safeTxt(img)}" alt="${safeTxt(name)}" onerror="if(!this.dataset.f){this.dataset.f=1;this.src='https://placehold.co/640x480?text=J999'}">`
+    : `<img src="https://placehold.co/640x480?text=J999" alt="J999">`;
+
+  return `
+    <div class="live-card gold" data-type="999" data-search="${safeTxt((name+' '+design+' '+lockCode).toLowerCase())}">
+      <div class="media gold">
+        ${imageHTML}
+      </div>
+
+      <div class="card-body-live">
+        <span class="badge-live badge-gold">LIVE 999</span>
+        <div class="name">${safeTxt(name)}</div>
+        <div class="spec">${safeTxt(design)}</div>
+
+        ${
+          market > live
+            ? `<div class="price-old">RM ${money(market)}</div>`
+            : `<div style="height:8px"></div>`
+        }
+
+        <div class="price-new">RM ${money(live)}</div>
+        <div class="save">${jimat > 0 ? "Jimat RM " + money(jimat) : "&nbsp;"}</div>
+
+        <div class="card-actions">
+          <button type="button" class="btn btn-warning fw-bold"
+            onclick="openLiveLock('999','${lockCodeSafe}')">
+            Beli Sekarang
+          </button>
+        </div>
+      </div>
+    </div>
+  `;
+}
+
+async function load999Rules(rows){
+  for (const row of rows){
+    try{
+      const { data: rule, error } = await sb
+        .from("gold999_discount_rules")
+        .select("discount_type,discount_value,label")
+        .eq("is_active", true)
+        .eq("source", "AI_DAN")
+        .eq("kind", String(row.kind || "").toLowerCase())
+        .eq("weight_g", Number(row.weight_g || 0))
+        .order("priority", { ascending:true })
+        .limit(1)
+        .maybeSingle();
+
+      if (!error && rule){
+        row.__ai_dan_discount_type = String(rule.discount_type || "PERCENT").toUpperCase();
+        row.__ai_dan_discount_value = Number(rule.discount_value || 0);
+        row.__ai_dan_discount_label = String(rule.label || "Diskaun Ai-Dan");
+      }else{
+        row.__ai_dan_discount_type = "";
+        row.__ai_dan_discount_value = 0;
+        row.__ai_dan_discount_label = "";
+      }
+    }catch(e){
+      row.__ai_dan_discount_type = "";
+      row.__ai_dan_discount_value = 0;
+      row.__ai_dan_discount_label = "";
+    }
+  }
+}
+
+async function attach916Media(rows){
+  const codes = rows
+    .map(r => String(r?.code || "").toUpperCase().trim())
+    .filter(Boolean);
+
+  if (!codes.length) return;
+
+  try{
+    const { data: itemRows, error } = await sb
+      .from("j916_items")
+      .select(`
+  code,
+  design:j916_designs (
+    name,
+    img1_url,
+    img2_url,
+    img3_url,
+    img1,
+    img2,
+    img3,
+    video_url
+  )
+`)
+      .in("code", codes);
+
+    if (error || !Array.isArray(itemRows)) return;
+
+    const mediaMap = new Map();
+
+    itemRows.forEach(r=>{
+      const c = String(r?.code || "").toUpperCase().trim();
+      const d = r?.design || {};
+
+     mediaMap.set(c, {
+  name: d?.name || "",
+  img1: d?.img1_url || d?.img1 || "",
+  img2: d?.img2_url || d?.img2 || "",
+  img3: d?.img3_url || d?.img3 || "",
+  video: d?.video_url || ""
+});
+    });
+
+    rows.forEach(r=>{
+      const c = String(r?.code || "").toUpperCase().trim();
+      const m = mediaMap.get(c);
+ 
+if (m?.name) r.design_name = m.name;
+if (m?.img1) r._img1_from_items = m.img1;
+      if (m?.img1) r._img1_from_items = m.img1;
+      if (m?.img2) r._img2_from_items = m.img2;
+      if (m?.img3) r._img3_from_items = m.img3;
+      if (m?.img1) r._img_from_items = m.img1;
+      if (m?.video) r._video_from_items = m.video;
+    });
+  }catch(e){
+    console.warn("attach916Media error:", e);
+  }
+} 
+function openAidanPopup(threadId){
+  const popup = document.getElementById("aidanPopup");
+  const frame = document.getElementById("aidanPopupFrame");
+
+  if (!popup || !frame){
+    location.href = "/chat.html?thread=" + encodeURIComponent(threadId || "") + "&live_checkout_done=1";
+    return;
+  }
+
+  let url = "/chat.html";
+  if (threadId){
+    url += "?thread=" + encodeURIComponent(threadId) + "&live_checkout_done=1";
+  }
+
+  frame.src = url;
+  popup.style.display = "block";
+}
+
+function closeAidanPopup(){
+  const popup = document.getElementById("aidanPopup");
+  if (popup) popup.style.display = "none";
+}
+
+async function loadAllLive(){
+  const grid = document.getElementById("liveGrid");
+  const empty = document.getElementById("liveEmpty");
+  const lastLoad = document.getElementById("lastLoad");
+
+  if (lastLoad) lastLoad.textContent = "Memuatkan…";
+
+  try{
+    await loadLivePaymentSettings();
+
+const [r916, r999] = await Promise.all([
+  sb.from("j916_live_cards_pricing_v1")
+    .select("*")
+    .order("ts",{ ascending:false })
+    .range(0, 9999),
+
+  sb.from("gold999_live_now")
+    .select("*")
+    .eq("is_active", true)
+    .order("updated_at",{ ascending:false })
+    .range(0, 9999)
+]);
+    if (r916.error) throw r916.error;
+    if (r999.error) throw r999.error;
+
+    const rows916 = Array.isArray(r916.data) ? r916.data : [];
+    const rows999 = Array.isArray(r999.data) ? r999.data : [];
+
+    await attach916Media(rows916);
+    await load999Rules(rows999);
+
+    const unique916 = [];
+    const seen916 = new Set();
+
+    rows916.forEach(r=>{
+      const c = String(r?.code || "").toUpperCase().trim();
+      if (!c || seen916.has(c)) return;
+      seen916.add(c);
+      unique916.push({ ...r, __type:"916" });
+    });
+
+    const live999 = rows999.map(r => ({ ...r, __type:"999" }));
+
+    // ✅ Susun Barang Kemas 916 dulu, baru GoldBar/Coin 999
+ALL_ROWS = [
+  ...unique916,
+  ...live999
+];
+
+    document.getElementById("totalLive").textContent = ALL_ROWS.length;
+    document.getElementById("total916").textContent = unique916.length;
+    document.getElementById("total999").textContent = live999.length;
+
+    buildSmartLiveFilter();
+    renderGrid();
+
+    if (lastLoad){
+      lastLoad.textContent = "Update: " + new Date().toLocaleTimeString("ms-MY", {
+        hour:"numeric",
+        minute:"2-digit",
+        hour12:true
+      });
+    }
+
+  }catch(e){
+    console.warn("loadAllLive error:", e);
+    grid.innerHTML = "";
+    empty.style.display = "";
+    if (lastLoad) lastLoad.textContent = "Gagal muat";
+  }
+}
+
+function getLiveRowName(row){
+  if (row.__type === "999"){
+    const kindLabel = row.kind_label || kind999Label(row.kind);
+    const weightLabel = row.weight_label || (Number(row.weight_g || 0) + "g");
+    return `${kindLabel} ${weightLabel}`.trim();
+  }
+
+  return String(
+    row?.design_name ||
+    row?.product_name ||
+    row?.name ||
+    row?.title ||
+    "Barang 916"
+  ).trim();
+}
+
+function buildSmartLiveFilter(){
+  const wrap = document.getElementById("smartLiveFilter");
+  if (!wrap) return;
+
+  const map = new Map();
+
+  ALL_ROWS.forEach(row=>{
+    const name = getLiveRowName(row);
+    if (!name) return;
+
+    const key = name.toLowerCase();
+    const old = map.get(key) || { name, count:0 };
+    old.count++;
+    map.set(key, old);
+  });
+
+  const items = Array.from(map.values())
+    .sort((a,b)=> b.count - a.count || a.name.localeCompare(b.name))
+    .slice(0, 18);
+
+  if (!items.length){
+    wrap.innerHTML = "";
+    return;
+  }
+
+  wrap.innerHTML = `
+    <button type="button" class="smart-live-chip active" data-smart="">
+      Semua Nama
+    </button>
+    ${items.map(x=>`
+      <button type="button" class="smart-live-chip" data-smart="${safeTxt(x.name)}">
+        ${safeTxt(x.name)} ${x.count > 1 ? `<span style="opacity:.7">(${x.count})</span>` : ""}
+      </button>
+    `).join("")}
+  `;
+
+  wrap.querySelectorAll(".smart-live-chip").forEach(btn=>{
+    btn.addEventListener("click", ()=>{
+      const val = btn.dataset.smart || "";
+      const input = document.getElementById("searchInput");
+
+      if (input) input.value = val;
+
+      wrap.querySelectorAll(".smart-live-chip").forEach(b=>b.classList.remove("active"));
+      btn.classList.add("active");
+
+      renderGrid();
+    });
+  });
+
+  bindSmartLiveAutoScrollTouch();
+  setTimeout(startSmartLiveAutoScroll, 300);
+}
+
+function syncSmartChipActive(){
+  const wrap = document.getElementById("smartLiveFilter");
+  const input = document.getElementById("searchInput");
+  if (!wrap || !input) return;
+
+  const q = String(input.value || "").trim().toLowerCase();
+
+  wrap.querySelectorAll(".smart-live-chip").forEach(btn=>{
+    const val = String(btn.dataset.smart || "").trim().toLowerCase();
+    btn.classList.toggle("active", val === q);
+  });
+}
+
+function renderGrid(){
+  const grid = document.getElementById("liveGrid");
+  const empty = document.getElementById("liveEmpty");
+  const q = String(document.getElementById("searchInput")?.value || "").toLowerCase().trim();
+
+  syncSmartChipActive();
+
+  let rows = ALL_ROWS.slice();
+
+  if (CURRENT_FILTER !== "ALL"){
+    rows = rows.filter(r => r.__type === CURRENT_FILTER);
+  }
+
+  if (q){
+    rows = rows.filter(r=>{
+      const txt = JSON.stringify(r).toLowerCase();
+      return txt.includes(q);
+    });
+  }
+
+  if (!rows.length){
+    grid.innerHTML = "";
+    empty.style.display = "";
+    return;
+  }
+
+  empty.style.display = "none";
+rows.sort((a,b)=>{
+  const lenA = Number(a.length_cm || 0);
+  const lenB = Number(b.length_cm || 0);
+
+  if(lenA !== lenB){
+    return lenA - lenB;
+  }
+
+  const wA = Number(a.weight_g || 0);
+  const wB = Number(b.weight_g || 0);
+
+  return wA - wB;
+});
+  grid.innerHTML = rows.map(row=>{
+    if (row.__type === "916") return render916Card(row);
+    return render999Card(row);
+  }).join("");
+}
+
+function setFilter(type){
+  CURRENT_FILTER = type;
+
+  document.getElementById("btnAll")?.classList.toggle("btn-warning", type === "ALL");
+  document.getElementById("btnAll")?.classList.toggle("btn-outline-light", type !== "ALL");
+
+  document.getElementById("btn916")?.classList.toggle("btn-warning", type === "916");
+  document.getElementById("btn916")?.classList.toggle("btn-outline-light", type !== "916");
+
+  document.getElementById("btn999")?.classList.toggle("btn-warning", type === "999");
+  document.getElementById("btn999")?.classList.toggle("btn-outline-light", type !== "999");
+
+  renderGrid();
+}
+
+document.getElementById("btnAll")?.addEventListener("click", ()=>setFilter("ALL"));
+document.getElementById("btn916")?.addEventListener("click", ()=>setFilter("916"));
+document.getElementById("btn999")?.addEventListener("click", ()=>setFilter("999"));
+document.getElementById("btnRefresh")?.addEventListener("click", loadAllLive);
+document.getElementById("searchInput")?.addEventListener("input", renderGrid);
+
+const BILLPLZ_FIXED_FEE = 1.10;
+const CREATE_BILL_URL = "https://dduizetstqqjrpsezbpi.functions.supabase.co/functions/v1/create-bill";
+const REDIRECT_URL = "https://emasamir.app/tabung";
+let tabungBuyPrice01 = 0;
+let tabungStockUnits = 0;
+
+function moneyRM(n){
+  return "RM " + Number(n || 0).toFixed(2);
+}
+
+function openTabungBillPopup(url){
+  window.location.href = url;
+}
+
+function closeTabungBillPopup(){
+  const popup = document.getElementById("tabungBillPopup");
+  const frame = document.getElementById("tabungBillFrame");
+
+  if (frame) frame.src = "about:blank";
+  if (popup) popup.style.display = "none";
+
+  document.body.style.overflow = "";
+
+  if (typeof loadTabungLive === "function"){
+    loadTabungLive();
+  }
+}
+
+async function loadTabungLive(){
+  const wrap = document.getElementById("tabungLiveWrap");
+  const priceEl = document.getElementById("tabungLivePrice");
+  const unitEl = document.getElementById("tabungLiveUnit");
+  const totalEl = document.getElementById("tabungLiveTotal");
+
+  if (!wrap || !priceEl || !unitEl || !totalEl) return;
+
+  try{
+    const { data: cfg } = await sb
+      .from("live_config")
+      .select("show_tabung_live")
+      .eq("id", 1)
+      .maybeSingle();
+
+    if (cfg?.show_tabung_live !== true){
+      wrap.style.display = "none";
+      return;
+    }
+
+    const { data: gp, error: gpErr } = await sb
+      .from("gold_prices")
+      .select("price_9999")
+      .order("ddate", { ascending:false })
+      .limit(1)
+      .maybeSingle();
+
+    if (gpErr) throw gpErr;
+
+    const p1g = Number(gp?.price_9999 || 0);
+    tabungBuyPrice01 = p1g / 10;
+
+    try{
+      const { data: st } = await sb.rpc("tabung_stock_available");
+      tabungStockUnits = Number(st?.[0]?.units ?? st?.units ?? st ?? 0);
+    }catch(e){
+      tabungStockUnits = 999999;
+    }
+
+    priceEl.textContent = moneyRM(tabungBuyPrice01);
+    wrap.style.display = "";
+
+recalcTabungLive();
+setupTabungLivePicker();
+setupTabungLiveBuyButton();
+  }catch(e){
+    console.warn("loadTabungLive error:", e);
+    wrap.style.display = "none";
+  }
+}
+function clampTabungUnit(v){
+  let n = Math.max(1, Number(v || 1) | 0);
+
+  if (tabungStockUnits > 0 && n > tabungStockUnits){
+    n = tabungStockUnits;
+  }
+
+  return n;
+}
+
+function recalcTabungLive(){
+  const unitEl = document.getElementById("tabungLiveUnit");
+  const totalEl = document.getElementById("tabungLiveTotal");
+  if (!unitEl || !totalEl) return;
+
+  const units = clampTabungUnit(unitEl.value);
+  unitEl.value = units;
+
+  const subtotal = units * tabungBuyPrice01;
+  const grand = subtotal + BILLPLZ_FIXED_FEE;
+
+  totalEl.innerHTML =
+    `${moneyRM(subtotal)} <span class="text-muted small">(+ caj Billplz ${moneyRM(BILLPLZ_FIXED_FEE)} = <b>${moneyRM(grand)}</b>)</span>`;
+}
+
+/* ===== Picker Unit Tabung LIVE ikut tabung.html ===== */
+let tabungPickerValue = 1;
+let tabungPickerTimer = null;
+
+function buildTabungPicker(){
+  const wheel = document.getElementById("tabungPickerWheel");
+  const input = document.getElementById("tabungLiveUnit");
+  if (!wheel || !input) return;
+
+  const max = Math.max(1, Number(tabungStockUnits || 0) | 0);
+  const current = clampTabungUnit(input.value || 1);
+
+  tabungPickerValue = current;
+  wheel.innerHTML = "";
+
+  const frag = document.createDocumentFragment();
+
+  for (let i = 1; i <= max; i++){
+    const item = document.createElement("div");
+    item.className = "tabung-wheel-item";
+    item.dataset.val = String(i);
+    item.textContent = String(i);
+    frag.appendChild(item);
+  }
+
+  wheel.appendChild(frag);
+
+  requestAnimationFrame(()=>{
+    wheel.scrollTop = (current - 1) * 44;
+    updateTabungPickerActive();
+  });
+}
+
+function updateTabungPickerActive(){
+  const wheel = document.getElementById("tabungPickerWheel");
+  if (!wheel) return;
+
+  const max = Math.max(1, Number(tabungStockUnits || 0) | 0);
+  const idx = Math.round(wheel.scrollTop / 44);
+  const val = Math.min(max, Math.max(1, idx + 1));
+
+  tabungPickerValue = val;
+
+  wheel.querySelectorAll(".tabung-wheel-item").forEach(el=>{
+    el.classList.toggle("active", Number(el.dataset.val) === val);
+  });
+}
+
+function snapTabungPicker(){
+  const wheel = document.getElementById("tabungPickerWheel");
+  if (!wheel) return;
+
+  const idx = Math.round(wheel.scrollTop / 44);
+  wheel.scrollTo({ top: idx * 44, behavior:"smooth" });
+
+  setTimeout(updateTabungPickerActive, 80);
+}
+
+function openTabungPicker(){
+  const modal = document.getElementById("tabungPickerModal");
+  const wheel = document.getElementById("tabungPickerWheel");
+  if (!modal || !wheel) return;
+
+  buildTabungPicker();
+
+  modal.style.display = "flex";
+  document.body.style.overflow = "hidden";
+
+  wheel.onscroll = ()=>{
+    updateTabungPickerActive();
+
+    if (tabungPickerTimer) clearTimeout(tabungPickerTimer);
+    tabungPickerTimer = setTimeout(snapTabungPicker, 120);
+  };
+}
+
+function closeTabungPicker(){
+  const modal = document.getElementById("tabungPickerModal");
+  if (modal) modal.style.display = "none";
+  document.body.style.overflow = "";
+}
+
+function applyTabungPicker(){
+  const input = document.getElementById("tabungLiveUnit");
+
+  if (input){
+    input.value = String(clampTabungUnit(tabungPickerValue));
+  }
+
+  recalcTabungLive();
+  closeTabungPicker();
+}
+
+function setupTabungLivePicker(){
+  const input = document.getElementById("tabungLiveUnit");
+  if (!input) return;
+
+  input.setAttribute("readonly", "readonly");
+  input.setAttribute("inputmode", "none");
+
+  const open = (ev)=>{
+    if (ev){
+      ev.preventDefault();
+      ev.stopPropagation();
+    }
+
+    input.blur();
+    openTabungPicker();
+  };
+
+  input.onclick = open;
+  input.ontouchend = open;
+  input.onfocus = open;
+} 
+
+function setupTabungLiveBuyButton(){
+  const btn = document.getElementById("btnTabungLiveBuy");
+  if (!btn || btn.dataset.bound === "1") return;
+
+  btn.dataset.bound = "1";
+
+  btn.onclick = async (ev)=>{
+    if (ev){
+      ev.preventDefault();
+      ev.stopPropagation();
+    }
+
+    await buyTabungLive();
+  };
+}
+
+async function buyTabungLive(){
+  const liveUser = getLiveUser();
+
+  if (!liveUser){
+    openInlineLoginModal();
+    return;
+  }
+
+  const msgEl = document.getElementById("tabungLiveMsg");
+  const btn = document.getElementById("btnTabungLiveBuy");
+  const unitEl = document.getElementById("tabungLiveUnit");
+
+  let units = Math.max(1, Number(unitEl?.value || 1) | 0);
+
+  if (tabungStockUnits > 0 && units > tabungStockUnits){
+    alert("Stok Tabung tidak mencukupi.");
+    return;
+  }
+
+  const subtotal = units * tabungBuyPrice01;
+  const grand = subtotal + BILLPLZ_FIXED_FEE;
+
+if (msgEl) {
+  msgEl.textContent =
+    `Menyediakan bil untuk ${units} unit (${(units / 10).toFixed(1)}g)…`;
+}
+
+  btn.disabled = true;
+  if (msgEl) msgEl.textContent = "Menyediakan bil Billplz…";
+
+  try{
+    const authId = await getAuthUidForTabungLive();
+    if (!authId) throw new Error("Sesi tamat. Sila login semula.");
+
+    const cust = await getTabungLiveCustomer();
+
+    const prep = await sb.rpc("tabung_buy_prepare_v3", {
+      p_user_id: authId,
+      p_units: units,
+      p_price_per_unit: tabungBuyPrice01
+    });
+
+    if (prep.error) throw prep.error;
+
+    const raw = prep.data;
+    let reference = null;
+
+    if (typeof raw === "string") reference = raw;
+    else if (Array.isArray(raw)){
+      const r0 = raw[0] || {};
+      reference = r0.reference || r0.reference_1 || r0.ref || r0.txn_id || r0.id || null;
+    }else if (raw && typeof raw === "object"){
+      reference = raw.reference || raw.reference_1 || raw.ref || raw.txn_id || raw.id || null;
+    }
+
+    if (!reference) throw new Error("Tiada reference dari server.");
+
+    const payload = {
+      txn_id: reference,
+      amount: Number(grand.toFixed(2)),
+      user_id: authId,
+      units: units,
+     name: cust?.name || liveUser?.name || "Pelanggan",
+phone: cust?.phone || String(liveUser?.phone || liveUser?.msisdn || "").replace(/\D/g, ""),
+email: liveUser?.email || "",
+      description: `Tabung emas ${units} unit (0.1g) — LIVE`,
+      redirect_url: REDIRECT_URL
+    };
+
+    const res = await fetch(CREATE_BILL_URL, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": "Bearer " + SB_KEY
+      },
+      body: JSON.stringify(payload)
+    });
+
+    let j = {};
+    try{ j = await res.json(); }catch(e){}
+
+    if (!res.ok || !j?.ok){
+      throw new Error(j?.error || j?.message || "Billplz ralat.");
+    }
+
+    const billUrl = j.bill_url || j.url;
+    if (!billUrl) throw new Error("Tiada pautan Billplz.");
+
+    try{
+      await sb.rpc("tabung_attach_bill", {
+        p_reference: reference,
+        p_bill_id_text: j.bill_id || ""
+      });
+    }catch(e){}
+
+    if (msgEl) msgEl.textContent = "Bil dibuka. Sila teruskan bayaran.";
+    openTabungBillPopup(billUrl);
+
+  }catch(e){
+    console.warn("buyTabungLive error:", e);
+    if (msgEl) msgEl.textContent = "❌ " + (e?.message || e);
+  }finally{
+    btn.disabled = false;
+  }
+}
+
+async function setupLiveNowAccountBar(){
+  try{
+    const auth = window.auth_get && window.auth_get();
+
+    const loginStatus = document.getElementById("loginStatus");
+    const adminBadge  = document.getElementById("adminBadge");
+    const btnAdmin    = document.getElementById("btnAdmin");
+    const btnAccount  = document.getElementById("btnAccount");
+    const btnLogin    = document.getElementById("btnLogin");
+    const btnLogout   = document.getElementById("btnLogout");
+
+    const rawPhone = auth?.phone || "";
+    const who = auth?.name?.trim() ? auth.name : rawPhone;
+
+    if(loginStatus){
+      loginStatus.textContent = auth ? `Log masuk sebagai ${who}` : "Tidak log masuk";
+    }
+
+    if(auth){
+      if(btnAccount) btnAccount.style.display = "";
+      if(btnLogin) btnLogin.style.display = "none";
+      if(btnLogout) btnLogout.style.display = "";
+
+      btnLogout.onclick = () => {
+        window.auth_clear && window.auth_clear();
+        location.reload();
+      };
+    }else{
+      if(btnAccount) btnAccount.style.display = "none";
+      if(btnLogin) btnLogin.style.display = "";
+      if(btnLogout) btnLogout.style.display = "none";
+    }
+
+    function normalizePhone(p){
+      if(!p) return "";
+      p = ("" + p).trim().replace(/\s|-/g,"");
+      if(p.startsWith("+60")) return p;
+      if(p.startsWith("60")) return "+" + p;
+      if(p.startsWith("0")) return "+60" + p.slice(1);
+      return p;
+    }
+
+    let isAdmin = false;
+    const p = normalizePhone(rawPhone);
+
+    if(auth && p){
+      const variants = [
+        rawPhone,
+        p,
+        p.replace("+60", "0"),
+        p.replace("+", ""),
+        rawPhone.replace(/^0/, "60")
+      ].filter(Boolean);
+
+      for(const cand of variants){
+        try{
+          const { data } = await sb.rpc("check_admin_by_phone", { p_phone: cand });
+          if(data === true || data === "true" || data === "t" || data === 1){
+            isAdmin = true;
+            break;
+          }
+        }catch(e){}
+      }
+    }
+
+    if(isAdmin){
+      if(adminBadge) adminBadge.style.display = "";
+      if(btnAdmin){
+        btnAdmin.style.display = "";
+        btnAdmin.onclick = () => location.href = "/admin.html";
+      }
+    }
+
+  }catch(e){
+    console.warn("[live-now account bar] error:", e);
+  }
+}
+setupLiveNowAccountBar();
+
+loadAllLive();
+setInterval(loadAllLive, 30000);
+
+loadTabungLive();
+setInterval(loadTabungLive, 60000);
+
+setupTabungLivePicker();
+
+document.getElementById("tabungLiveUnit")?.addEventListener("input", recalcTabungLive);
+
+
+/* ===== FLOATING LIVE MINI VIDEO + KOMEN LIVE ===== */
+const LIVE_MINI_ROOM = "emasamir-live";
+const LIVE_MINI_SOCKET_URL = "https://qr-emas-amir-production.up.railway.app";
+
+let liveMiniSocket = null;
+let liveMiniShownIds = new Set();
+let liveMiniLastCreatedAt = null;
+
+function getLiveMiniYoutubeSrc(){
+  const videoId = window.LIVE_YOUTUBE_ID || "ekRtZMEz9fM";
+
+  return "https://www.youtube.com/embed/" +
+    encodeURIComponent(videoId) +
+    "?playsinline=1&rel=0&modestbranding=1&origin=https://emasamir.app";
+}
+
+function liveMiniStatus(text){
+  const el = document.getElementById("liveMiniChatStatus");
+  if (el) el.textContent = text;
+}
+
+function liveMiniEscape(str){
+  return String(str || "")
+    .replace(/&/g,"&amp;")
+    .replace(/</g,"&lt;")
+    .replace(/>/g,"&gt;")
+    .replace(/"/g,"&quot;")
+    .replace(/'/g,"&#039;");
+}
+
+function liveMiniShortName(name){
+  let n = String(name || "Tetamu").trim().replace(/\s+/g," ");
+  if (!n) return "Tetamu";
+
+  n = n.replace(/\b(bin|binti|bt|bte)\b.*$/i, "").trim();
+
+  if (n.length > 22){
+    n = n.slice(0,22).trim() + "…";
+  }
+
+  return n || "Tetamu";
+}
+
+function liveMiniRegisterSeen(row){
+  if (!row) return;
+
+  if (row.id) liveMiniShownIds.add(row.id);
+
+  if (row.created_at){
+    if (!liveMiniLastCreatedAt || row.created_at > liveMiniLastCreatedAt){
+      liveMiniLastCreatedAt = row.created_at;
+    }
+  }
+}
+
+function liveMiniRenderComment(row){
+  const list = document.getElementById("liveMiniComments");
+  if (!list || !row) return;
+
+  const msgTime = new Date(row.created_at || Date.now()).getTime();
+  const now = Date.now();
+
+  if (msgTime && now - msgTime > 30 * 60 * 1000) return;
+
+  if (list.children.length === 1 && list.textContent.includes("Komen LIVE akan muncul")){
+    list.innerHTML = "";
+  }
+
+  const name = liveMiniShortName(row.name || "Tetamu");
+  const phone4 = String(row.phone4 || "").trim();
+  const msg = row.message || "";
+  const head = phone4 ? `${name} (${phone4})` : name;
+
+  const div = document.createElement("div");
+  div.className = "live-mini-comment";
+
+  div.innerHTML = `
+    <div class="live-mini-comment-name">${liveMiniEscape(head)}</div>
+    <div class="live-mini-comment-text">${liveMiniEscape(msg)}</div>
+  `;
+
+  list.appendChild(div);
+  list.scrollTop = list.scrollHeight;
+
+  while (list.children.length > 80){
+    list.removeChild(list.firstChild);
+  }
+}
+
+async function liveMiniLoadInitialComments(){
+  try{
+    const list = document.getElementById("liveMiniComments");
+    if (list){
+      list.innerHTML = `
+        <div class="live-mini-status">
+          Memuatkan komen LIVE…
+        </div>
+      `;
+    }
+
+    const since = new Date(Date.now() - 30 * 60 * 1000).toISOString();
+
+    const { data, error } = await sb
+      .from("live_chat_messages")
+      .select("*")
+      .eq("room", LIVE_MINI_ROOM)
+      .gte("created_at", since)
+      .order("created_at", { ascending:true })
+      .limit(120);
+
+    if (error) throw error;
+
+    if (list) list.innerHTML = "";
+
+    (data || []).forEach(row=>{
+      if (row.id && liveMiniShownIds.has(row.id)) return;
+      liveMiniRegisterSeen(row);
+      liveMiniRenderComment(row);
+    });
+
+    if (list && !list.children.length){
+      list.innerHTML = `
+        <div class="live-mini-status">
+          Belum ada komen baru. Tulis komen pertama 👇
+        </div>
+      `;
+    }
+
+    liveMiniStatus("Komen LIVE aktif.");
+  }catch(e){
+    console.warn("liveMiniLoadInitialComments error:", e);
+    liveMiniStatus("Gagal muat komen. Cuba refresh.");
+  }
+}
+
+async function liveMiniPollComments(){
+  try{
+    if (!liveMiniLastCreatedAt) return;
+
+    const { data, error } = await sb
+      .from("live_chat_messages")
+      .select("*")
+      .eq("room", LIVE_MINI_ROOM)
+      .gt("created_at", liveMiniLastCreatedAt)
+      .order("created_at", { ascending:true })
+      .limit(50);
+
+    if (error) throw error;
+
+    (data || []).forEach(row=>{
+      if (row.id && liveMiniShownIds.has(row.id)) return;
+      liveMiniRegisterSeen(row);
+      liveMiniRenderComment(row);
+    });
+  }catch(e){
+    console.warn("liveMiniPollComments error:", e);
+  }
+}
+
+function liveMiniLoadSocketScript(){
+  return new Promise((resolve, reject)=>{
+    if (window.io) return resolve();
+
+    const s = document.createElement("script");
+    s.src = "https://cdn.socket.io/4.7.5/socket.io.min.js";
+    s.onload = resolve;
+    s.onerror = reject;
+    document.head.appendChild(s);
+  });
+}
+
+async function liveMiniConnectSocket(){
+  try{
+    await liveMiniLoadSocketScript();
+
+    if (liveMiniSocket && liveMiniSocket.connected) return;
+
+    liveMiniSocket = io(LIVE_MINI_SOCKET_URL, {
+      transports:["websocket","polling"]
+    });
+
+    liveMiniSocket.on("connect", ()=>{
+      liveMiniStatus("Komen LIVE aktif.");
+      liveMiniSocket.emit("join_live");
+    });
+
+    liveMiniSocket.on("live_comment_new", (row)=>{
+      if (row.id && liveMiniShownIds.has(row.id)) return;
+
+      liveMiniRegisterSeen(row);
+      liveMiniRenderComment(row);
+    });
+
+    liveMiniSocket.on("live_comment_error", (err)=>{
+      alert(err?.message || "Gagal hantar komen.");
+    });
+
+    liveMiniSocket.on("disconnect", ()=>{
+      liveMiniStatus("Komen terputus. Menyambung semula…");
+    });
+
+  }catch(e){
+    console.warn("liveMiniConnectSocket error:", e);
+    liveMiniStatus("Socket gagal sambung. Komen masih akan refresh automatik.");
+  }
+}
+
+async function liveMiniSendComment(msg){
+  const auth = getLiveUser();
+
+  if (!auth){
+    window.__pendingMiniComment = msg;
+    openInlineLoginModal();
+    return;
+  }
+
+  const dispName =
+    String(auth?.name || "").trim() ||
+    String(auth?.phone || auth?.msisdn || "").trim() ||
+    "Pelanggan";
+
+  const digits = String(auth?.phone || auth?.msisdn || "").replace(/\D/g,"");
+  const phone4 = digits.length >= 4 ? digits.slice(-4) : null;
+
+  if (!liveMiniSocket || !liveMiniSocket.connected){
+    await liveMiniConnectSocket();
+  }
+
+  if (!liveMiniSocket || !liveMiniSocket.connected){
+    throw new Error("Socket belum bersambung. Cuba lagi.");
+  }
+
+  liveMiniSocket.emit("live_comment", {
+    name: dispName,
+    phone4,
+    message: msg
+  });
+}
+
+function setupLiveMiniForm(){
+  const form = document.getElementById("liveMiniForm");
+  const input = document.getElementById("liveMiniInput");
+
+  if (!form || !input) return;
+
+  form.addEventListener("submit", async (ev)=>{
+    ev.preventDefault();
+
+    const msg = String(input.value || "").trim();
+    if (!msg) return;
+
+    try{
+      input.disabled = true;
+      await liveMiniSendComment(msg);
+      input.value = "";
+    }catch(e){
+      alert(e?.message || e);
+    }finally{
+      input.disabled = false;
+      input.focus();
+    }
+  });
+
+  ["focus","click"].forEach(evt=>{
+    input.addEventListener(evt, ()=>{
+      if (!getLiveUser()){
+        openInlineLoginModal();
+      }
+    });
+  });
+}
+
+function openLiveMiniPopup(){
+  const modal = document.getElementById("liveMiniPopupBackdrop");
+  const frame = document.getElementById("liveMiniPopupFrame");
+
+  if (frame) frame.src = getLiveMiniYoutubeSrc();
+  if (modal){
+  modal.classList.remove("is-minimized");
+  modal.style.display = "flex"; 
+document.querySelector(".bottom-nav")?.style.setProperty("display","none","important");}
+
+  document.body.style.overflow = "hidden";
+
+  liveMiniLoadInitialComments();
+  liveMiniConnectSocket();
+}
+
+function closeLiveMiniPopup(){
+  const modal = document.getElementById("liveMiniPopupBackdrop");
+  const frame = document.getElementById("liveMiniPopupFrame");
+  const floatBox = document.getElementById("liveMiniFloat");
+  const restoreBtn = document.getElementById("liveMiniRestore");
+  const toggleBtn = document.getElementById("liveMiniToggleBtn");
+  const miniFrame = document.getElementById("liveMiniFrame");
+
+  if (modal){
+    modal.classList.remove("is-minimized");
+    modal.style.setProperty("display","none","important");
+  }
+
+  if (toggleBtn) toggleBtn.textContent = "—";
+
+  if (frame){
+    frame.src = "about:blank";
+    setTimeout(()=>{
+      frame.src = "";
+    }, 150);
+  }
+
+  if (floatBox){
+    floatBox.style.setProperty("display","block","important");
+  }
+
+  if (restoreBtn){
+    restoreBtn.style.setProperty("display","none","important");
+  }
+
+  if (miniFrame){
+    miniFrame.src = getLiveMiniYoutubeSrc();
+  }
+
+  document.querySelector(".bottom-nav")?.style.setProperty("display","grid");
+
+  document.body.style.overflow = "";
+}function hideLiveMini(){
+  const box = document.getElementById("liveMiniFloat");
+  const restore = document.getElementById("liveMiniRestore");
+  const frame = document.getElementById("liveMiniFrame");
+  const popupFrame = document.getElementById("liveMiniPopupFrame");
+
+  if (box) box.style.display = "none";
+  if (restore) restore.style.display = "block";
+
+  if (frame) frame.src = "about:blank";
+  if (popupFrame) popupFrame.src = "about:blank";
+
+  setTimeout(()=>{
+    if (frame) frame.src = "";
+    if (popupFrame) popupFrame.src = "";
+  }, 120);
+}
+function showLiveMini(){
+  const box = document.getElementById("liveMiniFloat");
+  const restore = document.getElementById("liveMiniRestore");
+  const frame = document.getElementById("liveMiniFrame");
+
+  if (box) box.style.display = "block";
+  if (restore) restore.style.display = "none";
+  if (frame) frame.src = getLiveMiniYoutubeSrc();
+}
+
+async function loadLiveMiniYoutubeId(){
+  try{
+    const { data, error } = await sb
+      .from("live_config")
+      .select("youtube_video_id")
+      .eq("id", 1)
+      .maybeSingle();
+
+    if (!error && data?.youtube_video_id){
+      window.LIVE_YOUTUBE_ID = String(data.youtube_video_id).trim();
+
+      const frame = document.getElementById("liveMiniFrame");
+      if (frame) frame.src = getLiveMiniYoutubeSrc();
+    }
+  }catch(e){
+    console.warn("loadLiveMiniYoutubeId error:", e);
+  }
+}
+
+setupLiveMiniForm();
+loadLiveMiniYoutubeId();
+liveMiniConnectSocket();
+setInterval(liveMiniPollComments, 5000); 
+
+function hideFloatingButtons(){
+  document.getElementById("liveMiniFloat")?.style.setProperty("display","none","important");
+  document.getElementById("liveMiniRestore")?.style.setProperty("display","none","important");
+  document.getElementById("lockVideoFloatBtn")?.style.setProperty("display","none","important");
+}
+
+function showFloatingButtons(){
+  document.getElementById("liveMiniFloat")?.style.setProperty("display","block","important");
+  document.getElementById("lockVideoFloatBtn")?.style.setProperty("display","block","important");
+}
+
+function closeLiveCheckout(){
+  const modal = document.getElementById("liveCheckoutModal");
+
+  if (modal){
+    modal.style.setProperty("display","none","important");
+  }
+
+  showFloatingButtons();
+
+  document.body.style.overflow = "";
+  document.documentElement.style.overflow = "";
+
+  const btn = document.getElementById("btnSubmitLiveCheckout");
+  if (btn){
+    btn.disabled = false;
+  }
+}
+
+const LOCK_VIDEO_URL =
+"https://player.mediadelivery.net/play/649973/bf7757ba-7904-4646-bf8d-830358569ae5";
+
+function openLockVideoPopup(){
+  const modal = document.getElementById("lockVideoPopup");
+  const video = document.getElementById("lockVideoPlayer");
+  const floatBtn = document.getElementById("lockVideoFloatBtn");
+  const liveMini = document.getElementById("liveMiniFloat");
+
+  if (liveMini){
+    liveMini.style.setProperty("display","none","important");
+  }
+
+  if (video){
+    video.src = LOCK_VIDEO_URL;
+    
+  }
+
+  if (modal){
+    modal.style.setProperty("display","flex","important");
+  }
+
+  if (floatBtn){
+    floatBtn.style.setProperty("display","none","important");
+  }
+
+  document.body.style.overflow = "hidden";
+}
+function closeLockVideoPopup(){
+  const modal = document.getElementById("lockVideoPopup");
+  const frame = document.getElementById("lockVideoPlayer");
+  const floatBtn = document.getElementById("lockVideoFloatBtn");
+  const liveMini = document.getElementById("liveMiniFloat");
+
+  if (modal){
+    modal.style.setProperty("display","none","important");
+  }
+
+  if (frame){
+    frame.src = "";
+  }
+
+  if (floatBtn){
+    floatBtn.style.setProperty("display","block","important");
+  }
+
+  if (liveMini){
+    liveMini.style.setProperty("display","block","important");
+  }
+
+  document.body.style.overflow = "";
+}
+
+window.addEventListener("load", ()=>{
+  setTimeout(()=>{
+    openLockVideoPopup();
+  }, 900);
+}); 
+
+function openTabungInfoLive(){
+  const el = document.getElementById("tabungInfoLivePopup");
+  if (!el) return;
+
+  el.style.display = "flex";
+  document.body.style.overflow = "hidden";
+}
+
+function closeTabungInfoLive(){
+  const el = document.getElementById("tabungInfoLivePopup");
+  if (!el) return;
+
+  el.style.display = "none";
+  document.body.style.overflow = "";
+} 
+
+let smartLiveAutoRaf = null;
+let smartLiveAutoPauseTimer = null;
+let smartLiveAutoPaused = false;
+let smartLiveLastTs = 0;
+
+function startSmartLiveAutoScroll(){
+  const el = document.getElementById("smartLiveFilter");
+  if (!el) return;
+
+  stopSmartLiveAutoScroll();
+
+  smartLiveAutoPaused = false;
+  smartLiveLastTs = 0;
+
+  function step(ts){
+    const box = document.getElementById("smartLiveFilter");
+    if (!box){
+      stopSmartLiveAutoScroll();
+      return;
+    }
+
+    if (!smartLiveLastTs) smartLiveLastTs = ts;
+
+    const diff = ts - smartLiveLastTs;
+    smartLiveLastTs = ts;
+
+    if (!smartLiveAutoPaused && box.scrollWidth > box.clientWidth){
+      const max = box.scrollWidth - box.clientWidth;
+
+      box.scrollLeft += Math.max(1, diff * 0.035);
+
+      if (box.scrollLeft >= max - 3){
+        box.scrollLeft = 0;
+      }
+    }
+
+    smartLiveAutoRaf = requestAnimationFrame(step);
+  }
+
+  smartLiveAutoRaf = requestAnimationFrame(step);
+}
+
+function stopSmartLiveAutoScroll(){
+  if (smartLiveAutoRaf){
+    cancelAnimationFrame(smartLiveAutoRaf);
+    smartLiveAutoRaf = null;
+  }
+}
+
+function pauseSmartLiveAutoScroll(){
+  smartLiveAutoPaused = true;
+
+  if (smartLiveAutoPauseTimer){
+    clearTimeout(smartLiveAutoPauseTimer);
+  }
+
+  smartLiveAutoPauseTimer = setTimeout(()=>{
+    smartLiveAutoPaused = false;
+  }, 2200);
+}
+
+function bindSmartLiveAutoScrollTouch(){
+  const el = document.getElementById("smartLiveFilter");
+  if (!el || el.dataset.autoBound === "1") return;
+
+  el.dataset.autoBound = "1";
+
+  ["touchstart","touchmove","mousedown","wheel","pointerdown"].forEach(ev=>{
+    el.addEventListener(ev, pauseSmartLiveAutoScroll, { passive:true });
+  });
+
+  document.addEventListener("visibilitychange", ()=>{
+    if (document.hidden){
+      stopSmartLiveAutoScroll();
+    }else{
+      setTimeout(startSmartLiveAutoScroll, 500);
+    }
+  });
+}</script> 
+<!-- LIVE MEDIA FULLSCREEN GALLERY -->
+<div id="liveGalleryModal" class="live-gallery-backdrop">
+  <div class="live-gallery-card">
+    <div class="live-gallery-top">
+      <div style="min-width:0;">
+        <div id="liveGalleryTitle" class="live-gallery-title">Media LIVE</div>
+        <div id="liveGalleryCount" class="live-gallery-count">1 / 1</div>
+      </div>
+
+      <button type="button" class="live-gallery-close" onclick="closeLiveGallery()">✕</button>
+    </div>
+
+    <div id="liveGalleryStage" class="live-gallery-stage">
+      <button type="button" class="live-gallery-nav live-gallery-prev" onclick="liveGalleryPrev()">‹</button>
+      <button type="button" class="live-gallery-nav live-gallery-next" onclick="liveGalleryNext()">›</button>
+    </div>
+
+    <div id="liveGalleryThumbs" class="live-gallery-thumbs"></div>
+  </div>
+</div>
+</body>
+</html>

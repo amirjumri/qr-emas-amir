@@ -1,0 +1,590 @@
+<!doctype html>
+<html lang="ms">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<link rel="stylesheet" href="/global.css">
+
+<title>Redeem TikTok 0.1g – Emas Amir</title>
+
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+
+<style>
+  body{
+    background:#f6f7f9;
+    color:#111827;
+  }
+
+  .wrap{
+    max-width:680px;
+    margin:0 auto;
+    padding:16px;
+  }
+
+  .hero{
+    background:
+      radial-gradient(circle at top right,#fcd34d 0,#f59e0b 22%,#111827 78%);
+    color:#fff;
+    border-radius:24px;
+    padding:24px 20px;
+    position:relative;
+    overflow:hidden;
+  }
+
+  .hero::after{
+    content:"";
+    position:absolute;
+    right:-50px;
+    top:-50px;
+    width:180px;
+    height:180px;
+    background:rgba(255,255,255,.08);
+    border-radius:50%;
+  }
+
+  .hero-badge{
+    display:inline-flex;
+    align-items:center;
+    gap:8px;
+    background:rgba(255,255,255,.14);
+    border:1px solid rgba(255,255,255,.15);
+    padding:8px 12px;
+    border-radius:999px;
+    font-size:12px;
+    font-weight:700;
+  }
+
+  .hero-title{
+    font-size:34px;
+    line-height:1.05;
+    font-weight:900;
+    margin-top:16px;
+    letter-spacing:-1px;
+  }
+
+  .hero-sub{
+    margin-top:10px;
+    color:rgba(255,255,255,.92);
+    font-size:15px;
+  }
+
+  .box{
+    background:#fff;
+    border-radius:22px;
+    border:1px solid #e5e7eb;
+    padding:18px;
+    margin-top:16px;
+  }
+
+  .fw-black{
+    font-weight:900;
+  }
+
+  .gold-box{
+    background:#fff7ed;
+    border:1px solid #fde68a;
+    border-radius:18px;
+    padding:14px;
+  }
+
+  .gold-big{
+    font-size:46px;
+    font-weight:900;
+    line-height:1;
+    color:#b45309;
+    letter-spacing:-2px;
+  }
+
+  .muted{
+    color:#6b7280;
+  }
+
+  .form-control{
+    border-radius:14px;
+    min-height:52px;
+    font-size:16px;
+  }
+
+  .btn-main{
+    min-height:58px;
+    border-radius:16px;
+    font-weight:900;
+    font-size:18px;
+    background:#f59e0b;
+    border:0;
+    color:#111827;
+  }
+
+  .btn-main:hover{
+    background:#d97706;
+    color:#fff;
+  }
+
+  .note{
+    background:#f9fafb;
+    border:1px dashed #d1d5db;
+    border-radius:16px;
+    padding:14px;
+    font-size:14px;
+  }
+
+  .success-box{
+    background:#ecfdf5;
+    border:1px solid #86efac;
+    border-radius:18px;
+    padding:18px;
+  }
+
+  .danger-box{
+    background:#fef2f2;
+    border:1px solid #fecaca;
+    border-radius:18px;
+    padding:18px;
+  }
+
+  .loading{
+    display:none;
+  }
+
+  .loading.show{
+    display:inline-block;
+  }
+
+  .topbar{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap:10px;
+    margin-bottom:16px;
+  }
+
+  .pill{
+    display:inline-flex;
+    align-items:center;
+    gap:8px;
+    background:#eef2ff;
+    color:#4338ca;
+    padding:8px 12px;
+    border-radius:999px;
+    font-size:12px;
+    font-weight:700;
+  }
+
+  .smallx{
+    font-size:13px;
+  }
+</style>
+</head>
+
+<body>
+
+<div class="wrap">
+
+  <div class="topbar">
+    <a href="index.html" class="btn btn-outline-secondary rounded-4">
+      ← Utama
+    </a>
+
+    <div class="pill" id="loginStatus">
+      Memuatkan...
+    </div>
+  </div>
+
+  <div class="hero">
+    <div class="hero-badge">
+      🎁 TikTok Redeem
+    </div>
+
+    <div class="hero-title">
+      Redeem<br>0.1g Emas
+    </div>
+
+    <div class="hero-sub">
+      Tebus hadiah Tabung Emas daripada TikTok Shop Emas Amir.
+    </div>
+  </div>
+
+  <div class="box">
+
+    <div class="d-flex justify-content-between align-items-center gap-3 flex-wrap">
+
+      <div>
+        <div class="fw-black" style="font-size:20px">
+          🎉 Tebusan TikTok
+        </div>
+
+        <div class="muted smallx mt-1">
+          1 account / 1 IC hanya boleh claim sekali sahaja.
+        </div>
+      </div>
+
+      <div class="gold-box text-center">
+        <div class="gold-big">
+          0.1g
+        </div>
+
+        <div class="fw-bold">
+          Tabung Emas
+        </div>
+      </div>
+
+    </div>
+
+    <hr>
+
+    <div class="mb-3">
+      <label class="form-label fw-bold">
+        No Order TikTok
+      </label>
+
+      <input
+        type="text"
+        id="orderId"
+        class="form-control"
+        placeholder="Contoh: 123456789012345678"
+      >
+    </div>
+
+    <div class="mb-3">
+      <label class="form-label fw-bold">
+        Redeem Code
+      </label>
+
+      <input
+        type="text"
+        id="redeemCode"
+        class="form-control"
+        placeholder="Contoh: EA-0001-ABCD"
+        style="text-transform:uppercase"
+      >
+    </div>
+
+    <button
+      id="btnRedeem"
+      class="btn btn-main w-100"
+    >
+      🎁 Redeem 0.1g Sekarang
+    </button>
+
+    <div class="text-center mt-3 muted smallx">
+      Dengan menekan redeem, anda bersetuju bahawa:
+      <br>
+      1 nombor telefon + 1 nombor IC hanya boleh claim sekali sahaja.
+    </div>
+
+  </div>
+
+  <div id="resultWrap" style="display:none"></div>
+
+  <div class="box">
+    <div class="fw-black mb-2">
+      ℹ️ Maklumat Tebusan
+    </div>
+
+    <div class="note">
+      ✅ 0.1g akan masuk terus ke Tabung Emas anda
+      <br><br>
+
+      ✅ Boleh digunakan untuk:
+      <br>
+      • Keluar fizikal
+      <br>
+      • Tukar ke emas 916
+      <br><br>
+
+      ❌ Tidak boleh dijual semula kepada RM tunai
+      <br><br>
+
+      ❌ Pembelian berulang TikTok tidak melayakkan claim tambahan
+    </div>
+  </div>
+
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="auth.js?v=13.1"></script>
+
+<script>
+const SUPABASE_URL = "https://dduizetstqqjrpsezbpi.supabase.co";
+
+const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRkdWl6ZXRzdHFxanJwc2V6YnBpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTg3MzI0ODQsImV4cCI6MjA3NDMwODQ4NH0.CrlHXrmHtKgR9qc2192U6quRb5lpFEeOSgwG0Lb8KRM";
+
+const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
+  auth:{
+    persistSession:true,
+    autoRefreshToken:true,
+    detectSessionInUrl:true,
+    storage: window.localStorage
+  }
+});
+
+window.sb = sb;
+const $ = id => document.getElementById(id);
+
+function normalizePhone(raw){
+  let d = String(raw || "").replace(/\D+/g,"");
+
+  if (d.startsWith("00")) d = d.slice(2);
+
+  if (d.startsWith("0")){
+    d = "60" + d.slice(1);
+  }
+
+  return d;
+}
+
+async function getAuthUidFallback(){
+  try{
+    const r = await sb.auth.getUser();
+    if (r?.data?.user?.id) return r.data.user.id;
+  }catch{}
+
+  const a = (window.auth_get && window.auth_get()) || {};
+  const ids = [a.id, a.customer_id].filter(Boolean);
+
+  if (!ids.length) return null;
+
+  const { data, error } = await sb
+    .from("auth_customer_map")
+    .select("auth_uid, customer_id")
+    .or(`auth_uid.in.(${ids.join(",")}),customer_id.in.(${ids.join(",")})`)
+    .limit(1);
+
+  if (error){
+    console.warn("[getAuthUidFallback]", error);
+    return ids[0] || null;
+  }
+
+  return data?.[0]?.auth_uid || ids[0] || null;
+}async function getCustomer(){
+
+  const a = (window.auth_get && window.auth_get()) || {};
+
+  const raw =
+    a?.phone ||
+    a?.msisdn ||
+    a?.customer_phone ||
+    "";
+
+  let phone = normalizePhone(raw);
+
+  if (!phone){
+    console.log("NO PHONE FROM AUTH", a);
+    return null;
+  }
+
+  const variants = [
+    phone,
+    "+" + phone,
+    phone.startsWith("60")
+      ? "0" + phone.slice(2)
+      : phone
+  ];
+
+  console.log("PHONE VARIANTS:", variants);
+
+  const { data, error } = await sb
+    .from("customers")
+    .select("*")
+    .in("phone", variants)
+    .limit(1);
+
+  if (error){
+    console.log("CUSTOMER ERROR:", error);
+    return null;
+  }
+
+  if (!data || !data.length){
+    console.log("CUSTOMER NOT FOUND");
+    return null;
+  }
+
+  console.log("CUSTOMER FOUND:", data[0]);
+
+  return data[0];
+}
+function showResult(type, html){
+
+  const wrap = $("resultWrap");
+
+  wrap.style.display = "";
+
+  wrap.innerHTML = `
+    <div class="${type === 'ok' ? 'success-box' : 'danger-box'} mt-3">
+      ${html}
+    </div>
+  `;
+
+  wrap.scrollIntoView({
+    behavior:"smooth",
+    block:"start"
+  });
+}
+
+async function init(){
+
+  const a = (window.auth_get && window.auth_get()) || null;
+
+  if (!a){
+    alert("Sila login dahulu.");
+
+    location.href =
+      "login.html?next=" +
+      encodeURIComponent("redeem-tiktok.html") +
+      "#login";
+
+    return;
+  }
+
+  $("loginStatus").textContent =
+    "👤 " + (a.name || "Pelanggan");
+
+  const url = new URL(location.href);
+
+  const code = url.searchParams.get("code");
+
+  if (code){
+    $("redeemCode").value =
+      String(code || "").toUpperCase();
+  }
+}
+
+$("btnRedeem").onclick = async () => {
+
+  const btn = $("btnRedeem");
+
+  const orderId =
+    String($("orderId").value || "").trim();
+
+  const redeemCode =
+    String($("redeemCode").value || "")
+      .trim()
+      .toUpperCase();
+
+  if (!orderId){
+    showResult(
+      "err",
+      `
+      <div class="fw-bold">
+        ❌ Sila masukkan No Order TikTok
+      </div>
+      `
+    );
+    return;
+  }
+
+  if (!redeemCode){
+    showResult(
+      "err",
+      `
+      <div class="fw-bold">
+        ❌ Sila masukkan Redeem Code
+      </div>
+      `
+    );
+    return;
+  }
+
+  btn.disabled = true;
+  btn.innerHTML = "⏳ Sedang redeem...";
+
+  try{
+
+    const authUid = await getAuthUidFallback();
+
+if (!authUid){
+  throw new Error("Sesi tamat. Sila login semula.");
+}
+
+    const cust = await getCustomer();
+
+    if (!cust){
+      throw new Error(
+        "Profil pelanggan tidak ditemui."
+      );
+    }
+
+    if (!cust.ic){
+      throw new Error(
+        "No IC belum lengkap dalam akaun."
+      );
+    }
+
+    const { data, error } = await sb.rpc(
+      "redeem_tiktok_01g_v1",
+      {
+        p_customer_id: cust.id,
+        p_auth_uid: authUid,
+        p_tiktok_order_id: orderId,
+        p_redeem_code: redeemCode
+      }
+    );
+
+    if (error){
+      throw error;
+    }
+
+    showResult(
+      "ok",
+      `
+      <div class="text-center">
+
+        <div style="font-size:56px">
+          🎉
+        </div>
+
+        <div class="fw-black mt-2" style="font-size:26px">
+          Redeem Berjaya!
+        </div>
+
+        <div class="mt-2">
+          <b>0.1g emas</b> berjaya dimasukkan ke Tabung Emas anda.
+        </div>
+
+        <div class="mt-3">
+          <a href="tabung.html" class="btn btn-dark rounded-4 px-4">
+            💰 Tengok Tabung Saya
+          </a>
+        </div>
+
+      </div>
+      `
+    );
+
+    $("orderId").disabled = true;
+    $("redeemCode").disabled = true;
+
+  }catch(err){
+
+    const msg =
+      err?.message ||
+      err ||
+      "Redeem gagal.";
+
+    showResult(
+      "err",
+      `
+      <div class="fw-black mb-2">
+        ❌ Redeem Tidak Berjaya
+      </div>
+
+      <div>
+        ${msg}
+      </div>
+      `
+    );
+
+  }finally{
+
+    btn.disabled = false;
+    btn.innerHTML = "🎁 Redeem 0.1g Sekarang";
+
+  }
+
+};
+
+init();
+</script>
+
+</body>
+</html>

@@ -688,46 +688,44 @@ async function addSplitPayment(txnId, method, amountCents, refNote){
 }
 
 async function markPaidIfSplitEnough(txnId, needCents){
+
   const sum = await getSplitSumCents(txnId);
-  const baki = needCents - sum;
+  const baki = Number(needCents || 0) - Number(sum || 0);
 
   if (baki > 0){
     showToast(`Split disimpan. Baki: RM ${(baki/100).toFixed(2)}`);
     return { paid:false, sum, baki };
   }
 
-  // cukup atau lebih: tanda PAID
   try{
-    const { data } = await sb
-      .from('tabung_txn')
-      .update({ status: 'PAID' })
-      .eq('id', txnId)
-      .select('id,status')
-      .maybeSingle()
-      .throwOnError();
+    const { data, error } = await sb.rpc("tabung_mark_paid_split", {
+      p_txn_id: txnId
+    });
 
-    // ✅ confirm betul-betul updated (supabase kadang return null kalau 0 row kena)
-    if (!data || data.status !== 'PAID'){
-      throw new Error('Update PAID tiada row / tidak berubah');
+    if (error) throw error;
+
+    console.log("PAID SPLIT RPC RESULT", data);
+
+    if (!data || data.ok !== true){
+      throw new Error(data?.error || "Gagal mark paid split");
     }
 
-    console.log('markPaidIfSplitEnough ✅', { txnId, data, sum, needCents });
   }catch(e){
-    const msg =
-      (e && (e.message || e.details || e.hint || e.code))
-        ? [e.message, e.details, e.hint, e.code].filter(Boolean).join(' | ')
-        : String(e);
+    console.warn("markPaidIfSplitEnough FAIL", {
+      txnId,
+      needCents,
+      sum,
+      e
+    });
 
-    console.warn('markPaidIfSplitEnough update PAID fail', { txnId, needCents, sum, e });
-
-    showToast('Split cukup, tapi gagal update status PAID. ' + msg);
+    showToast("Gagal update PAID: " + (e?.message || e));
     return { paid:false, sum, baki:0 };
   }
 
-  await recordAction(txnId, 'manual_paid_split');
-  showToast('Split cukup — Transaksi ditanda PAID.');
+  showToast("Split cukup — transaksi ditanda PAID.");
   return { paid:true, sum, baki:0 };
-}/* =========================
+}
+/* =========================
    Topbar auth pill
    ========================= */
 (function initTopbar(){

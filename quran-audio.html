@@ -1,0 +1,1613 @@
+<!doctype html>
+<html lang="ms">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<link rel="stylesheet" href="/global.css">
+<title>Audio Quran • Emas Amir</title>
+
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+
+<style>
+:root{
+  --bg:#f6f7f9;
+  --card:#ffffff;
+  --text:#0f172a;
+  --muted:#64748b;
+  --line:#e5e7eb;
+  --gold:#d6a235;
+  --gold2:#f8d77b;
+  --gold3:#9f6b08;
+  --dark:#020617;
+  --green:#16a34a;
+  --blue:#2563eb;
+  --red:#ef4444;
+  --shadow:0 20px 70px rgba(15,23,42,.08);
+  --soft-shadow:0 10px 32px rgba(15,23,42,.07);
+}
+*{box-sizing:border-box}
+html,body{min-height:100%}
+body{
+  margin:0;
+  background:
+    radial-gradient(circle at top left,rgba(245,158,11,.08),transparent 26%),
+    radial-gradient(circle at top right,rgba(37,99,235,.06),transparent 24%),
+    #f6f7f9;
+  color:var(--text);
+  font-family:system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+  overscroll-behavior:none;
+}
+.page-shell{
+  min-height:100vh;
+  padding-bottom:28px;
+}
+.wrap{
+  max-width:1180px;
+  margin:16px auto 34px;
+  padding:12px;
+}
+.topbar{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:14px;
+  margin-bottom:16px;
+}
+@media(max-width:767.98px){
+
+  .topbar{
+    align-items:flex-start;
+  }
+
+  .top-left{
+    width:100%;
+    flex-wrap:nowrap;
+    align-items:flex-start;
+    gap:12px;
+  }
+
+  #who{
+    width:100%;
+    margin-top:10px;
+    justify-content:center;
+    font-size:12px;
+  }
+
+  .topbar > .d-flex{
+    width:100%;
+    display:grid !important;
+    grid-template-columns:1fr 1fr;
+    gap:10px;
+  }
+
+  .topbar > .d-flex .btn{
+    width:100%;
+  }
+
+  .brand-title{
+    font-size:16px;
+  }
+
+}
+.top-left{
+  display:flex;
+  align-items:center;
+  gap:12px;
+  min-width:0;
+}
+.home-btn{
+  width:52px;
+  height:52px;
+  border-radius:16px;
+  border:1px solid var(--line);
+  background:#fff;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  text-decoration:none;
+  color:#0f172a;
+  box-shadow:0 8px 22px rgba(15,23,42,.05);
+  font-size:22px;
+}
+.logo-mark{
+  width:44px;
+  height:44px;
+  border-radius:14px;
+  background:
+    radial-gradient(circle at 30% 20%,rgba(248,215,123,.9),transparent 24%),
+    linear-gradient(135deg,#111827,#020617);
+  color:#f8d77b;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  font-size:23px;
+  box-shadow:0 12px 32px rgba(2,6,23,.18);
+}
+.brand-title{
+  font-weight:950;
+  font-size:19px;
+  letter-spacing:-.3px;
+}
+.xsmall{font-size:.78rem}
+.muted{color:var(--muted)!important}
+.pill{
+  display:inline-flex;
+  align-items:center;
+  gap:7px;
+  padding:8px 12px;
+  border-radius:999px;
+  background:#fff;
+  border:1px solid var(--line);
+  font-size:12px;
+  color:#334155;
+  box-shadow:0 8px 22px rgba(15,23,42,.04);
+  white-space:nowrap;
+}
+.pill .dot{
+  width:8px;
+  height:8px;
+  border-radius:999px;
+  background:#22c55e;
+  box-shadow:0 0 0 4px rgba(34,197,94,.12);
+}
+.top-actions{
+  display:flex;
+  align-items:center;
+  gap:10px;
+}
+.top-actions .btn{
+  border-radius:14px;
+  min-height:44px;
+  padding-left:16px;
+  padding-right:16px;
+}
+.hero-quran{
+  position:relative;
+  overflow:hidden;
+  border-radius:24px;
+  padding:26px;
+  color:#fff;
+  background:
+    radial-gradient(circle at 82% 18%,rgba(248,215,123,.22),transparent 18%),
+    radial-gradient(circle at 15% 90%,rgba(37,99,235,.16),transparent 28%),
+    linear-gradient(135deg,#06111f 0%,#020617 60%,#101827 100%);
+  border:1px solid rgba(255,255,255,.10);
+  box-shadow:0 26px 80px rgba(2,6,23,.18);
+  margin-bottom:18px;
+}
+.hero-quran:before{
+  content:"";
+  position:absolute;
+  right:-70px;
+  top:-70px;
+  width:250px;
+  height:250px;
+  border-radius:999px;
+  border:1px solid rgba(248,215,123,.2);
+  background:radial-gradient(circle,rgba(248,215,123,.14),transparent 60%);
+}
+.hero-quran:after{
+  content:"✦";
+  position:absolute;
+  right:34px;
+  bottom:18px;
+  color:rgba(248,215,123,.45);
+  font-size:96px;
+  line-height:1;
+}
+.hero-content{position:relative;z-index:1}
+.hero-row{
+  display:grid;
+  grid-template-columns:1.1fr .9fr;
+  gap:18px;
+  align-items:center;
+}
+.hero-title{
+  font-weight:950;
+  font-size:30px;
+  letter-spacing:-.7px;
+  margin:0;
+}
+.hero-sub{
+  color:#cbd5e1;
+  font-size:14px;
+  margin-top:8px;
+  line-height:1.55;
+}
+.hero-sub b{color:#f8d77b}
+.hero-arabic{
+  direction:rtl;
+  font-family:"Times New Roman","Amiri",serif;
+  font-size:40px;
+  font-weight:900;
+  color:#f8d77b;
+  text-align:right;
+  text-shadow:0 0 28px rgba(248,215,123,.22);
+}
+
+.hero-arabic-meaning{
+  margin-top:8px;
+  color:#fde7a7;
+  font-size:13px;
+  font-weight:500;
+  opacity:.92;
+  line-height:1.5;
+  max-width:520px;
+}
+.hero-grid{
+  display:grid;
+  grid-template-columns:repeat(3,minmax(0,1fr));
+  gap:12px;
+  margin-top:24px;
+  max-width:790px;
+}
+.hero-stat{
+  border:1px solid rgba(255,255,255,.12);
+  background:rgba(255,255,255,.07);
+  border-radius:18px;
+  padding:16px;
+  display:flex;
+  align-items:center;
+  gap:12px;
+  backdrop-filter:blur(12px);
+}
+.stat-icon{
+  width:42px;
+  height:42px;
+  border-radius:14px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  color:#f8d77b;
+  background:rgba(248,215,123,.10);
+  border:1px solid rgba(248,215,123,.22);
+  font-size:22px;
+}
+.hero-stat .num{font-size:23px;font-weight:950;line-height:1}
+.hero-stat .lbl{font-size:12px;color:#cbd5e1;margin-top:4px}
+.main-layout{
+  display:grid;
+  grid-template-columns:minmax(0,1fr) 280px;
+  gap:18px;
+  align-items:start;
+}
+.premium-card{
+  background:rgba(255,255,255,.92);
+  border:1px solid rgba(226,232,240,.9);
+  border-radius:24px;
+  box-shadow:var(--shadow);
+  backdrop-filter:blur(14px);
+}
+.player-premium{
+  padding:18px;
+  margin-bottom:18px;
+}
+.player-grid{
+  display:grid;
+  grid-template-columns:minmax(0,1.08fr) minmax(280px,.92fr);
+  gap:18px;
+}
+.player-left{
+  padding:10px 8px 6px;
+}
+.badge-now{
+  display:inline-flex;
+  align-items:center;
+  gap:8px;
+  color:#111827;
+  font-size:13px;
+  font-weight:800;
+  margin-bottom:16px;
+}
+.badge-now span{
+  width:28px;
+  height:28px;
+  border-radius:999px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  background:#fff7ed;
+  color:#d97706;
+}
+.now-title{
+  font-weight:950;
+  font-size:32px;
+  line-height:1.1;
+  letter-spacing:-.8px;
+}
+.now-sub{
+  color:#9f6b08;
+  font-size:15px;
+  margin-top:10px;
+}
+.progress-row{
+  display:grid;
+  grid-template-columns:44px minmax(0,1fr) 44px;
+  gap:10px;
+  align-items:center;
+  margin-top:22px;
+}
+.time-label{
+  color:#64748b;
+  font-size:13px;
+  font-variant-numeric:tabular-nums;
+}
+.range{
+  width:100%;
+  accent-color:var(--gold);
+}
+.control-row{
+  display:flex;
+  justify-content:center;
+  align-items:center;
+  gap:22px;
+  margin-top:20px;
+}
+.ctrl-btn{
+  border:0;
+  background:transparent;
+  color:#0f172a;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  gap:4px;
+  font-size:22px;
+}
+.ctrl-btn small{
+  font-size:11px;
+  color:#64748b;
+}
+.main-play{
+  width:74px;
+  height:74px;
+  border-radius:999px;
+  border:0;
+  color:#fff;
+  font-size:32px;
+  font-weight:950;
+  background:linear-gradient(135deg,#f8d77b,#c68620);
+  box-shadow:0 18px 40px rgba(198,134,32,.35);
+}
+.volume-row{
+  display:grid;
+  grid-template-columns:24px minmax(0,240px) 24px;
+  justify-content:center;
+  align-items:center;
+  gap:10px;
+  margin-top:20px;
+}
+.resume-card{
+  padding:16px;
+  border-radius:20px;
+  background:
+    radial-gradient(circle at top right,rgba(34,197,94,.12),transparent 28%),
+    linear-gradient(180deg,#fff,#f8fafc);
+  border:1px solid #e5e7eb;
+}
+.resume-head{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  gap:10px;
+  margin-bottom:12px;
+}
+.resume-title{
+  font-weight:950;
+  font-size:15px;
+}
+.saved-badge{
+  display:inline-flex;
+  align-items:center;
+  gap:5px;
+  border-radius:999px;
+  background:#dcfce7;
+  color:#166534;
+  font-weight:800;
+  font-size:11px;
+  padding:5px 8px;
+}
+.resume-body{
+  display:grid;
+  grid-template-columns:96px minmax(0,1fr);
+  gap:14px;
+  align-items:center;
+}
+.resume-cover{
+  height:112px;
+  border-radius:14px;
+  background:
+    radial-gradient(circle at 50% 35%,rgba(248,215,123,.35),transparent 24%),
+    linear-gradient(135deg,#0f172a,#020617);
+  position:relative;
+  overflow:hidden;
+  border:1px solid rgba(248,215,123,.24);
+}
+.resume-cover:after{
+  content:"ٱلْقُرآن";
+  position:absolute;
+  inset:auto 0 14px 0;
+  text-align:center;
+  color:#f8d77b;
+  font-family:"Times New Roman",serif;
+  font-size:22px;
+  font-weight:900;
+}
+.resume-name{
+  font-weight:950;
+  font-size:17px;
+}
+.resume-meta{
+  color:#64748b;
+  font-size:12px;
+  margin-top:4px;
+}
+.resume-actions{
+  display:grid;
+  gap:9px;
+  margin-top:14px;
+}
+.resume-actions .btn{
+  border-radius:13px;
+  font-weight:850;
+}
+.source-box{
+  margin-top:16px;
+  border:1px solid #e5e7eb;
+  background:#fff;
+  color:#334155;
+  border-radius:16px;
+  padding:13px 14px;
+  font-size:12px;
+  line-height:1.45;
+  display:flex;
+  gap:10px;
+  align-items:flex-start;
+}
+.source-icon{
+  width:28px;
+  height:28px;
+  border-radius:999px;
+  background:#fff8e6;
+  color:#b45309;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  flex:0 0 28px;
+}
+.search-card{
+  padding:18px;
+  margin-bottom:18px;
+}
+.section-title{
+  font-weight:950;
+  font-size:18px;
+  letter-spacing:-.3px;
+  margin-bottom:14px;
+  display:flex;
+  align-items:center;
+  gap:9px;
+}
+.search-wrap{
+  display:grid;
+  grid-template-columns:minmax(0,1fr) 190px 86px;
+  gap:10px;
+  align-items:center;
+}
+.search-wrap .form-control,
+.search-wrap .form-select,
+.search-wrap .btn{
+  border-radius:14px;
+  min-height:46px;
+}
+.chip-row{
+  display:flex;
+  flex-wrap:wrap;
+  gap:8px;
+  margin-top:12px;
+}
+.filter-chip{
+  border:1px solid #e5e7eb;
+  background:#fff;
+  color:#334155;
+  border-radius:999px;
+  padding:8px 12px;
+  font-size:12px;
+  font-weight:750;
+}
+.filter-chip.active{
+  border-color:#d6a235;
+  background:linear-gradient(135deg,#f8d77b,#c68620);
+  color:#111827;
+}
+.list-card{
+  padding:18px;
+}
+.list-top{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  gap:10px;
+  flex-wrap:wrap;
+  margin-bottom:14px;
+}
+.list-count{
+  border-radius:999px;
+  background:#f1f5f9;
+  color:#64748b;
+  font-size:12px;
+  padding:7px 11px;
+}
+.surah-grid{
+  display:grid;
+  grid-template-columns:repeat(2,minmax(0,1fr));
+  gap:10px;
+}
+.surah-card{
+  width:100%;
+  text-align:left;
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:12px;
+  padding:13px;
+  border:1px solid #e5e7eb;
+  border-radius:17px;
+  background:#fff;
+  color:inherit;
+  transition:transform .08s ease,border-color .08s ease,box-shadow .08s ease,background .08s ease;
+}
+.surah-card:hover{
+  border-color:#f3c765;
+  box-shadow:0 10px 28px rgba(245,158,11,.10);
+}
+.surah-card.active{
+  border-color:#d6a235;
+  background:#fffaf0;
+  box-shadow:0 12px 34px rgba(214,162,53,.13);
+}
+.surah-left{
+  display:flex;
+  align-items:center;
+  gap:12px;
+  min-width:0;
+}
+.surah-no{
+  width:38px;
+  height:38px;
+  border-radius:13px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  flex:0 0 38px;
+  font-weight:950;
+  color:#111827;
+  background:linear-gradient(135deg,#f59e0b,#fde68a);
+  box-shadow:0 8px 20px rgba(245,158,11,.18);
+}
+.surah-name{
+  font-weight:950;
+  line-height:1.15;
+  font-size:14px;
+}
+.surah-meta{
+  color:#64748b;
+  font-size:11px;
+  margin-top:3px;
+  white-space:nowrap;
+  overflow:hidden;
+  text-overflow:ellipsis;
+  max-width:250px;
+}
+.audio-ok{
+  display:inline-flex;
+  align-items:center;
+  gap:4px;
+  color:#16a34a;
+  font-size:11px;
+  font-weight:800;
+  margin-top:4px;
+}
+.play-icon{
+  width:36px;
+  height:36px;
+  border-radius:999px;
+  border:0;
+  background:#0f172a;
+  color:#fff;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  flex:0 0 36px;
+}
+.surah-card.active .play-icon{
+  background:#020617;
+}
+.wave{
+  display:none;
+  color:#d6a235;
+  font-size:18px;
+  margin-right:4px;
+}
+.surah-card.active.playing .wave{
+  display:inline-block;
+}
+.load-wrap{
+  text-align:center;
+  margin-top:14px;
+}
+.load-wrap .btn{
+  border-radius:14px;
+}
+.side-stack{
+  display:grid;
+  gap:14px;
+}
+.side-card{
+  background:rgba(255,255,255,.92);
+  border:1px solid #e5e7eb;
+  border-radius:20px;
+  box-shadow:var(--soft-shadow);
+  padding:14px;
+}
+.side-card.gold{
+  border-color:#f1dfb0;
+  background:linear-gradient(180deg,#fffaf0,#fff);
+}
+.side-title{
+  font-weight:950;
+  font-size:14px;
+  display:flex;
+  align-items:center;
+  gap:8px;
+  margin-bottom:10px;
+}
+.side-list{
+  display:grid;
+  gap:8px;
+}
+.side-item{
+  border:1px solid #e5e7eb;
+  background:#fff;
+  border-radius:14px;
+  padding:10px;
+  display:flex;
+  justify-content:space-between;
+  gap:8px;
+  align-items:center;
+}
+.side-item b{font-size:13px}
+.side-item small{display:block;color:#64748b;font-size:11px;margin-top:2px}
+.side-mini-btn{
+  border:0;
+  background:#0f172a;
+  color:#fff;
+  width:28px;
+  height:28px;
+  border-radius:999px;
+  flex:0 0 28px;
+}
+.quick-card{
+  display:grid;
+  gap:8px;
+}
+.quick-btn{
+  width:100%;
+  border:1px solid #e5e7eb;
+  background:#fff;
+  border-radius:14px;
+  padding:11px;
+  text-align:left;
+  font-weight:850;
+  font-size:13px;
+}
+.quick-btn small{
+  display:block;
+  color:#64748b;
+  font-weight:600;
+  margin-top:2px;
+}
+.footer-premium{
+  margin-top:18px;
+  border-radius:22px;
+  padding:18px;
+  background:
+    radial-gradient(circle at right,rgba(248,215,123,.16),transparent 24%),
+    linear-gradient(135deg,#06111f,#020617);
+  color:#fff;
+  display:grid;
+  grid-template-columns:repeat(4,minmax(0,1fr));
+  gap:12px;
+}
+.footer-item{
+  display:flex;
+  align-items:center;
+  gap:10px;
+  color:#cbd5e1;
+  font-size:12px;
+}
+.footer-item b{
+  display:block;
+  color:#fff;
+  font-size:13px;
+}
+.footer-ico{
+  width:38px;
+  height:38px;
+  border-radius:14px;
+  background:rgba(248,215,123,.10);
+  color:#f8d77b;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+}
+.offcanvas .btn{border-radius:14px}
+audio#audioPlayer{display:none}
+.hidden{display:none!important}
+
+@media(max-width:991.98px){
+  .main-layout{grid-template-columns:1fr}
+  .side-stack{grid-template-columns:repeat(3,minmax(0,1fr))}
+}
+@media(max-width:767.98px){
+  .wrap{padding:10px;margin-top:8px}
+  .topbar{align-items:flex-start}
+  .top-left{width:100%}
+  .top-actions{width:100%}
+  .top-actions .btn{flex:1}
+  .pill{max-width:100%;white-space:normal}
+  .hero-row{grid-template-columns:1fr}
+  .hero-title{font-size:25px}
+  .hero-arabic{text-align:left;font-size:30px}
+  .hero-grid{grid-template-columns:1fr}
+  .player-grid{grid-template-columns:1fr}
+  .now-title{font-size:28px}
+  .search-wrap{grid-template-columns:1fr}
+  .surah-grid{grid-template-columns:1fr}
+  .side-stack{grid-template-columns:1fr}
+  .footer-premium{grid-template-columns:1fr 1fr}
+}
+</style>
+</head>
+
+<body>
+<div class="page-shell">
+  <div class="wrap">
+
+    <div class="topbar">
+      <div class="top-left">
+        <a href="index.html" class="home-btn">🏠</a>
+        <div class="logo-mark">🕋</div>
+        <div style="min-width:0">
+          <div class="brand-title">Audio Quran</div>
+          <div class="muted xsmall">Dengar bacaan & terjemahan dalam app Emas Amir</div>
+        </div>
+        <span id="who" class="pill"><span class="dot"></span> Memuatkan…</span>
+      </div>
+
+      <div class="top-actions">
+        <button class="btn btn-outline-secondary" type="button" data-bs-toggle="offcanvas" data-bs-target="#menuCanvas">☰ Menu</button>
+        <a id="btnLoginLogout" class="btn btn-warning fw-bold" href="login.html#login">Log masuk</a>
+      </div>
+    </div>
+
+    <div class="hero-quran">
+      <div class="hero-content">
+        <div class="hero-row">
+          <div>
+            <h1 class="hero-title">Dengar Audio Quran</h1>
+            <div class="hero-sub">
+              Pilih surah, tekan play dan dengar terus dalam Emas Amir.<br>
+              <b>Audio distrim dari sumber awam.</b>
+            </div>
+          </div>
+          <div class="hero-arabic">وَرَتِّلِ ٱلْقُرْآنَ تَرْتِيلًا</div>
+
+<div class="hero-arabic-meaning">
+  “Dan bacalah Al-Quran itu dengan tartil (perlahan dan jelas).”
+</div>
+        </div>
+
+        <div class="hero-grid">
+          <div class="hero-stat">
+            <div class="stat-icon">📖</div>
+            <div>
+              <div class="num" id="statSurah">114</div>
+              <div class="lbl">Surah dalam senarai</div>
+            </div>
+          </div>
+          <div class="hero-stat">
+            <div class="stat-icon">🎧</div>
+            <div>
+              <div class="num" id="statReady">114</div>
+              <div class="lbl">Audio disambung sekarang</div>
+            </div>
+          </div>
+          <div class="hero-stat">
+            <div class="stat-icon">👥</div>
+            <div>
+              <div class="num" id="statOnline">1</div>
+              <div class="lbl">Sedang buka page ini</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="main-layout mt-3">
+      <main>
+
+        <section class="premium-card player-premium">
+          <div class="player-grid">
+            <div class="player-left">
+              <div class="badge-now"><span>🔊</span> Sedang dimainkan</div>
+              <div class="now-title" id="nowTitle">Al-Fatihah</div>
+              <div class="now-sub" id="nowSub">Pembukaan • 7 ayat</div>
+
+              <div class="progress-row">
+                <div class="time-label" id="curTime">0:00</div>
+                <input id="seekRange" class="range" type="range" min="0" max="1000" value="0">
+                <div class="time-label text-end" id="durTime">0:00</div>
+              </div>
+
+              <div class="control-row">
+                <button id="btnPrev" class="ctrl-btn" type="button">⏮<small>Prev</small></button>
+                <button id="btnBack10" class="ctrl-btn" type="button">◀◀<small>10s</small></button>
+                <button id="btnPlayTop" class="main-play" type="button">▶</button>
+                <button id="btnFwd10" class="ctrl-btn" type="button">▶▶<small>10s</small></button>
+                <button id="btnNext" class="ctrl-btn" type="button">⏭<small>Next</small></button>
+              </div>
+
+              <div class="volume-row">
+                <div>🔈</div>
+                <input id="volumeRange" class="range" type="range" min="0" max="1" step="0.01" value="1">
+                <div>🔊</div>
+              </div>
+            </div>
+
+            <div class="resume-card">
+              <div class="resume-head">
+                <div class="resume-title">Sambung semula terakhir</div>
+                <span class="saved-badge">● Disimpan</span>
+              </div>
+              <div class="resume-body">
+                <div class="resume-cover"></div>
+                <div>
+                  <div class="resume-name" id="resumeName">Belum ada rekod</div>
+                  <div class="resume-meta" id="resumeMeta">Dengar audio dahulu untuk simpan progress.</div>
+                  <div class="resume-meta" id="resumeWhen"></div>
+                </div>
+              </div>
+              <div class="resume-actions">
+                <button id="btnResumeLast" class="btn btn-warning" type="button">▶ Sambung semula</button>
+                <button id="btnStartOver" class="btn btn-outline-secondary" type="button">↺ Dengar dari awal</button>
+              </div>
+            </div>
+          </div>
+
+          <audio id="audioPlayer" preload="metadata"></audio>
+
+          <div class="source-box">
+            <div class="source-icon">🛡️</div>
+            <div>
+              <b>Sumber audio:</b> Internet Archive<br>
+              Emas Amir tidak menuntut hak milik audio. Audio hanya distrim untuk kemudahan pengguna mendengar dalam app.
+            </div>
+          </div>
+        </section>
+
+        <section class="premium-card search-card">
+          <div class="section-title">🔎 Cari Surah</div>
+          <div class="search-wrap">
+            <input id="searchInput" class="form-control" placeholder="Cari nama surah / nombor / maksud… contoh: fatihah, yasin, 36">
+            <select id="filterSelect" class="form-select">
+              <option value="ALL">Semua surah</option>
+              <option value="FAV">Kegemaran</option>
+              <option value="JUZ_AMMA">Juz Amma</option>
+              <option value="SHORT">Surah pendek</option>
+            </select>
+            <button id="btnClearSearch" class="btn btn-outline-secondary" type="button">Reset</button>
+          </div>
+
+          <div class="chip-row">
+            <button class="filter-chip active" type="button" data-filter="ALL">Semua surah</button>
+            <button class="filter-chip" type="button" data-filter="FAV">⭐ Kegemaran</button>
+            <button class="filter-chip" type="button" data-filter="JUZ_AMMA">Juz Amma</button>
+            <button class="filter-chip" type="button" data-filter="SHORT">Surah pendek</button>
+          </div>
+        </section>
+
+        <section class="premium-card list-card">
+          <div class="list-top">
+            <div>
+              <div class="section-title mb-1">📚 Senarai Audio Surah <span class="list-count" id="listInfo">Memuatkan…</span></div>
+            </div>
+            <button id="btnToggleFav" class="btn btn-outline-warning fw-bold rounded-pill" type="button">♡ Simpan surah ini</button>
+          </div>
+
+          <div id="surahGrid" class="surah-grid"></div>
+          <div id="emptyState" class="empty">Tiada surah dijumpai.</div>
+
+          <div class="load-wrap">
+            <button id="btnLoadMore" class="btn btn-outline-secondary" type="button">Muatkan lebih banyak ↓</button>
+          </div>
+        </section>
+
+      </main>
+
+      <aside class="side-stack">
+        <div class="side-card gold">
+          <div class="side-title">⭐ Kegemaran anda</div>
+          <div id="favList" class="side-list"></div>
+        </div>
+
+        <div class="side-card">
+          <div class="side-title">🕘 Riwayat terakhir</div>
+          <div id="historyList" class="side-list"></div>
+        </div>
+
+        <div class="side-card gold">
+          <div class="side-title">⚡ Pintasan cepat</div>
+          <div class="quick-card">
+            <button class="quick-btn" type="button" data-quick="78">Juz Amma <small>Surah 78 – 114</small></button>
+            <button class="quick-btn" type="button" data-quick="36">Yasin <small>Surah 36</small></button>
+            <button class="quick-btn" type="button" data-quick="67">Al-Mulk <small>Surah 67</small></button>
+            <button class="quick-btn" type="button" data-quick="18">Al-Kahf <small>Surah 18</small></button>
+          </div>
+        </div>
+      </aside>
+    </div>
+
+    <div class="footer-premium">
+      <div class="footer-item"><div class="footer-ico">💯</div><div><b>100% Percuma</b>Untuk pengguna Emas Amir</div></div>
+      <div class="footer-item"><div class="footer-ico">🎧</div><div><b>Audio Kualiti Tinggi</b>Jelas & selesa didengar</div></div>
+      <div class="footer-item"><div class="footer-ico">↺</div><div><b>Sambung Semula</b>Progress disimpan automatik</div></div>
+      <div class="footer-item"><div class="footer-ico">📱</div><div><b>Akses Mudah</b>Bila-bila masa, di mana jua</div></div>
+    </div>
+
+  </div>
+</div>
+
+<div class="offcanvas offcanvas-end" tabindex="-1" id="menuCanvas">
+  <div class="offcanvas-header">
+    <h5 class="offcanvas-title">Menu</h5>
+    <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Tutup"></button>
+  </div>
+  <div class="offcanvas-body">
+    <div class="d-grid gap-2">
+      <a href="index.html" class="btn btn-outline-secondary">🏠 Halaman Utama</a>
+      <a href="quran-audio.html" class="btn btn-secondary">🎧 Audio Quran</a>
+      <a href="quran.html" class="btn btn-outline-secondary">📖 Al-Quran Trace</a>
+      <a href="tabung.html" class="btn btn-outline-secondary">💰 Tabung Emas</a>
+      <a href="goldbar-coin.html" class="btn btn-outline-secondary">🪙 GoldBar / Coin Fizikal</a>
+      <a href="j916.html" class="btn btn-outline-secondary">💍 Barang Kemas 916</a>
+      <a href="account.html" class="btn btn-outline-secondary">👤 Akaun</a>
+    </div>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="auth.js?v=13.1"></script>
+
+<script>
+(function(){
+  "use strict";
+
+  const $ = id => document.getElementById(id);
+  const AUDIO_BASE = "https://archive.org/download/Quran30JuzdanAudioTerjemahan/";
+
+  const RAW_SURAHS = `1|Al-Fatihah|Pembukaan|7
+2|Al-Baqarah|Lembu Betina|286
+3|Ali 'Imran|Keluarga Imran|200
+4|An-Nisa'|Wanita|176
+5|Al-Ma'idah|Hidangan|120
+6|Al-An'am|Binatang Ternakan|165
+7|Al-A'raf|Tempat Tertinggi|206
+8|Al-Anfal|Harta Rampasan Perang|75
+9|At-Taubah|Pengampunan|129
+10|Yunus|Nabi Yunus|109
+11|Hud|Nabi Hud|123
+12|Yusuf|Nabi Yusuf|111
+13|Ar-Ra'd|Guruh|43
+14|Ibrahim|Nabi Ibrahim|52
+15|Al-Hijr|Al-Hijr|99
+16|An-Nahl|Lebah|128
+17|Al-Isra'|Perjalanan Malam|111
+18|Al-Kahf|Gua|110
+19|Maryam|Maryam|98
+20|Taha|Taha|135
+21|Al-Anbiya'|Para Nabi|112
+22|Al-Hajj|Haji|78
+23|Al-Mu'minun|Orang Beriman|118
+24|An-Nur|Cahaya|64
+25|Al-Furqan|Pembeza|77
+26|Ash-Shu'ara'|Para Penyair|227
+27|An-Naml|Semut|93
+28|Al-Qasas|Kisah-Kisah|88
+29|Al-'Ankabut|Labah-Labah|69
+30|Ar-Rum|Rom|60
+31|Luqman|Luqman|34
+32|As-Sajdah|Sujud|30
+33|Al-Ahzab|Golongan Bersekutu|73
+34|Saba'|Saba'|54
+35|Fatir|Pencipta|45
+36|Yasin|Yasin|83
+37|As-Saffat|Yang Berbaris|182
+38|Sad|Sad|88
+39|Az-Zumar|Rombongan|75
+40|Ghafir|Yang Mengampuni|85
+41|Fussilat|Yang Dijelaskan|54
+42|Ash-Shura|Mesyuarat|53
+43|Az-Zukhruf|Perhiasan|89
+44|Ad-Dukhan|Kabut|59
+45|Al-Jathiyah|Yang Berlutut|37
+46|Al-Ahqaf|Bukit Pasir|35
+47|Muhammad|Nabi Muhammad|38
+48|Al-Fath|Kemenangan|29
+49|Al-Hujurat|Bilik-Bilik|18
+50|Qaf|Qaf|45
+51|Adh-Dhariyat|Angin Yang Menerbangkan|60
+52|At-Tur|Bukit Tur|49
+53|An-Najm|Bintang|62
+54|Al-Qamar|Bulan|55
+55|Ar-Rahman|Yang Maha Pemurah|78
+56|Al-Waqi'ah|Hari Kiamat|96
+57|Al-Hadid|Besi|29
+58|Al-Mujadilah|Wanita Yang Membantah|22
+59|Al-Hashr|Pengusiran|24
+60|Al-Mumtahanah|Wanita Yang Diuji|13
+61|As-Saff|Barisan|14
+62|Al-Jumu'ah|Hari Jumaat|11
+63|Al-Munafiqun|Orang Munafik|11
+64|At-Taghabun|Hari Dinampakkan Kesalahan|18
+65|At-Talaq|Talak|12
+66|At-Tahrim|Pengharaman|12
+67|Al-Mulk|Kerajaan|30
+68|Al-Qalam|Pena|52
+69|Al-Haqqah|Hari Kiamat|52
+70|Al-Ma'arij|Tempat Naik|44
+71|Nuh|Nabi Nuh|28
+72|Al-Jinn|Jin|28
+73|Al-Muzzammil|Orang Berselimut|20
+74|Al-Muddaththir|Orang Berselubung|56
+75|Al-Qiyamah|Hari Kiamat|40
+76|Al-Insan|Manusia|31
+77|Al-Mursalat|Yang Diutus|50
+78|An-Naba'|Berita Besar|40
+79|An-Nazi'at|Yang Mencabut|46
+80|'Abasa|Dia Bermasam Muka|42
+81|At-Takwir|Menggulung|29
+82|Al-Infitar|Terbelah|19
+83|Al-Mutaffifin|Orang Curang|36
+84|Al-Inshiqaq|Terbelah|25
+85|Al-Buruj|Gugusan Bintang|22
+86|At-Tariq|Yang Datang Malam|17
+87|Al-A'la|Yang Maha Tinggi|19
+88|Al-Ghashiyah|Hari Pembalasan|26
+89|Al-Fajr|Fajar|30
+90|Al-Balad|Negeri|20
+91|Ash-Shams|Matahari|15
+92|Al-Layl|Malam|21
+93|Ad-Duha|Waktu Dhuha|11
+94|Ash-Sharh|Kelapangan|8
+95|At-Tin|Buah Tin|8
+96|Al-'Alaq|Segumpal Darah|19
+97|Al-Qadr|Kemuliaan|5
+98|Al-Bayyinah|Bukti Nyata|8
+99|Az-Zalzalah|Goncangan|8
+100|Al-'Adiyat|Kuda Perang|11
+101|Al-Qari'ah|Hari Yang Menggemparkan|11
+102|At-Takathur|Bermegah-Megahan|8
+103|Al-'Asr|Masa|3
+104|Al-Humazah|Pengumpat|9
+105|Al-Fil|Gajah|5
+106|Quraysh|Quraisy|4
+107|Al-Ma'un|Barang Berguna|7
+108|Al-Kawthar|Nikmat Yang Banyak|3
+109|Al-Kafirun|Orang Kafir|6
+110|An-Nasr|Pertolongan|3
+111|Al-Masad|Sabut|5
+112|Al-Ikhlas|Keikhlasan|4
+113|Al-Falaq|Subuh|5
+114|An-Nas|Manusia|6`;
+
+  const SURAHS = RAW_SURAHS.trim().split("\n").map(line => {
+    const p = line.split("|");
+    return { no:Number(p[0]), name:p[1], meaning:p[2], ayahCount:Number(p[3]) };
+  });
+
+  const FILES = {
+    1:"001AlFaatihah-MurottalDanTerjemahanAlQuran.mp3",2:"002AlBaqarah-MurottalDanTerjemahanAlQuran.mp3",3:"003Aliimran-MurottalDanTerjemahanAlQuran.mp3",4:"004AnNisaa-MurottalDanTerjemahanAlQuran.mp3",5:"005AlMaaidah-MurottalDanTerjemahanAlQuran.mp3",6:"006AlAnaam-MurottalDanTerjemahanAlQuran.mp3",7:"007AlAraaf-MurottalDanTerjemahanAlQuran.mp3",8:"008AlAnfaal-MurottalDanTerjemahanAlQuran.mp3",9:"009AtTaubah-MurottalDanTerjemahanAlQuran.mp3",10:"010Yunus-MurottalDanTerjemahanAlQuran.mp3",11:"011Huud-MurottalDanTerjemahanAlQuran.mp3",12:"012Yusuf-MurottalDanTerjemahanAlQuran.mp3",13:"013ArRad-MurottalDanTerjemahanAlQuran.mp3",14:"014Ibrahim-MurottalDanTerjemahanAlQuran.mp3",15:"015AlHijr-MurottalDanTerjemahanAlQuran.mp3",16:"016AnNahl-MurottalDanTerjemahanAlQuran.mp3",17:"017AlIsraa-MurottalDanTerjemahanAlQuran.mp3",18:"018AlKahfi-MurottalDanTerjemahanAlQuran.mp3",19:"019Maryam-MurottalDanTerjemahanAlQuran.mp3",20:"020Thaahaa-MurottalDanTerjemahanAlQuran.mp3",21:"021AlAnbiyaa-MurottalDanTerjemahanAlQuran.mp3",22:"022AlHajj-MurottalDanTerjemahanAlQuran.mp3",23:"023AlMuminuun-MurottalDanTerjemahanAlQuran.mp3",24:"024AnNuur-MurottalDanTerjemahanAlQuran.mp3",25:"025AlFurqaan-MurottalDanTerjemahanAlQuran.mp3",26:"026AsySyuaraa-MurottalDanTerjemahanAlQuran.mp3",27:"027AnNaml-MurottalDanTerjemahanAlQuran.mp3",28:"028AlQashash-MurottalDanTerjemahanAlQuran.mp3",29:"029Alankabuut-MurottalDanTerjemahanAlQuran.mp3",30:"030ArRuum-MurottalDanTerjemahanAlQuran.mp3",31:"031Luqman-MurottalDanTerjemahanAlQuran.mp3",32:"032AsSajdah-MurottalDanTerjemahanAlQuran.mp3",33:"033AlAhzab-MurottalDanTerjemahanAlQuran.mp3",34:"034Saba-MurottalDanTerjemahanAlQuran.mp3",35:"035Faathir-MurottalDanTerjemahanAlQuran.mp3",36:"036Yaasiin-MurottalDanTerjemahanAlQuran.mp3",37:"037AshShaaffaat-MurottalDanTerjemahanAlQuran.mp3",38:"038Shaad-MurottalDanTerjemahanAlQuran.mp3",39:"039AzZumar-MurottalDanTerjemahanAlQuran.mp3",40:"040AlMumin-MurottalDanTerjemahanAlQuran.mp3",41:"041Fushshilat-MurottalDanTerjemahanAlQuran.mp3",42:"042AsySyuura-MurottalDanTerjemahanAlQuran.mp3",43:"043AzZukhruf-MurottalDanTerjemahanAlQuran.mp3",44:"044AdDukhaan-MurottalDanTerjemahanAlQuran.mp3",45:"045AlJaatsiyah-MurottalDanTerjemahanAlQuran.mp3",46:"046AlAhqaaf-MurottalDanTerjemahanAlQuran.mp3",47:"047Muhammad-MurottalDanTerjemahanAlQuran.mp3",48:"048AlFath-MurottalDanTerjemahanAlQuran.mp3",49:"049AlHujuraat-MurottalDanTerjemahanAlQuran.mp3",50:"050Qaaf-MurottalDanTerjemahanAlQuran.mp3",51:"051AdzDzaariyaat-MurottalDanTerjemahanAlQuran.mp3",52:"052AthThuur-MurottalDanTerjemahanAlQuran.mp3",53:"053AnNajm-MurottalDanTerjemahanAlQuran.mp3",54:"054AlQamar-MurottalDanTerjemahanAlQuran.mp3",55:"055ArRahmaan-MurottalDanTerjemahanAlQuran.mp3",56:"056AlWaqiah-MurottalDanTerjemahanAlQuran.mp3",57:"057AlHadiid-MurottalDanTerjemahanAlQuran.mp3",58:"058AlMujaadilah-MurottalDanTerjemahanAlQuran.mp3",59:"059AlHasyr-MurottalDanTerjemahanAlQuran.mp3",60:"060AlMumtahanah-MurottalDanTerjemahanAlQuran.mp3",61:"061AshShaff-MurottalDanTerjemahanAlQuran.mp3",62:"062AlJumuah-MurottalDanTerjemahanAlQuran.mp3",63:"063AlMunaafiquun-MurottalDanTerjemahanAlQuran.mp3",64:"064AtTaghaabun-MurottalDanTerjemahanAlQuran.mp3",65:"065AthThalaaq-MurottalDanTerjemahanAlQuran.mp3",66:"066AtTahrim-MurottalDanTerjemahanAlQuran.mp3",67:"067AlMulk-MurottalDanTerjemahanAlQuran.mp3",68:"068AlQalam-MurottalDanTerjemahanAlQuran.mp3",69:"069AlHaaqqah-MurottalDanTerjemahanAlQuran.mp3",70:"070AlMaaarij-MurottalDanTerjemahanAlQuran.mp3",71:"071Nuh-MurottalDanTerjemahanAlQuran.mp3",72:"072AlJin-MurottalDanTerjemahanAlQuran.mp3",73:"073AlMuzzammil-MurottalDanTerjemahanAlQuran.mp3",74:"074AlMuddatstsir-MurottalDanTerjemahanAlQuran.mp3",75:"075AlQiyaamah-MurottalDanTerjemahanAlQuran.mp3",76:"076AlInsaan-MurottalDanTerjemahanAlQuran.mp3",77:"077AlMursalaat-MurottalDanTerjemahanAlQuran.mp3",78:"078AnNaba-MurottalDanTerjemahanAlQuran.mp3",79:"079AnNaaziaat-MurottalDanTerjemahanAlQuran.mp3",80:"080abasa-MurottalDanTerjemahanAlQuran.mp3",81:"081AtTakwiir-MurottalDanTerjemahanAlQuran.mp3",82:"082AlInfithaar-MurottalDanTerjemahanAlQuran.mp3",83:"083AlMuthaffifin-MurottalDanTerjemahanAlQuran.mp3",84:"084AlInsyiqaaq-MurottalDanTerjemahanAlQuran.mp3",85:"085AlBuruuj-MurottalDanTerjemahanAlQuran.mp3",86:"086AthThaariq-MurottalDanTerjemahanAlQuran.mp3",87:"087AlAlaa-MurottalDanTerjemahanAlQuran.mp3",88:"088AlGhaasyiyah-MurottalDanTerjemahanAlQuran.mp3",89:"089AlFajr-MurottalDanTerjemahanAlQuran.mp3",90:"090AlBalad-MurottalDanTerjemahanAlQuran.mp3",91:"091AsySyams-MurottalDanTerjemahanAlQuran.mp3",92:"092AlLail-MurottalDanTerjemahanAlQuran.mp3",93:"093AdhDhuhaa-MurottalDanTerjemahanAlQuran.mp3",94:"094AlamNasyrah-MurottalDanTerjemahanAlQuran.mp3",95:"095AtTiin-MurottalDanTerjemahanAlQuran.mp3",96:"096Alalaq-MurottalDanTerjemahanAlQuran.mp3",97:"097AlQadr-MurottalDanTerjemahanAlQuran.mp3",98:"098AlBayyinah-MurottalDanTerjemahanAlQuran.mp3",99:"099AlZalzalah-MurottalDanTerjemahanAlQuran.mp3",100:"100Alaadiyaat-MurottalDanTerjemahanAlQuran.mp3",101:"101AlQaariah-MurottalDanTerjemahanAlQuran.mp3",102:"102AtTakaatsur-MurottalDanTerjemahanAlQuran.mp3",103:"103Alashr-MurottalDanTerjemahanAlQuran.mp3",104:"104AlHumazah-MurottalDanTerjemahanAlQuran.mp3",105:"105AlFiil-MurottalDanTerjemahanAlQuran.mp3",106:"106Quraisy-MurottalDanTerjemahanAlQuran.mp3",107:"107AlMaauun-MurottalDanTerjemahanAlQuran.mp3",108:"108AlKautsar-MurottalDanTerjemahanAlQuran.mp3",109:"109AlKaafiruun-MurottalDanTerjemahanAlQuran.mp3",110:"110AnNashr-MurottalDanTerjemahanAlQuran.mp3",111:"111AlLahab-MurottalDanTerjemahanAlQuran.mp3",112:"112AlIkhlash-MurottalDanTerjemahanAlQuran.mp3",113:"113AlFalaq-MurottalDanTerjemahanAlQuran.mp3",114:"114An-naas-MurottalDanTerjemahanAlQuran.mp3"
+  };
+
+  const ses = (window.auth_get && window.auth_get()) || {};
+  const sb = window.sb;
+  const LAST_KEY = "quran_audio_last_state_v3";
+  const HIST_KEY = "quran_audio_history_v3";
+  const FAV_KEY = "quran_audio_favs_v3";
+  const SESSION_ID = "qa_" + Math.random().toString(36).slice(2) + "_" + Date.now();
+
+  let currentNo = 1;
+  let visibleLimit = 12;
+  let currentFilter = "ALL";
+  let isSeeking = false;
+
+  function escapeHtml(s){
+    return String(s || "").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;").replace(/'/g,"&#039;");
+  }
+
+  function normalizeText(s){
+    return String(s || "").toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g,"").replace(/['’`]/g,"").trim();
+  }
+
+  function getSurah(no){
+    return SURAHS.find(s => s.no === Number(no)) || SURAHS[0];
+  }
+
+  function getAudioUrl(surah){
+    if (!surah || !surah.no || !FILES[surah.no]) return "";
+    return AUDIO_BASE + encodeURIComponent(FILES[surah.no]);
+  }
+
+  function formatTime(sec){
+    sec = Math.max(0, Math.floor(Number(sec || 0)));
+    const h = Math.floor(sec / 3600);
+    const m = Math.floor((sec % 3600) / 60);
+    const s = sec % 60;
+    if (h > 0) return h + ":" + String(m).padStart(2,"0") + ":" + String(s).padStart(2,"0");
+    return m + ":" + String(s).padStart(2,"0");
+  }
+
+  function safeJsonGet(key, fallback){
+    try{
+      const raw = localStorage.getItem(key);
+      return raw ? JSON.parse(raw) : fallback;
+    }catch(_e){
+      return fallback;
+    }
+  }
+
+  function safeJsonSet(key, val){
+    try{ localStorage.setItem(key, JSON.stringify(val)); }catch(_e){}
+  }
+
+  function getFavs(){
+    const arr = safeJsonGet(FAV_KEY, []);
+    return Array.isArray(arr) ? arr.map(Number).filter(Boolean) : [];
+  }
+
+  function isFav(no){
+    return getFavs().includes(Number(no));
+  }
+
+  function saveCurrentState(){
+    const audio = $("audioPlayer");
+    const surah = getSurah(currentNo);
+    if (!audio || !surah) return;
+
+    const state = {
+      no: surah.no,
+      name: surah.name,
+      meaning: surah.meaning,
+      ayahCount: surah.ayahCount,
+      time: Math.floor(audio.currentTime || 0),
+      duration: Math.floor(audio.duration || 0),
+      savedAt: new Date().toISOString()
+    };
+
+    safeJsonSet(LAST_KEY, state);
+
+    let hist = safeJsonGet(HIST_KEY, []);
+    if (!Array.isArray(hist)) hist = [];
+    hist = hist.filter(x => Number(x.no) !== Number(surah.no));
+    hist.unshift(state);
+    hist = hist.slice(0, 8);
+    safeJsonSet(HIST_KEY, hist);
+
+    renderResume();
+    renderHistory();
+  }
+
+  function renderUser(){
+    const who = $("who");
+    const btn = $("btnLoginLogout");
+
+    if (ses && (ses.phone || ses.name)){
+      who.innerHTML = `<span class="dot"></span> Log masuk sebagai ${escapeHtml(ses.name || ses.phone)}`;
+      btn.textContent = "Log keluar";
+      btn.href = "javascript:";
+      btn.onclick = async function(e){
+        e.preventDefault();
+        try{
+          if (window.auth_clear) window.auth_clear();
+          if (sb?.auth?.signOut) await sb.auth.signOut();
+        }catch(_e){}
+        location.replace("login.html#login");
+      };
+    } else {
+      who.innerHTML = `<span class="dot"></span> Tidak log masuk`;
+      btn.textContent = "Log masuk";
+      btn.href = "login.html#login";
+      btn.onclick = null;
+    }
+  }
+
+  function renderStats(){
+    $("statSurah").textContent = SURAHS.length;
+    $("statReady").textContent = "114";
+  }
+
+  function renderResume(){
+    const last = safeJsonGet(LAST_KEY, null);
+    if (!last || !last.no){
+      $("resumeName").textContent = "Belum ada rekod";
+      $("resumeMeta").textContent = "Dengar audio dahulu untuk simpan progress.";
+      $("resumeWhen").textContent = "";
+      return;
+    }
+
+    $("resumeName").textContent = last.name || "Surah";
+    $("resumeMeta").textContent = `${last.meaning || ""} • ${last.ayahCount || ""} ayat • ${formatTime(last.time)}${last.duration ? " / " + formatTime(last.duration) : ""}`;
+    $("resumeWhen").textContent = last.savedAt ? "Disimpan: " + new Date(last.savedAt).toLocaleString("ms-MY") : "";
+  }
+
+  function renderFavButton(){
+    $("btnToggleFav").textContent = isFav(currentNo) ? "♥ Buang dari kegemaran" : "♡ Simpan surah ini";
+  }
+
+  function renderFavList(){
+    const favs = getFavs();
+    const box = $("favList");
+
+    if (!favs.length){
+      box.innerHTML = `<div class="side-item"><div><b>Belum ada kegemaran</b><small>Tekan simpan surah ini</small></div></div>`;
+      return;
+    }
+
+    box.innerHTML = favs.slice(0,4).map(no => {
+      const s = getSurah(no);
+      return `
+        <div class="side-item">
+          <div><b>${escapeHtml(s.name)}</b><small>Surah ${s.no}</small></div>
+          <button class="side-mini-btn" type="button" data-side-play="${s.no}">▶</button>
+        </div>
+      `;
+    }).join("");
+  }
+
+  function renderHistory(){
+    const hist = safeJsonGet(HIST_KEY, []);
+    const box = $("historyList");
+
+    if (!Array.isArray(hist) || !hist.length){
+      box.innerHTML = `<div class="side-item"><div><b>Belum ada riwayat</b><small>Riwayat akan muncul selepas audio dimainkan</small></div></div>`;
+      return;
+    }
+
+    box.innerHTML = hist.slice(0,4).map(x => {
+      return `
+        <div class="side-item">
+          <div><b>${escapeHtml(x.name)}</b><small>${formatTime(x.time)}${x.duration ? " / " + formatTime(x.duration) : ""}</small></div>
+          <button class="side-mini-btn" type="button" data-side-play="${x.no}">▶</button>
+        </div>
+      `;
+    }).join("");
+  }
+
+  function isJuzAmma(no){ return no >= 78 && no <= 114; }
+  function isShortSurah(s){ return Number(s.ayahCount || 0) <= 20; }
+
+  function getFilteredList(){
+    const q = normalizeText($("searchInput").value);
+    const favs = getFavs();
+
+    return SURAHS.filter(s => {
+      if (currentFilter === "FAV" && !favs.includes(s.no)) return false;
+      if (currentFilter === "JUZ_AMMA" && !isJuzAmma(s.no)) return false;
+      if (currentFilter === "SHORT" && !isShortSurah(s)) return false;
+
+      if (!q) return true;
+
+      const hay = normalizeText([s.no,s.name,s.meaning,s.ayahCount].join(" "));
+      return hay.includes(q);
+    });
+  }
+
+  function renderSurahList(){
+    const list = getFilteredList();
+    const shown = list.slice(0, visibleLimit);
+    const audio = $("audioPlayer");
+    const playing = audio && !audio.paused;
+
+    $("listInfo").textContent = `${list.length} / ${SURAHS.length} surah dipaparkan`;
+    $("emptyState").style.display = list.length ? "none" : "block";
+    $("btnLoadMore").style.display = list.length > visibleLimit ? "inline-block" : "none";
+
+    $("surahGrid").innerHTML = shown.map(s => {
+      const active = s.no === currentNo;
+      return `
+        <button class="surah-card ${active ? "active" : ""} ${active && playing ? "playing" : ""}" type="button" data-surah="${s.no}">
+          <div class="surah-left">
+            <div class="surah-no">${s.no}</div>
+            <div style="min-width:0">
+              <div class="surah-name">${escapeHtml(s.name)}</div>
+              <div class="surah-meta">${escapeHtml(s.meaning)} • ${s.ayahCount} ayat</div>
+              <div class="audio-ok">● Audio tersedia</div>
+            </div>
+          </div>
+          <div class="d-flex align-items-center gap-1">
+            <span class="wave">▮▮▮</span>
+            <div class="play-icon">${active && playing ? "❚❚" : "▶"}</div>
+          </div>
+        </button>
+      `;
+    }).join("");
+  }
+
+  function setFilter(filter){
+    currentFilter = filter;
+    visibleLimit = 12;
+    $("filterSelect").value = filter;
+    document.querySelectorAll(".filter-chip").forEach(btn => {
+      btn.classList.toggle("active", btn.dataset.filter === filter);
+    });
+    renderSurahList();
+  }
+
+  function setCurrentSurah(no, autoplay, seekTo){
+    const surah = getSurah(no);
+    const audio = $("audioPlayer");
+    const url = getAudioUrl(surah);
+
+    currentNo = surah.no;
+    $("nowTitle").textContent = surah.name;
+    $("nowSub").textContent = surah.meaning + " • " + surah.ayahCount + " ayat";
+
+    if (!url){
+      alert("Audio surah ini belum tersedia.");
+      return;
+    }
+
+    if (audio.src !== url){
+      audio.src = url;
+      audio.load();
+    }
+
+    try{ localStorage.setItem("quran_audio_last_surah_v1", String(surah.no)); }catch(_e){}
+
+    renderFavButton();
+    renderSurahList();
+
+    if (typeof seekTo === "number"){
+      audio.addEventListener("loadedmetadata", function once(){
+        audio.removeEventListener("loadedmetadata", once);
+        try{ audio.currentTime = Math.max(0, seekTo); }catch(_e){}
+        updateProgress();
+        if (autoplay) audio.play().catch(()=>{});
+      });
+    } else if (autoplay){
+      audio.play().catch(()=>{});
+    }
+  }
+
+  function updateProgress(){
+    const audio = $("audioPlayer");
+    const cur = Number(audio.currentTime || 0);
+    const dur = Number(audio.duration || 0);
+
+    $("curTime").textContent = formatTime(cur);
+    $("durTime").textContent = dur ? formatTime(dur) : "0:00";
+
+    if (!isSeeking){
+      $("seekRange").value = dur ? Math.round((cur / dur) * 1000) : 0;
+    }
+  }
+
+  function nextSurah(){
+    const next = currentNo >= 114 ? 1 : currentNo + 1;
+    setCurrentSurah(next, true);
+  }
+
+  function prevSurah(){
+    const prev = currentNo <= 1 ? 114 : currentNo - 1;
+    setCurrentSurah(prev, true);
+  }
+
+  function setupControls(){
+    const audio = $("audioPlayer");
+
+    $("btnPlayTop").addEventListener("click", function(){
+      if (!audio.src) setCurrentSurah(currentNo || 1, true);
+      else if (audio.paused) audio.play();
+      else audio.pause();
+    });
+
+    $("btnBack10").addEventListener("click", function(){
+      audio.currentTime = Math.max(0, Number(audio.currentTime || 0) - 10);
+    });
+
+    $("btnFwd10").addEventListener("click", function(){
+      audio.currentTime = Math.min(Number(audio.duration || 0), Number(audio.currentTime || 0) + 10);
+    });
+
+    $("btnNext").addEventListener("click", nextSurah);
+    $("btnPrev").addEventListener("click", prevSurah);
+
+    $("seekRange").addEventListener("input", function(){
+      isSeeking = true;
+    });
+
+    $("seekRange").addEventListener("change", function(){
+      const dur = Number(audio.duration || 0);
+      if (dur){
+        audio.currentTime = (Number(this.value || 0) / 1000) * dur;
+      }
+      isSeeking = false;
+      updateProgress();
+    });
+
+    $("volumeRange").addEventListener("input", function(){
+      audio.volume = Number(this.value || 1);
+    });
+
+    audio.addEventListener("play", function(){
+      $("btnPlayTop").textContent = "❚❚";
+      renderSurahList();
+    });
+
+    audio.addEventListener("pause", function(){
+      $("btnPlayTop").textContent = "▶";
+      saveCurrentState();
+      renderSurahList();
+    });
+
+    audio.addEventListener("timeupdate", function(){
+      updateProgress();
+      if (!audio.paused && audio.currentTime > 3){
+        saveCurrentState();
+      }
+    });
+
+    audio.addEventListener("loadedmetadata", updateProgress);
+
+    audio.addEventListener("ended", function(){
+      saveCurrentState();
+      nextSurah();
+    });
+
+    $("btnResumeLast").addEventListener("click", function(){
+      const last = safeJsonGet(LAST_KEY, null);
+      if (!last || !last.no) return;
+      setCurrentSurah(last.no, true, Number(last.time || 0));
+    });
+
+    $("btnStartOver").addEventListener("click", function(){
+      setCurrentSurah(currentNo || 1, true, 0);
+    });
+
+    $("btnToggleFav").addEventListener("click", function(){
+      let favs = getFavs();
+      if (favs.includes(currentNo)){
+        favs = favs.filter(n => n !== currentNo);
+      } else {
+        favs.unshift(currentNo);
+      }
+      favs = Array.from(new Set(favs)).slice(0, 30);
+      safeJsonSet(FAV_KEY, favs);
+      renderFavButton();
+      renderFavList();
+      renderSurahList();
+    });
+  }
+
+  function setupSearch(){
+    $("searchInput").addEventListener("input", function(){
+      visibleLimit = 12;
+      renderSurahList();
+    });
+
+    $("filterSelect").addEventListener("change", function(){
+      setFilter(this.value || "ALL");
+    });
+
+    $("btnClearSearch").addEventListener("click", function(){
+      $("searchInput").value = "";
+      setFilter("ALL");
+    });
+
+    $("btnLoadMore").addEventListener("click", function(){
+      visibleLimit += 12;
+      renderSurahList();
+    });
+
+    document.querySelectorAll(".filter-chip").forEach(btn => {
+      btn.addEventListener("click", function(){
+        setFilter(this.dataset.filter || "ALL");
+      });
+    });
+
+    document.addEventListener("click", function(e){
+      const card = e.target.closest(".surah-card[data-surah]");
+      if (card){
+        const no = Number(card.dataset.surah || 0);
+        if (no) setCurrentSurah(no, true);
+        return;
+      }
+
+      const side = e.target.closest("[data-side-play]");
+      if (side){
+        const no = Number(side.dataset.sidePlay || 0);
+        if (no) setCurrentSurah(no, true);
+        return;
+      }
+
+      const quick = e.target.closest("[data-quick]");
+      if (quick){
+        const no = Number(quick.dataset.quick || 0);
+        if (no) setCurrentSurah(no, true);
+      }
+    });
+  }
+
+  function setupPresence(){
+    const el = $("statOnline");
+    if (!el) return;
+
+    if (!sb || !sb.channel){
+      el.textContent = "1";
+      return;
+    }
+
+    const channel = sb.channel("presence:quran-audio", {
+      config:{ presence:{ key:SESSION_ID } }
+    });
+
+    channel
+      .on("presence", { event:"sync" }, function(){
+        const state = channel.presenceState();
+        let total = 0;
+        Object.keys(state || {}).forEach(k => {
+          total += Array.isArray(state[k]) ? state[k].length : 0;
+        });
+        el.textContent = String(Math.max(total, 1));
+      })
+      .subscribe(async function(status){
+        if (status === "SUBSCRIBED"){
+          await channel.track({
+            page:"quran-audio",
+            user:ses?.name || ses?.phone || "guest",
+            at:new Date().toISOString()
+          });
+        }
+      });
+
+    window.addEventListener("beforeunload", function(){
+      try{ channel.untrack(); }catch(_e){}
+    });
+  }
+
+  renderUser();
+  renderStats();
+  renderResume();
+  renderFavList();
+  renderHistory();
+  setupControls();
+  setupSearch();
+  setupPresence();
+
+  let startNo = 1;
+  let startTime = null;
+  try{
+    const last = safeJsonGet(LAST_KEY, null);
+    startNo = Number(last?.no || localStorage.getItem("quran_audio_last_surah_v1") || 1);
+    startTime = Number(last?.time || 0);
+  }catch(_e){}
+
+  setCurrentSurah(startNo || 1, false, startTime || 0);
+  setFilter("ALL");
+
+})();
+</script>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

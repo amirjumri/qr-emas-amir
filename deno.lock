@@ -11,13 +11,18 @@
   "workspace": {
     "packageJson": {
       "dependencies": [
+        "npm:@capacitor/android@^8.3.3",
         "npm:@capacitor/push-notifications@^8.0.3",
+        "npm:@netlify/functions@^5.2.0",
         "npm:@simplewebauthn/server@^13.3.0",
         "npm:@supabase/supabase-js@^2.95.3",
         "npm:ag-psd@^30.1.0",
         "npm:apn@^2.2.0",
+        "npm:express@^4.19.2",
+        "npm:firebase-admin@^13.8.0",
         "npm:openai@^6.25.0",
         "npm:sharp@~0.34.5",
+        "npm:socket.io@^4.7.5",
         "npm:web-push@^3.6.7"
       ]
     }

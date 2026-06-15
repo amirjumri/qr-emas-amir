@@ -1,0 +1,1149 @@
+<!doctype html>
+<html lang="ms">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <link rel="stylesheet" href="/global.css">
+  <title>Live Lock • Emas Amir</title>
+
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="auth.js?v=13.1"></script>
+
+  <style>
+    *{box-sizing:border-box}
+    body{
+      margin:0;
+      background:#f6f7f9;
+      color:#111827;
+      font-family:system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+      padding-bottom:env(safe-area-inset-bottom,0px);
+    }
+    .page{
+      max-width:520px;
+      margin:0 auto;
+      min-height:100vh;
+      background:#fff;
+    }
+    .top{
+      padding:16px;
+      border-bottom:1px solid #eef2f7;
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:10px;
+      position:sticky;
+      top:0;
+      background:#fff;
+      z-index:10;
+    }
+    .title{
+      font-weight:900;
+      font-size:22px;
+      line-height:1.1;
+    }
+    .sub{
+      color:#6b7280;
+      font-size:13px;
+      margin-top:3px;
+    }
+    .content{padding:16px}
+    .item-card{
+      display:flex;
+      gap:12px;
+      align-items:center;
+      padding:12px;
+      border:1px solid #e5e7eb;
+      border-radius:16px;
+      background:#f9fafb;
+      margin-bottom:18px;
+    }
+    .item-img{
+      width:86px;
+      height:86px;
+      border-radius:14px;
+      object-fit:cover;
+      background:#e5e7eb;
+      flex:0 0 auto;
+    }
+    .mono{font-family:ui-monospace,Menlo,Consolas,monospace}
+    .price{
+      color:#dc3545;
+      font-size:22px;
+      font-weight:900;
+    }
+    .section-title{
+      font-weight:900;
+      font-size:18px;
+      margin:18px 0 10px;
+    }
+    .choice-row{
+      display:flex;
+      gap:10px;
+    }
+    .live-choice{
+      border:1px solid #d1d5db;
+      border-radius:14px;
+      padding:12px 10px;
+      background:#fff;
+      font-weight:900;
+      color:#0d6efd;
+      flex:1;
+    }
+    .live-choice.active{
+      border-color:#dc3545;
+      background:#fff1f2;
+      color:#be123c;
+    }
+    .summary{
+      background:#f9fafb;
+      border:1px solid #e5e7eb;
+      border-radius:18px;
+      padding:16px;
+      margin-top:18px;
+    }
+    .submit-wrap{
+      position:sticky;
+      bottom:0;
+      background:#fff;
+      padding:12px 16px 16px;
+      border-top:1px solid #eef2f7;
+      z-index:20;
+    }
+    .big-btn{
+      border-radius:999px;
+      padding:15px 18px;
+      font-weight:900;
+      font-size:17px;
+    }
+    .login-box{
+      border:1px solid #fecaca;
+      background:#fff1f2;
+      border-radius:18px;
+      padding:16px;
+      margin-top:16px;
+    }
+    .loading-box{
+      padding:40px 16px;
+      text-align:center;
+      color:#6b7280;
+    }
+.app-download-box{
+  margin-top:18px;
+  border:1px dashed #ff7b8a;
+  background:rgba(255,255,255,.72);
+  border-radius:18px;
+  padding:16px 14px;
+  text-align:center;
+}
+.app-download-sep{
+  display:flex;
+  align-items:center;
+  gap:10px;
+  margin:4px 0 14px;
+}
+.app-download-sep:before,
+.app-download-sep:after{
+  content:"";
+  flex:1;
+  border-top:2px dashed #ef4056;
+}
+.app-download-sep span{
+  background:#ef4056;
+  color:#fff;
+  font-weight:900;
+  font-size:12px;
+  padding:6px 14px;
+  border-radius:999px;
+}
+.app-download-title{
+  font-size:18px;
+  font-weight:950;
+  color:#111827;
+}
+.app-download-text{
+  font-size:14px;
+  color:#4b5563;
+  line-height:1.45;
+  margin:8px 0 14px;
+}
+.store-row{
+  display:flex;
+  gap:12px;
+  justify-content:center;
+}
+.store-btn{
+  flex:1;
+  text-decoration:none;
+  color:#111827;
+  font-weight:900;
+}
+.store-badge{
+  width:100%;
+  max-width:170px;
+  height:auto;
+  border-radius:10px;
+  display:block;
+  margin:0 auto 7px;
+}
+.store-label{
+  font-size:13px;
+  line-height:1.25;
+  color:#dc3545;
+}
+@media(max-width:380px){
+  .store-row{gap:8px}
+  .app-download-title{font-size:16px}
+}
+  </style>
+</head>
+
+<body>
+<div class="page">
+  <div class="top">
+    <div>
+      <div class="title">Checkout LIVE</div>
+      <div class="sub">Semak item & terus submit ke Ai-Dan</div>
+    </div>
+    <button class="btn btn-light rounded-pill" onclick="goHome()">✕</button>
+  </div>
+
+  <div id="loadingBox" class="loading-box">
+    Memuatkan item live…
+  </div>
+
+  <div id="loginBox" class="content" style="display:none;">
+    <div class="login-box">
+      <h5 class="fw-bold mb-2">Daftar / Login dulu</h5>
+      <div class="small text-muted mb-3">
+        Barang ini akan kekal. Lepas daftar/login, buka semula link ini untuk terus lock.
+      </div>
+
+      <div id="loginItemPreview" class="mb-3"></div>
+
+      <div class="d-grid gap-2">
+        <button class="btn btn-danger fw-bold rounded-pill py-3" onclick="goLogin('signup')">
+          Daftar Baru
+        </button>
+        <button class="btn btn-outline-danger fw-bold rounded-pill py-3" onclick="goLogin('login')">
+          Saya Dah Ada Akaun
+        </button>
+        <button class="btn btn-light fw-bold rounded-pill py-3" onclick="location.reload()">
+          Saya Dah Login, Refresh
+        </button>
+      </div>
+<div class="app-download-box">
+  <div class="app-download-sep">
+    <span>ATAU LEBIH MUDAH</span>
+  </div>
+
+  <div class="app-download-title">
+    🚀 Jom! Lagi senang download app Emas Amir!
+  </div>
+
+  <div class="app-download-text">
+    Lebih pantas, lebih selamat & pengalaman lock emas lagi power dalam satu app. 🔒
+  </div>
+
+  <div class="store-row">
+    <a class="store-btn"
+       href="https://apps.apple.com/us/app/emas-amir/id6761734657"
+       target="_blank" rel="noopener">
+      <img class="store-badge"
+           src="https://developer.apple.com/assets/elements/badges/download-on-the-app-store.svg"
+           alt="Download on the App Store">
+      <div class="store-label">Download di<br>App Store</div>
+    </a>
+
+    <a class="store-btn"
+       href="https://play.google.com/store/apps/details?id=com.emasamir.app"
+       target="_blank" rel="noopener">
+      <img class="store-badge"
+           src="https://upload.wikimedia.org/wikipedia/commons/7/78/Google_Play_Store_badge_EN.svg"
+           alt="Get it on Google Play">
+      <div class="store-label">Dapatkan di<br>Google Play</div>
+    </a>
+  </div>
+</div>
+    </div>
+  </div>
+
+  <div id="checkoutBox" style="display:none;">
+    <div class="content">
+      <div id="itemBox" class="item-card"></div>
+
+      <div class="section-title">Penghantaran</div>
+      <div class="choice-row">
+        <button id="shipPickup" class="live-choice" onclick="setShip('PICKUP')">Ambil Kedai</button>
+        <button id="shipPost" class="live-choice active" onclick="setShip('POST')">Pos</button>
+      </div>
+
+      <div id="addressBox" class="mt-3">
+        <div class="fw-bold mb-1">Alamat</div>
+        <textarea id="address" class="form-control" rows="3" placeholder="Alamat penuh + poskod + bandar + negeri"></textarea>
+        <div class="small text-muted mt-1">Kalau alamat kosong, isi sini sebelum submit.</div>
+      </div>
+
+      <div id="pickupBox" class="mt-3" style="display:none;">
+        <div class="fw-bold mb-1">Masa ambil kedai</div>
+        <input id="pickupWhen" class="form-control" placeholder="Contoh: hari ni / esok petang / 3pm">
+      </div>
+
+      <div id="cutSection">
+        <div class="section-title">Potong panjang?</div>
+        <div class="choice-row">
+          <button id="cutNo" class="live-choice active" onclick="setCut('NO')">Tak Potong</button>
+          <button id="cutYes" class="live-choice" onclick="setCut('YES')">Potong</button>
+        </div>
+
+        <div id="cutBox" class="mt-3" style="display:none;">
+          <div class="row g-2">
+            <div class="col-6">
+              <label class="small text-muted">Panjang asal</label>
+              <input id="currentLen" class="form-control bg-light fw-bold" readonly>
+            </div>
+            <div class="col-6">
+              <label class="small text-muted">Potong jadi</label>
+              <input id="cutTo" class="form-control" placeholder="55cm">
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="section-title">Cara Bayar</div>
+
+<div id="pay916" class="choice-row" style="flex-wrap:wrap;">
+  <button id="payQR" class="live-choice" onclick="setPay('QR')">QR</button>
+  <button id="payTransfer" class="live-choice active" onclick="setPay('TRANSFER')">Transfer</button>
+  <button id="payTabung" class="live-choice" onclick="setPay('TABUNG_TOPUP')">Tabung + Topup</button>
+  <button id="payAtome" class="live-choice" onclick="setPay('ATOME')">Atome</button>
+</div>
+
+<div id="pay999" class="choice-row" style="display:none;">
+  <button id="pay999QR" class="live-choice active" onclick="setPay('QR')">QR</button>
+  <button id="pay999Transfer" class="live-choice" onclick="setPay('TRANSFER')">Transfer</button>
+</div>
+
+<div id="tabungBox"
+     class="mt-3"
+     style="display:none;background:#fffbea;border:1px solid #fde68a;border-radius:18px;padding:14px;">
+</div>
+
+      <div class="summary">
+  <div class="d-flex justify-content-between">
+    <span>Subtotal</span>
+    <b id="subtotal">RM 0.00</b>
+  </div>
+
+  <div class="d-flex justify-content-between">
+    <span>Caj pos</span>
+    <b id="shipFee">RM 10.00</b>
+  </div>
+
+  <div id="discountPayRow" class="d-flex justify-content-between text-success" style="display:none!important;">
+    <span>Diskaun bayaran</span>
+    <b id="discountPay">- RM 0.00</b>
+  </div>
+
+  <div id="discountAiDanRow" class="d-flex justify-content-between text-success" style="display:none!important;">
+    <span>Diskaun Ai-Dan</span>
+    <b id="discountAiDan">- RM 0.00</b>
+  </div>
+
+  <hr>
+
+  <div class="d-flex justify-content-between fs-5">
+    <b id="totalLabel">Total anggaran</b>
+    <b id="total" class="text-danger">RM 0.00</b>
+  </div>
+
+  <div class="small text-muted mt-1">Detail bayaran sebenar akan diberi oleh Ai-Dan.</div>
+</div>
+
+      <div id="msg" class="small text-muted mt-3"></div>
+    </div>
+
+    <div class="submit-wrap">
+      <button id="submitBtn" class="btn btn-danger big-btn w-100" onclick="submitToAiDan()">
+        Submit Lock & Dapat Detail Bayaran
+      </button>
+    </div>
+  </div>
+</div>
+
+<script>
+const SB_URL = "https://dduizetstqqjrpsezbpi.supabase.co";
+const SB_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRkdWl6ZXRzdHFxanJwc2V6YnBpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTg3MzI0ODQsImV4cCI6MjA3NDMwODQ4NH0.CrlHXrmHtKgR9qc2192U6quRb5lpFEeOSgwG0Lb8KRM";
+const sb = window.supabase.createClient(SB_URL, SB_KEY);
+
+const qs = new URLSearchParams(location.search);
+const TYPE = String(qs.get("type") || "916").toUpperCase();
+const CODE = String(qs.get("code") || "").toUpperCase().trim();
+
+const auth = (window.auth_get && window.auth_get()) || null;
+const liveUser = auth ? {
+  id: auth.id,
+  name: auth.name || "",
+  phone: auth.phone || auth.msisdn || "",
+  msisdn: auth.msisdn || auth.phone || "",
+  email: auth.email || ""
+} : null;
+
+let state = {
+  type: TYPE,
+  code: CODE,
+  row: null,
+  price: 0,
+  qty: 1,
+  ship: "POST",
+  cut: "NO",
+  pay: TYPE === "999" ? "QR" : "TRANSFER",
+  length_cm: 0
+};
+
+function money(n){
+  return "RM " + Number(n || 0).toFixed(2);
+}
+
+function normalizePhone(msisdn){
+  if(!msisdn) return "";
+  msisdn = String(msisdn).trim();
+  if(msisdn.startsWith("+60")) return msisdn;
+  if(msisdn.startsWith("601")) return "+" + msisdn;
+  if(msisdn.startsWith("0")) return "+60" + msisdn.slice(1);
+  return msisdn;
+}
+
+function getLiveUserPhone(){
+  return normalizePhone(liveUser?.phone || liveUser?.msisdn || "");
+}
+
+function fmtCm(v){
+  const n = Number(v || 0);
+  if (!Number.isFinite(n) || n <= 0) return "";
+  return n.toFixed(1).replace(/\.0$/, "") + "cm";
+}
+
+function liveDimText(row){
+  const berat = Number(row?.weight_g || 0);
+  const panjang = fmtCm(row?.length_cm ?? row?.panjang_cm ?? row?.current_length_cm);
+  const lebar = fmtCm(row?.width_cm ?? row?.lebar_cm);
+
+  const arr = [];
+  if (berat > 0) arr.push("Berat " + berat.toFixed(2) + "g");
+  if (panjang) arr.push("Panjang " + panjang);
+  if (lebar) arr.push("Lebar " + lebar);
+
+  return arr.join(" • ");
+}
+
+function kind999Label(kind){
+  const k = String(kind || "").toLowerCase();
+  if(k === "coin") return "Gold Coin";
+  if(k === "dinar") return "Koleksi Dinar";
+  if(k === "bar") return "Gold Bar";
+  return "Gold 999.9";
+}
+
+function goLogin(mode){
+  localStorage.setItem("ea_pending_live_lock_url", location.href);
+  const ret = encodeURIComponent(location.href);
+  location.href = "login.html?return=" + ret + "#" + (mode || "login");
+}
+
+function fixMediaUrl(url){
+  if(!url) return "";
+  url = String(url).trim();
+  if(url.startsWith("http")) return url;
+  return "";
+}
+
+function first916Img(row){
+  return [
+    row?._img1_from_items,
+    row?._img_from_items,
+    row?._img_from_rpc,
+    row?.img,
+    row?.img1,
+    row?.product_img1,
+    row?.design_img1,
+    row?.design_img1_url,
+    row?.image_url,
+    row?.img_url,
+    row?.image1,
+    row?.photo_url
+  ].find(u => u && String(u).trim().length > 5) || "";
+}
+
+async function load916(){
+  const { data, error } = await sb
+    .from("j916_live_cards_pricing_v1")
+    .select("*")
+    .eq("code", CODE)
+    .order("ts",{ascending:false})
+    .limit(1)
+    .maybeSingle();
+
+  if (error) throw error;
+  if (!data) throw new Error("Barang 916 tidak dijumpai / bukan LIVE.");
+
+  try{
+    const { data:itemRows } = await sb
+      .from("j916_items")
+      .select(`
+        code,
+        design:j916_designs (
+          img1_url,
+          img2_url,
+          img3_url,
+          img1,
+          img2,
+          img3,
+          video_url
+        )
+      `)
+      .eq("code", CODE)
+      .limit(1)
+      .maybeSingle();
+
+    const d = itemRows?.design || {};
+    data._img1_from_items = fixMediaUrl(d?.img1_url || d?.img1 || "");
+    data._img2_from_items = fixMediaUrl(d?.img2_url || d?.img2 || "");
+    data._img3_from_items = fixMediaUrl(d?.img3_url || d?.img3 || "");
+    data._img_from_items = data._img1_from_items;
+  }catch(e){}
+
+  const berat = Number(data?.weight_g || 0);
+const basePerG = Number(data?.base_price_per_g ?? data?.price_per_g_current ?? 0);
+const baseUpah = Number(data?.base_upah_rm ?? data?.upah_default_rm ?? 0);
+
+const LIVE_MULTIPLIER =
+  Number(localStorage.getItem("adminLiveMultiplier") || "1") || 1;
+
+const calc = (pg,g,u)=>((pg*g)+u)*LIVE_MULTIPLIER;
+
+const ovPerG = data?.ov_price_per_g ?? data?.override_price_per_g ?? data?.price_per_g_live;
+const ovUpah = data?.ov_upah_rm ?? data?.upah_override_rm ?? data?.upah_live;
+
+const perG = ovPerG != null ? Number(ovPerG) : basePerG;
+const upah = ovUpah != null ? Number(ovUpah) : baseUpah;
+
+// ikut formula sama macam comment.html / QR, jangan ambil live_price_rm lama
+const liveRM = calc(perG, berat, upah);
+
+state.row = data;
+state.price = liveRM;
+state.length_cm = Number(data?.length_cm || data?.panjang_cm || data?.current_length_cm || data?.size || 0);
+}
+
+async function load999(){
+  const rawCode = decodeURIComponent(String(CODE || "").trim());
+  const parts = rawCode.split("|").map(x => String(x || "").trim());
+
+  let q = sb
+    .from("gold999_live_now")
+    .select("*")
+    .eq("is_active", true);
+
+  if (parts.length >= 4){
+    q = q
+      .eq("kind", String(parts[0] || "").toLowerCase())
+      .eq("weight_g", Number(parts[1] || 0))
+      .eq("design_id", String(parts[2] || ""))
+      .eq("card_type", String(parts[3] || "READY"));
+  }else if (parts.length >= 3){
+    q = q
+      .eq("kind", String(parts[0] || "").toLowerCase())
+      .eq("design_id", String(parts[1] || ""))
+      .eq("card_type", String(parts[2] || "READY"));
+  }else{
+    q = q.eq("live_code", rawCode);
+  }
+
+  const { data, error } = await q
+    .order("updated_at", { ascending:false })
+    .limit(1)
+    .maybeSingle();
+
+  if (error) throw error;
+  if (!data) throw new Error("GoldBar/Coin tidak dijumpai / bukan LIVE.");
+
+  const market = Number(data.market_price_rm || data.live_price_rm || data.price_rm || 0);
+
+  const payDisc = market * 0.05;
+  const afterPay = Math.max(0, market - payDisc);
+
+  let aiDanDisc = 0;
+
+  try{
+    const { data: rule } = await sb
+      .from("gold999_discount_rules")
+      .select("discount_type,discount_value,label")
+      .eq("is_active", true)
+      .eq("source", "AI_DAN")
+      .eq("kind", String(data.kind || "").toLowerCase())
+      .eq("weight_g", Number(data.weight_g || 0))
+      .order("priority", { ascending: true })
+      .limit(1)
+      .maybeSingle();
+
+    if (rule){
+      const t = String(rule.discount_type || "").toUpperCase();
+      const v = Number(rule.discount_value || 0);
+
+      if (t === "PERCENT"){
+        aiDanDisc = afterPay * (v / 100);
+      }
+      else if (t === "AMOUNT" || t === "FIXED"){
+        aiDanDisc = Math.min(afterPay, v);
+      }
+    }
+  }catch(e){}
+
+  data.__ea_market_price_rm = market;
+  data.__ea_payment_discount_rm = payDisc;
+  data.__ea_aidan_discount_rm = aiDanDisc;
+  data.__ea_total_pay_rm = Math.max(0, market - payDisc - aiDanDisc);
+
+  state.row = data;
+
+  // ✅ PENTING: hantar harga asal item ke chat-send
+  // Biar chat-send kira diskaun sama macam comment.html
+  state.price = market;
+}
+function renderItem(){
+  const row = state.row || {};
+  const itemBox = document.getElementById("itemBox");
+  const preview = document.getElementById("loginItemPreview");
+
+  let img = "";
+  let title = "";
+  let detail = "";
+  let codeText = CODE;
+
+  if (state.type === "999"){
+    const kindLabel = row.kind_label || kind999Label(row.kind);
+    const weightLabel = row.weight_label || (Number(row.weight_g || 0) + "g");
+    title = `${kindLabel} ${weightLabel}`;
+    detail = row.design_name || "-";
+    img = row.image_url || "";
+  }else{
+    title = row.name || row.product_name || row.design_name || CODE;
+    detail = liveDimText(row);
+    img = first916Img(row);
+  }
+
+  const html = `
+    <img class="item-img" src="${img || "https://placehold.co/200x200?text=" + encodeURIComponent(CODE)}"
+      onerror="if(!this.dataset.f){this.dataset.f=1;this.src='https://placehold.co/200x200?text=${CODE}'}">
+    <div style="min-width:0;flex:1">
+      <div class="fw-bold fs-5">${title}</div>
+      <div class="small text-muted mono">${codeText}</div>
+      <div class="small text-muted">${detail || "-"}</div>
+      ${
+  state.type === "999" && Number(row?.market_price_rm || 0) > Number(state.price || 0)
+    ? `
+      <div class="small text-muted mt-1" style="text-decoration:line-through;font-weight:700;">
+        ${money(row.market_price_rm)}
+      </div>
+    `
+    : ""
+}
+<div class="price mt-1">${money(state.price)}</div>
+    </div>
+  `;
+
+  if (itemBox) itemBox.innerHTML = html;
+  if (preview) preview.innerHTML = `<div class="item-card mb-0">${html}</div>`;
+
+  if (state.type === "999"){
+    document.getElementById("cutSection").style.display = "none";
+    document.getElementById("pay916").style.display = "none";
+    document.getElementById("pay999").style.display = "";
+  }
+
+  if (state.length_cm){
+    document.getElementById("currentLen").value = state.length_cm + "cm";
+  }
+
+  renderTotal();
+}
+
+function setShip(mode){
+  state.ship = mode;
+
+  document.getElementById("shipPickup")?.classList.toggle("active", mode === "PICKUP");
+  document.getElementById("shipPost")?.classList.toggle("active", mode === "POST");
+
+  document.getElementById("addressBox").style.display = mode === "POST" ? "" : "none";
+  document.getElementById("pickupBox").style.display = mode === "PICKUP" ? "" : "none";
+
+  renderTotal();
+}
+
+function setCut(mode){
+  state.cut = mode;
+
+  document.getElementById("cutNo")?.classList.toggle("active", mode === "NO");
+  document.getElementById("cutYes")?.classList.toggle("active", mode === "YES");
+
+  document.getElementById("cutBox").style.display = mode === "YES" ? "" : "none";
+
+  if (mode === "YES" && state.length_cm){
+    document.getElementById("currentLen").value = state.length_cm + "cm";
+  }
+}
+ 
+async function getAuthUidForLiveLock(){
+  try{
+    const r = await sb.auth.getUser();
+    const uid = r?.data?.user?.id || null;
+    if (uid) return uid;
+  }catch(e){}
+
+  try{
+    if (liveUser?.id) return liveUser.id;
+    if (liveUser?.customer_id) return liveUser.customer_id;
+  }catch(e){}
+
+  return null;
+}
+
+async function setPay(method){
+  state.pay = method;
+
+  document.getElementById("payQR")?.classList.toggle("active", method === "QR");
+  document.getElementById("payTransfer")?.classList.toggle("active", method === "TRANSFER");
+  document.getElementById("payTabung")?.classList.toggle("active", method === "TABUNG_TOPUP");
+  document.getElementById("payAtome")?.classList.toggle("active", method === "ATOME");
+
+  document.getElementById("pay999QR")?.classList.toggle("active", method === "QR");
+  document.getElementById("pay999Transfer")?.classList.toggle("active", method === "TRANSFER");
+
+  const box = document.getElementById("tabungBox");
+
+  if (state.type !== "916" || method !== "TABUNG_TOPUP"){
+    window.__llTabungUnits = 0;
+    window.__llTabungValue = 0;
+    window.__llTopupValue = 0;
+
+    if (box){
+      box.style.display = "none";
+      box.innerHTML = "";
+    }
+
+    renderTotal();
+    return;
+  }
+
+  if (!box){
+    renderTotal();
+    return;
+  }
+
+  box.style.display = "block";
+  box.innerHTML = `<div class="text-muted small">Mengira baki tabung...</div>`;
+
+  try{
+    const authId = await getAuthUidForLiveLock();
+    if (!authId) throw new Error("Sesi login tamat.");
+
+    const { data, error } = await sb
+      .from("tabung_txn")
+      .select("units, kind, type, status, user_id, user_auth_id, meta")
+      .or(`user_id.eq.${authId},user_auth_id.eq.${authId}`);
+
+    if (error) throw error;
+
+    let totalUnits = 0;
+
+    (data || []).forEach(r=>{
+      const kind = String(r?.kind || "").toUpperCase();
+      const type = String(r?.type || "").toUpperCase();
+      const status = String(r?.status || "").toUpperCase();
+      const units = Number(r?.units || 0);
+
+      if (!units) return;
+      if (status !== "PAID" && status !== "APPROVED") return;
+
+      if (kind === "BUY") totalUnits += units;
+      if (kind === "SELL" || kind === "WITHDRAW" || kind === "CONVERT_916") totalUnits -= units;
+      if (type === "BONUS") totalUnits += units;
+    });
+
+    totalUnits = Math.max(0, totalUnits);
+
+    const { data: gp } = await sb
+      .from("gold_prices")
+      .select("price_9999")
+      .order("ddate", { ascending:false })
+      .limit(1)
+      .maybeSingle();
+
+    const unitValue = Number(gp?.price_9999 || 0) / 10;
+    if (!unitValue) throw new Error("Harga tabung semasa tidak dijumpai.");
+
+    const livePrice = Number(state.price || 0);
+    let maxUseUnits = Math.floor(livePrice / unitValue);
+    maxUseUnits = Math.min(maxUseUnits, totalUnits);
+    maxUseUnits = Math.max(0, maxUseUnits);
+
+    const tabungValue = maxUseUnits * unitValue;
+    const topup = Math.max(0, livePrice - tabungValue);
+
+    window.__llTabungUnits = maxUseUnits;
+    window.__llTabungValue = tabungValue;
+    window.__llTopupValue = topup;
+
+    renderTotal();
+
+    box.innerHTML = `
+      <div class="fw-bold mb-2">🎯 Gunakan Tabung Untuk Item Ini</div>
+      <div class="small mb-1">Harga item: <b class="text-danger">${money(livePrice)}</b></div>
+      <div class="small mb-1">Harga tabung semasa: <b>${money(unitValue)} / 0.1g</b></div>
+      <div class="small mb-1">Baki tabung anda: <b>${totalUnits} unit (${(totalUnits / 10).toFixed(1)}g)</b></div>
+      <div class="small mb-1">Digunakan: <b>${maxUseUnits} unit</b> = <b>${money(tabungValue)}</b></div>
+      <div class="small mb-2">Tambah bayaran: <b class="text-danger">${money(topup)}</b> sahaja</div>
+      <div class="small text-muted">Nilai RM berubah ikut harga emas semasa.</div>
+    `;
+
+  }catch(e){
+    window.__llTabungUnits = 0;
+    window.__llTabungValue = 0;
+    window.__llTopupValue = 0;
+    renderTotal();
+
+    box.innerHTML = `<div class="small text-danger">${e?.message || e}</div>`;
+  }
+}
+function renderTotal(){
+  const subtotal = Number(state.price || 0);
+  const shipFee = state.ship === "POST" ? 10 : 0;
+  const payMethod = String(state.pay || "").toUpperCase();
+
+  const useTabung = state.type === "916" && payMethod === "TABUNG_TOPUP";
+  const useAtome = state.type === "916" && payMethod === "ATOME";
+
+  const tabungValue = useTabung ? Number(window.__llTabungValue || 0) : 0;
+
+  let displaySubtotal = subtotal;
+  let displayShipFee = shipFee;
+  let total = subtotal + shipFee - tabungValue;
+
+  let discountPay = 0;
+  let discountAiDan = 0;
+
+  if (useAtome){
+    displaySubtotal = Math.round((subtotal + shipFee) * 1.08);
+    displayShipFee = 0;
+    total = displaySubtotal;
+  }
+
+  if (state.type === "999"){
+    discountPay = Number(state.row?.__ea_payment_discount_rm || 0);
+    discountAiDan = Number(state.row?.__ea_aidan_discount_rm || 0);
+    total = Math.max(0, subtotal + shipFee - discountPay - discountAiDan);
+  }
+
+  document.getElementById("subtotal").textContent = money(displaySubtotal);
+  document.getElementById("shipFee").textContent = money(displayShipFee);
+  document.getElementById("total").textContent = money(Math.max(0, total));
+
+ document
+  .querySelectorAll("#itemBox .price.mt-1, #loginItemPreview .price.mt-1")
+  .forEach(priceEl=>{
+    priceEl.textContent = useAtome
+      ? money(displaySubtotal)
+      : money(subtotal);
+  });
+
+  const payRow = document.getElementById("discountPayRow");
+  const aiRow = document.getElementById("discountAiDanRow");
+  const payEl = document.getElementById("discountPay");
+  const aiEl = document.getElementById("discountAiDan");
+  const totalLabel = document.getElementById("totalLabel");
+
+  if (state.type === "999"){
+    if (payRow) payRow.style.setProperty("display", "flex", "important");
+    if (aiRow) aiRow.style.setProperty("display", "flex", "important");
+    if (payEl) payEl.textContent = "- " + money(discountPay);
+    if (aiEl) aiEl.textContent = "- " + money(discountAiDan);
+    if (totalLabel) totalLabel.textContent = "Jumlah perlu dibayar";
+  }else{
+    if (payRow) payRow.style.setProperty("display", "none", "important");
+    if (aiRow) aiRow.style.setProperty("display", "none", "important");
+    if (totalLabel) totalLabel.textContent = "Total anggaran";
+  }
+}async function fillCustomerAddress(){
+  try{
+    const phone = getLiveUserPhone();
+    if (!phone) return;
+
+    const digits = String(phone || "").replace(/\D/g, "");
+    const local0 = digits.startsWith("60") ? ("0" + digits.slice(2)) : "";
+    const variants = [digits, "+" + digits, local0].filter(Boolean);
+
+    for (const ph of variants){
+      const { data, error } = await sb
+        .from("customers")
+        .select("alamat,postcode,city,state")
+        .eq("phone", ph)
+        .limit(1)
+        .maybeSingle();
+
+      if (!error && data){
+        const alamat = String(data.alamat || "").trim();
+        const postcode = String(data.postcode || "").trim();
+        const city = String(data.city || "").trim();
+        const stateName = String(data.state || "").trim();
+
+        let addr = alamat;
+
+        if (postcode && !addr.includes(postcode)) addr += (addr ? ", " : "") + postcode;
+        if (city && !addr.toLowerCase().includes(city.toLowerCase())) addr += (addr ? ", " : "") + city;
+        if (stateName && !addr.toLowerCase().includes(stateName.toLowerCase())) addr += (addr ? ", " : "") + stateName;
+
+        if (addr) document.getElementById("address").value = addr;
+        return;
+      }
+    }
+  }catch(e){
+    console.warn("fillCustomerAddress error:", e);
+  }
+}
+
+async function chatSendLive(payload){
+  const res = await fetch("/.netlify/functions/chat-send", {
+    method:"POST",
+    headers:{ "Content-Type":"application/json" },
+    body: JSON.stringify(payload)
+  });
+
+  const raw = await res.text();
+  console.log("CHAT-SEND STATUS:", res.status);
+  console.log("CHAT-SEND RAW:", raw);
+
+  let j = {};
+  try{ j = JSON.parse(raw); }catch(e){}
+
+  if (!res.ok || !j.ok){
+    throw new Error(j.error || j.message || raw || "Chat-send gagal.");
+  }
+
+  return j;
+}
+
+async function submitToAiDan(){
+  const btn = document.getElementById("submitBtn");
+  const msg = document.getElementById("msg");
+
+  try{
+    if (!liveUser){
+      document.getElementById("checkoutBox").style.display = "none";
+      document.getElementById("loginBox").style.display = "";
+      return;
+    }
+
+    const phone = getLiveUserPhone();
+    if (!phone) throw new Error("Nombor telefon akaun tidak dijumpai.");
+
+    const ship = String(state.ship || "POST").toUpperCase();
+    const payMethod = String(state.pay || "TRANSFER").toUpperCase();
+    const address = String(document.getElementById("address")?.value || "").trim();
+    const pickupWhen = String(document.getElementById("pickupWhen")?.value || "").trim();
+
+    if (ship === "POST" && address.length < 12){
+      throw new Error("Sila isi alamat penuh dahulu.");
+    }
+
+    if (ship === "PICKUP" && !pickupWhen){
+      throw new Error("Sila isi masa ambil kedai dahulu.");
+    }
+
+    btn.disabled = true;
+    msg.textContent = "Sedang submit lock ke Ai-Dan…";
+
+    let payload;
+
+    if (state.type === "999"){
+      const row = state.row || {};
+
+      const live999Msg =
+        "LIVE999_CHECKOUT_SUBMIT" +
+        "|kind=" + encodeURIComponent(String(row.kind || "")) +
+        "|weight_g=" + encodeURIComponent(String(row.weight_g || 0)) +
+        "|design_id=" + encodeURIComponent(String(row.design_id || "")) +
+        "|design_name=" + encodeURIComponent(String(row.design_name || "")) +
+        "|card=" + encodeURIComponent(String(row.card_type || "READY")) +
+        "|qty=" + encodeURIComponent("1") +
+        "|price_rm=" + encodeURIComponent(String(state.price || 0)) +
+        "|ship=" + encodeURIComponent(ship) +
+        "|address=" + encodeURIComponent(ship === "POST" ? address : "") +
+        "|pickup_when=" + encodeURIComponent(ship === "PICKUP" ? pickupWhen : "") +
+        "|pay_method=" + encodeURIComponent(payMethod);
+
+      payload = {
+        phone,
+        name: liveUser?.name || "Pelanggan",
+        is_logged_in: true,
+        action: "live999_checkout_submit",
+        source: "live_lock_999",
+        message: live999Msg,
+
+        live_code: String(row.live_code || CODE),
+        kind: String(row.kind || ""),
+        weight_g: Number(row.weight_g || 0),
+        design_id: String(row.design_id || ""),
+        design_name: String(row.design_name || ""),
+        card_type: String(row.card_type || "READY"),
+
+        qty: 1,
+        price_rm: Number(state.price || 0),
+
+        ship,
+        address: ship === "POST" ? address : "",
+        pickup_when: ship === "PICKUP" ? pickupWhen : "",
+
+        pay_method: payMethod
+      };
+
+    }else{
+      const cut = String(state.cut || "NO").toUpperCase();
+      const currentLength = String(document.getElementById("currentLen")?.value || "").trim();
+      const cutTo = String(document.getElementById("cutTo")?.value || "").trim();
+
+      if (cut === "YES"){
+        if (!currentLength || !cutTo){
+          throw new Error("Sila isi panjang asal dan potong jadi berapa cm.");
+        }
+
+        const currNum = Number(String(currentLength).replace(/[^0-9.]/g, ""));
+        const cutNum = Number(String(cutTo).replace(/[^0-9.]/g, ""));
+
+        if (!currNum || !cutNum){
+          throw new Error("Panjang asal / potong jadi mesti nombor cm yang sah.");
+        }
+
+        if (cutNum >= currNum){
+          throw new Error("Potong jadi mesti lebih pendek dari panjang asal.");
+        }
+      }
+
+     const useTabungTopup = payMethod === "TABUNG_TOPUP";
+
+const tabungUnitsUsed = useTabungTopup
+  ? Number(window.__llTabungUnits || 0)
+  : 0;
+
+const tabungValueRm = useTabungTopup
+  ? Number(window.__llTabungValue || 0)
+  : 0;
+
+const topupRm = useTabungTopup
+  ? Number(window.__llTopupValue || 0)
+  : Number(state.price || 0);
+
+const shipFee = ship === "POST" ? 10 : 0;
+
+const finalTopupRm = useTabungTopup
+  ? Number((topupRm + shipFee).toFixed(2))
+  : (
+      payMethod === "ATOME"
+        ? Math.round((Number(state.price || 0) + shipFee) * 1.08)
+        : Number((Number(state.price || 0) + shipFee).toFixed(2))
+    );
+
+payload = {
+  phone,
+  is_logged_in: true,
+  action: "live_checkout_submit",
+  source: "live_lock_916",
+
+  message:
+    "LIVE_CHECKOUT_SUBMIT" +
+    "|code=" + encodeURIComponent(String(state.code || "")) +
+    "|price_rm=" + encodeURIComponent(String(finalTopupRm || 0)) +
+          "|ship=" + encodeURIComponent(ship) +
+          "|address=" + encodeURIComponent(ship === "POST" ? address : "") +
+          "|pickup_when=" + encodeURIComponent(ship === "PICKUP" ? pickupWhen : "") +
+          "|cut=" + encodeURIComponent(cut) +
+          "|cut_to=" + encodeURIComponent(cutTo) +
+          "|pay_method=" + encodeURIComponent(payMethod),
+
+        code: String(state.code || ""),
+        price_rm: Number(finalTopupRm || 0),
+tabung_units_used: tabungUnitsUsed,
+tabung_value_rm: tabungValueRm,
+topup_rm: finalTopupRm,
+
+        ship,
+        address: ship === "POST" ? address : "",
+        pickup_when: ship === "PICKUP" ? pickupWhen : "",
+
+        cut,
+        cut_to: cut === "YES" ? cutTo : "",
+
+        pay_method: payMethod
+      };
+    }
+
+    const res = await chatSendLive(payload);
+    const threadId = res.thread_id;
+    if (!threadId) throw new Error("Thread ID tidak diterima.");
+
+    msg.textContent = "Berjaya ✅ Buka Ai-Dan untuk detail bayaran.";
+
+    setTimeout(()=>{
+      location.href =
+        "chat.html?thread=" + encodeURIComponent(threadId) +
+        "&live_lock_done=1";
+    }, 500);
+
+  }catch(e){
+    console.warn(e);
+    msg.textContent = "❌ " + (e?.message || e);
+    btn.disabled = false;
+  }
+}
+
+async function init(){
+  try{
+    if (!CODE){
+      throw new Error("Code barang tiada dalam link.");
+    }
+
+    if (TYPE === "999") await load999();
+    else await load916();
+
+    renderItem();
+
+    document.getElementById("loadingBox").style.display = "none";
+
+    if (!liveUser){
+      document.getElementById("loginBox").style.display = "";
+      return;
+    }
+
+    document.getElementById("checkoutBox").style.display = "";
+    await fillCustomerAddress();
+
+  }catch(e){
+    document.getElementById("loadingBox").innerHTML =
+      `<div class="alert alert-danger text-start">
+        <b>Gagal buka item.</b><br>
+        ${String(e?.message || e)}
+        <div class="mt-3">
+          <a href="comment.html" class="btn btn-danger rounded-pill">Kembali ke LIVE</a>
+        </div>
+      </div>`;
+  }
+}
+
+function goHome(){
+  location.replace("index.html");
+}
+
+init();
+</script>
+</body>
+</html>

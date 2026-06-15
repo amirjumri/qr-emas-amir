@@ -338,35 +338,21 @@
     }
 
     .ea-gold-visual{
-  position:absolute;
-  right:-8px;
-  top:-5px;
-  width:128px;
-  height:100px;
-  border-radius:22px;
-
-  background:
-    linear-gradient(135deg,
-      rgba(250,204,21,.20),
-      rgba(255,255,255,.04)
-    ),
-    radial-gradient(
-      circle at 70% 35%,
-      rgba(250,204,21,.35),
-      transparent 36%
-    );
-
-  display:flex;
-  align-items:center;
-  justify-content:center;
-  overflow:hidden;
-}
-
-.ea-gold-visual::before{
-  content:"📈";
-  font-size:56px;
-  filter:drop-shadow(0 0 18px rgba(250,204,21,.45));
-}
+      position:absolute;
+      right:-8px;
+      top:-5px;
+      width:128px;
+      height:100px;
+      border-radius:22px;
+      background:
+        radial-gradient(circle at 45% 40%, rgba(250,204,21,.34), transparent 34%),
+        linear-gradient(135deg,rgba(250,204,21,.22),rgba(0,0,0,0));
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      font-size:62px;
+      filter:drop-shadow(0 18px 22px rgba(245,158,11,.24));
+    }
 
     .ea-price-bottom{
       margin:14px -16px -16px;
@@ -490,62 +476,47 @@
       box-shadow:0 12px 28px rgba(245,158,11,.24);
     }
 
-   .ea-jar{
-  width:152px;
-  height:190px;
-  margin-left:auto;
-  border-radius:38px;
-  position:relative;
-  overflow:hidden;
-  padding:10px;
+    .ea-jar{
+      width:122px;
+      height:154px;
+      margin-left:auto;
+      border-radius:34px 34px 28px 28px;
+      background:
+        radial-gradient(circle at 45% 72%, rgba(250,204,21,.40), transparent 39%),
+        linear-gradient(180deg,rgba(255,255,255,.34),rgba(255,255,255,.05) 42%,rgba(0,0,0,.22));
+      border:1px solid rgba(255,255,255,.20);
+      position:relative;
+      box-shadow:
+        0 18px 40px rgba(0,0,0,.34),
+        inset 0 1px 0 rgba(255,255,255,.34);
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      font-size:54px;
+    }
 
-  background-image:
-    linear-gradient(
-      to bottom,
-      rgba(0,0,0,.06),
-      rgba(0,0,0,.20)
-    ),
-    url("https://dduizetstqqjrpsezbpi.supabase.co/storage/v1/object/public/logo%20app/tabung.jpeg");
+    .ea-jar::before{
+      content:"";
+      position:absolute;
+      top:-17px;
+      left:50%;
+      transform:translateX(-50%);
+      width:72px;
+      height:28px;
+      border-radius:999px;
+      background:linear-gradient(135deg,#fff2a8,#d97706);
+      border:1px solid rgba(250,204,21,.35);
+      box-shadow:0 12px 22px rgba(245,158,11,.22);
+    }
 
-  background-size:contain;
-  background-position:center;
-  background-repeat:no-repeat;
-  background-color:#0f0f10;
-
-  border:1px solid rgba(255,255,255,.16);
-
-  box-shadow:
-    0 24px 50px rgba(0,0,0,.42),
-    0 0 50px rgba(250,204,21,.22);
-
-  transform:translateY(4px);
-}
-
-.ea-jar::before{
-  content:"";
-  position:absolute;
-  inset:0;
-  border-radius:38px;
-
-  background:
-    linear-gradient(
-      120deg,
-      rgba(255,255,255,.30) 0%,
-      rgba(255,255,255,.10) 22%,
-      transparent 42%
-    );
-
-  pointer-events:none;
-}
-
-.ea-jar::after{
-  content:"✨";
-  position:absolute;
-  right:10px;
-  top:10px;
-  font-size:22px;
-  filter:drop-shadow(0 0 10px rgba(250,204,21,.75));
-}
+    .ea-jar::after{
+      content:"✨";
+      position:absolute;
+      right:-18px;
+      top:20px;
+      font-size:24px;
+      filter:drop-shadow(0 0 12px rgba(250,204,21,.75));
+    }
 
     .ea-next-arrow{
       position:absolute;
@@ -1732,124 +1703,8 @@
   font-size:15px;
   letter-spacing:.5px;
   text-shadow:0 4px 18px rgba(0,0,0,.45);
-} 
-.ea-gold-visual img,
-.ea-tabung-visual img{
-  display:none !important;
-} 
-.ea-nav-main-circle{
-  width:72px;
-  height:72px;
-  border-radius:50%;
-  background:
-    radial-gradient(circle at 30% 30%, #ffe27a, #facc15 55%, #d97706);
-  display:flex;
-  align-items:center;
-  justify-content:center;
-  box-shadow:
-    0 12px 30px rgba(250,204,21,.35),
-    0 0 0 4px rgba(255,255,255,.08);
 }
 
-.ea-nav-main-img{
-  width:42px;
-  height:42px;
-  object-fit:contain;
-  filter:
-    drop-shadow(0 2px 6px rgba(0,0,0,.35));
-} 
-.ea-rail-track{
-  display:flex;
-  gap:14px;
-  width:max-content;
-}
-
-.ea-rail{
-  overflow:hidden;
-  position:relative;
-}
-
-.ea-mini-product{
-  flex:0 0 auto;
-}
-.ea-pending-card{
-  display:none;
-  padding:18px;
-  margin-bottom:18px;
-  color:#fff;
-  min-height:210px;
-}
-
-.ea-pending-card.show{
-  display:block;
-}
-
-.ea-pending-title{
-  display:flex;
-  align-items:center;
-  gap:8px;
-  color:#fb7185;
-  font-size:20px;
-  font-weight:950;
-  margin-bottom:12px;
-}
-
-.ea-pending-item{
-  display:flex;
-  gap:12px;
-  align-items:center;
-}
-
-.ea-pending-img{
-  width:96px;
-  height:96px;
-  border-radius:20px;
-  object-fit:cover;
-  background:#111827;
-  border:1px solid rgba(255,255,255,.12);
-}
-
-.ea-pending-name{
-  font-size:16px;
-  font-weight:950;
-  line-height:1.2;
-}
-
-.ea-pending-sub{
-  color:#cbd5e1;
-  font-size:13px;
-  margin-top:4px;
-}
-
-.ea-pending-price{
-  color:#f8c94d;
-  font-size:26px;
-  font-weight:950;
-  margin-top:7px;
-}
-
-.ea-pending-note{
-  margin-top:12px;
-  background:rgba(225,29,72,.14);
-  border:1px solid rgba(225,29,72,.28);
-  color:#fecdd3;
-  border-radius:14px;
-  padding:10px 12px;
-  font-size:13px;
-  font-weight:800;
-}
-
-.ea-pending-btn{
-  margin-top:12px;
-  width:100%;
-  min-height:48px;
-  border:0;
-  border-radius:14px;
-  background:linear-gradient(135deg,#e11d48,#be123c);
-  color:#fff;
-  font-size:14px;
-  font-weight:950;
-}
   </style>
 </head>
 
@@ -1972,7 +1827,7 @@
           <div class="ea-price-up">↗ Harga semasa</div>
         </div>
 
-        <!--<div class="ea-gold-visual">🪙</div> -->
+        <div class="ea-gold-visual">🪙</div>
       </div>
 
       <div class="ea-price-bottom">
@@ -1987,15 +1842,6 @@
         </tbody>
       </table>
     </section>
-
-<section id="eaPendingHero" class="ea-card ea-pending-card gold-line">
-  <div class="ea-pending-title">
-    <span>⚠️</span>
-    <span>ORDER BELUM BAYAR</span>
-  </div>
-
-  <div id="eaPendingHeroBody"></div>
-</section>
 
     <!-- TABUNG HERO -->
     <a href="/tabung.html" class="ea-card ea-tabung-card gold-line">
@@ -2021,7 +1867,7 @@
           </div>
         </div>
 
-        <div class="ea-jar"></div>
+        <div class="ea-jar">🪙</div>
       </div>
     </a>
 
@@ -2044,75 +1890,65 @@
       </a>
     </div>
 
-   <!-- GOLDBAR / COIN LIVE -->
-<section class="ea-section">
-  <div class="ea-section-head">
-    <div class="ea-section-title">
-      <span class="coin">🟡</span>
-      <span>GOLDBAR / COIN LIVE</span>
-    </div>
+    <!-- GOLDBAR / COIN LIVE -->
+    <section class="ea-section">
+      <div class="ea-section-head">
+        <div class="ea-section-title">
+          <span class="coin">🟡</span>
+          <span>GOLDBAR / COIN LIVE</span>
+        </div>
 
-    <a href="/goldbar-coin.html" class="ea-see-all">Lihat Semua Bukan Live ›</a>
-  </div>
-
-  <div id="homeGold999Rail" class="ea-rail">
-    <div class="ea-mini-product gold">
-      <span class="ea-live-tag">LIVE</span>
-
-      <div class="ea-prod-img gold-img">🪙</div>
-
-      <div class="ea-prod-body">
-        <div class="ea-prod-name">GoldBar/Coin</div>
-        <div class="ea-prod-spec">Memuatkan...</div>
-        <div class="ea-prod-price">RM --</div>
-        <div class="ea-prod-save">&nbsp;</div>
-
-        <button type="button" class="ea-prod-btn">
-          Beli Sekarang
-        </button>
+        <a href="/goldbar-coin.html" class="ea-see-all">Lihat Semua Bukan Live ›</a>
       </div>
-    </div>
-  </div>
 
-  <div class="ea-dots">
-    <span class="active"></span><span></span><span></span><span></span><span></span>
-  </div>
-</section>
-
-   <!-- BARANG KEMAS 916 LIVE -->
-<section class="ea-section">
-  <div class="ea-section-head">
-    <div class="ea-section-title">
-      <span>💎</span>
-      <span>BARANG KEMAS 916 LIVE</span>
-    </div>
-
-    <a href="/j916.html" class="ea-see-all">Lihat Semua Bukan Live ›</a>
-  </div>
-
-  <div id="home916Rail" class="ea-rail">
-    <div class="ea-mini-product red">
-      <span class="ea-live-tag">LIVE</span>
-
-      <div class="ea-prod-img">💍</div>
-
-      <div class="ea-prod-body">
-        <div class="ea-prod-name">Barang Kemas 916</div>
-        <div class="ea-prod-spec">Memuatkan...</div>
-        <div class="ea-prod-price">RM --</div>
-        <div class="ea-prod-save">&nbsp;</div>
-
-        <button type="button" class="ea-prod-btn red">
-          Lock Sekarang
-        </button>
+      <div id="homeGold999Rail" class="ea-rail">
+        <a href="/goldbar-coin.html" class="ea-mini-product gold">
+          <span class="ea-live-tag">LIVE</span>
+          <div class="ea-prod-img gold-img">🪙</div>
+          <div class="ea-prod-body">
+            <div class="ea-prod-name">GoldBar/Coin</div>
+            <div class="ea-prod-spec">Memuatkan...</div>
+            <div class="ea-prod-price">RM --</div>
+            <div class="ea-prod-save">&nbsp;</div>
+            <div class="ea-prod-btn">Beli Sekarang</div>
+          </div>
+        </a>
       </div>
-    </div>
-  </div>
 
-  <div class="ea-dots">
-    <span class="active"></span><span></span><span></span><span></span><span></span>
-  </div>
-</section>
+      <div class="ea-dots">
+        <span class="active"></span><span></span><span></span><span></span><span></span>
+      </div>
+    </section>
+
+    <!-- BARANG KEMAS 916 LIVE -->
+    <section class="ea-section">
+      <div class="ea-section-head">
+        <div class="ea-section-title">
+          <span>💎</span>
+          <span>BARANG KEMAS 916 LIVE</span>
+        </div>
+
+        <a href="/j916.html" class="ea-see-all">Lihat Semua Bukan Live ›</a>
+      </div>
+
+      <div id="home916Rail" class="ea-rail">
+        <a href="/j916.html" class="ea-mini-product red">
+          <span class="ea-live-tag">LIVE</span>
+          <div class="ea-prod-img">💍</div>
+          <div class="ea-prod-body">
+            <div class="ea-prod-name">Barang Kemas 916</div>
+            <div class="ea-prod-spec">Memuatkan...</div>
+            <div class="ea-prod-price">RM --</div>
+            <div class="ea-prod-save">&nbsp;</div>
+            <div class="ea-prod-btn red">Lock Sekarang</div>
+          </div>
+        </a>
+      </div>
+
+      <div class="ea-dots">
+        <span class="active"></span><span></span><span></span><span></span><span></span>
+      </div>
+    </section>
 
     <!-- MISI -->
     <div class="misi-home-note">
@@ -2152,20 +1988,15 @@
       <div>Utama</div>
     </a>
 
-    <a href="/live-now.html" class="ea-nav-item">
+    <a href="/comment.html" class="ea-nav-item">
       <div class="ea-nav-ico">📺</div>
       <div>Live</div>
     </a>
 
-   <a href="/tabung.html" class="ea-nav-item main">
-  <div class="ea-nav-main-circle">
-    <img
-      src="https://dduizetstqqjrpsezbpi.supabase.co/storage/v1/object/public/logo%20app/tabung-icon.PNG"
-      class="ea-nav-main-img"
-      alt="Simpan">
-  </div>
-  <div>Simpan</div>
-</a>
+    <a href="/tabung.html" class="ea-nav-item main">
+      <div class="ea-nav-main-circle">🪙</div>
+      <div>Simpan</div>
+    </a>
 
     <a href="/chat.html" class="ea-nav-item">
       <div class="ea-nav-ico">💬</div>
@@ -2569,121 +2400,122 @@ function openLiveLockFromHome(type, code){
     encodeURIComponent(code);
 }
 
-   function renderGold999Card(row){
-  const kindLabel = row.kind_label || kind999Label(row.kind);
-  const weightLabel = row.weight_label || (Number(row.weight_g || 0) + "g");
-  const name = `${kindLabel} ${weightLabel}`;
-  const design = row.design_name || row.card_type || "";
-  const img = row.image_url || "";
+    function renderGold999Card(row){
+      const kindLabel = row.kind_label || kind999Label(row.kind);
+      const weightLabel = row.weight_label || (Number(row.weight_g || 0) + "g");
+      const name = `${kindLabel} ${weightLabel}`;
+      const design = row.design_name || row.card_type || "";
+      const img = row.image_url || "";
 
-  const market = Number(row.market_price_rm || row.live_price_rm || 0);
-  const payDisc = market * 0.05;
+      const market = Number(row.market_price_rm || row.live_price_rm || 0);
+      const payDisc = market * 0.05;
 
-  const aiDanType = String(row.__ai_dan_discount_type || "").toUpperCase();
-  const aiDanValue = Number(row.__ai_dan_discount_value || 0);
+      const aiDanType = String(row.__ai_dan_discount_type || "").toUpperCase();
+      const aiDanValue = Number(row.__ai_dan_discount_value || 0);
 
-  const afterPay = Math.max(0, market - payDisc);
-  let aiDanDisc = 0;
+      const afterPay = Math.max(0, market - payDisc);
+      let aiDanDisc = 0;
 
-  if (aiDanType === "PERCENT") {
-    aiDanDisc = afterPay * (aiDanValue / 100);
-  } else if (aiDanType === "AMOUNT" || aiDanType === "FIXED") {
-    aiDanDisc = Math.min(afterPay, aiDanValue);
-  }
+      if (aiDanType === "PERCENT") {
+        aiDanDisc = afterPay * (aiDanValue / 100);
+      } else if (aiDanType === "AMOUNT" || aiDanType === "FIXED") {
+        aiDanDisc = Math.min(afterPay, aiDanValue);
+      }
 
-  const live = Math.max(0, market - payDisc - aiDanDisc);
-  const jimat = Math.max(0, market - live);
+      const live = Math.max(0, market - payDisc - aiDanDisc);
+      const jimat = Math.max(0, market - live);
 
-  const lockCode = `${row.kind}|${row.design_id}|${row.card_type || "READY"}`;
-  const lockCodeSafe = safeTxt(lockCode);
+      const imageHTML = img
+        ? `<img class="ea-prod-img gold-img" src="${safeTxt(img)}" alt="${safeTxt(name)}" onerror="this.style.display='none';this.parentNode.innerHTML='🪙';">`
+        : `<div class="ea-prod-img gold-img" style="font-size:56px;display:flex;align-items:center;justify-content:center;">🪙</div>`;
 
-  const imageHTML = img
-    ? `<img class="ea-prod-img gold-img" src="${safeTxt(img)}" alt="${safeTxt(name)}" onerror="this.style.display='none';this.parentNode.innerHTML='🪙';">`
-    : `<div class="ea-prod-img gold-img" style="font-size:56px;display:flex;align-items:center;justify-content:center;">🪙</div>`;
+      return `
+        <a href="/goldbar-coin.html" class="ea-mini-product gold">
+          <span class="ea-live-tag">LIVE</span>
+          ${imageHTML}
 
-  return `
-    <div class="ea-mini-product gold"
-         onclick="openLiveLockFromHome('999','${lockCodeSafe}')">
-      <span class="ea-live-tag">LIVE</span>
-      ${imageHTML}
+          <div class="ea-prod-body">
+            <div class="ea-prod-name">${safeTxt(name)}</div>
+            <div class="ea-prod-spec">${safeTxt(design || "999.9")}</div>
+            <div class="ea-prod-price">RM ${money(live)}</div>
+            <div class="ea-prod-save">${jimat > 0 ? "Jimat RM " + money(jimat) : "&nbsp;"}</div>
+            <<button
+  type="button"
+  class="ea-prod-btn"
+  onclick="event.preventDefault();event.stopPropagation();openLiveLockFromHome('999','${row.kind}|${row.design_id}|${row.card_type || 'READY'}')">
+  Beli Sekarang
+</button>
+          </div>
+        </a>
+      `;
+    }
 
-      <div class="ea-prod-body">
-        <div class="ea-prod-name">${safeTxt(name)}</div>
-        <div class="ea-prod-spec">${safeTxt(design || "999.9")}</div>
-        <div class="ea-prod-price">RM ${money(live)}</div>
-        <div class="ea-prod-save">${jimat > 0 ? "Jimat RM " + money(jimat) : "&nbsp;"}</div>
+    function render916Card(row, p916){
+      const code  = String(row?.code || "").toUpperCase();
+      const name  = row?.name || row?.product_name || row?.design_name || code || "Barang 916";
+      const berat = Number(row?.weight_g || 0);
+      const detailText = liveDimText(row);
 
-        <button
-          type="button"
-          class="ea-prod-btn"
-          onclick="event.preventDefault();event.stopPropagation();openLiveLockFromHome('999','${lockCodeSafe}')">
-          Beli Sekarang
-        </button>
-      </div>
-    </div>
-  `;
-}
+      const basePerG = Number(
+        row?.base_price_per_g ??
+        row?.price_per_g_current ??
+        p916 ??
+        0
+      );
 
-  function render916Card(row, p916){
-  const code  = String(row?.code || "").toUpperCase();
-  const name  = row?.name || row?.product_name || row?.design_name || code || "Barang 916";
-  const berat = Number(row?.weight_g || 0);
-  const detailText = liveDimText(row);
+      const baseUpah = Number(
+        row?.base_upah_rm ??
+        row?.upah_default_rm ??
+        0
+      );
 
-  const basePerG = Number(row?.base_price_per_g ?? row?.price_per_g_current ?? p916 ?? 0);
-  const baseUpah = Number(row?.base_upah_rm ?? row?.upah_default_rm ?? 0);
+      const calc = (pg,g,u)=>((Number(pg||0)*Number(g||0)) + Number(u||0)) * 1.08;
 
-  // ✅ SAMA MACAM comment.html
-  // Jangan pakai row.live_price_rm untuk 916 sebab itu boleh jadi harga asal / stale.
-  // Harga live mesti ikut override per gram + override upah.
-  localStorage.removeItem("adminLiveMultiplier");
+      const normalRM = (
+        row?.normal_price_rm !== undefined && row?.normal_price_rm !== null
+          ? Number(row.normal_price_rm)
+          : calc(basePerG, berat, baseUpah)
+      );
 
-  const calc = (pg,g,u)=>(
-    (Number(pg || 0) * Number(g || 0)) + Number(u || 0)
-  );
+      const ovPerG_raw = (row?.ov_price_per_g ?? row?.override_price_per_g ?? row?.price_per_g_live);
+      const ovUpah_raw = (row?.ov_upah_rm ?? row?.upah_override_rm ?? row?.upah_live);
 
-  const normalRM = row?.normal_price_rm != null
-    ? Number(row.normal_price_rm)
-    : calc(basePerG, berat, baseUpah);
+      const perG_eff = (ovPerG_raw !== null && ovPerG_raw !== undefined) ? Number(ovPerG_raw) : basePerG;
+      const upah_eff = (ovUpah_raw !== null && ovUpah_raw !== undefined) ? Number(ovUpah_raw) : baseUpah;
 
-  const ovPerG_raw = row?.ov_price_per_g ?? row?.override_price_per_g ?? row?.price_per_g_live;
-  const ovUpah_raw = row?.ov_upah_rm ?? row?.upah_override_rm ?? row?.upah_live;
+      const liveRM = (
+        row?.live_price_rm !== undefined && row?.live_price_rm !== null
+          ? Number(row.live_price_rm)
+          : calc(perG_eff, berat, upah_eff)
+      );
 
-  const perG_eff = ovPerG_raw != null ? Number(ovPerG_raw) : basePerG;
-  const upah_eff = ovUpah_raw != null ? Number(ovUpah_raw) : baseUpah;
+      const jimat = Math.max(0, normalRM - liveRM);
+      const img = firstImage(row);
 
-  const liveRM = calc(perG_eff, berat, upah_eff);
+      const imageHTML = img
+        ? `<img class="ea-prod-img" src="${safeTxt(img)}" alt="${safeTxt(name)}" onerror="this.style.display='none';this.parentNode.innerHTML='💍';">`
+        : `<div class="ea-prod-img" style="font-size:52px;display:flex;align-items:center;justify-content:center;">💍</div>`;
 
-  const jimat = Math.max(0, normalRM - liveRM);
-  const img = firstImage(row);
-  const codeSafe = safeTxt(code);
+      return `
+        <a href="/j916.html#checkout?code=${encodeURIComponent(code)}&checkout=1" class="ea-mini-product red">
+          <span class="ea-live-tag">LIVE</span>
+          ${imageHTML}
 
-  const imageHTML = img
-    ? `<img class="ea-prod-img" src="${safeTxt(img)}" alt="${safeTxt(name)}" onerror="this.style.display='none';this.parentNode.innerHTML='💍';">`
-    : `<div class="ea-prod-img" style="font-size:52px;display:flex;align-items:center;justify-content:center;">💍</div>`;
-
-  return `
-    <div class="ea-mini-product red"
-         onclick="openLiveLockFromHome('916','${codeSafe}')">
-      <span class="ea-live-tag">LIVE</span>
-      ${imageHTML}
-
-      <div class="ea-prod-body">
-        <div class="ea-prod-name">${safeTxt(code || name)}</div>
-        <div class="ea-prod-spec">${safeTxt(detailText || (berat ? berat.toFixed(2) + "g" : "916"))}</div>
-        <div class="ea-prod-price">RM ${money(liveRM)}</div>
-        <div class="ea-prod-save">${jimat > 0 ? "Jimat RM " + money(jimat) : "&nbsp;"}</div>
-
-        <button
-          type="button"
-          class="ea-prod-btn red"
-          onclick="event.preventDefault();event.stopPropagation();openLiveLockFromHome('916','${codeSafe}')">
-          Lock Sekarang
-        </button>
-      </div>
-    </div>
-  `;
-}
+          <div class="ea-prod-body">
+            <div class="ea-prod-name">${safeTxt(code || name)}</div>
+            <div class="ea-prod-spec">${safeTxt(detailText || (berat ? berat.toFixed(2) + "g" : "916"))}</div>
+            <div class="ea-prod-price">RM ${money(liveRM)}</div>
+            <div class="ea-prod-save">${jimat > 0 ? "Jimat RM " + money(jimat) : "&nbsp;"}</div>
+            <button
+  type="button"
+  class="ea-prod-btn red"
+  onclick="event.preventDefault();event.stopPropagation();openLiveLockFromHome('916','${code}')">
+  Lock Sekarang
+</button>
+          </div>
+        </a>
+      `;
+    }
 
     async function loadHarga(){
       try{
@@ -2801,15 +2633,12 @@ function openLiveLockFromHome(type, code){
           }
         }
 
-        rail.innerHTML = rows.map(renderGold999Card).join(""); 
-restartHomeRoll();
+        rail.innerHTML = rows.map(renderGold999Card).join("");
 
       }catch(e){
         console.warn("Home Gold999 rail error:", e);
       }
     }
-
-
 
     async function loadHome916Rail(){
       const rail = document.getElementById("home916Rail");
@@ -2893,22 +2722,8 @@ restartHomeRoll();
           return;
         }
 
-        const uniqueRows = [];
-const seenCodes = new Set();
+        rail.innerHTML = rows.map(r => render916Card(r, p916)).join("");
 
-rows.forEach(r => {
-  const c = String(r?.code || "").toUpperCase().trim();
-
-  if (!c || seenCodes.has(c)) return;
-
-  seenCodes.add(c);
-  uniqueRows.push(r);
-});
-
-rail.innerHTML = uniqueRows
-  .map(r => render916Card(r, p916))
-  .join("");
-restartHomeRoll();
       }catch(e){
         console.warn("Home 916 rail error:", e);
       }
@@ -4448,317 +4263,30 @@ btnEnable.addEventListener("click", handleEnable);
         deferredPrompt = null;
       });
     })();
-  </script> 
+  </script>
 <script>
-function eaPendingSafe(v){
-  return String(v || "")
-    .replace(/&/g,"&amp;")
-    .replace(/</g,"&lt;")
-    .replace(/>/g,"&gt;")
-    .replace(/"/g,"&quot;")
-    .replace(/'/g,"&#039;");
-}
-
-function eaPendingMoney(n){
-  return "RM " + Number(n || 0).toFixed(2);
-}
-
-function eaPendingPhoneVariants(raw){
-  const d = String(raw || "").replace(/\D/g,"");
-  if (!d) return [];
-
-  const p0 = d.startsWith("0") ? d : (d.startsWith("60") ? "0" + d.slice(2) : "0" + d);
-  const p60 = d.startsWith("60") ? d : (d.startsWith("0") ? "6" + d : "60" + d);
-
-  return Array.from(new Set([raw, d, p0, p60, "+" + p60].filter(Boolean)));
-}
-
-async function eaLoadPendingHero(){
-  const hero = document.getElementById("eaPendingHero");
-  const body = document.getElementById("eaPendingHeroBody");
-
-  if (!hero || !body) return;
-
-  hero.classList.remove("show");
-  body.innerHTML = "";
-
-  try{
-    const auth = window.auth_get && window.auth_get();
-    const phone = auth?.phone || auth?.msisdn || "";
-
-    if (!phone) return;
-
-    const phones = eaPendingPhoneVariants(phone);
-    if (!phones.length) return;
-
-    const { data, error } = await window.sb
-      .from("j916_orders")
-      .select("*")
-      .in("phone", phones)
-      .eq("status", "PENDING")
-      .order("created_at", { ascending:false })
-      .limit(3);
-
-    if (error) throw error;
-
-    const pendingList = Array.isArray(data) ? data : [];
-    if (!pendingList.length) return;
-
-    const codes = pendingList
-      .map(r => String(r.code || "").toUpperCase().trim())
-      .filter(Boolean);
-
-    const imgMap = new Map();
-
-    if (codes.length){
-      try{
-        const { data:itemRows } = await window.sb
-          .from("j916_items")
-          .select(`
-            code,
-            design:j916_designs (
-              name,
-              img1_url,
-              img1
-            )
-          `)
-          .in("code", codes);
-
-        (itemRows || []).forEach(item=>{
-          const c = String(item.code || "").toUpperCase().trim();
-          imgMap.set(c, {
-            name: item?.design?.name || "",
-            img: item?.design?.img1_url || item?.design?.img1 || ""
-          });
-        });
-      }catch(e){}
-    }
-
-    const convertMap = new Map();
-
-    try{
-      const userRes = await window.sb.auth.getUser();
-      const authUid = userRes?.data?.user?.id || auth?.id || auth?.customer_id || "";
-
-      if (authUid && codes.length){
-        const { data:txns } = await window.sb
-          .from("tabung_txn")
-          .select("*")
-          .or(`user_id.eq.${authUid},user_auth_id.eq.${authUid}`)
-          .order("created_at", { ascending:false })
-          .limit(20);
-
-        (txns || []).forEach(t=>{
-          const kind = String(t.kind || t.type || "").toUpperCase();
-          const status = String(t.status || "").toUpperCase();
-
-          if (kind !== "CONVERT_916") return;
-          if (status !== "PENDING" && status !== "REQUESTED" && status !== "APPROVED") return;
-
-          const meta = t.meta || {};
-          const notes = String(t.notes || t.note || meta.notes || meta.note || "");
-
-          let code =
-            String(meta.code || meta.item_code || meta.live_code || "").toUpperCase().trim();
-
-          if (!code){
-            const mCode = notes.match(/(?:Item|LIVE|Code)\s+([A-Z]{2}\d{5,})/i);
-            if (mCode) code = String(mCode[1] || "").toUpperCase().trim();
-          }
-
-          if (!code || !codes.includes(code)) return;
-
-          let topup =
-            Number(meta.topup_rm || meta.topup || meta.balance_rm || meta.pay_rm || 0);
-
-          if (!topup){
-            const mTopup = notes.match(/Topup\s+RM\s*([0-9]+(?:\.[0-9]+)?)/i);
-            if (mTopup) topup = Number(mTopup[1] || 0);
-          }
-
-          if (topup > 0 && !convertMap.has(code)){
-            convertMap.set(code, topup);
-          }
-        });
-      }
-    }catch(e){
-      console.warn("convertMap pending error:", e);
-    }
-
-    const itemsHTML = pendingList.map(order=>{
-      const code = order.code || order.order_code || "-";
-      const codeKey = String(code).toUpperCase().trim();
-      const m = imgMap.get(codeKey) || {};
-
-      const name =
-        m.name ||
-        order.name ||
-        order.item_name ||
-        order.product_name ||
-        "Barang LIVE 916";
-
-      const berat = Number(order.weight_g || 0);
-      const panjang = Number(order.length_cm || 0);
-
-      const total = convertMap.has(codeKey)
-        ? Number(convertMap.get(codeKey) || 0)
-        : Number(order.grand_total_rm ?? order.total_rm ?? order.unit_rm ?? 0);
-
-      const spec = [
-        berat > 0 ? "Berat " + berat.toFixed(2) + "g" : "",
-        panjang > 0 ? "Panjang " + panjang + "cm" : ""
-      ].filter(Boolean).join(" • ");
-
-      const img = m.img || "";
-
-      return `
-        <div class="ea-pending-item" style="margin-bottom:14px;">
-          <img class="ea-pending-img"
-               src="${eaPendingSafe(img || "https://placehold.co/200x200?text=" + encodeURIComponent(code))}"
-               alt="${eaPendingSafe(code)}">
-
-          <div style="min-width:0;flex:1;">
-            <div class="ea-pending-name">${eaPendingSafe(name)}</div>
-            <div class="ea-pending-sub">${eaPendingSafe(code)}</div>
-            <div class="ea-pending-sub">${eaPendingSafe(spec || "Order pending")}</div>
-            <div class="ea-pending-price">${eaPendingMoney(total)}</div>
-          </div>
-        </div>
-      `;
-    }).join("");
-
-    body.innerHTML = `
-      ${itemsHTML}
-
-      <div class="ea-pending-note">
-        Anda ada <b>${pendingList.length}</b> order belum bayar. Sila sambung bayaran dalam Ai-Dan.
-      </div>
-
-      <button type="button" class="ea-pending-btn" onclick="location.href='/chat.html?pending_order=1'">
-        💬 Detail Bayaran Dan Hantar Slip Bayaran Dalam Ai-Dan
-      </button>
-    `;
-
-    hero.classList.add("show");
-
-  }catch(e){
-    console.warn("eaLoadPendingHero error:", e);
-    hero.classList.remove("show");
-  }
-}window.addEventListener("load", ()=>{
-  setTimeout(eaLoadPendingHero, 1300);
-});
-</script>
-<script>
-function setupTouchRollCarousel(selector, speed = 0.45){
+function makeRailRoll(selector){
   const rail = document.querySelector(selector);
-  if(!rail) return;
+  if(!rail || rail.dataset.rollReady === "1") return;
 
-  if(rail.__rollFrame){
-    cancelAnimationFrame(rail.__rollFrame);
-    rail.__rollFrame = null;
-  }
-
-  const oldTrack = rail.querySelector(".ea-rail-track");
-
-  if(oldTrack){
-    const cards = Array.from(oldTrack.querySelectorAll(":scope > .ea-mini-product"));
-    const half = Math.ceil(cards.length / 2);
-
-    rail.innerHTML = cards
-      .slice(0, half)
-      .map(el => el.outerHTML)
-      .join("");
-  }
-
-  const cards = Array.from(rail.querySelectorAll(":scope > .ea-mini-product"));
-  if(cards.length <= 1) return;
-
-  const originalHTML = cards.map(el => el.outerHTML).join("");
+  const html = rail.innerHTML;
 
   rail.innerHTML = `
     <div class="ea-rail-track">
-      ${originalHTML}
-      ${originalHTML}
+      ${html}
+      ${html}
     </div>
   `;
 
-  rail.scrollLeft = 0;
-
-  let paused = false;
-  let isDown = false;
-  let startX = 0;
-  let startScroll = 0;
-  let resumeTimer = null;
-
-  function pauseThenResume(){
-    paused = true;
-    clearTimeout(resumeTimer);
-    resumeTimer = setTimeout(()=> paused = false, 2200);
-  }
-
-  function loop(){
-    if(!paused && !isDown){
-      const halfWidth = rail.scrollWidth / 2;
-      rail.scrollLeft += speed;
-
-      if(rail.scrollLeft >= halfWidth){
-        rail.scrollLeft = 0;
-      }
-    }
-
-    rail.__rollFrame = requestAnimationFrame(loop);
-  }
-
-  rail.onpointerdown = function(e){
-    isDown = true;
-    paused = true;
-    startX = e.clientX;
-    startScroll = rail.scrollLeft;
-    clearTimeout(resumeTimer);
-  };
-
-  rail.onpointermove = function(e){
-    if(!isDown) return;
-
-    const moveX = startX - e.clientX;
-
-    if(Math.abs(moveX) > 6){
-      rail.dataset.dragging = "1";
-    }
-
-    rail.scrollLeft = startScroll + moveX;
-  };
-
-  rail.onpointerup = function(){
-    isDown = false;
-
-    setTimeout(()=>{
-      rail.dataset.dragging = "0";
-    }, 120);
-
-    pauseThenResume();
-  };
-
-  rail.onpointercancel = rail.onpointerup;
-
-  rail.onmouseleave = function(){
-    if(isDown){
-      isDown = false;
-      pauseThenResume();
-    }
-  };
-
-  loop();
-}
-
-function restartHomeRoll(){
-  setupTouchRollCarousel("#homeGold999Rail", 0.45);
-  setupTouchRollCarousel("#home916Rail", 0.45);
+  rail.dataset.rollReady = "1";
 }
 
 window.addEventListener("load", ()=>{
-  setTimeout(restartHomeRoll, 1200);
+  setTimeout(()=>{
+    makeRailRoll("#homeGold999Rail");
+    makeRailRoll("#home916Rail");
+  }, 2500);
 });
-</script></body>
+</script>
+</body>
 </html>

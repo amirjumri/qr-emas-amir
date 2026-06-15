@@ -234,36 +234,73 @@ exports.handler = async (event) => {
     // update row supaya field masuk tempat betul
     // (try eq("id") dulu, kalau tak match, try eq("order_code"))
     if (orderId) {
-      try {
-        const u1 = await sb
-          .from("j916_orders")
-          .update({
-            subtotal_rm: subtotalRm,
-            shipping_rm: ship,
-            pay_disc_rm: payDiscRm,
-            grand_total_rm: grandTotalRm
-          })
-          .eq("id", orderId);
+  try {
+    const paymentDeadlineAt = new Date(Date.now() + (30 * 60 * 1000)).toISOString();
 
-        if (u1.error) {
-          const u2 = await sb
-            .from("j916_orders")
-            .update({
-              subtotal_rm: subtotalRm,
-              shipping_rm: ship,
-              pay_disc_rm: payDiscRm,
-              grand_total_rm: grandTotalRm
-            })
-            .eq("order_code", orderId);
+    const patchTotals = {
+      subtotal_rm: subtotalRm,
+      shipping_rm: ship,
+      pay_disc_rm: payDiscRm,
+      grand_total_rm: grandTotalRm
+    };
 
-          if (u2.error) console.log("WARN j916_orders update (order_code) fail:", u2.error.message);
-        }
-      } catch (e) {
-        console.log("WARN j916_orders update exception:", e?.message || String(e));
-      }
-    } else {
-      console.log("WARN: orderRes tiada id/order_code untuk update totals.");
+    const patchTimer = {
+      payment_deadline_at: paymentDeadlineAt,
+      payment_timer_disabled: false,
+      payment_timer_note: "Auto 30 minit dari LIVE lock"
+    };
+
+    // 1) Update totals dulu — ini sentiasa boleh update
+    const u1 = await sb
+      .from("j916_orders")
+      .update(patchTotals)
+      .eq("id", orderId);
+
+    let timerUpdated = false;
+
+    // 2) Set timer hanya kalau payment_deadline_at masih kosong
+    //    Supaya kalau admin dah tambah masa, tak overwrite balik ke 30 minit
+    if (!u1.error) {
+      const t1 = await sb
+        .from("j916_orders")
+        .update(patchTimer)
+        .eq("id", orderId)
+        .is("payment_deadline_at", null);
+
+      if (!t1.error) timerUpdated = true;
     }
+
+    if (u1.error) {
+      const u2 = await sb
+        .from("j916_orders")
+        .update(patchTotals)
+        .eq("order_code", orderId);
+
+      if (u2.error) {
+        console.log("WARN j916_orders update (order_code) fail:", u2.error.message);
+      } else {
+        const t2 = await sb
+          .from("j916_orders")
+          .update(patchTimer)
+          .eq("order_code", orderId)
+          .is("payment_deadline_at", null);
+
+        if (!t2.error) timerUpdated = true;
+      }
+    }
+
+    console.log("j916 order timer patch:", {
+      orderId,
+      paymentDeadlineAt,
+      timerUpdated
+    });
+
+  } catch (e) {
+    console.log("WARN j916_orders update exception:", e?.message || String(e));
+  }
+} else {
+  console.log("WARN: orderRes tiada id/order_code untuk update totals.");
+}
 
     // ✅ lock item status ke PENDING
     const { error: lockErr } = await sb.rpc("j916_admin_item_status_v1", {

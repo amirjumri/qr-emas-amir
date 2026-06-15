@@ -1,0 +1,697 @@
+<!doctype html>
+<html lang="ms">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>AI Live Comment Scanner • Emas Amir</title>
+
+<script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
+
+<style>
+*{box-sizing:border-box}
+body{
+  margin:0;
+  font-family:system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+  background:#070707;
+  color:#fff;
+}
+.app{
+  min-height:100vh;
+  display:grid;
+  grid-template-columns:.78fr 1.22fr;
+  gap:16px;
+  padding:16px;
+}
+.panel{
+  border:1px solid rgba(234,179,8,.35);
+  border-radius:24px;
+  background:linear-gradient(180deg,#171717,#090909);
+  box-shadow:0 20px 60px rgba(0,0,0,.45);
+  overflow:hidden;
+}
+.head{
+  padding:16px 18px;
+  border-bottom:1px solid rgba(234,179,8,.25);
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+}
+.body{padding:16px}
+.gold{color:#facc15}
+.small{font-size:13px;color:#aaa}
+button{
+  border:0;
+  border-radius:14px;
+  padding:12px 14px;
+  font-weight:900;
+  cursor:pointer;
+}
+.btn-gold{
+  background:linear-gradient(135deg,#facc15,#c084fc);
+  color:#111;
+}
+.btn-dark{
+  background:#1f2937;
+  color:#fff;
+  border:1px solid rgba(255,255,255,.12);
+}
+.btn-green{background:#16a34a;color:#fff}
+.btn-red{background:#dc2626;color:#fff}
+.actions{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:10px;
+  margin-top:12px;
+}
+.card{
+  border:1px solid rgba(250,204,21,.25);
+  background:#111;
+  border-radius:18px;
+  padding:14px;
+  margin-top:12px;
+}
+.tiktok-helper{
+  height:calc(100vh - 120px);
+  border-radius:20px;
+  background:
+    radial-gradient(circle at 50% 20%,rgba(250,204,21,.18),transparent 32%),
+    linear-gradient(135deg,#111,#222);
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  text-align:center;
+  padding:24px;
+}
+.comment-feed{
+  height:calc(100vh - 245px);
+  overflow:auto;
+  padding:10px;
+  border-radius:20px;
+  background:#050505;
+  border:1px solid rgba(250,204,21,.22);
+}
+.comment-item{
+  display:flex;
+  gap:10px;
+  padding:10px 8px;
+  border-bottom:1px solid rgba(255,255,255,.07);
+}
+.avatar{
+  width:34px;
+  height:34px;
+  border-radius:50%;
+  background:linear-gradient(135deg,#facc15,#ec4899);
+  color:#111;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  font-weight:900;
+  flex:0 0 auto;
+}
+.comment-content{flex:1;min-width:0}
+.comment-name{
+  font-weight:900;
+  font-size:13px;
+  color:#fff;
+}
+.comment-text{
+  margin-top:3px;
+  font-size:15px;
+  color:#f3f4f6;
+  line-height:1.35;
+  word-break:break-word;
+}
+.comment-time{
+  font-size:11px;
+  color:#9ca3af;
+  margin-top:4px;
+}
+.scan-status{
+  display:inline-flex;
+  padding:6px 10px;
+  border-radius:999px;
+  font-size:12px;
+  font-weight:900;
+  background:#374151;
+}
+.scan-status.on{background:#16a34a}
+.scan-status.off{background:#dc2626}
+.scan-status.reading{background:#7c3aed}
+.rawbox{
+  display:none;
+  white-space:pre-wrap;
+  max-height:180px;
+  overflow:auto;
+  color:#ddd;
+  font-size:12px;
+}
+.toast{
+  position:fixed;
+  left:50%;
+  bottom:24px;
+  transform:translateX(-50%);
+  background:#111;
+  border:1px solid rgba(250,204,21,.4);
+  padding:12px 16px;
+  border-radius:999px;
+  display:none;
+  z-index:999;
+}
+video,canvas{display:none}
+@media(max-width:900px){
+  .app{grid-template-columns:1fr}
+}
+</style>
+</head>
+
+<body>
+
+<div class="app">
+
+  <section class="panel">
+    <div class="head">
+      <div>
+        <b>TikTok Split Screen</b><br>
+        <span class="small">Buka TikTok di sebelah kiri</span>
+      </div>
+      <span class="gold">LIVE</span>
+    </div>
+
+    <div class="body">
+      <div class="tiktok-helper">
+        <div>
+          <h2>🔴 TikTok LIVE</h2>
+          <p class="small">
+            Buka TikTok Live sebelah kiri. Lepas tu tekan AI Scan Comment dan pilih window TikTok.
+          </p>
+
+          <button class="btn-gold" onclick="openTikTok()">BUKA TIKTOK SPLIT</button>
+          <br><br>
+          <button class="btn-dark" onclick="resizeAssistant()">SET AI ASSISTANT KANAN</button>
+
+          <div class="card">
+            <b class="gold">Cara guna:</b>
+            <p class="small">
+              1. Buka TikTok Live<br>
+              2. Tekan AI Scan Comment<br>
+              3. Pilih window TikTok<br>
+              4. Sistem baca komen sahaja<br>
+              5. Komen sama tidak akan ulang
+            </p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="panel">
+    <div class="head">
+      <div>
+        <b>AI Live Comment Scanner</b><br>
+        <span class="small">Baca komen live seperti feed TikTok</span>
+      </div>
+      <span id="scanBadge" class="scan-status off">OFF</span>
+    </div>
+
+    <div class="body">
+
+      <div class="actions">
+        <button class="btn-green" onclick="startScreenOCR()">AI SCAN COMMENT</button>
+        <button class="btn-red" onclick="stopScreenOCR()">STOP SCAN</button>
+        <button class="btn-dark" onclick="clearComments()">CLEAR COMMENT</button>
+        <button class="btn-gold" onclick="toggleRaw()">RAW OCR</button>
+      </div>
+
+      <div class="card">
+        <b class="gold">Live Comment Detected</b>
+        <div class="small" id="scanInfo">Belum scan.</div>
+      </div>
+
+      <div id="commentFeed" class="comment-feed">
+        <div class="small">Komen yang berjaya dibaca akan keluar di sini.</div>
+      </div>
+
+      <div class="card rawbox" id="rawBox">Belum ada raw OCR.</div>
+
+    </div>
+  </section>
+
+</div>
+
+<div id="toast" class="toast"></div>
+<video id="captureVideo" autoplay muted playsinline></video>
+<canvas id="captureCanvas"></canvas>
+
+<script>
+let ocrTimer = null;
+let mediaStream = null;
+let isOCRBusy = false;
+let scanCount = 0;
+
+let comments = [];
+let seenFingerprints = new Set();
+let recentFingerprints = [];
+
+function openTikTok(){
+  const w = Math.floor(screen.availWidth * 0.48);
+  const h = screen.availHeight;
+
+  window.open(
+    "https://www.tiktok.com",
+    "tiktok_live_window",
+    `width=${w},height=${h},left=0,top=0`
+  );
+
+  resizeAssistant();
+}
+
+function resizeAssistant(){
+  try{
+    const left = Math.floor(screen.availWidth * 0.48);
+    const width = Math.floor(screen.availWidth * 0.52);
+    window.moveTo(left, 0);
+    window.resizeTo(width, screen.availHeight);
+    showToast("AI Assistant disusun sebelah kanan.");
+  }catch(e){
+    showToast("Chrome mungkin block resize. Susun manual.");
+  }
+}
+
+function showToast(text){
+  const t = document.getElementById("toast");
+  t.textContent = text;
+  t.style.display = "block";
+  setTimeout(()=> t.style.display = "none", 2200);
+}
+
+function setBadge(mode, text){
+  const b = document.getElementById("scanBadge");
+  b.className = "scan-status " + mode;
+  b.textContent = text;
+}
+
+async function startScreenOCR(){
+  if(mediaStream){
+    showToast("Scan sudah berjalan.");
+    return;
+  }
+
+  try{
+    showToast("Pilih window TikTok untuk scan.");
+
+    mediaStream = await navigator.mediaDevices.getDisplayMedia({
+      video:{ cursor:"always" },
+      audio:false
+    });
+
+    const video = document.getElementById("captureVideo");
+    video.srcObject = mediaStream;
+
+    await video.play();
+
+    setBadge("on", "SCAN ON");
+    document.getElementById("scanInfo").textContent = "Scan berjalan. Komen sama tidak akan diulang.";
+    showToast("AI Scan Comment ON.");
+
+    runOCROnce();
+    ocrTimer = setInterval(runOCROnce, 4200);
+
+    mediaStream.getVideoTracks()[0].onended = () => stopScreenOCR();
+
+  }catch(err){
+    console.error(err);
+    showToast("Screen capture dibatalkan/gagal.");
+  }
+}
+
+function stopScreenOCR(){
+  if(ocrTimer){
+    clearInterval(ocrTimer);
+    ocrTimer = null;
+  }
+
+  if(mediaStream){
+    mediaStream.getTracks().forEach(t => t.stop());
+    mediaStream = null;
+  }
+
+  isOCRBusy = false;
+  setBadge("off", "OFF");
+  document.getElementById("scanInfo").textContent = "Scan berhenti.";
+  showToast("AI Scan Comment OFF.");
+}
+
+async function runOCROnce(){
+  if(!mediaStream || isOCRBusy) return;
+
+  isOCRBusy = true;
+  setBadge("reading", "READING");
+
+  try{
+    const video = document.getElementById("captureVideo");
+    const canvas = document.getElementById("captureCanvas");
+    const ctx = canvas.getContext("2d");
+
+    if(!video.videoWidth || !video.videoHeight){
+      isOCRBusy = false;
+      setBadge("on", "SCAN ON");
+      return;
+    }
+
+    const vw = video.videoWidth;
+    const vh = video.videoHeight;
+
+    const cropX = Math.floor(vw * 0.18);
+    const cropY = Math.floor(vh * 0.36);
+    const cropW = Math.floor(vw * 0.76);
+    const cropH = Math.floor(vh * 0.54);
+
+    canvas.width = cropW;
+    canvas.height = cropH;
+
+    ctx.drawImage(
+      video,
+      cropX, cropY, cropW, cropH,
+      0, 0, cropW, cropH
+    );
+
+    scanCount++;
+
+    document.getElementById("scanInfo").textContent =
+      "Sedang baca komen... Scan #" + scanCount;
+
+    const result = await Tesseract.recognize(canvas, "eng");
+    const text = cleanOCRText(result?.data?.text || "");
+
+    appendRawLog(text || "OCR tak jumpa text jelas.");
+    processOCRComments(text);
+
+    document.getElementById("scanInfo").textContent =
+      "Scan #" + scanCount + " selesai. Jumlah komen tersimpan: " + comments.length;
+
+  }catch(err){
+    console.error(err);
+    appendRawLog("OCR error. Cuba STOP SCAN dan scan semula.");
+  }
+
+  isOCRBusy = false;
+
+  if(mediaStream){
+    setBadge("on", "SCAN ON");
+  }
+}
+
+function processOCRComments(text){
+  if(!text) return;
+
+  const lines = text
+    .split(/\n+/)
+    .map(x => cleanLine(x))
+    .filter(Boolean)
+    .filter(x => !isSystemLine(x))
+    .filter(x => !isJunkLine(x));
+
+  let currentName = "";
+
+  for(const line of lines){
+    if(isNameLine(line)){
+      currentName = cleanupName(line);
+      continue;
+    }
+
+    if(currentName){
+      addComment(currentName, line);
+      currentName = "";
+      continue;
+    }
+  }
+
+  renderComments();
+}
+
+function isNameLine(line){
+  const s = String(line || "").trim();
+
+  if(!s) return false;
+  if(s.length < 2) return false;
+  if(s.length > 32) return false;
+  if(isSystemLine(s)) return false;
+  if(isJunkLine(s)) return false;
+
+  const wordCount = s.split(/\s+/).length;
+  if(wordCount > 3) return false;
+
+  return /^[a-zA-Z0-9_ .@🌸💎]+$/.test(s);
+}
+
+function isSystemLine(line){
+  const l = String(line || "").toLowerCase().trim();
+
+  if(!l) return true;
+
+  const bad = [
+    "joined",
+    "shared the live",
+    "share the live",
+    "viewer",
+    "viewers",
+    "welcome to tiktok live",
+    "creators must be",
+    "creator must be",
+    "must be 18",
+    "18 or older",
+    "remember to follow",
+    "community guidelines",
+    "interacting with others",
+    "recharge",
+    "send gifts",
+    "type...",
+    "type",
+    "live goal",
+    "tap to",
+    "followed the host",
+    "follow the host",
+    "live center",
+    "stop sharing"
+  ];
+
+  return bad.some(x => l.includes(x));
+}
+
+function isJunkLine(line){
+  const s = String(line || "").trim();
+  const l = s.toLowerCase();
+
+  if(!s) return true;
+  if(s.length <= 1) return true;
+
+  if(/^[^a-zA-Z0-9]+$/.test(s)) return true;
+
+  const junk = [
+    "no. 1",
+    "no.1",
+    "no. 2",
+    "no.2",
+    "no. 3",
+    "no.3",
+    "viewers",
+    "viewer",
+    "stop sharing",
+    "recharge",
+    "http",
+    "www.tiktok.com"
+  ];
+
+  return junk.some(x => l.includes(x));
+}
+
+function addComment(name, msg){
+  name = cleanupName(name);
+  msg = cleanupMsg(msg);
+
+  if(!name || !msg) return;
+  if(msg.length < 2) return;
+  if(isSystemLine(name) || isSystemLine(msg)) return;
+  if(isJunkLine(name) || isJunkLine(msg)) return;
+
+  const fp = fingerprintMsg(msg);
+
+  if(!fp || fp.length < 3) return;
+  if(isDuplicateFingerprint(fp)) return;
+
+  seenFingerprints.add(fp);
+  recentFingerprints.push(fp);
+
+  if(recentFingerprints.length > 300){
+    const old = recentFingerprints.shift();
+    seenFingerprints.delete(old);
+  }
+
+  comments.push({
+    name,
+    msg,
+    time:new Date().toLocaleTimeString("ms-MY", {
+      hour:"2-digit",
+      minute:"2-digit",
+      second:"2-digit"
+    })
+  });
+
+  if(comments.length > 100){
+    comments = comments.slice(-100);
+  }
+}
+
+function fingerprintMsg(s){
+  return String(s || "")
+    .toLowerCase()
+    .replace(/@\s*/g, "")
+    .replace(/[^a-z0-9\u00c0-\u024f]+/g, "")
+    .replace(/huda92/g, "")
+    .replace(/amirofficial/g, "")
+    .replace(/bosemasamirkulim/g, "")
+    .trim();
+}
+
+function isDuplicateFingerprint(fp){
+  if(seenFingerprints.has(fp)) return true;
+
+  for(const old of recentFingerprints){
+    if(isSimilarText(fp, old)) return true;
+  }
+
+  return false;
+}
+
+function isSimilarText(a, b){
+  if(!a || !b) return false;
+
+  if(a === b) return true;
+  if(a.length >= 8 && b.length >= 8){
+    if(a.includes(b) || b.includes(a)) return true;
+  }
+
+  const short = a.length < b.length ? a : b;
+  const long = a.length < b.length ? b : a;
+
+  if(short.length < 6) return false;
+
+  let same = 0;
+  for(let i = 0; i < short.length; i++){
+    if(long.includes(short[i])) same++;
+  }
+
+  return same / short.length >= 0.78;
+}
+
+function renderComments(){
+  const feed = document.getElementById("commentFeed");
+
+  if(!comments.length){
+    feed.innerHTML = `<div class="small">Belum ada komen yang jelas dibaca.</div>`;
+    return;
+  }
+
+  feed.innerHTML = comments.map(c => {
+    const initial = (c.name || "U").charAt(0).toUpperCase();
+
+    return `
+      <div class="comment-item">
+        <div class="avatar">${escapeHTML(initial)}</div>
+        <div class="comment-content">
+          <div class="comment-name">@${escapeHTML(c.name)}</div>
+          <div class="comment-text">${escapeHTML(c.msg)}</div>
+          <div class="comment-time">${escapeHTML(c.time)}</div>
+        </div>
+      </div>
+    `;
+  }).join("");
+
+  feed.scrollTop = feed.scrollHeight;
+}
+
+function appendRawLog(text){
+  const raw = document.getElementById("rawBox");
+
+  const time = new Date().toLocaleTimeString("ms-MY", {
+    hour:"2-digit",
+    minute:"2-digit",
+    second:"2-digit"
+  });
+
+  const old = raw.textContent || "";
+  const next =
+    (old && old !== "Belum ada raw OCR." ? old + "\n\n" : "") +
+    "====================\n" +
+    time +
+    "\n" +
+    text;
+
+  raw.textContent = next;
+  raw.scrollTop = raw.scrollHeight;
+}
+
+function toggleRaw(){
+  const raw = document.getElementById("rawBox");
+  raw.style.display = raw.style.display === "block" ? "none" : "block";
+}
+
+function clearComments(){
+  comments = [];
+  seenFingerprints = new Set();
+  recentFingerprints = [];
+
+  document.getElementById("commentFeed").innerHTML =
+    `<div class="small">Komen yang berjaya dibaca akan keluar di sini.</div>`;
+
+  document.getElementById("rawBox").textContent = "Belum ada raw OCR.";
+  document.getElementById("scanInfo").textContent = "Comment cleared.";
+  showToast("Comment cleared.");
+}
+
+function cleanOCRText(s){
+  return String(s || "")
+    .replace(/[^\S\r\n]+/g, " ")
+    .replace(/\n{3,}/g, "\n\n")
+    .trim();
+}
+
+function cleanLine(s){
+  return String(s || "")
+    .replace(/[|<>~`]/g, "")
+    .replace(/\s+/g, " ")
+    .trim();
+}
+
+function cleanupName(s){
+  let name = String(s || "")
+    .replace(/[^a-zA-Z0-9_ .@🌸💎]/g, "")
+    .replace(/^@/, "")
+    .trim();
+
+  if(!name || name.length < 2) name = "User";
+  if(name.length > 24) name = name.slice(0, 24);
+
+  return name;
+}
+
+function cleanupMsg(s){
+  return String(s || "")
+    .replace(/\s+/g, " ")
+    .trim();
+}
+
+function escapeHTML(s){
+  return String(s || "")
+    .replaceAll("&","&amp;")
+    .replaceAll("<","&lt;")
+    .replaceAll(">","&gt;")
+    .replaceAll('"',"&quot;")
+    .replaceAll("'","&#039;");
+}
+
+renderComments();
+</script>
+
+</body>
+</html>

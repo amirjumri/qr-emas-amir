@@ -2394,7 +2394,55 @@ unsubscribeActiveThread();
       updateBulkNote();
     }
   }
+function getUrlParam(name){
+  return new URLSearchParams(window.location.search).get(name);
+}
 
+async function openChatFromUrl(){
+  const threadId = String(getUrlParam('thread') || '').trim();
+  const phoneRaw = String(getUrlParam('phone') || '').trim();
+  const orderRaw = String(getUrlParam('order') || '').trim();
+
+  const phone = normalizePhone(phoneRaw);
+
+  let row = null;
+
+  // 1) Paling tepat: buka ikut thread_id
+  if (threadId){
+    row = (lastRows || []).find(r => String(r.thread_id || '') === threadId) || null;
+  }
+
+  // 2) Kalau thread tak jumpa, cuba ikut phone
+  if (!row && phone){
+    row = (lastRows || []).find(r => normalizePhone(r.customer_phone || '') === phone) || null;
+  }
+
+  // 3) Kalau masih tak jumpa, cuba ikut order code dalam order_summary
+  if (!row && orderRaw){
+    const ord = orderRaw.toLowerCase();
+    row = (lastRows || []).find(r =>
+      String(r.order_summary || '').toLowerCase().includes(ord)
+    ) || null;
+  }
+
+  if (!row || !row.thread_id){
+    return;
+  }
+
+  currentThreadId = String(row.thread_id || '');
+  currentCustomerPhone = normalizePhone(row.customer_phone || phone || '');
+  currentMessagesHash = "";
+  selectedPaidChatOrderRef = "";
+
+  clearReplyPreview();
+  clearPendingFile();
+
+  renderThreadList(lastRows);
+  setMobileChatMode();
+
+  await loadThread(currentThreadId);
+  await subscribeActiveThread(currentThreadId);
+}
   async function boot(){
     const ok = await adminGuard.require({});
     if (!ok) return;
@@ -2410,6 +2458,7 @@ unsubscribeActiveThread();
     syncResponsiveLayout();
 connectAdminChatSocket();
 await loadList();
+await openChatFromUrl();
 startTimers();
   }
 

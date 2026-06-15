@@ -1,0 +1,479 @@
+<!doctype html>
+<html lang="ms">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <title>Pengesahan Tabung Emas • Emas Amir</title>
+
+  <link rel="stylesheet" href="/global.css">
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="/auth.js?v=13.1"></script>
+
+  <style>
+    *{box-sizing:border-box}
+    body{
+      margin:0;
+      background:#f6f7fb;
+      font-family:system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+      color:#111827;
+    }
+    .page{
+      max-width:520px;
+      margin:0 auto;
+      min-height:100vh;
+      background:#fff;
+      padding:18px 16px 40px;
+    }
+    .hero{
+      background:linear-gradient(135deg,#111827,#064e3b);
+      color:#fff;
+      border-radius:24px;
+      padding:22px;
+      box-shadow:0 14px 35px rgba(0,0,0,.18);
+    }
+    .badge{
+      display:inline-flex;
+      padding:6px 10px;
+      border-radius:999px;
+      background:rgba(250,204,21,.18);
+      color:#fde68a;
+      font-size:12px;
+      font-weight:800;
+      margin-bottom:10px;
+    }
+    h1{margin:0;font-size:24px;line-height:1.1}
+    .sub{margin:8px 0 0;color:#d1fae5;font-size:14px;line-height:1.45}
+    .card{
+      margin-top:14px;
+      border:1px solid #e5e7eb;
+      border-radius:20px;
+      padding:16px;
+      background:#fff;
+      box-shadow:0 8px 22px rgba(15,23,42,.06);
+    }
+    .step-title{
+      font-weight:900;
+      font-size:16px;
+      margin-bottom:6px;
+    }
+    .muted{
+      color:#6b7280;
+      font-size:13px;
+      line-height:1.45;
+    }
+    .preview{
+      width:100%;
+      min-height:170px;
+      border:2px dashed #d1d5db;
+      border-radius:18px;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      overflow:hidden;
+      background:#f9fafb;
+      color:#6b7280;
+      font-weight:700;
+      margin-top:12px;
+    }
+    .preview img{
+      width:100%;
+      height:auto;
+      display:block;
+    }
+    .btn{
+      width:100%;
+      border:0;
+      border-radius:16px;
+      padding:14px 16px;
+      font-weight:900;
+      cursor:pointer;
+      margin-top:12px;
+      font-size:15px;
+    }
+    .btn-main{
+      background:linear-gradient(135deg,#f59e0b,#facc15);
+      color:#111827;
+    }
+    .btn-dark{
+      background:#111827;
+      color:#fff;
+    }
+    .btn-soft{
+      background:#f3f4f6;
+      color:#111827;
+    }
+    input{
+      width:100%;
+      border:1px solid #d1d5db;
+      border-radius:14px;
+      padding:13px 14px;
+      margin-top:8px;
+      font-size:15px;
+    }
+    label{
+      display:block;
+      font-size:13px;
+      font-weight:800;
+      margin-top:12px;
+    }
+    .status{
+      margin-top:12px;
+      padding:12px 14px;
+      border-radius:16px;
+      font-size:13px;
+      font-weight:800;
+      background:#fef3c7;
+      color:#92400e;
+    }
+    .status.ok{
+      background:#dcfce7;
+      color:#166534;
+    }
+    .status.err{
+      background:#fee2e2;
+      color:#991b1b;
+    }
+    .hidden{display:none}
+  </style>
+</head>
+
+<body>
+<div class="page">
+  <div class="hero">
+    <div class="badge">PENGESAHAN TABUNG EMAS</div>
+    <h1>Verify akaun sebelum guna Tabung</h1>
+    <div class="sub">
+      Untuk keselamatan akaun dan transaksi emas, sila ambil gambar IC depan dan selfie muka dengan jelas.
+    </div>
+  </div>
+
+  <div id="existingStatus" class="status hidden"></div>
+
+  <div class="card">
+    <div class="step-title">1. Ambil gambar IC depan</div>
+    <div class="muted">
+      Pastikan IC cukup terang, tidak blur dan semua nombor jelas. Sistem akan cuba kemaskan gambar sebelum upload.
+    </div>
+
+    <input id="icInput" type="file" accept="image/*" capture="environment" class="hidden">
+    <button class="btn btn-main" onclick="document.getElementById('icInput').click()">📷 Ambil / Upload IC Depan</button>
+
+    <div id="icPreview" class="preview">Belum ada gambar IC</div>
+  </div>
+
+  <div class="card">
+    <div class="step-title">2. Ambil selfie muka</div>
+    <div class="muted">
+      Pastikan muka jelas, tidak pakai mask dan cahaya cukup. Selfie akan digunakan untuk semakan keselamatan Tabung.
+    </div>
+
+    <input id="selfieInput" type="file" accept="image/*" capture="user" class="hidden">
+    <button class="btn btn-main" onclick="document.getElementById('selfieInput').click()">🤳 Ambil Selfie</button>
+
+    <div id="selfiePreview" class="preview">Belum ada selfie</div>
+  </div>
+
+  <div class="card">
+    <div class="step-title">3. Semak maklumat</div>
+    <div class="muted">
+      Jika AI OCR belum aktif, isi nama dan nombor IC secara manual dahulu. Nanti kita boleh sambung auto baca IC.
+    </div>
+
+    <label>Nama penuh seperti IC</label>
+    <input id="fullName" placeholder="Contoh: MUHAMMAD AMIR BIN ...">
+
+    <label>Nombor IC</label>
+    <input id="icNo" placeholder="Contoh: 900101-02-1234">
+
+    <button id="submitBtn" class="btn btn-dark" onclick="submitEkyc()">Hantar Pengesahan</button>
+    <div id="msg" class="status hidden"></div>
+  </div>
+</div>
+
+<script>
+  const SUPABASE_URL = window.SUPABASE_URL || "PASTE_SUPABASE_URL";
+  const SUPABASE_ANON_KEY = window.SUPABASE_ANON_KEY || "PASTE_SUPABASE_ANON_KEY";
+  const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+  let currentCustomer = null;
+  let icBlob = null;
+  let selfieBlob = null;
+
+  function showMsg(text, type){
+    const el = document.getElementById("msg");
+    el.className = "status " + (type || "");
+    el.textContent = text;
+    el.classList.remove("hidden");
+  }
+
+  function cleanIc(v){
+    return String(v || "").replace(/[^\d]/g,"");
+  }
+
+  function formatIc(v){
+    const n = cleanIc(v);
+    if (n.length !== 12) return v;
+    return n.slice(0,6) + "-" + n.slice(6,8) + "-" + n.slice(8);
+  }
+
+  async function getCurrentCustomer(){
+    if (window.EA_AUTH && typeof window.EA_AUTH.getCustomer === "function"){
+      return await window.EA_AUTH.getCustomer();
+    }
+
+    const raw = localStorage.getItem("customer") || localStorage.getItem("ea_customer");
+    if (raw){
+      try { return JSON.parse(raw); } catch(e){}
+    }
+
+    return null;
+  }
+
+  async function imageFileToCleanBlob(file){
+    return new Promise((resolve,reject)=>{
+      const img = new Image();
+      img.onload = ()=>{
+        const maxW = 1400;
+        const scale = Math.min(1, maxW / img.width);
+        const w = Math.round(img.width * scale);
+        const h = Math.round(img.height * scale);
+
+        const canvas = document.createElement("canvas");
+        canvas.width = w;
+        canvas.height = h;
+
+        const ctx = canvas.getContext("2d");
+        ctx.drawImage(img,0,0,w,h);
+
+        canvas.toBlob((blob)=>{
+          if (!blob) reject(new Error("Gagal proses gambar."));
+          else resolve(blob);
+        }, "image/jpeg", 0.86);
+      };
+      img.onerror = reject;
+      img.src = URL.createObjectURL(file);
+    });
+  }
+
+  function setPreview(id, blob){
+    const url = URL.createObjectURL(blob);
+    document.getElementById(id).innerHTML = '<img src="' + url + '" alt="preview">';
+  }
+
+  document.getElementById("icInput").addEventListener("change", async (e)=>{
+    const file = e.target.files && e.target.files[0];
+    if (!file) return;
+
+    try{
+      icBlob = await imageFileToCleanBlob(file);
+      setPreview("icPreview", icBlob);
+      await tryOcrIc(icBlob);
+    }catch(err){
+      showMsg("Gagal proses gambar IC. Cuba ambil semula.", "err");
+    }
+  });
+
+  document.getElementById("selfieInput").addEventListener("change", async (e)=>{
+    const file = e.target.files && e.target.files[0];
+    if (!file) return;
+
+    try{
+      selfieBlob = await imageFileToCleanBlob(file);
+      setPreview("selfiePreview", selfieBlob);
+    }catch(err){
+      showMsg("Gagal proses selfie. Cuba ambil semula.", "err");
+    }
+  });
+
+  async function tryOcrIc(blob){
+    try{
+      const fd = new FormData();
+      fd.append("ic_front", blob, "ic-front.jpg");
+
+      const res = await fetch("/api/ekyc-ocr", {
+        method:"POST",
+        body:fd
+      });
+
+      if (!res.ok) return;
+
+      const data = await res.json();
+
+      if (data && data.name){
+        document.getElementById("fullName").value = data.name;
+      }
+
+      if (data && data.ic_no){
+        document.getElementById("icNo").value = formatIc(data.ic_no);
+      }
+    }catch(e){
+      console.warn("OCR belum aktif / gagal:", e);
+    }
+  }
+
+  async function checkExisting(){
+    currentCustomer = await getCurrentCustomer();
+
+    if (!currentCustomer){
+      const box = document.getElementById("existingStatus");
+      box.textContent = "Sila login dahulu sebelum buat Pengesahan Tabung.";
+      box.className = "status err";
+      box.classList.remove("hidden");
+      return;
+    }
+
+    const customerId = currentCustomer.id || currentCustomer.customer_id || null;
+    const phone = currentCustomer.phone || currentCustomer.phone_e164 || currentCustomer.e164 || null;
+
+    let query = supabase.from("customer_ekyc")
+      .select("*")
+      .order("created_at", { ascending:false })
+      .limit(1);
+
+    if (customerId){
+      query = query.eq("customer_id", customerId);
+    }else if (phone){
+      query = query.eq("phone", phone);
+    }else{
+      return;
+    }
+
+    const { data, error } = await query;
+
+    if (error || !data || !data.length) return;
+
+    const row = data[0];
+    const box = document.getElementById("existingStatus");
+    box.classList.remove("hidden");
+
+    if (row.status === "VERIFIED" || row.status === "AUTO_VERIFIED"){
+      box.className = "status ok";
+      box.textContent = "Akaun anda sudah VERIFIED untuk Tabung Emas.";
+    }else if (row.status === "REJECTED"){
+      box.className = "status err";
+      box.textContent = "Pengesahan sebelum ini ditolak. Sila upload semula IC dan selfie yang lebih jelas.";
+    }else{
+      box.className = "status";
+      box.textContent = "Pengesahan anda sedang disemak admin.";
+    }
+  }
+
+  async function uploadPrivate(path, blob){
+    const { error } = await supabase.storage
+      .from("ekyc-private")
+      .upload(path, blob, {
+        cacheControl:"3600",
+        upsert:true,
+        contentType:"image/jpeg"
+      });
+
+    if (error) throw error;
+    return path;
+  }
+
+  async function submitEkyc(){
+    const btn = document.getElementById("submitBtn");
+
+    if (!currentCustomer){
+      showMsg("Sila login dahulu.", "err");
+      return;
+    }
+
+    if (!icBlob){
+      showMsg("Sila ambil gambar IC depan dahulu.", "err");
+      return;
+    }
+
+    if (!selfieBlob){
+      showMsg("Sila ambil selfie dahulu.", "err");
+      return;
+    }
+
+    const fullName = document.getElementById("fullName").value.trim();
+    const icNo = formatIc(document.getElementById("icNo").value.trim());
+
+    if (!fullName){
+      showMsg("Sila isi nama penuh.", "err");
+      return;
+    }
+
+    if (cleanIc(icNo).length !== 12){
+      showMsg("Nombor IC mesti cukup 12 digit.", "err");
+      return;
+    }
+
+    btn.disabled = true;
+    btn.textContent = "Sedang hantar...";
+
+    try{
+      const customerId = currentCustomer.id || currentCustomer.customer_id || null;
+      const phone = currentCustomer.phone || currentCustomer.phone_e164 || currentCustomer.e164 || null;
+      const stamp = Date.now();
+      const folder = customerId || cleanIc(icNo) || phone || "unknown";
+
+      const icPath = "customers/" + folder + "/ic-front-" + stamp + ".jpg";
+      const selfiePath = "customers/" + folder + "/selfie-" + stamp + ".jpg";
+
+      await uploadPrivate(icPath, icBlob);
+      await uploadPrivate(selfiePath, selfieBlob);
+
+      let faceScore = 0;
+      let faceStatus = "NOT_CHECKED";
+
+      try{
+        const res = await fetch("/api/ekyc-face-match", {
+          method:"POST",
+          headers:{ "Content-Type":"application/json" },
+          body:JSON.stringify({
+            ic_front_path: icPath,
+            selfie_path: selfiePath
+          })
+        });
+
+        if (res.ok){
+          const data = await res.json();
+          faceScore = Number(data.score || 0);
+          faceStatus = data.status || "CHECKED";
+        }
+      }catch(e){
+        console.warn("Face match belum aktif / gagal:", e);
+      }
+
+      const finalStatus = faceScore >= 90 ? "PENDING_REVIEW" : "PENDING";
+
+      const payload = {
+        customer_id: customerId,
+        phone: phone,
+        full_name: fullName,
+        ic_no: icNo,
+        ic_front_path: icPath,
+        selfie_path: selfiePath,
+        ocr_name: fullName,
+        ocr_ic: icNo,
+        ocr_confidence: 0,
+        face_match_score: faceScore,
+        face_match_status: faceStatus,
+        status: finalStatus,
+        updated_at: new Date().toISOString()
+      };
+
+      const { error } = await supabase
+        .from("customer_ekyc")
+        .insert(payload);
+
+      if (error) throw error;
+
+      showMsg("Berjaya dihantar. Admin akan semak pengesahan Tabung anda.", "ok");
+      btn.textContent = "Sudah Dihantar";
+    }catch(err){
+      console.error(err);
+      showMsg("Gagal hantar pengesahan. Sila cuba lagi.", "err");
+      btn.disabled = false;
+      btn.textContent = "Hantar Pengesahan";
+    }
+  }
+
+  checkExisting();
+</script>
+</body>
+</html>

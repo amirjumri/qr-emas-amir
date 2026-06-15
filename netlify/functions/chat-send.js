@@ -4,6 +4,7 @@ const { routeIntent } = require("./ai_router.js");
 const payflow = require("./chat-payflow.js");
 const gold999 = require("./chat-gold999.js");
 const crypto = require("crypto");
+const webpush = require("web-push");
 
 
 function looksLikePaidProof(text) {
@@ -65,6 +66,259 @@ function normalizePhone(raw) {
     };
   }
   return { ok: true, e164: d, country: isMY ? "MY" : "SG" };
+}
+
+function normalizePhoneText(raw) {
+  let d = String(raw || "").replace(/\D+/g, "");
+  if (!d) return "";
+  if (d.startsWith("00")) d = d.slice(2);
+  if (d.startsWith("0")) d = "60" + d.slice(1);
+  if (d.length === 8 && (d.startsWith("8") || d.startsWith("9"))) d = "65" + d;
+  return d;
+}
+
+function phoneVariantsText(raw) {
+  const d = normalizePhoneText(raw);
+  if (!d) return [];
+  const out = new Set([d, "+" + d]);
+  if (d.startsWith("60")) out.add("0" + d.slice(2));
+  return Array.from(out);
+}
+
+function cutPushText(s, n = 120) {
+  const t = String(s || "").trim();
+  if (!t) return "";
+  return t.length > n ? t.slice(0, n - 3) + "..." : t;
+}
+
+async function sendPushToOne(subscription, payload) {
+  try {
+    await webpush.sendNotification(subscription, JSON.stringify(payload));
+    return { ok: true };
+  } catch (e) {
+    const code = Number(e?.statusCode || 0);
+    if (code === 404 || code === 410) {
+      return { ok: false, expired: true, error: e?.message || String(e) };
+    }
+    return { ok: false, expired: false, error: e?.message || String(e) };
+  }
+}
+
+async function notifyAdminsCustomerChat({ supabase, threadId, customerPhone, message, attachment }) {
+  const VAPID_PUBLIC_KEY = String(process.env.VAPID_PUBLIC_KEY || "").trim();
+  const VAPID_PRIVATE_KEY = String(process.env.VAPID_PRIVATE_KEY || "").trim();
+  const VAPID_SUBJECT = String(process.env.VAPID_SUBJECT || "mailto:support@emasamir.app").trim();
+
+  if (VAPID_PUBLIC_KEY && VAPID_PRIVATE_KEY) {
+    webpush.setVapidDetails(VAPID_SUBJECT, VAPID_PUBLIC_KEY, VAPID_PRIVATE_KEY);
+  }
+
+  const adminQ = await supabase
+    .from("admin_users")
+    .select("phone,is_active")
+    .eq("is_active", true);
+
+  if (adminQ.error) throw adminQ.error;
+
+  const adminPhones = (adminQ.data || [])
+    .map(a => normalizePhoneText(a.phone))
+    .filter(Boolean);
+
+  const allAdminPhoneVariants = Array.from(
+    new Set(adminPhones.flatMap(p => phoneVariantsText(p)))
+  );
+
+  if (!allAdminPhoneVariants.length) {
+    return { web_sent: 0, web_failed: 0, web_expired: 0, ios_sent: 0, ios_failed: 0, android_sent: 0, android_failed: 0 };
+  }
+
+  const bodyText = message
+    ? cutPushText(message, 120)
+    : (attachment?.name ? `Customer hantar fail: ${attachment.name}` : "Customer masuk chat");
+
+  const payload = {
+    title: "Chat Customer Masuk",
+    body: `${customerPhone}: ${bodyText || "Customer masuk chat"}`,
+    url: `/admin-chat.html?thread=${encodeURIComponent(threadId)}`,
+    deeplink: `/admin-chat.html?thread=${encodeURIComponent(threadId)}`,
+    tag: `ea-admin-chat-${threadId}`,
+    icon: "/icons/icon-192.png",
+    badge: "/icons/icon-192.png"
+  };
+
+  let webSent = 0, webFailed = 0, webExpired = 0;
+  let iosSent = 0, iosFailed = 0;
+  let androidSent = 0, androidFailed = 0;
+
+  if (VAPID_PUBLIC_KEY && VAPID_PRIVATE_KEY) {
+    const webQ = await supabase
+      .from("chat_push_subscriptions")
+      .select("id,customer_phone,endpoint,p256dh,auth,is_active,created_at")
+      .in("customer_phone", allAdminPhoneVariants)
+      .eq("is_active", true)
+      .order("created_at", { ascending: false })
+      .limit(100);
+
+    if (webQ.error) throw webQ.error;
+
+    const seenEndpoints = new Set();
+
+    for (const row of (webQ.data || [])) {
+      const endpoint = String(row.endpoint || "").trim();
+      if (!endpoint || seenEndpoints.has(endpoint)) continue;
+      seenEndpoints.add(endpoint);
+
+      const result = await sendPushToOne({
+        endpoint,
+        keys: {
+          p256dh: String(row.p256dh || ""),
+          auth: String(row.auth || "")
+        }
+      }, payload);
+
+      if (result.ok) {
+        webSent++;
+      } else if (result.expired) {
+        webExpired++;
+        await supabase
+          .from("chat_push_subscriptions")
+          .update({ is_active: false, updated_at: new Date().toISOString() })
+          .eq("id", row.id);
+      } else {
+        webFailed++;
+      }
+    }
+  }
+
+  const iosQ = await supabase
+    .from("chat_device_tokens")
+    .select("id,customer_phone,device_token,platform,is_active,updated_at")
+    .in("customer_phone", allAdminPhoneVariants)
+    .eq("is_active", true)
+    .eq("platform", "ios")
+    .order("updated_at", { ascending: false })
+    .limit(100);
+
+  if (iosQ.error) throw iosQ.error;
+
+  const seenIos = new Set();
+
+  for (const row of (iosQ.data || [])) {
+    const deviceToken = String(row.device_token || "").trim();
+    if (!deviceToken || seenIos.has(deviceToken)) continue;
+    seenIos.add(deviceToken);
+
+    try {
+      const res = await fetch("https://emasamir.app/.netlify/functions/send-push", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          deviceToken,
+          title: payload.title,
+          body: payload.body,
+          data: { url: payload.url, thread_id: threadId }
+        })
+      });
+
+      const j = await res.json().catch(() => ({}));
+      if (j?.success) iosSent++;
+      else iosFailed++;
+    } catch {
+      iosFailed++;
+    }
+  }
+
+  const androidQ = await supabase
+    .from("chat_device_tokens")
+    .select("id,customer_phone,device_token,platform,is_active,updated_at")
+    .in("customer_phone", allAdminPhoneVariants)
+    .eq("is_active", true)
+    .eq("platform", "android")
+    .order("updated_at", { ascending: false })
+    .limit(100);
+
+  if (androidQ.error) throw androidQ.error;
+
+  const seenAndroid = new Set();
+
+  for (const row of (androidQ.data || [])) {
+    const deviceToken = String(row.device_token || "").trim();
+    if (!deviceToken || seenAndroid.has(deviceToken)) continue;
+    seenAndroid.add(deviceToken);
+
+    try {
+      const res = await fetch("https://earnest-bombolone-4d2e8a.netlify.app/.netlify/functions/send-push-android", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          deviceToken,
+          platform: "fcm",
+          token_type: "fcm",
+          title: payload.title,
+          body: payload.body,
+          url: payload.url
+        })
+      });
+
+      const j = await res.json().catch(() => ({}));
+      if (j?.success) androidSent++;
+      else androidFailed++;
+    } catch {
+      androidFailed++;
+    }
+  }
+
+  return {
+    web_sent: webSent,
+    web_failed: webFailed,
+    web_expired: webExpired,
+    ios_sent: iosSent,
+    ios_failed: iosFailed,
+    android_sent: androidSent,
+    android_failed: androidFailed
+  };
+} 
+
+async function shouldNotifyAdminAiMode({ supabase, customerPhone, msg, fileUrl, fileMime, body }) {
+  const t = String(msg || "").toLowerCase();
+
+  if (fileUrl) return true;
+
+  if (
+    looksLikePaidProof(msg) ||
+    t.includes("pending") ||
+    t.includes("order") ||
+    t.includes("admin") ||
+    t.includes("tolong check") ||
+    t.includes("semak") ||
+    t.includes("bayaran") ||
+    t.includes("dah bayar") ||
+    t.includes("sudah bayar")
+  ) {
+    return true;
+  }
+
+  if (
+    String(body?.action || "").toLowerCase() === "live_checkout_submit" ||
+    isLiveLockRequest(body)
+  ) {
+    return true;
+  }
+
+  const variants = phoneVariantsText(customerPhone);
+
+  if (variants.length) {
+    const q = await supabase
+      .from("j916_orders")
+      .select("id")
+      .in("phone", variants)
+      .eq("status", "PENDING")
+      .limit(1);
+
+    if (!q.error && q.data && q.data.length) return true;
+  }
+
+  return false;
 }
 
 function parsePriceRM(text) {
@@ -1176,16 +1430,57 @@ await supabase
     last_customer_message_at: nowIso
   })
   .eq("id", threadId);
-
 // 🔥 ADMIN MODE: simpan mesej customer, tapi AI jangan balas
 if (adminMode) {
+  let adminNotify = null;
+
+  try {
+    adminNotify = await notifyAdminsCustomerChat({
+      supabase,
+      threadId,
+      customerPhone: p.e164,
+      message: msg || "(lampiran)",
+      attachment: fileUrl ? { url: fileUrl, name: fileName, mime: fileMime } : null
+    });
+  } catch (notifyErr) {
+    console.error("notify admin customer chat error:", notifyErr);
+  }
+
   return json(200, {
     ok: true,
     thread_id: threadId,
     reply: "",
     action: "admin_mode_hold",
-    meta: { admin_mode: true, no_ai_reply: true }
+    meta: {
+      admin_mode: true,
+      no_ai_reply: true,
+      admin_notify: adminNotify
+    }
   });
+}
+
+// 🔔 AI-DAN MODE: notify admin hanya jika chat penting / ada order / pending / bayaran
+try {
+  const aiNeedNotifyAdmin = await shouldNotifyAdminAiMode({
+    supabase,
+    customerPhone: p.e164,
+    msg,
+    fileUrl,
+    fileMime,
+    body
+  });
+
+  if (aiNeedNotifyAdmin) {
+    await notifyAdminsCustomerChat({
+      supabase,
+      threadId,
+      customerPhone: p.e164,
+      message: msg || "(lampiran / order masuk)",
+      attachment: fileUrl ? { url: fileUrl, name: fileName, mime: fileMime } : null
+    });
+  }
+} catch (notifyErr) {
+  console.error("notify admin ai-mode important chat error:", notifyErr);
 }
 
  const tLower = String(msg || "").toLowerCase();
@@ -1257,7 +1552,19 @@ if (String(body.action || "").toLowerCase() === "live_checkout_submit") {
   const finalAtome = Math.max(0, livePrice + shipFee - postageDiscount);
 
   const finalPay = payMethod === "ATOME" ? finalAtome : finalCash;
-  const cashbackUse = payMethod === "ATOME" ? 0 : cashback;
+const cashbackUse = payMethod === "ATOME" ? 0 : cashback;
+
+// TABUNG + TOPUP display sahaja untuk Ai-Dan
+const tabungUnitsUsed = Number(body.tabung_units_used || 0);
+const tabungValueRm = Number(body.tabung_value_rm || 0);
+const topupRm = Number(body.topup_rm || 0);
+const tabungRequestId = String(body.tabung_request_id || "").trim();
+
+const isTabungTopup = payMethod === "TABUNG_TOPUP" && tabungValueRm > 0;
+
+const customerPay = isTabungTopup
+  ? Math.max(0, topupRm)
+  : finalPay;
 
   const weight = Number(item.weight_g || 0);
   if (!weight) return json(400, { ok:false, error:"Berat item tidak sah." });
@@ -1319,9 +1626,21 @@ if (String(body.action || "").toLowerCase() === "live_checkout_submit") {
     `• Item 1: ${fmtRM(livePrice)} (${code} / ${name} / W:${weight}gm)${cutLine}\n` +
     shipLine +
     `• Jumlah asal: *${fmtRM(livePrice + shipFee)}*\n` +
-    (postageDiscount ? `• Diskaun postage: *-${fmtRM(postageDiscount)}*\n` : ``) +
-    `• Cashback: *-${fmtRM(cashbackUse)}*\n\n` +
-    `✅ Jumlah akhir perlu dibayar: *${fmtRM(finalPay)}*\n\n` +
+(postageDiscount ? `• Diskaun postage: *-${fmtRM(postageDiscount)}*\n` : ``) +
+`• Cashback: *-${fmtRM(cashbackUse)}*\n` +
+(
+  isTabungTopup
+    ? `• Tolak Tabung: *-${fmtRM(tabungValueRm)}* (${tabungUnitsUsed} unit)\n`
+    : ``
+) +
+(
+  isTabungTopup && tabungRequestId
+    ? `• Request tabung: *${tabungRequestId}*\n`
+    : ``
+) +
+`\n` +
+`✅ Jumlah akhir perlu dibayar: *${fmtRM(customerPay)}*\n\n` +
+    
     (payMethod === "ATOME"
       ? `Link Atome:\n${siteUrl}/qr-atome.html\n\n`
       : `Bank: ${bankName}\nNama Akaun: ${bankAccName}\nNo Akaun: ${bankAccNo}\n\nQR:\n${bankQrUrl}\n\n`
@@ -1353,7 +1672,11 @@ if (String(body.action || "").toLowerCase() === "live_checkout_submit") {
       live_checkout_done: true,
       method: payMethod,
       orderCode,
-      final_pay: finalPay
+      final_pay: customerPay,
+order_full_amount: finalPay,
+tabung_value_rm: tabungValueRm,
+tabung_units_used: tabungUnitsUsed,
+tabung_request_id: tabungRequestId
     }
   });
 

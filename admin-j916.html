@@ -65,12 +65,26 @@
     </div>
   </div>
 
-  <div class="input-group my-3">
-    <span class="input-group-text">Cari</span>
-    <input id="searchBox" class="form-control" placeholder="Nama / Phone / Order ID / Bill ID">
-    <button id="refreshBtn" class="btn btn-outline-secondary" type="button">Refresh</button>
-  </div>
+<div class="input-group my-3">
+  <span class="input-group-text">Cari</span>
+  <input id="searchBox" class="form-control" placeholder="Nama / Phone / Order ID / Bill ID">
 
+  <button id="refreshBtn" class="btn btn-outline-secondary" type="button">
+    Refresh
+  </button>
+
+  <div class="input-group-text bg-white">
+    <div class="form-check form-switch m-0">
+      <input class="form-check-input"
+             type="checkbox"
+             id="onsendSwitch">
+      <label class="form-check-label ms-2"
+             for="onsendSwitch">
+        OnSend
+      </label>
+    </div>
+  </div>
+</div>
   <!-- TABLE -->
   <div class="table-responsive">
     <table class="table table-sm align-middle table-sticky">
@@ -436,7 +450,11 @@ async function apiOrdersList({ page, pageSize, filter, q }) {
       split_id: null,
       split_code: null,
       split_url: null,
-      manual_split_summary: null
+      manual_split_summary: null,
+payment_deadline_at: r.payment_deadline_at || null,
+payment_timer_disabled: r.payment_timer_disabled === true,
+payment_timer_note: r.payment_timer_note || null,
+auto_cancelled_at: r.auto_cancelled_at || null
     };
   };
 
@@ -1165,7 +1183,12 @@ window.generateAwbFromBtn = async function(btn){
       '*Untuk claim warranty, cust wajib bagi full video unboxing dan gambar. Warranty hanya 2 hari sahaja selepas barang sampai ke tangan cust*'
     ].join('\n');
 
-    const sent = await sendWA(order.phone, msg);
+    const sent = await sendCustomerBoth(order.phone, msg, {
+  source: "admin_j916",
+  type: "tracking_awb",
+  order_code: order.order_code,
+  awb
+});
 
     if (!sent.ok){
       console.warn('Gagal hantar WA AWB', sent);
@@ -1265,6 +1288,108 @@ async function sendWA(msisdn,text){
     return {ok:(r.ok && j.success===true)};
   }catch(e){ return {ok:false}; }
 }
+ 
+
+async function sendAidanChatByPhone(phone, message, meta = {}){
+  try{
+    const a = (window.auth_get && window.auth_get()) || {};
+    const adminPhone = normalize(a.phone || a.msisdn || a.username || "");
+
+    const r = await fetch("/.netlify/functions/admin-chat-send-by-phone", {
+      method: "POST",
+      headers: { "Content-Type":"application/json" },
+      body: JSON.stringify({
+        admin_phone: adminPhone,
+        customer_phone: phone,
+        message,
+        meta
+      })
+    });
+
+    const j = await r.json().catch(() => ({}));
+    return { ok: r.ok && j.ok === true, data: j };
+  }catch(e){
+    console.warn("Gagal hantar ke chat Ai-Dan:", e);
+    return { ok:false, error:e };
+  }
+}
+
+async function getOnSendEnabled(){
+  try{
+    const { data, error } = await sb
+      .from('notification_settings')
+      .select('onsend_enabled')
+      .eq('id', 1)
+      .maybeSingle();
+
+    if (error) throw error;
+    return data?.onsend_enabled !== false;
+  }catch(e){
+    console.warn('Gagal baca setting OnSend:', e);
+    return true;
+  }
+} 
+
+async function loadOnSendSwitch(){
+  try{
+    const enabled = await getOnSendEnabled();
+
+    const sw = document.getElementById('onsendSwitch');
+    if (!sw) return;
+
+    sw.checked = enabled;
+
+    sw.onchange = async function(){
+      try{
+        const val = !!sw.checked;
+
+        const { error } = await sb
+          .from('notification_settings')
+          .upsert({
+            id: 1,
+            onsend_enabled: val,
+            updated_at: new Date().toISOString()
+          });
+
+        if (error) throw error;
+
+        showToast(
+          val
+            ? 'OnSend diaktifkan'
+            : 'OnSend dimatikan'
+        );
+
+      }catch(e){
+        console.error(e);
+        sw.checked = !sw.checked;
+        alert('Gagal simpan setting.');
+      }
+    };
+
+  }catch(e){
+    console.error(e);
+  }
+}
+
+async function sendCustomerBoth(phone, message, meta = {}){
+  // ✅ Chat Ai-Dan wajib jalan
+  const chat = await sendAidanChatByPhone(phone, message, meta);
+
+  // ✅ OnSend ikut setting
+  let wa = { ok:false, skipped:true };
+
+  const onsendOn = await getOnSendEnabled();
+  if (onsendOn){
+    wa = await sendWA(phone, message);
+  }
+
+  return {
+    ok: chat.ok || wa.ok,
+    wa,
+    chat,
+    onsend_enabled: onsendOn
+  };
+}
 
 function buildMsg(r){
   const itemLine=[r.code?('#'+r.code):null,r.item_name||null,r.weight_g?(`${r.weight_g.toFixed(2)}g`):null]
@@ -1345,7 +1470,11 @@ window.sendUpdateFromBtn = async function(btn){
 
   try{
     const msg = buildFollowupUpdateMsg(r);
-    const sent = await sendWA(r.phone, msg);
+    const sent = await sendCustomerBoth(r.phone, msg, {
+  source: "admin_j916",
+  type: "tanya_update",
+  order_code: r.order_code
+});
 
     if (!sent.ok) throw new Error('WhatsApp gagal dihantar.');
 
@@ -1588,8 +1717,15 @@ window.sendDetailFromBtn = async function(btn){
   if(r.status!=='PAID'){ showToast('Perlu status PAID.'); return; }
 
   const {msgCust,msgAdmin}=buildMsg(r);
-  const c = await sendWA(r.phone, msgCust);
-  const a = await sendWA(ADMIN_WA, msgAdmin);
+  const c = await sendCustomerBoth(r.phone, msgCust, {
+  source: "admin_j916",
+  type: "detail_belian",
+  order_code: r.order_code
+});
+let a = { ok:false, skipped:true };
+if (await getOnSendEnabled()){
+  a = await sendWA(ADMIN_WA, msgAdmin);
+}
 
   if(c.ok || a.ok){
     try{ await recordAction(code,'sent_detail'); _sentSet.add(code);}catch(_){}
@@ -2077,6 +2213,99 @@ async function doComplete(code){
   showToast('Order ditandakan SELESAI.');
   await refresh();
 }
+
+async function hasPaymentProofForOrder(order){
+  try{
+    const oid = String(order?.reference || "").trim();
+    const oc  = String(order?.order_code || "").trim();
+
+    // 1) Slip customer
+    if (oid){
+      const { data: slip } = await sb
+        .from("customer_slips")
+        .select("id")
+        .eq("order_code", oid)
+        .limit(1);
+
+      if (Array.isArray(slip) && slip.length) return true;
+    }
+
+    // 2) paid(chat)
+    const threadId = String(order?.checkout_group || "").trim();
+    if (threadId){
+      const { data: th } = await sb
+        .from("chat_threads")
+        .select("meta")
+        .eq("id", threadId)
+        .maybeSingle();
+
+      const meta = th && typeof th.meta === "object" ? th.meta : {};
+      const refs = Array.isArray(meta.paid_chat_order_refs)
+        ? meta.paid_chat_order_refs.map(x => String(x || "").trim())
+        : [];
+
+      if (refs.includes(oc) || refs.includes(String(oid).slice(0,7))) return true;
+    }
+
+    return false;
+  }catch(e){
+    console.warn("hasPaymentProofForOrder error:", e);
+    return true; // kalau error, jangan auto cancel
+  }
+}
+
+async function runExpiredPaymentAutoCancel(){
+  try{
+    const nowIso = new Date().toISOString();
+
+    const { data: rows, error } = await sb
+      .from("j916_orders")
+      .select("id,order_code,status,phone,checkout_group,payment_deadline_at,payment_timer_disabled")
+      .eq("status", "PENDING")
+      .eq("payment_timer_disabled", false)
+      .not("payment_deadline_at", "is", null)
+      .lte("payment_deadline_at", nowIso)
+      .limit(10);
+
+    if (error) throw error;
+
+    const list = Array.isArray(rows) ? rows : [];
+    if (!list.length) return;
+
+    for (const raw of list){
+      const order = {
+        reference: raw.id,
+        order_code: raw.order_code,
+        phone: raw.phone,
+        checkout_group: raw.checkout_group
+      };
+
+      const hasProof = await hasPaymentProofForOrder(order);
+      if (hasProof) continue;
+
+      try{
+        await apiOrderCancel(raw.id);
+
+        await sb
+          .from("j916_orders")
+          .update({
+            auto_cancelled_at: new Date().toISOString(),
+            payment_timer_note: "Auto cancel sebab tamat masa bayaran"
+          })
+          .eq("id", raw.id);
+
+        try{ await recordAction(raw.order_code, "auto_cancel_payment_timeout"); }catch(_){}
+      }catch(cancelErr){
+        console.warn("auto cancel failed:", raw.order_code, cancelErr);
+      }
+    }
+
+    await refresh();
+  }catch(e){
+    console.warn("runExpiredPaymentAutoCancel error:", e);
+  }
+}
+
 async function doCancel(code){
   const order = (orderState.items || []).find(x => x.reference === code || x.order_code === code);
 
@@ -2085,7 +2314,11 @@ async function doCancel(code){
   if (order && order.phone){
     try{
       const msg = buildCancelMsg(order);
-      const sent = await sendWA(order.phone, msg);
+      const sent = await sendCustomerBoth(order.phone, msg, {
+  source: "admin_j916",
+  type: "cancel_order",
+  order_code: order.order_code
+});
 
       if (sent.ok){
         try{
@@ -2210,8 +2443,14 @@ window.sendReceiptFromBtn = async function(btn){
       'Terima kasih atas belian! 🙏'
     ].join('\n');
 
-    const sent = await sendWA(r.phone, msg);
-    if(!sent.ok) throw new Error('Gagal hantar WhatsApp.');
+    const sent = await sendCustomerBoth(r.phone, msg, {
+  source: "admin_j916",
+  type: "resit",
+  order_code: r.order_code,
+  url
+});
+
+if(!sent.wa.ok) throw new Error('Gagal hantar WhatsApp.');
 
     // 3) Tanda dalam DB bahawa resit sudah dihantar
     try{
@@ -2266,7 +2505,12 @@ async function sendReceiptJ916(orderCode){
       localStorage.setItem('j916_last_order', r.order_code);
     }catch{}
     const msg = ['Resit pembelian 916 anda:', url, '', 'Terima kasih atas belian! 🙏'].join('\n');
-    await sendWA(r.phone, msg);
+    await sendCustomerBoth(r.phone, msg, {
+  source: "admin_j916",
+  type: "resit",
+  order_code: r.order_code,
+  url
+});
     try{
       await sb.from('j916_actions').upsert({ order_id: r.order_code, action: 'receipt_sent' },{ onConflict: 'order_id,action' });
     }catch{}
@@ -2369,6 +2613,24 @@ $('confirmYesBtn')?.addEventListener('click', async ()=>{
   }
 });
 
+function getQueryParam(name){
+  return new URLSearchParams(window.location.search).get(name);
+}
+
+function applyOrderFromUrl(){
+  const orderCode = getQueryParam("order");
+  if (!orderCode) return false;
+
+  const search = document.getElementById("searchBox");
+  if (search){
+    search.value = orderCode;
+  }
+
+  ORD_FILTER = "ALL";
+  ORD_CURRENT_PAGE = 1;
+  return true;
+}
+
 (async ()=>{
   const pill=$('authStatus'); const set=(t)=> pill&&(pill.textContent=t);
   let ok=false;
@@ -2382,8 +2644,19 @@ $('confirmYesBtn')?.addEventListener('click', async ()=>{
     ok=await fallbackRequireAdmin(); if(ok) set("Log masuk (admin)");
   }
   if(!ok) return;
+
+  const hasOrderUrl = applyOrderFromUrl();
+
+await runExpiredPaymentAutoCancel();
+
+if (hasOrderUrl){
+  refresh();
+}else{
   setFilter('ALL');
-  startAutoRefresh();
+}
+
+startAutoRefresh();
+loadOnSendSwitch();
 })();
 </script>
 

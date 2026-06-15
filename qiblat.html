@@ -1,0 +1,1535 @@
+<!doctype html>
+<html lang="ms">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<link rel="stylesheet" href="/global.css">
+<title>Arah Kiblat • Emas Amir</title>
+
+<style>
+:root{
+  --gold:#c99a1b;
+  --gold2:#facc15;
+  --gold3:#a87300;
+  --dark:#111827;
+  --muted:#6b7280;
+  --line:#ead7a7;
+  --soft:#fff8e8;
+  --green:#16a34a;
+}
+
+*{box-sizing:border-box}
+
+html,body{
+  margin:0;
+  min-height:100%;
+  padding-top:env(safe-area-inset-top,0px);
+  padding-bottom:env(safe-area-inset-bottom,0px);
+  font-family:system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+  background:
+    radial-gradient(circle at 18% 0%, rgba(250,204,21,.26), transparent 34%),
+    radial-gradient(circle at 100% 85%, rgba(201,154,27,.22), transparent 36%),
+    linear-gradient(180deg,#fffdf7 0%,#fff8e8 52%,#f7ecd0 100%);
+  color:var(--dark);
+}
+
+.page{
+  min-height:100vh;
+  padding:18px 14px 28px;
+  display:flex;
+  justify-content:center;
+}
+
+.card{
+  width:min(520px,100%);
+  border:1px solid rgba(201,154,27,.45);
+  border-radius:30px;
+  background:
+    radial-gradient(circle at 50% 38%, rgba(250,204,21,.12), transparent 36%),
+    linear-gradient(180deg,#fff 0%,#fffaf0 100%);
+  box-shadow:0 24px 80px rgba(120,83,0,.18);
+  overflow:hidden;
+}
+
+.head{
+  padding:20px 18px 12px;
+  display:flex;
+  align-items:flex-start;
+  justify-content:space-between;
+  gap:12px;
+}
+
+.title-wrap{
+  display:flex;
+  align-items:center;
+  gap:12px;
+}
+
+.logo-icon{
+  width:48px;
+  height:48px;
+  border-radius:18px;
+  background:linear-gradient(135deg,#fff3b0,#d6a419);
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  font-size:27px;
+  box-shadow:0 12px 26px rgba(184,134,11,.24);
+}
+
+.title{
+  font-size:27px;
+  font-weight:950;
+  line-height:1.05;
+}
+
+.sub{
+  margin-top:5px;
+  color:#9a6a00;
+  font-weight:800;
+  font-size:14px;
+}
+
+.close{
+  width:42px;
+  height:42px;
+  border-radius:999px;
+  border:1px solid var(--line);
+  background:#fff;
+  color:#6b4b00;
+  font-size:27px;
+  line-height:1;
+  font-weight:800;
+}
+
+.body{
+  padding:0 18px 18px;
+}
+
+.info-pill{
+  border:1px solid #f0dfb8;
+  border-radius:18px;
+  padding:12px 14px;
+  background:rgba(255,255,255,.78);
+  color:#374151;
+  font-size:14px;
+  font-weight:800;
+  line-height:1.35;
+  display:flex;
+  align-items:center;
+  gap:10px;
+}
+
+.compass-wrap{
+  margin:26px auto 8px;
+  width:min(390px,88vw);
+  aspect-ratio:1/1;
+  position:relative;
+}
+
+.compass{
+  position:absolute;
+  inset:0;
+  border-radius:999px;
+  background:
+    radial-gradient(circle at 35% 28%, rgba(255,255,255,.9), transparent 24%),
+    radial-gradient(circle at center,#fffdf7 0%,#fff8e8 54%,#f2dfaa 100%);
+  border:9px solid #d6a419;
+  box-shadow:
+    inset 0 0 0 3px rgba(255,255,255,.85),
+    inset 0 0 0 12px rgba(255,247,220,.92),
+    0 20px 45px rgba(120,83,0,.23);
+  overflow:hidden;
+}
+
+.compass.ok{
+  box-shadow:
+    inset 0 0 0 3px rgba(255,255,255,.85),
+    inset 0 0 0 12px rgba(255,247,220,.92),
+    0 20px 45px rgba(120,83,0,.23),
+    0 0 0 8px rgba(34,197,94,.12),
+    0 0 34px rgba(34,197,94,.28);
+}
+
+.compass-water{
+  position:absolute;
+  inset:34px;
+  border-radius:999px;
+  z-index:1;
+  overflow:hidden;
+  opacity:.42;
+  pointer-events:none;
+}
+
+.compass-water::before,
+.compass-water::after{
+  content:"";
+  position:absolute;
+  left:-35%;
+  width:170%;
+  height:170%;
+  border-radius:43%;
+  background:rgba(214,164,25,.16);
+  animation:qiblatWater 8s linear infinite;
+}
+
+.compass-water::before{top:46%}
+.compass-water::after{
+  top:50%;
+  opacity:.5;
+  animation-duration:11s;
+  animation-direction:reverse;
+}
+
+@keyframes qiblatWater{
+  from{transform:rotate(0deg)}
+  to{transform:rotate(360deg)}
+}
+
+.compass-ring{
+  position:absolute;
+  inset:50px;
+  border-radius:999px;
+  border:1px solid rgba(201,154,27,.24);
+  z-index:2;
+}
+
+.compass-cross{
+  position:absolute;
+  inset:82px;
+  border-radius:999px;
+  background:
+    linear-gradient(0deg, transparent 48%, rgba(201,154,27,.13) 49%, rgba(201,154,27,.13) 51%, transparent 52%),
+    linear-gradient(90deg, transparent 48%, rgba(201,154,27,.13) 49%, rgba(201,154,27,.13) 51%, transparent 52%);
+  opacity:.65;
+  z-index:2;
+}
+
+.dial{
+  position:absolute;
+  inset:0;
+  z-index:3;
+  transition:transform .14s linear;
+}
+
+.dir{
+  position:absolute;
+  font-weight:950;
+  font-family:Georgia,serif;
+  color:#2b2112;
+  font-size:30px;
+}
+
+.dir.n{top:39px;left:50%;transform:translateX(-50%);color:#b91c1c}
+.dir.e{right:46px;top:50%;transform:translateY(-50%)}
+.dir.s{bottom:38px;left:50%;transform:translateX(-50%)}
+.dir.w{left:46px;top:50%;transform:translateY(-50%)}
+
+.deg{
+  position:absolute;
+  font-size:13px;
+  color:#374151;
+  font-weight:800;
+}
+
+.deg.d0{top:18px;left:50%;transform:translateX(-50%)}
+.deg.d90{right:17px;top:50%;transform:translateY(-50%)}
+.deg.d180{bottom:18px;left:50%;transform:translateX(-50%)}
+.deg.d270{left:17px;top:50%;transform:translateY(-50%)}
+
+.target-marker{
+  position:absolute;
+  left:50%;
+  top:-28px;
+  transform:translateX(-50%);
+  z-index:20;
+  text-align:center;
+}
+
+.target-arrow{
+  width:0;
+  height:0;
+  margin:0 auto;
+  border-left:18px solid transparent;
+  border-right:18px solid transparent;
+  border-top:34px solid #d6a419;
+  filter:drop-shadow(0 8px 10px rgba(120,83,0,.25));
+}
+
+.target-label{
+  margin-top:6px;
+  background:#111827;
+  color:#fff;
+  border-radius:999px;
+  padding:5px 10px;
+  font-size:11px;
+  font-weight:950;
+  white-space:nowrap;
+  box-shadow:0 10px 20px rgba(15,23,42,.18);
+}
+
+.qibla-line{
+  position:absolute;
+  left:50%;
+  top:50%;
+  width:4px;
+  height:39%;
+  transform-origin:50% 100%;
+  transform:translate(-50%,-100%) rotate(0deg);
+  z-index:8;
+  border-radius:999px;
+  background:linear-gradient(180deg,rgba(214,164,25,.95),rgba(214,164,25,.06));
+  filter:drop-shadow(0 8px 12px rgba(120,83,0,.22));
+  transition:transform .14s linear;
+}
+
+.qibla-marker{
+  position:absolute;
+  left:50%;
+  top:50%;
+  width:78px;
+  height:78px;
+  border-radius:999px;
+  transform:translate(-50%,-50%) rotate(0deg) translateY(-142px) rotate(0deg);
+  z-index:15;
+  background:#fff;
+  border:4px solid #d6a419;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  font-size:34px;
+  box-shadow:0 14px 30px rgba(120,83,0,.25);
+  transition:transform .14s linear, box-shadow .16s ease, border-color .16s ease;
+}
+
+.qibla-marker.ok{
+  border-color:#22c55e;
+  box-shadow:
+    0 14px 30px rgba(120,83,0,.22),
+    0 0 0 9px rgba(34,197,94,.16),
+    0 0 28px rgba(34,197,94,.30);
+  animation:qiblaBeat 1.1s ease-in-out infinite;
+}
+
+@keyframes qiblaBeat{
+  0%,100%{transform:translate(-50%,-50%) rotate(var(--qibla-rot,0deg)) translateY(-142px) rotate(calc(var(--qibla-rot,0deg) * -1)) scale(1)}
+  50%{transform:translate(-50%,-50%) rotate(var(--qibla-rot,0deg)) translateY(-142px) rotate(calc(var(--qibla-rot,0deg) * -1)) scale(1.06)}
+}
+
+.center-dot{
+  position:absolute;
+  left:50%;
+  top:50%;
+  width:54px;
+  height:54px;
+  border-radius:999px;
+  transform:translate(-50%,-50%);
+  z-index:18;
+  background:
+    radial-gradient(circle at 35% 25%,#fff7c2 0%,#facc15 36%,#b8860b 100%);
+  border:5px solid #fff3b0;
+  box-shadow:0 10px 22px rgba(120,83,0,.24);
+}
+
+.result{
+  text-align:center;
+  padding:8px 0 12px;
+}
+
+.big-degree{
+  font-size:56px;
+  font-weight:950;
+  line-height:1;
+  color:#b8860b;
+  letter-spacing:-2px;
+}
+
+.result-label{
+  margin-top:6px;
+  color:#374151;
+  font-weight:800;
+  font-size:17px;
+}
+
+.status{
+  margin:10px auto 0;
+  width:max-content;
+  max-width:100%;
+  border-radius:999px;
+  padding:7px 12px;
+  background:#fff;
+  border:1px solid #f0dfb8;
+  color:#6b4b00;
+  font-size:14px;
+  font-weight:950;
+}
+
+.status.ok{
+  color:#15803d;
+  border-color:#bbf7d0;
+  background:#f0fdf4;
+}
+
+.grid{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:10px;
+  margin-top:14px;
+}
+
+.mini-card{
+  border:1px solid #f0dfb8;
+  border-radius:18px;
+  background:rgba(255,255,255,.78);
+  padding:13px;
+  display:flex;
+  gap:10px;
+  align-items:center;
+  min-height:76px;
+}
+
+.mini-ico{
+  width:42px;
+  height:42px;
+  border-radius:999px;
+  background:#fff8e8;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  font-size:23px;
+  flex:0 0 auto;
+}
+
+.mini-label{
+  color:#6b7280;
+  font-size:13px;
+  font-weight:800;
+}
+
+.mini-value{
+  margin-top:2px;
+  color:#111827;
+  font-weight:950;
+  font-size:16px;
+  line-height:1.2;
+}
+
+.actions{
+  margin-top:14px;
+  display:grid;
+  gap:10px;
+}
+
+.btn{
+  width:100%;
+  min-height:50px;
+  border-radius:18px;
+  border:0;
+  font-size:16px;
+  font-weight:950;
+}
+
+.btn-gold{
+  background:
+    radial-gradient(circle at 30% 20%, rgba(255,255,255,.45), transparent 36%),
+    linear-gradient(135deg,#facc15,#b8860b);
+  color:#fff;
+  box-shadow:0 14px 28px rgba(184,134,11,.24);
+}
+
+.btn-light{
+  background:#fff;
+  color:#8a6100;
+  border:1px solid #ead7a7;
+}
+
+.tip{
+  margin-top:14px;
+  border-radius:18px;
+  background:rgba(255,255,255,.68);
+  padding:13px 14px;
+  display:flex;
+  gap:10px;
+  color:#374151;
+  font-size:13px;
+  line-height:1.35;
+}
+
+.tip b{color:#111827}
+
+.native-note{
+  margin-top:10px;
+  border:1px dashed #ead7a7;
+  border-radius:16px;
+  padding:11px 12px;
+  color:#6b4b00;
+  background:#fffdf6;
+  font-size:12px;
+  font-weight:800;
+  line-height:1.35;
+}
+
+@media(max-width:420px){
+  .title{font-size:24px}
+  .big-degree{font-size:50px}
+  .grid{grid-template-columns:1fr}
+  .qibla-marker{
+    width:70px;
+    height:70px;
+    font-size:31px;
+    transform:translate(-50%,-50%) rotate(0deg) translateY(-130px) rotate(0deg);
+  }
+
+  @keyframes qiblaBeat{
+    0%,100%{transform:translate(-50%,-50%) rotate(var(--qibla-rot,0deg)) translateY(-130px) rotate(calc(var(--qibla-rot,0deg) * -1)) scale(1)}
+    50%{transform:translate(-50%,-50%) rotate(var(--qibla-rot,0deg)) translateY(-130px) rotate(calc(var(--qibla-rot,0deg) * -1)) scale(1.06)}
+  }
+}
+
+.ar-modal{
+  position:fixed;
+  inset:0;
+  z-index:999999;
+  background:#050505;
+  display:none;
+  overflow:hidden;
+}
+
+.ar-modal.show{
+  display:block;
+}
+
+.ar-video{
+  position:absolute;
+  inset:0;
+  width:100%;
+  height:100%;
+  object-fit:cover;
+  background:#000;
+}
+
+.ar-shade{
+  position:absolute;
+  inset:0;
+  background:
+    radial-gradient(circle at 50% 42%, rgba(250,204,21,.10), transparent 34%),
+    linear-gradient(180deg, rgba(0,0,0,.42), transparent 26%, transparent 64%, rgba(0,0,0,.72));
+  pointer-events:none;
+}
+
+.ar-top{
+  position:absolute;
+  left:14px;
+  right:14px;
+  top:calc(env(safe-area-inset-top,0px) + 14px);
+  z-index:5;
+  display:flex;
+  align-items:flex-start;
+  justify-content:space-between;
+  gap:10px;
+}
+
+.ar-titlebox{
+  background:rgba(17,24,39,.68);
+  border:1px solid rgba(255,255,255,.14);
+  color:#fff;
+  border-radius:20px;
+  padding:12px 14px;
+  backdrop-filter:blur(14px);
+  box-shadow:0 14px 40px rgba(0,0,0,.28);
+}
+
+.ar-title{
+  font-size:18px;
+  font-weight:950;
+  line-height:1.1;
+}
+
+.ar-sub{
+  margin-top:4px;
+  font-size:12px;
+  color:rgba(255,255,255,.78);
+  font-weight:800;
+}
+
+.ar-close{
+  width:46px;
+  height:46px;
+  border-radius:999px;
+  border:1px solid rgba(255,255,255,.18);
+  background:rgba(17,24,39,.70);
+  color:#fff;
+  font-size:28px;
+  font-weight:900;
+  line-height:1;
+  backdrop-filter:blur(14px);
+}
+
+.ar-center{
+  position:absolute;
+  left:50%;
+  top:46%;
+  width:min(86vw,390px);
+  height:min(86vw,390px);
+  transform:translate(-50%,-50%);
+  z-index:3;
+  pointer-events:none;
+}
+
+.ar-ring{
+  position:absolute;
+  inset:0;
+  border-radius:999px;
+  border:2px solid rgba(250,204,21,.72);
+  box-shadow:
+    0 0 0 10px rgba(250,204,21,.08),
+    inset 0 0 38px rgba(250,204,21,.10),
+    0 0 48px rgba(250,204,21,.18);
+}
+
+.ar-cross-v,
+.ar-cross-h{
+  position:absolute;
+  background:rgba(255,255,255,.38);
+  border-radius:999px;
+}
+
+.ar-cross-v{
+  width:2px;
+  height:100%;
+  left:50%;
+  top:0;
+  transform:translateX(-50%);
+}
+
+.ar-cross-h{
+  height:2px;
+  width:100%;
+  left:0;
+  top:50%;
+  transform:translateY(-50%);
+}
+
+.ar-beam{
+  position:absolute;
+  left:50%;
+  top:-24%;
+  width:26px;
+  height:148%;
+  transform:translateX(-50%);
+  border-radius:999px;
+  background:linear-gradient(180deg, rgba(250,204,21,.04), rgba(250,204,21,.72), rgba(250,204,21,.04));
+  filter:blur(.2px);
+  box-shadow:0 0 28px rgba(250,204,21,.32);
+}
+
+.ar-kaabah{
+  position:absolute;
+  left:50%;
+  top:50%;
+  width:88px;
+  height:88px;
+  transform:translate(-50%,-50%);
+  border-radius:999px;
+  background:
+    radial-gradient(circle at 35% 25%,#fff 0%,#fff8e8 36%,#d6a419 100%);
+  border:4px solid #facc15;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  font-size:42px;
+  box-shadow:
+    0 18px 42px rgba(0,0,0,.32),
+    0 0 0 10px rgba(250,204,21,.12);
+  transition:transform .18s ease, border-color .18s ease, box-shadow .18s ease;
+}
+
+.ar-kaabah.ok{
+  border-color:#22c55e;
+  box-shadow:
+    0 18px 42px rgba(0,0,0,.32),
+    0 0 0 10px rgba(34,197,94,.18),
+    0 0 38px rgba(34,197,94,.45);
+}
+
+.ar-pointer{
+  position:absolute;
+  left:50%;
+  top:calc(46% - min(43vw,195px) - 48px);
+  transform:translateX(-50%);
+  z-index:4;
+  text-align:center;
+  color:#fff;
+  font-weight:950;
+  pointer-events:none;
+}
+
+.ar-pointer-arrow{
+  width:0;
+  height:0;
+  margin:0 auto 7px;
+  border-left:19px solid transparent;
+  border-right:19px solid transparent;
+  border-top:34px solid #facc15;
+  filter:drop-shadow(0 8px 12px rgba(0,0,0,.35));
+}
+
+.ar-pointer-label{
+  background:rgba(17,24,39,.78);
+  border:1px solid rgba(255,255,255,.16);
+  border-radius:999px;
+  padding:7px 13px;
+  font-size:12px;
+  letter-spacing:.3px;
+  backdrop-filter:blur(12px);
+}
+
+.ar-bottom{
+  position:absolute;
+  left:14px;
+  right:14px;
+  bottom:calc(env(safe-area-inset-bottom,0px) + 16px);
+  z-index:5;
+}
+
+.ar-status{
+  border-radius:24px;
+  padding:16px 16px;
+  background:rgba(17,24,39,.76);
+  color:#fff;
+  border:1px solid rgba(255,255,255,.14);
+  box-shadow:0 20px 54px rgba(0,0,0,.34);
+  backdrop-filter:blur(16px);
+  text-align:center;
+}
+
+.ar-main{
+  font-size:23px;
+  font-weight:950;
+  line-height:1.15;
+}
+
+.ar-small{
+  margin-top:6px;
+  color:rgba(255,255,255,.78);
+  font-size:13px;
+  font-weight:800;
+  line-height:1.35;
+}
+
+.ar-meter{
+  margin-top:12px;
+  height:10px;
+  border-radius:999px;
+  background:rgba(255,255,255,.18);
+  overflow:hidden;
+}
+
+.ar-meter-fill{
+  height:100%;
+  width:0%;
+  border-radius:999px;
+  background:linear-gradient(90deg,#facc15,#22c55e);
+  transition:width .18s ease;
+}
+
+.btn-camera{
+  background:
+    radial-gradient(circle at 25% 20%, rgba(255,255,255,.48), transparent 34%),
+    linear-gradient(135deg,#111827,#8a6100 52%,#facc15);
+  color:#fff;
+  box-shadow:0 16px 32px rgba(17,24,39,.22);
+}
+</style>
+</head>
+
+<body>
+<div class="page">
+  <div class="card">
+    <div class="head">
+      <div class="title-wrap">
+        <div class="logo-icon">🧭</div>
+        <div>
+          <div class="title">Arah Kiblat</div>
+          <div class="sub" id="locText">📍 Mengesan lokasi semasa…</div>
+        </div>
+      </div>
+      <button class="close" type="button" onclick="history.length > 1 ? history.back() : location.href='/'">×</button>
+    </div>
+
+    <div class="body">
+      <div class="info-pill">
+        <span>🎯</span>
+        <span id="hintText">Pusing telefon sehingga ikon Kaabah berada tepat di marker atas.</span>
+      </div>
+
+      <div class="compass-wrap">
+        <div class="target-marker">
+          <div class="target-arrow"></div>
+          <div class="target-label">HADAP SINI</div>
+        </div>
+
+        <div class="compass" id="compassBox">
+          <div class="compass-water"></div>
+          <div class="compass-ring"></div>
+          <div class="compass-cross"></div>
+
+          <div class="dial" id="dial">
+            <div class="dir n">N</div>
+            <div class="dir e">E</div>
+            <div class="dir s">S</div>
+            <div class="dir w">W</div>
+
+            <div class="deg d0">0</div>
+            <div class="deg d90">90</div>
+            <div class="deg d180">180</div>
+            <div class="deg d270">270</div>
+          </div>
+
+          <div class="qibla-line" id="qiblaLine"></div>
+          <div class="qibla-marker" id="qiblaMarker">🕋</div>
+          <div class="center-dot"></div>
+        </div>
+      </div>
+
+      <div class="result">
+        <div class="big-degree" id="degreeText">--°</div>
+        <div class="result-label">Arah ke Kaabah</div>
+        <div class="status" id="statusText">Menunggu lokasi & kompas…</div>
+      </div>
+
+      <div class="grid">
+        <div class="mini-card">
+          <div class="mini-ico">🕋</div>
+          <div>
+            <div class="mini-label">Jarak ke Kaabah</div>
+            <div class="mini-value" id="distanceText">-- km</div>
+          </div>
+        </div>
+
+        <div class="mini-card">
+          <div class="mini-ico">📍</div>
+          <div>
+            <div class="mini-label">Lokasi Semasa</div>
+            <div class="mini-value" id="coordText">--</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="actions">
+        <button id="startBtn" class="btn btn-gold" type="button">🧭 Aktifkan Kompas & Lokasi</button>
+        <button id="locBtn" class="btn btn-light" type="button">📍 Kesan Semula Lokasi</button>
+        <button id="arBtn" class="btn btn-camera" type="button">📷 Buka Kamera Kiblat</button>
+      </div>
+
+      <div class="tip">
+        <div>💡</div>
+        <div>
+          <b>Tip:</b> Pegang telefon rata. Gerakkan telefon bentuk angka 8 untuk kalibrasi. Elakkan dekat magnet, speaker atau besi besar.
+        </div>
+      </div>
+
+      <div class="native-note">
+  Jika kompas nampak tidak stabil, buka app Compass telefon dahulu selama 2-3 saat,
+  kemudian kembali semula ke halaman ini dan tekan semula butang kompas.
+</div>
+    </div>
+  </div>
+</div>
+
+<div class="ar-modal" id="arModal">
+  <video id="arVideo" class="ar-video" autoplay playsinline muted></video>
+  <div class="ar-shade"></div>
+
+  <div class="ar-top">
+    <div class="ar-titlebox">
+      <div class="ar-title">Kamera Kiblat</div>
+      <div class="ar-sub" id="arTopText">Arahkan telefon perlahan-lahan</div>
+    </div>
+    <button class="ar-close" id="arCloseBtn" type="button">×</button>
+  </div>
+
+  <div class="ar-pointer">
+    <div class="ar-pointer-arrow"></div>
+    <div class="ar-pointer-label">HADAP SINI</div>
+  </div>
+
+  <div class="ar-center">
+    <div class="ar-beam"></div>
+    <div class="ar-ring"></div>
+    <div class="ar-cross-v"></div>
+    <div class="ar-cross-h"></div>
+    <div class="ar-kaabah" id="arKaabah">🕋</div>
+  </div>
+
+  <div class="ar-bottom">
+    <div class="ar-status">
+      <div class="ar-main" id="arMainText">Menunggu kamera…</div>
+      <div class="ar-small" id="arSmallText">Gunakan di kawasan lapang untuk bacaan lebih stabil.</div>
+      <div class="ar-meter">
+        <div class="ar-meter-fill" id="arMeterFill"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+const KAABAH = {
+  lat: 21.422487,
+  lng: 39.826206
+};
+
+const DEFAULT_LOC = {
+  lat: 5.4137,
+  lng: 100.5617,
+  label: "Kulim, Kedah"
+};
+
+let userLat = DEFAULT_LOC.lat;
+let userLng = DEFAULT_LOC.lng;
+let userLabel = DEFAULT_LOC.label + " (default)";
+let qiblaBearing = 0;
+let currentHeading = 0;
+let smoothHeading = 0;
+let started = false;
+let sensorReady = false;
+let lastVibrateAt = 0;
+let watchId = null;
+
+let lastHeading = null;
+let unstableCount = 0;
+let calibrationVisible = false;
+
+const calibrateBox = document.createElement("div");
+
+calibrateBox.style.cssText = `
+position:fixed;
+left:50%;
+bottom:28px;
+transform:translateX(-50%);
+z-index:99999;
+background:rgba(17,24,39,.92);
+color:#fff;
+padding:14px 18px;
+border-radius:18px;
+font-weight:900;
+font-size:14px;
+box-shadow:0 10px 30px rgba(0,0,0,.25);
+display:none;
+backdrop-filter:blur(12px);
+border:1px solid rgba(255,255,255,.08);
+max-width:calc(100vw - 28px);
+`;
+
+calibrateBox.innerHTML = `
+<div style="display:flex;align-items:center;gap:12px">
+  <div style="
+    width:42px;
+    height:42px;
+    border-radius:999px;
+    background:rgba(255,255,255,.08);
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    font-size:24px;
+    animation:q8 1.4s linear infinite;
+    flex:0 0 auto;
+  ">♾️</div>
+
+  <div>
+    <div style="font-weight:950">
+      Kalibrasi Kompas
+    </div>
+
+    <div style="
+      opacity:.82;
+      margin-top:2px;
+      line-height:1.35;
+      font-size:13px;
+    ">
+      Gerakkan telefon bentuk angka 8. Jauhkan dari magnet/besi.
+    </div>
+  </div>
+</div>
+`;
+
+document.body.appendChild(calibrateBox);
+
+const q8style = document.createElement("style");
+q8style.innerHTML = `
+@keyframes q8{
+  0%{transform:rotate(0deg)}
+  100%{transform:rotate(360deg)}
+}
+`;
+document.head.appendChild(q8style);
+
+function showCalibration(){
+  if (!started) return;
+  if (calibrationVisible) return;
+
+  calibrationVisible = true;
+  calibrateBox.style.display = "block";
+}
+
+function hideCalibration(){
+  calibrationVisible = false;
+  calibrateBox.style.display = "none";
+}
+
+const locText = document.getElementById("locText");
+const hintText = document.getElementById("hintText");
+const compassBox = document.getElementById("compassBox");
+const dial = document.getElementById("dial");
+const qiblaLine = document.getElementById("qiblaLine");
+const qiblaMarker = document.getElementById("qiblaMarker");
+const degreeText = document.getElementById("degreeText");
+const distanceText = document.getElementById("distanceText");
+const coordText = document.getElementById("coordText");
+const statusText = document.getElementById("statusText");
+
+const startBtn = document.getElementById("startBtn");
+const locBtn = document.getElementById("locBtn");
+
+function toRad(deg){
+  return deg * Math.PI / 180;
+}
+
+function toDeg(rad){
+  return rad * 180 / Math.PI;
+}
+
+function normalizeDeg(deg){
+  return ((deg % 360) + 360) % 360;
+}
+
+function shortestDiff(a, b){
+  let d = Math.abs(normalizeDeg(a) - normalizeDeg(b));
+  return d > 180 ? 360 - d : d;
+}
+
+function calculateBearing(lat1, lng1, lat2, lng2){
+  const phi1 = toRad(lat1);
+  const phi2 = toRad(lat2);
+  const deltaLng = toRad(lng2 - lng1);
+
+  const y = Math.sin(deltaLng) * Math.cos(phi2);
+  const x =
+    Math.cos(phi1) * Math.sin(phi2) -
+    Math.sin(phi1) * Math.cos(phi2) * Math.cos(deltaLng);
+
+  return normalizeDeg(toDeg(Math.atan2(y, x)));
+}
+
+function calculateDistanceKm(lat1, lng1, lat2, lng2){
+  const R = 6371;
+  const dLat = toRad(lat2 - lat1);
+  const dLng = toRad(lng2 - lng1);
+
+  const a =
+    Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+    Math.cos(toRad(lat1)) * Math.cos(toRad(lat2)) *
+    Math.sin(dLng / 2) * Math.sin(dLng / 2);
+
+  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+  return R * c;
+}
+
+function formatCoord(lat, lng){
+  const ns = lat >= 0 ? "N" : "S";
+  const ew = lng >= 0 ? "E" : "W";
+  return `${Math.abs(Number(lat)).toFixed(4)}° ${ns}, ${Math.abs(Number(lng)).toFixed(4)}° ${ew}`;
+}
+
+function updateQiblaData(){
+  qiblaBearing = calculateBearing(userLat, userLng, KAABAH.lat, KAABAH.lng);
+  const dist = calculateDistanceKm(userLat, userLng, KAABAH.lat, KAABAH.lng);
+  const degRounded = Math.round(qiblaBearing);
+
+  locText.textContent = `📍 ${userLabel}`;
+  degreeText.textContent = `${degRounded}°`;
+  distanceText.textContent = `${Math.round(dist).toLocaleString("ms-MY")} km`;
+  coordText.textContent = formatCoord(userLat, userLng);
+
+  renderCompass();
+}
+
+function setOkMode(ok){
+  if (ok){
+    compassBox.classList.add("ok");
+    qiblaMarker.classList.add("ok");
+    statusText.classList.add("ok");
+  } else {
+    compassBox.classList.remove("ok");
+    qiblaMarker.classList.remove("ok");
+    statusText.classList.remove("ok");
+  }
+}
+
+function monitorCompassQuality(newHeading){
+  if (!started || !sensorReady) return;
+
+  if (lastHeading !== null){
+    let jump = Math.abs(newHeading - lastHeading);
+
+    if (jump > 180){
+      jump = 360 - jump;
+    }
+
+    if (jump > 65){
+      unstableCount++;
+    } else {
+      unstableCount = Math.max(0, unstableCount - 1);
+    }
+
+    if (unstableCount >= 12){
+      showCalibration();
+    }
+
+    if (unstableCount <= 2){
+      hideCalibration();
+    }
+  }
+
+  lastHeading = newHeading;
+}
+
+function renderCompass(){
+  const relative = normalizeDeg(qiblaBearing - currentHeading);
+  const diff = shortestDiff(currentHeading, qiblaBearing);
+  const intensity = Math.max(0, 1 - (diff / 40));
+
+  qiblaMarker.style.boxShadow = `
+    0 14px 30px rgba(120,83,0,.22),
+    0 0 ${18 + intensity * 30}px rgba(250,204,21,${0.15 + intensity * 0.45})
+  `;
+
+  dial.style.transform = `rotate(${-currentHeading}deg)`;
+  qiblaLine.style.transform = `translate(-50%,-100%) rotate(${relative}deg)`;
+
+  qiblaMarker.style.setProperty("--qibla-rot", `${relative}deg`);
+  qiblaMarker.style.transform =
+    `translate(-50%,-50%) rotate(${relative}deg) translateY(-142px) rotate(${-relative}deg)`;
+
+  if (!started){
+    setOkMode(false);
+    hideCalibration();
+    statusText.textContent = "Tekan butang untuk aktifkan kompas & lokasi.";
+    return;
+  }
+
+  if (!sensorReady){
+    setOkMode(false);
+    statusText.textContent = "Menunggu sensor kompas…";
+    return;
+  }
+
+  if (diff <= 5){
+    setOkMode(true);
+    statusText.textContent = "✅ Kiblat tepat";
+
+    const now = Date.now();
+    if (navigator.vibrate && now - lastVibrateAt > 2500){
+      navigator.vibrate(90);
+      lastVibrateAt = now;
+    }
+  } else {
+    setOkMode(false);
+
+    if (relative > 180){
+      statusText.textContent = "↶ Pusing telefon ke kiri sampai Kaabah di atas";
+    } else {
+      statusText.textContent = "↷ Pusing telefon ke kanan sampai Kaabah di atas";
+    }
+  }
+}
+
+function getHeadingFromEvent(e){
+  if (typeof e.webkitCompassHeading === "number"){
+    return normalizeDeg(e.webkitCompassHeading);
+  }
+
+  if (typeof e.alpha === "number"){
+    return normalizeDeg(360 - e.alpha);
+  }
+
+  return null;
+}
+
+function handleOrientation(e){
+
+console.log("[QIBLAT EVENT]", {
+  alpha: e.alpha,
+  beta: e.beta,
+  gamma: e.gamma,
+  webkitCompassHeading: e.webkitCompassHeading
+});
+
+  const heading = getHeadingFromEvent(e);
+  if (heading === null) return;
+
+  sensorReady = true;
+
+  if (!window.__headingReady){
+    smoothHeading = heading;
+    currentHeading = heading;
+    window.__headingReady = true;
+
+    renderCompass();
+    return;
+  }
+
+  let diff = heading - smoothHeading;
+
+  if (diff > 180) diff -= 360;
+  if (diff < -180) diff += 360;
+
+  smoothHeading = normalizeDeg(
+    smoothHeading + diff * 0.16
+  );
+
+  currentHeading = smoothHeading;
+
+  monitorCompassQuality(heading);
+  renderCompass();
+}
+
+window.addEventListener("qiblatNativeHeading", function(ev){
+  const heading = Number(ev?.detail?.heading);
+
+  if (!Number.isFinite(heading)) return;
+
+  console.log("[QIBLAT NATIVE HEADING]", heading);
+
+  sensorReady = true;
+
+  if (!window.__headingReady){
+    smoothHeading = heading;
+    currentHeading = heading;
+    window.__headingReady = true;
+
+    renderCompass();
+    return;
+  }
+
+  let diff = heading - smoothHeading;
+
+  if (diff > 180) diff -= 360;
+  if (diff < -180) diff += 360;
+
+  smoothHeading = normalizeDeg(
+    smoothHeading + diff * 0.16
+  );
+
+  currentHeading = smoothHeading;
+
+  monitorCompassQuality(heading);
+  renderCompass();
+});
+
+
+function requestLocation(){
+  if (!navigator.geolocation){
+    userLat = DEFAULT_LOC.lat;
+    userLng = DEFAULT_LOC.lng;
+    userLabel = DEFAULT_LOC.label + " (default)";
+    updateQiblaData();
+    return Promise.resolve(false);
+  }
+
+  locBtn.disabled = true;
+  locBtn.textContent = "📍 Mengesan lokasi…";
+  locText.textContent = "📍 Mengesan lokasi semasa…";
+
+  return new Promise(function(resolve){
+    navigator.geolocation.getCurrentPosition(
+      function(pos){
+        userLat = pos.coords.latitude;
+        userLng = pos.coords.longitude;
+        userLabel = "Lokasi semasa anda";
+
+        locBtn.disabled = false;
+        locBtn.textContent = "📍 Kesan Semula Lokasi";
+
+        updateQiblaData();
+        resolve(true);
+
+        try{
+          if (watchId !== null){
+            navigator.geolocation.clearWatch(watchId);
+          }
+
+          watchId = navigator.geolocation.watchPosition(function(p){
+            userLat = p.coords.latitude;
+            userLng = p.coords.longitude;
+            userLabel = "Lokasi semasa anda";
+            updateQiblaData();
+          }, function(){}, {
+            enableHighAccuracy:true,
+            maximumAge:30000,
+            timeout:10000
+          });
+        }catch(e){}
+      },
+      function(err){
+        console.warn("[qiblat location error]", err);
+
+        userLat = DEFAULT_LOC.lat;
+        userLng = DEFAULT_LOC.lng;
+        userLabel = DEFAULT_LOC.label + " (default)";
+
+        locBtn.disabled = false;
+        locBtn.textContent = "📍 Cuba Kesan Lokasi Lagi";
+
+        updateQiblaData();
+        statusText.textContent = "Lokasi tidak dibenarkan. Guna default Kulim.";
+        resolve(false);
+      },
+      {
+        enableHighAccuracy:true,
+        timeout:12000,
+        maximumAge:60000
+      }
+    );
+  });
+}
+
+async function requestCompass(){
+  started = true;
+sensorReady = false;
+
+window.__headingReady = false;
+smoothHeading = 0;
+currentHeading = 0;
+lastHeading = null;
+unstableCount = 0;
+
+hideCalibration();
+
+  startBtn.disabled = true;
+  startBtn.textContent = "🧭 Kompas Aktif";
+  hintText.textContent = "Pusing telefon sehingga ikon Kaabah berada tepat di marker atas.";
+
+  await requestLocation();
+
+  try{
+    if (typeof DeviceOrientationEvent === "undefined"){
+      started = false;
+      startBtn.disabled = false;
+      startBtn.textContent = "🧭 Aktifkan Kompas & Lokasi";
+      statusText.textContent = "Kompas live hanya aktif di telefon. Laptop tiada sensor kompas.";
+      hintText.textContent = "Buka page ini di phone untuk kompas live.";
+      hideCalibration();
+      renderCompass();
+      return;
+    }
+
+  try{
+  if (
+    typeof DeviceOrientationEvent !== "undefined" &&
+    typeof DeviceOrientationEvent.requestPermission === "function"
+  ){
+    const permission = await DeviceOrientationEvent.requestPermission();
+
+    console.log("[QIBLAT iOS permission]", permission);
+
+    if (permission !== "granted"){
+      console.warn("[QIBLAT] permission not granted, continue listen anyway");
+    }
+  }
+}catch(e){
+  console.warn("[QIBLAT PERMISSION ERROR - CONTINUE]", e);
+}
+
+   window.removeEventListener("deviceorientationabsolute", handleOrientation, true);
+window.removeEventListener("deviceorientation", handleOrientation, true);
+
+const isiOS = /iPhone|iPad|iPod/i.test(navigator.userAgent);
+
+if ("ondeviceorientationabsolute" in window && !isiOS){
+  window.addEventListener(
+    "deviceorientationabsolute",
+    handleOrientation,
+    true
+  );
+} else {
+  window.addEventListener(
+    "deviceorientation",
+    handleOrientation,
+    true
+  );
+}
+    statusText.textContent = "Kompas aktif. Pusing telefon perlahan-lahan.";
+
+    setTimeout(function(){
+      if (!sensorReady && started){
+        showCalibration();
+        statusText.textContent = "Sensor kompas belum dikesan. Cuba gerakkan telefon bentuk angka 8.";
+      }
+    }, 2500);
+
+    renderCompass();
+  }catch(err){
+    console.warn("[qiblat compass error]", err);
+
+    started = false;
+    sensorReady = false;
+    startBtn.disabled = false;
+    startBtn.textContent = "🧭 Aktifkan Kompas & Lokasi";
+    statusText.textContent = "Kompas tidak dapat diaktifkan pada peranti ini.";
+    hideCalibration();
+    renderCompass();
+  }
+}
+
+const arBtn = document.getElementById("arBtn");
+const arModal = document.getElementById("arModal");
+const arVideo = document.getElementById("arVideo");
+const arCloseBtn = document.getElementById("arCloseBtn");
+const arKaabah = document.getElementById("arKaabah");
+const arMainText = document.getElementById("arMainText");
+const arSmallText = document.getElementById("arSmallText");
+const arTopText = document.getElementById("arTopText");
+const arMeterFill = document.getElementById("arMeterFill");
+
+let arStream = null;
+let arRunning = false;
+let arRaf = null;
+
+function signedAngleDiff(target, heading){
+  return ((target - heading + 540) % 360) - 180;
+}
+
+function clamp(n, min, max){
+  return Math.max(min, Math.min(max, n));
+}
+
+async function openQiblatCamera(){
+  try{
+    arModal.classList.add("show");
+    arRunning = true;
+
+    arMainText.textContent = "Membuka kamera…";
+    arSmallText.textContent = "Sila benarkan akses kamera jika diminta.";
+    arTopText.textContent = "Kamera AR Emas Amir";
+    arMeterFill.style.width = "0%";
+
+    if (!started || !sensorReady){
+      await requestCompass();
+    }
+
+    if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia){
+      arMainText.textContent = "Kamera tidak disokong";
+      arSmallText.textContent = "Peranti/browser ini tidak benarkan akses kamera.";
+      return;
+    }
+
+    arStream = await navigator.mediaDevices.getUserMedia({
+      video:{
+        facingMode:{ ideal:"environment" },
+        width:{ ideal:1280 },
+        height:{ ideal:720 }
+      },
+      audio:false
+    });
+
+    arVideo.srcObject = arStream;
+
+    try{
+      await arVideo.play();
+    }catch(e){}
+
+    arMainText.textContent = "Pusing telefon perlahan-lahan";
+    arSmallText.textContent = "Letakkan ikon Kaabah tepat di tengah marker.";
+    arLoop();
+  }catch(err){
+    console.warn("[QIBLAT AR CAMERA ERROR]", err);
+
+    arMainText.textContent = "Kamera gagal dibuka";
+    arSmallText.textContent = "Pastikan permission kamera dibenarkan untuk app Emas Amir.";
+    arMeterFill.style.width = "0%";
+  }
+}
+
+function closeQiblatCamera(){
+  arRunning = false;
+  arModal.classList.remove("show");
+
+  if (arRaf){
+    cancelAnimationFrame(arRaf);
+    arRaf = null;
+  }
+
+  if (arStream){
+    try{
+      arStream.getTracks().forEach(function(track){
+        track.stop();
+      });
+    }catch(e){}
+
+    arStream = null;
+  }
+
+  if (arVideo){
+    arVideo.srcObject = null;
+  }
+
+  if (arKaabah){
+    arKaabah.classList.remove("ok");
+    arKaabah.style.transform = "translate(-50%,-50%)";
+  }
+}
+
+function arLoop(){
+  if (!arRunning) return;
+
+  const signed = signedAngleDiff(qiblaBearing, currentHeading);
+  const absDiff = Math.abs(signed);
+  const screenShift = clamp(signed * 4.2, -140, 140);
+  const accuracy = clamp(100 - (absDiff * 4), 0, 100);
+
+  arKaabah.style.transform = `translate(calc(-50% + ${screenShift}px), -50%)`;
+  arMeterFill.style.width = `${accuracy}%`;
+
+  if (!sensorReady){
+    arKaabah.classList.remove("ok");
+    arMainText.textContent = "Menunggu sensor kompas…";
+    arSmallText.textContent = "Gerakkan telefon bentuk angka 8 untuk kalibrasi.";
+  } else if (absDiff <= 5){
+    arKaabah.classList.add("ok");
+    arMainText.textContent = "✅ Kiblat tepat";
+    arSmallText.textContent = `Azimut ${Math.round(qiblaBearing)}° • Pegang telefon stabil.`;
+  } else {
+    arKaabah.classList.remove("ok");
+
+    if (signed > 0){
+      arMainText.textContent = "↷ Pusing kanan";
+    } else {
+      arMainText.textContent = "↶ Pusing kiri";
+    }
+
+    arSmallText.textContent = `Lari ${Math.round(absDiff)}° • Bawa ikon Kaabah ke tengah.`;
+  }
+
+  arRaf = requestAnimationFrame(arLoop);
+}
+
+arBtn.addEventListener("click", openQiblatCamera);
+arCloseBtn.addEventListener("click", closeQiblatCamera);
+
+document.addEventListener("visibilitychange", function(){
+  if (document.hidden){
+    closeQiblatCamera();
+  }
+});
+
+startBtn.addEventListener("click", requestCompass);
+locBtn.addEventListener("click", requestLocation);
+
+updateQiblaData();
+
+setTimeout(function(){
+  requestLocation();
+}, 400);
+</script></body>
+</html>
