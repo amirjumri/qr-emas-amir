@@ -4,20 +4,7 @@ const path = require("path");
 
 exports.handler = async function(event) {
   try {
-const privateKeyPath = path.join(__dirname, "EX00040523.key");
-
-if (!fs.existsSync(privateKeyPath)) {
-  return {
-    statusCode: 500,
-    body: JSON.stringify({
-      ok: false,
-      error: "Private key file not found",
-      privateKeyPath
-    }, null, 2)
-  };
-}
-
-const privateKey = fs.readFileSync(privateKeyPath, "utf8");
+const privateKey = require("./fpx-key");
     const sampleData =
       "EX00040523|SE00120695|FPXUATTEST001|1.00|TEST0021|01";
 

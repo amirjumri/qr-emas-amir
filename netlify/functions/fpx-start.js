@@ -7,13 +7,7 @@ const EXCHANGE_ID = "EX00040523";
 const FPX_AR_URL = "https://uat.mepsfpx.com.my/FPXMain/seller2DReceiver.jsp";
 
 function signData(data){
- const privateKeyPath = path.join(__dirname, "EX00040523.key");
-
-if (!fs.existsSync(privateKeyPath)) {
-  throw new Error("Private key file not found: " + privateKeyPath);
-}
-
-const privateKey = fs.readFileSync(privateKeyPath, "utf8");
+const privateKey = require("./fpx-key");
 
   const signer = crypto.createSign("RSA-SHA256");
   signer.update(data);
