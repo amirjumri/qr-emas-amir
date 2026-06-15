@@ -4,18 +4,20 @@ const path = require("path");
 
 exports.handler = async function(event) {
   try {
-const privateKey = process.env.FPX_PRIVATE_KEY;
+const privateKeyPath = path.join(__dirname, "fpx-secure", "EX00040523.key");
 
-if (!privateKey) {
+if (!fs.existsSync(privateKeyPath)) {
   return {
     statusCode: 500,
     body: JSON.stringify({
       ok: false,
-      error: "FPX_PRIVATE_KEY env not found"
+      error: "Private key file not found",
+      privateKeyPath
     }, null, 2)
   };
 }
 
+const privateKey = fs.readFileSync(privateKeyPath, "utf8");
     const sampleData =
       "EX00040523|SE00120695|FPXUATTEST001|1.00|TEST0021|01";
 
