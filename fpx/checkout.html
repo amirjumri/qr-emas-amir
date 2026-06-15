@@ -1,0 +1,289 @@
+<!doctype html>
+<html lang="ms">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>FPX Checkout UAT • Emas Amir</title>
+
+  <style>
+    body{
+      margin:0;
+      font-family:Arial, sans-serif;
+      background:#f6f7fb;
+      color:#111827;
+    }
+    .wrap{
+      max-width:720px;
+      margin:30px auto;
+      background:#fff;
+      padding:24px;
+      border-radius:16px;
+      box-shadow:0 10px 30px rgba(0,0,0,.08);
+    }
+    .logo{
+      display:flex;
+      align-items:center;
+      gap:10px;
+      font-size:24px;
+      font-weight:800;
+      margin-bottom:20px;
+    }
+    .fpx-logo{
+      font-size:30px;
+      color:#0072bc;
+      font-weight:900;
+    }
+    label{
+      display:block;
+      font-weight:700;
+      margin-top:16px;
+      margin-bottom:6px;
+    }
+    input,select{
+      width:100%;
+      padding:12px;
+      border:1px solid #d1d5db;
+      border-radius:10px;
+      font-size:15px;
+      box-sizing:border-box;
+    }
+    .row{
+      display:grid;
+      grid-template-columns:1fr 1fr;
+      gap:14px;
+    }
+    .box{
+      background:#f9fafb;
+      border:1px solid #e5e7eb;
+      border-radius:12px;
+      padding:14px;
+      margin-top:14px;
+    }
+    .terms{
+      display:flex;
+      gap:10px;
+      align-items:flex-start;
+      margin-top:18px;
+      font-size:14px;
+    }
+    .terms input{
+      width:auto;
+      margin-top:3px;
+    }
+    a{color:#0066cc}
+    .btns{
+      display:flex;
+      gap:10px;
+      margin-top:22px;
+    }
+    button{
+      border:0;
+      padding:12px 18px;
+      border-radius:10px;
+      font-weight:800;
+      cursor:pointer;
+    }
+    .primary{
+      background:#0b65c2;
+      color:white;
+    }
+    .cancel{
+      background:#e5e7eb;
+      color:#111827;
+    }
+    .note{
+      font-size:13px;
+      color:#6b7280;
+      margin-top:14px;
+      line-height:1.5;
+    }
+    .err{
+      color:#dc2626;
+      font-weight:700;
+      margin-top:12px;
+      display:none;
+    }
+  </style>
+</head>
+
+<body>
+  <div class="wrap">
+    <div class="logo">
+      <span>Pay with</span>
+      <span class="fpx-logo">FPX</span>
+    </div>
+
+    <div class="box">
+      <strong>FPX UAT Checkout</strong>
+      <div class="note">
+        This page is prepared for PayNet FPX UAT testing and screenshot verification.
+      </div>
+    </div>
+
+    <label>Seller Name</label>
+    <input value="EMAS AMIR SDN BHD" readonly>
+
+    <div class="row">
+      <div>
+        <label>Seller ID</label>
+        <input value="SE00120695" readonly>
+      </div>
+      <div>
+        <label>Exchange ID</label>
+        <input value="EX00040523" readonly>
+      </div>
+    </div>
+
+    <label>Email Address</label>
+    <input id="buyerEmail" value="test@emasamir.app">
+
+    <label>Payment Mode</label>
+    <select id="paymentMode">
+      <option value="">Select Payment Mode</option>
+      <option value="01">Retail Banking / B2C</option>
+      <option value="02">Corporate Banking / B2B1</option>
+    </select>
+
+    <label>Select Bank</label>
+    <select id="buyerBank">
+      <option value="">Select Bank</option>
+      <option value="TEST0021">SBI BANK A</option>
+      <option value="TEST0022">SBI BANK B</option>
+      <option value="TEST0001">Affin Bank</option>
+      <option value="TEST0002">Alliance Bank</option>
+      <option value="TEST0003">AmBank</option>
+      <option value="TEST0004">Bank Islam</option>
+      <option value="TEST0005">Bank Muamalat (Offline)</option>
+      <option value="TEST0006">Bank Rakyat</option>
+      <option value="TEST0007">BSN (Offline)</option>
+      <option value="TEST0008">CIMB Clicks</option>
+      <option value="TEST0009">Hong Leong Bank</option>
+      <option value="TEST0010">Maybank2u</option>
+      <option value="TEST0011">Public Bank</option>
+      <option value="TEST0012">RHB Bank</option>
+    </select>
+
+    <div class="row">
+      <div>
+        <label>Seller Order Number</label>
+        <input id="orderNo" value="">
+      </div>
+      <div>
+        <label>Transaction Amount (RM)</label>
+        <input id="amount" type="number" step="0.01" value="1.00">
+      </div>
+    </div>
+
+    <div class="terms">
+      <input type="checkbox" id="agree">
+      <div>
+        By clicking on “Proceed” button, you hereby agree with
+        <a href="https://www.mepsfpx.com.my/FPXMain/termsAndConditions.jsp" target="_blank">
+          FPX's Terms & Conditions
+        </a>
+      </div>
+    </div>
+
+    <div id="err" class="err"></div>
+
+    <div class="btns">
+      <button class="primary" onclick="proceedFPX()">Proceed</button>
+      <button class="cancel" onclick="history.back()">Cancel</button>
+    </div>
+
+    <div class="note">
+      Minimum B2C amount: RM1.00<br>
+      Maximum B2C amount: RM30,000.00<br>
+      Minimum B2B amount: RM2.00<br>
+      Maximum B2B amount: RM1,000,000.00
+    </div>
+  </div>
+
+<script>
+  function pad(n){
+    return String(n).padStart(2, "0");
+  }
+
+  function makeOrderNo(){
+    const d = new Date();
+    return "FPXUAT" +
+      d.getFullYear() +
+      pad(d.getMonth()+1) +
+      pad(d.getDate()) +
+      pad(d.getHours()) +
+      pad(d.getMinutes()) +
+      pad(d.getSeconds());
+  }
+
+  document.getElementById("orderNo").value = makeOrderNo();
+
+  async function loadFPXBanks(){
+    try{
+      const r = await fetch("/.netlify/functions/fpx-bank-list");
+      const j = await r.json();
+
+      const el = document.getElementById("buyerBank");
+      el.innerHTML = '<option value="">Select Bank</option>';
+
+      (j.banks || []).forEach(bank=>{
+        const opt = document.createElement("option");
+        opt.value = bank.id;
+        opt.textContent = bank.name + " (" + bank.id + ")";
+        el.appendChild(opt);
+      });
+    }catch(e){
+      console.error("Load FPX banks failed:", e);
+    }
+  }
+
+  loadFPXBanks();
+
+  function showErr(msg){
+    const el = document.getElementById("err");
+    el.textContent = msg;
+    el.style.display = "block";
+  }
+
+  function proceedFPX(){
+    const mode = document.getElementById("paymentMode").value;
+    const bank = document.getElementById("buyerBank").value;
+    const amount = Number(document.getElementById("amount").value || 0);
+    const agree = document.getElementById("agree").checked;
+    const orderNo = document.getElementById("orderNo").value.trim();
+
+    document.getElementById("err").style.display = "none";
+
+    if(!mode) return showErr("Please select Payment Mode.");
+    if(!bank) return showErr("Please select Bank.");
+    if(!orderNo) return showErr("Seller Order Number is required.");
+    if(!agree) return showErr("Please agree with FPX Terms & Conditions.");
+
+    if(mode === "01"){
+      if(amount < 1){
+        return showErr("Transaction Amount is Lower than the Minimum Limit RM1.00 for B2C");
+      }
+      if(amount > 30000){
+        return showErr("Maximum Transaction Limit Exceeded RM30,000.00 for B2C");
+      }
+    }
+
+    if(mode === "02"){
+      if(amount < 2){
+        return showErr("Transaction Amount is Lower than the Minimum Limit RM2.00 for B2B");
+      }
+      if(amount > 1000000){
+        return showErr("Maximum Transaction Limit Exceeded RM1,000,000.00 for B2B");
+      }
+    }
+
+    const params = new URLSearchParams({
+      mode,
+      bank,
+      amount: amount.toFixed(2),
+      orderNo
+    });
+
+    window.location.href = "/.netlify/functions/fpx-start?" + params.toString();
+  }
+</script></body>
+</html>
