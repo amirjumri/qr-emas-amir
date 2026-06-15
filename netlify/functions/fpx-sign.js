@@ -6,7 +6,7 @@ exports.handler = async function(event) {
   try {
     const privateKeyPath =
       process.env.FPX_PRIVATE_KEY_PATH ||
-      path.join(process.cwd(), "fpx-secure", "EX00040523.key");
+      path.join(__dirname, "fpx-secure", "EX00040523.key");
 
     if (!fs.existsSync(privateKeyPath)) {
       return {

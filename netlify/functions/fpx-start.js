@@ -9,7 +9,7 @@ const FPX_AR_URL = "https://uat.mepsfpx.com.my/FPXMain/seller2DReceiver.jsp";
 function signData(data){
   const privateKeyPath =
     process.env.FPX_PRIVATE_KEY_PATH ||
-    path.join(process.cwd(), "fpx-secure", "EX00040523.key");
+    path.join(__dirname, "fpx-secure", "EX00040523.key");
 
   const privateKey = fs.readFileSync(privateKeyPath, "utf8");
 
