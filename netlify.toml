@@ -1,0 +1,45 @@
+functionsDirectory = "C:\\Users\\AMIR\\Desktop\\qr-emas-amir\\netlify\\functions"
+functionsDirectoryOrigin = "default"
+plugins = []
+headers = []
+redirects = []
+
+[build]
+publish = "C:\\Users\\AMIR\\Desktop\\qr-emas-amir"
+publishOrigin = "default"
+functions = "C:\\Users\\AMIR\\Desktop\\qr-emas-amir\\netlify\\functions"
+
+[build.environment]
+
+[build.processing]
+
+[build.processing.css]
+
+[build.processing.html]
+
+[build.processing.images]
+
+[build.processing.js]
+
+[build.services]
+
+[functions]
+
+[functions."*"]
+
+[functions."admin-notification-worker"]
+schedule = "* * * * *"
+
+# =========================
+# FPX Redirect
+# =========================
+
+[[redirects]]
+from = "/fpx/indirect"
+to = "/fpx/indirect.html"
+status = 200
+
+[[redirects]]
+from = "/fpx/direct"
+to = "/fpx/direct.html"
+status = 200
