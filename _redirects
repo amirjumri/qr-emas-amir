@@ -1,5 +1,5 @@
 /a/:slug   /index.html?ref=:slug   200
 /misi/*   /misi-share.html   200
 /p/:design   /.netlify/functions/j916-og?design=:design   200
-/fpx/indirect   /fpx/indirect.html   200
-/fpx/direct   /fpx/direct.html   200
+/fpx/indirect   /fpx/indirect.html   301
+/fpx/direct   /fpx/direct.html   301
