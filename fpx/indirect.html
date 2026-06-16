@@ -12,6 +12,7 @@
     .label{font-weight:700}
     .success{color:#15803d;font-weight:900}
     .fail{color:#dc2626;font-weight:900}
+.pending{color:#b45309;font-weight:900}
   </style>
 </head>
 <body>
@@ -38,14 +39,34 @@
     return p.get(name) || fallback;
   }
 
-  const debit = get("fpx_debitAuthCode", get("debit", "-"));
+ const hasFpxData =
+  p.has("fpx_debitAuthCode") ||
+  p.has("fpx_fpxTxnId") ||
+  p.has("fpx_sellerOrderNo") ||
+  p.has("fpx_txnAmount");
 
-  let statusText = "UNSUCCESSFUL";
-  if(debit === "00") statusText = "SUCCESSFUL";
-  if(debit === "99") statusText = "PENDING AUTHORIZATION";
+const debit = get("fpx_debitAuthCode", get("debit", ""));
 
-  document.getElementById("status").textContent = statusText;
-  document.getElementById("status").className = debit === "00" ? "success" : "fail";
+let statusText = "TIADA DATA TRANSAKSI";
+let statusClass = "";
+
+if (hasFpxData) {
+  statusText = "UNSUCCESSFUL";
+  statusClass = "fail";
+
+  if (debit === "00") {
+    statusText = "SUCCESSFUL";
+    statusClass = "success";
+  }
+
+  if (debit === "99") {
+    statusText = "PENDING AUTHORIZATION";
+    statusClass = "pending";
+  }
+}
+
+document.getElementById("status").textContent = statusText;
+document.getElementById("status").className = statusClass;
 
   document.getElementById("txnId").textContent = get("fpx_fpxTxnId", get("txnId"));
   document.getElementById("orderNo").textContent = get("fpx_sellerOrderNo", get("orderNo"));
