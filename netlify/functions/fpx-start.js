@@ -50,7 +50,7 @@ exports.handler = async function(event) {
       fpx_buyerIban: "",
       fpx_makerName: "",
       fpx_buyerBankBranch: "",
-      fpx_url: directUrl
+      fpx_url: indirectUrl
     };
 
     const checksumSource = [
