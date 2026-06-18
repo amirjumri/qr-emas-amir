@@ -1515,6 +1515,17 @@ const qrFrame = $("qrFrame");
 const btnQrClose = $("btnQrClose");
 
   let pendingFile = null;
+let eaAutoSlipUpload = false;
+
+function eaOpenSlipUploader(){
+  eaAutoSlipUpload = true;
+
+  if (fileInput){
+    fileInput.click();
+  }
+}
+
+window.eaOpenSlipUploader = eaOpenSlipUploader;
 const __linkPreviewCache = new Map();
 let __threadSyncTimer = null;
 let __activeChatChannel = null; // legacy realtime lama
@@ -1871,9 +1882,9 @@ if (titleIconEl){
   🧾 Buka QR Maybank
 </button>
 
-        <button type="button" class="ea-chat-pending-btn" onclick="document.getElementById('txt').focus();document.getElementById('txt').value='saya dah bayar nak hantar slip';">
-          💬 Detail Bayaran Dan Hantar Slip Bayaran Dalam Ai-Dan
-        </button>
+      <button type="button" class="ea-chat-pending-btn" onclick="eaOpenSlipUploader()">
+  📤 Saya dah bayar nak hantar slip
+</button>
       </div>
     `;
 
@@ -1970,6 +1981,122 @@ function isNearBottom(el, gap = 120){
     }
     return outputArray;
   }
+
+let __eaNativeAttachBusy = false;
+
+async function attachNativePushForCurrentChatSilent(){
+  try{
+    if (__eaNativeAttachBusy) return false;
+    if (!isNativeCapacitorApp()) return false;
+
+    const phone = localStorage.getItem(KEY_PHONE) || "";
+    const threadId = localStorage.getItem(KEY_THREAD) || "";
+
+    if (!phone || !threadId) return false;
+
+    const PushNotifications = getNativePushPlugin();
+    const nativePlatform = getNativePlatform() || "unknown";
+
+    if (!PushNotifications) return false;
+
+    let perm = "prompt";
+
+    try{
+      const checked = await PushNotifications.checkPermissions();
+      perm = String(checked?.receive || "prompt");
+    }catch(e){}
+
+    if (perm !== "granted") return false;
+
+    __eaNativeAttachBusy = true;
+
+    return await new Promise((resolve) => {
+      let done = false;
+      let regHandle = null;
+      let errHandle = null;
+
+      const finish = async (ok) => {
+        if (done) return;
+        done = true;
+
+        try{
+          if (regHandle && typeof regHandle.remove === "function") await regHandle.remove();
+        }catch(e){}
+
+        try{
+          if (errHandle && typeof errHandle.remove === "function") await errHandle.remove();
+        }catch(e){}
+
+        __eaNativeAttachBusy = false;
+        resolve(ok);
+      };
+
+      Promise.resolve(
+        PushNotifications.addListener("registration", async (token) => {
+          try{
+            const res = await fetch("/.netlify/functions/save-device-token", {
+              method:"POST",
+              headers:{ "Content-Type":"application/json" },
+              body:JSON.stringify({
+                token: token?.value || "",
+                platform: nativePlatform,
+                phone,
+                thread_id: threadId || null,
+                user_agent: navigator.userAgent || ""
+              })
+            });
+
+            const j = await res.json().catch(() => ({}));
+
+            if (res.ok && j.ok === true){
+              console.log("[native token attached]", {
+                phone,
+                thread_id: threadId
+              });
+              finish(true);
+            }else{
+              console.warn("[native token attach failed]", j);
+              finish(false);
+            }
+          }catch(e){
+            console.warn("[native token attach error]", e);
+            finish(false);
+          }
+        })
+      ).then(h => regHandle = h).catch(()=>{});
+
+      Promise.resolve(
+        PushNotifications.addListener("registrationError", (err) => {
+          console.warn("[native token attach registrationError]", err);
+          finish(false);
+        })
+      ).then(h => errHandle = h).catch(()=>{});
+
+      try{
+        PushNotifications.register();
+      }catch(e){
+        console.warn("[native register silent error]", e);
+        finish(false);
+      }
+
+      setTimeout(() => finish(false), 12000);
+    });
+
+  }catch(e){
+    __eaNativeAttachBusy = false;
+    console.warn("[attachNativePushForCurrentChatSilent error]", e);
+    return false;
+  }
+}
+
+async function attachPushForCurrentChatSilent(){
+  if (isNativeCapacitorApp()){
+    return await attachNativePushForCurrentChatSilent();
+  }
+
+  await subscribePushForCurrentChat();
+  return true;
+}
 
   async function subscribePushForCurrentChat() {
     try {
@@ -2249,11 +2376,13 @@ function isNearBottom(el, gap = 120){
 
         try {
           const data = action?.notification?.data || {};
-          const url = data.url || data.target_url || "";
+          const url =
+  data.url ||
+  data.target_url ||
+  data.deeplink ||
+  "/chat.html";
 
-          if (url) {
-            window.location.href = url;
-          }
+window.location.href = url;
         } catch (e) {
           console.warn("[native push action url error]", e);
         }
@@ -4506,7 +4635,7 @@ arr.forEach(x => {
 lblThread.textContent = newThread;
 
 subscribeChatRealtime(newThread).catch(()=>{});
-subscribePushForCurrentChat().catch(()=>{});
+attachPushForCurrentChatSilent().catch(()=>{});
 refreshNotifButtonState().catch(()=>{});
         } else if (newThread) {
           localStorage.setItem(KEY_THREAD, newThread);
@@ -5305,35 +5434,51 @@ refreshActiveParcelBox().catch(()=>{});
 
   btnRemoveFile.onclick = clearPendingFile;
 
-  fileInput.addEventListener("change", () => {
-    const f = fileInput.files && fileInput.files[0] ? fileInput.files[0] : null;
-    if (!f){
-      clearPendingFile();
-      return;
-    }
+ fileInput.addEventListener("change", () => {
+  const f = fileInput.files && fileInput.files[0] ? fileInput.files[0] : null;
+  if (!f){
+    eaAutoSlipUpload = false;
+    clearPendingFile();
+    return;
+  }
 
-    const okImg = /^image\//i.test(f.type);
-    const okPdf = (f.type === "application/pdf");
-    if (!okImg && !okPdf){
-      alert("Fail tak disokong. Sila pilih gambar atau PDF.");
-      clearPendingFile();
-      return;
-    }
+  const okImg = /^image\//i.test(f.type);
+  const okPdf = (f.type === "application/pdf");
 
-    pendingFile = f;
+  if (!okImg && !okPdf){
+    eaAutoSlipUpload = false;
+    alert("Fail tak disokong. Sila pilih gambar atau PDF.");
+    clearPendingFile();
+    return;
+  }
 
-    fileNameEl.textContent = f.name || "fail";
-    fileTypeEl.textContent = f.type ? ("(" + f.type + ")") : "";
-    filePreview.style.display = "block";
+  pendingFile = f;
+  fileNameEl.textContent = f.name || "fail";
+  fileTypeEl.textContent = f.type ? ("(" + f.type + ")") : "";
+  filePreview.style.display = "block";
 
-    if (okImg){
-      fileThumbWrap.style.display = "block";
-      const url = URL.createObjectURL(f);
-      fileThumb.src = url;
-    } else {
-      fileThumbWrap.style.display = "none";
-    }
-  });
+  if (okImg){
+    fileThumbWrap.style.display = "block";
+    const url = URL.createObjectURL(f);
+    fileThumb.src = url;
+  } else {
+    fileThumbWrap.style.display = "none";
+  }
+
+  // Bila customer tekan butang Hantar Slip Bayaran,
+  // lepas pilih gambar/PDF terus auto hantar.
+  if (eaAutoSlipUpload){
+    eaAutoSlipUpload = false;
+
+    txt.value = "Slip bayaran";
+
+    setTimeout(() => {
+      if (btnSend && !btnSend.disabled){
+        btnSend.click();
+      }
+    }, 250);
+  }
+});
 
   function safeName(name){
     const n = String(name||"file").trim();
@@ -5484,6 +5629,20 @@ if (window.Capacitor) {
   }
 }
 
+let statusRef = null;
+let fromStatus = false;
+
+try{
+  const qs = new URLSearchParams(location.search);
+  fromStatus = qs.get("from") === "status";
+
+  if (fromStatus){
+    statusRef = JSON.parse(localStorage.getItem("ea_chat_from_status") || "null");
+  }
+}catch(e){
+  statusRef = null;
+}
+
 const payload = {
   phone: rawPhone,
   thread_id: threadId || null,
@@ -5491,7 +5650,10 @@ const payload = {
   attachment: attachment,
   is_logged_in: isLoggedIn(),
   is_real_app: !!window.Capacitor,
-  app_platform: appPlatform
+  app_platform: appPlatform,
+
+  source: fromStatus ? "status" : "",
+  status_ref: statusRef
 };
 
       const r = await fetch("/.netlify/functions/chat-send", {
@@ -5815,7 +5977,7 @@ eaLoadChatPendingHero().catch(()=>{});
 requireLoginGate();
 
     initLocalAdminNotification()
-      .then(() => subscribePushForCurrentChat())
+      .then(() => attachPushForCurrentChatSilent())
       .catch(()=>{});
 
    refreshNotifButtonState()

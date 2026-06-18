@@ -31,11 +31,44 @@ function cleanIc(raw){
   return String(raw || "").replace(/\D+/g, "");
 }
 
+/* ✅ Ambil semua thread lebih 1000 row */
+async function fetchAllThreads(supabase, days){
+  const pageSize = 1000;
+  let from = 0;
+  const all = [];
+
+  while (true){
+    let query = supabase
+      .from("chat_threads")
+      .select("id, customer_phone, last_message_at")
+      .not("customer_phone", "is", null)
+      .neq("customer_phone", "")
+      .order("last_message_at", { ascending:false })
+      .range(from, from + pageSize - 1);
+
+    if (days > 0){
+      const date = new Date();
+      date.setDate(date.getDate() - days);
+      query = query.gte("last_message_at", date.toISOString());
+    }
+
+    const { data, error } = await query;
+    if (error) throw error;
+
+    all.push(...(data || []));
+
+    if (!data || data.length < pageSize) break;
+    from += pageSize;
+  }
+
+  return all;
+}
+
 exports.handler = async (event) => {
   try{
     const body = JSON.parse(event.body || "{}");
     const segment = body.segment_type || "ALL";
-    const phonesInput = body.phones || [];
+    const phonesInput = Array.isArray(body.phones) ? body.phones : [];
 
     const supabase = createClient(
       process.env.SUPABASE_URL,
@@ -47,11 +80,12 @@ exports.handler = async (event) => {
     if (segment === "MANUAL"){
       const phones = phonesInput.map(normalizePhone).filter(Boolean);
 
-      const { data } = await supabase
+      const { data, error } = await supabase
         .from("chat_threads")
-        .select("id, customer_phone")
+        .select("id, customer_phone, last_message_at")
         .in("customer_phone", phones);
 
+      if (error) throw error;
       threads = data || [];
 
     } else if (segment === "BIRTHDAY_TOMORROW" || segment === "BIRTHDAY_TODAY") {
@@ -63,7 +97,7 @@ exports.handler = async (event) => {
         .from("customers")
         .select("id, name, customer_name, phone, ic")
         .not("ic", "is", null)
-        .limit(5000);
+        .limit(10000);
 
       if (custErr) throw custErr;
 
@@ -114,23 +148,11 @@ exports.handler = async (event) => {
       if (segment === "14D") days = 14;
       if (segment === "30D") days = 30;
 
-      let query = supabase
-        .from("chat_threads")
-        .select("id, customer_phone, last_message_at");
-
-      if (days > 0){
-        const date = new Date();
-        date.setDate(date.getDate() - days);
-        query = query.gte("last_message_at", date.toISOString());
-      }
-
-      const { data, error } = await query;
-      if (error) throw error;
-
-      threads = data || [];
+      threads = await fetchAllThreads(supabase, days);
     }
 
     const map = {};
+
     for (const t of threads){
       const p = normalizePhone(t.customer_phone);
       if (!p) continue;
@@ -149,6 +171,6 @@ exports.handler = async (event) => {
     });
 
   }catch(e){
-    return json(500, { ok:false, error:e.message });
+    return json(500, { ok:false, error:e.message || String(e) });
   }
 };

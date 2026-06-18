@@ -120,7 +120,8 @@ exports.handler = async (event) => {
     const platform = String(payload.platform || payload.token_type || "").trim().toLowerCase();
 
     const title = String(payload.title || "Emas Amir").trim();
-    const body = String(payload.body || "Anda ada mesej baru").trim();
+const body = String(payload.body || "Anda ada mesej baru").trim();
+const url = String(payload.url || payload.deeplink || payload.target_url || "/chat.html").trim();
 
     const isProbablyFcm = deviceToken.includes(":") || deviceToken.length > 120;
 const isAndroid = platform === "android" || platform === "fcm" || isProbablyFcm;
@@ -181,8 +182,14 @@ const isAndroid = platform === "android" || platform === "fcm" || isProbablyFcm;
 
     const note = new apn.Notification();
     note.alert = { title, body };
-    note.sound = "default";
-    note.topic = topic;
+note.sound = "default";
+note.topic = topic;
+note.payload = {
+  url,
+  deeplink: url,
+  target_url: url,
+  source: "emasamir_chat",
+};
 
     const result = await provider.send(note, deviceToken);
 

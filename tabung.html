@@ -2143,6 +2143,20 @@ attachPickerToInput(
     currentX = 0;
   }, { passive:true });
 })();
+
+window.addEventListener("load", ()=>{
+  const params = new URLSearchParams(location.search);
+
+  if (params.get("open") === "buy"){
+    setTimeout(()=>{
+      try{
+        openPanel("panelBuy");
+      }catch(e){
+        console.warn("auto open buy panel error:", e);
+      }
+    }, 800);
+  }
+});
 </script>
 </body>
 </html>

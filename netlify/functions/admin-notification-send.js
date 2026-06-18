@@ -55,6 +55,39 @@ function todayMY(offsetDays){
   return mm + dd;
 }
 
+/* ✅ Ambil semua thread lebih 1000 row */
+async function fetchAllThreads(supabase, days){
+  const pageSize = 1000;
+  let from = 0;
+  const all = [];
+
+  while (true){
+    let query = supabase
+      .from("chat_threads")
+      .select("*")
+      .not("customer_phone", "is", null)
+      .neq("customer_phone", "")
+      .order("last_message_at", { ascending:false })
+      .range(from, from + pageSize - 1);
+
+    if (days > 0){
+      const date = new Date();
+      date.setDate(date.getDate() - days);
+      query = query.gte("last_message_at", date.toISOString());
+    }
+
+    const { data, error } = await query;
+    if (error) throw error;
+
+    all.push(...(data || []));
+
+    if (!data || data.length < pageSize) break;
+    from += pageSize;
+  }
+
+  return all;
+}
+
 async function fetchCustomersByPhoneVariants(supabase, variants){
   const uniq = Array.from(new Set((variants || []).filter(Boolean)));
   if (!uniq.length) return [];
@@ -218,22 +251,130 @@ async function getSegmentThreads(supabase, segment, phonesInput){
   if (segment === "14D") days = 14;
   if (segment === "30D") days = 30;
 
-  let query = supabase
-    .from("chat_threads")
-    .select("*")
-    .order("last_message_at", { ascending:false });
-
-  if (days > 0){
-    const date = new Date();
-    date.setDate(date.getDate() - days);
-    query = query.gte("last_message_at", date.toISOString());
-  }
-
-  const { data, error } = await query;
-
-  if (error) throw error;
+  const data = await fetchAllThreads(supabase, days);
 
   return await attachCustomerNamesByPhone(supabase, data || []);
+}
+
+async function fetchAllDeviceTokens(supabase){
+  const pageSize = 1000;
+  let from = 0;
+  const all = [];
+
+  while (true){
+    const { data, error } = await supabase
+      .from("chat_device_tokens")
+      .select("device_token, platform, token_type, customer_phone, thread_id, is_active, updated_at")
+      .eq("is_active", true)
+      .not("device_token", "is", null)
+      .neq("device_token", "")
+      .order("updated_at", { ascending:false })
+      .range(from, from + pageSize - 1);
+
+    if (error) throw error;
+
+    all.push(...(data || []));
+
+    if (!data || data.length < pageSize) break;
+    from += pageSize;
+  }
+
+  return all;
+}
+
+function filterDeviceTokensBySegment(tokens, tokenSegment, phonesInput){
+  const seg = String(tokenSegment || "WITH_THREAD").toUpperCase();
+
+  const manualPhones = new Set(
+    (phonesInput || [])
+      .map(normalizePhone)
+      .filter(Boolean)
+  );
+
+  return (tokens || []).filter(t => {
+    const p = normalizePhone(t.customer_phone || "");
+    const threadId = String(t.thread_id || "").trim();
+
+    if (seg === "WITH_THREAD"){
+      return !!threadId;
+    }
+
+    if (seg === "TOKEN_ONLY"){
+      return !threadId;
+    }
+
+    if (seg === "MANUAL"){
+      if (!manualPhones.size) return false;
+      return !!p && manualPhones.has(p);
+    }
+
+    return !!threadId;
+  });
+}
+
+function buildTokenRecipientRows({
+  campaignId,
+  tokens,
+  selectedPhones,
+  title,
+  message,
+  target_url,
+  campaignType,
+  onlyMissingThread
+}){
+  const rows = [];
+  const seenToken = new Set();
+  const phoneSet = new Set(
+    Array.from(selectedPhones || []).map(normalizePhone).filter(Boolean)
+  );
+
+  for (const t of (tokens || [])){
+    const deviceToken = String(t.device_token || "").trim();
+    if (!deviceToken) continue;
+    if (seenToken.has(deviceToken)) continue;
+
+    const p = normalizePhone(t.customer_phone || "");
+    const threadId = String(t.thread_id || "").trim();
+
+    /*
+      Jika onlyMissingThread = true:
+      - token yang phone dia sudah termasuk dalam thread target akan skip
+      - elak double push
+      - token anonymous / belum daftar tetap masuk
+    */
+    if (onlyMissingThread && p && phoneSet.has(p)){
+      continue;
+    }
+
+    seenToken.add(deviceToken);
+
+    rows.push({
+      campaign_id: campaignId,
+      thread_id: null,
+      customer_phone: p || null,
+      status: "PENDING",
+      sent_at: null,
+      error_message: null,
+      meta: {
+        recipient_type: "TOKEN",
+        device_token: deviceToken,
+        platform: t.platform || "",
+        token_type: t.token_type || "",
+        source: "chat_device_tokens",
+
+        // kalau token ada phone/thread, simpan juga untuk rujukan
+        customer_phone: p || null,
+        linked_thread_id: threadId || null,
+
+        title,
+        body: message,
+        target_url,
+        campaign_type: campaignType
+      }
+    });
+  }
+
+  return rows;
 }
 
 function personalizeText(text, t){
@@ -252,6 +393,7 @@ exports.handler = async (event) => {
     const body = JSON.parse(event.body || "{}");
 
     const segment = body.segment_type || "ALL";
+const tokenSegment = body.token_segment_type || segment;
     const message = String(body.message || "").trim();
     const title = String(body.title || "").trim();
     const target_url = String(body.target_url || "").trim();
@@ -266,7 +408,11 @@ exports.handler = async (event) => {
       process.env.SUPABASE_SERVICE_ROLE_KEY
     );
 
-    const threads = await getSegmentThreads(supabase, segment, phonesInput);
+    const useThreadTargets = body.use_thread_targets !== false;
+
+const threads = useThreadTargets
+  ? await getSegmentThreads(supabase, segment, phonesInput)
+  : [];
 
     const map = {};
 
@@ -280,79 +426,136 @@ exports.handler = async (event) => {
       }
     }
 
-    const finalList = Object.values(map);
+   const finalList = Object.values(map);
 
-    const campaignType =
-      segment === "BIRTHDAY_TOMORROW" ? "BIRTHDAY_TOMORROW" :
-      segment === "BIRTHDAY_TODAY" ? "BIRTHDAY_TODAY" :
-      String(body.campaign_type || body.template_type || "");
+const campaignType =
+  segment === "BIRTHDAY_TOMORROW" ? "BIRTHDAY_TOMORROW" :
+  segment === "BIRTHDAY_TODAY" ? "BIRTHDAY_TODAY" :
+  String(body.campaign_type || body.template_type || "");
 
-    const { data: campaign, error: campaignErr } = await supabase
-      .from("notification_campaigns")
-      .insert({
-        title,
-        body: message,
-        target_url,
-        segment_type: segment,
-        total_target: finalList.length,
-        total_sent: 0,
-        total_failed: 0,
-        status: "SENDING",
-        meta: {
-          campaign_type: campaignType,
-          personalized: true,
-          queue: true,
-          batch_size: 20
-        }
-      })
-      .select()
-      .single();
+const includeDeviceTokens =
+  body.include_device_tokens === true ||
+  body.include_device_tokens === "true";
 
-    if (campaignErr) throw campaignErr;
+const onlyMissingThread =
+  body.device_token_only_for_missing_thread !== false;
 
-    const rows = finalList.map(t => {
-      const p = normalizePhone(t.customer_phone);
-      const name = String(t.customer_name || "Cik").trim() || "Cik";
+const selectedPhones = new Set(
+  finalList
+    .map(t => normalizePhone(t.customer_phone))
+    .filter(Boolean)
+);
 
-      return {
-        campaign_id: campaign.id,
-        thread_id: t.id,
-        customer_phone: p || t.customer_phone,
-        status: "PENDING",
-        sent_at: null,
-        error_message: null,
-        meta: {
-          customer_id: t.customer_id || null,
-          customer_name: name,
-          title,
-          body: personalizeText(message, t),
-          target_url,
-          campaign_type: campaignType
-        }
-      };
-    });
+let tokenRows = [];
 
-    let inserted = 0;
+if (includeDeviceTokens){
+  const allTokens = await fetchAllDeviceTokens(supabase);
 
-    if (rows.length){
-      for (const batch of chunkArray(rows, 100)){
-        const { error: recErr } = await supabase
-          .from("notification_campaign_recipients")
-          .insert(batch);
+  const tokens = filterDeviceTokensBySegment(
+    allTokens,
+    tokenSegment,
+    phonesInput
+  );
 
-        if (recErr) throw recErr;
-        inserted += batch.length;
-      }
+  tokenRows = buildTokenRecipientRows({
+    campaignId: "TEMP",
+    tokens,
+    selectedPhones,
+    title,
+    message,
+    target_url,
+    campaignType,
+    onlyMissingThread
+  });
+}
+const totalTarget = finalList.length + tokenRows.length;
+
+const { data: campaign, error: campaignErr } = await supabase
+  .from("notification_campaigns")
+  .insert({
+    title,
+    body: message,
+    target_url,
+    segment_type: segment,
+    total_target: totalTarget,
+    total_sent: 0,
+    total_failed: 0,
+    status: "SENDING",
+    meta: {
+      campaign_type: campaignType,
+      personalized: true,
+      queue: true,
+      batch_size: 20,
+
+      include_device_tokens: includeDeviceTokens,
+      device_token_only_for_missing_thread: onlyMissingThread,
+      thread_target: finalList.length,
+      token_target: tokenRows.length
     }
+  })
+  .select()
+  .single();
 
-    return json(200, {
-      ok: true,
-      queued: true,
-      campaign_id: campaign.id,
-      total: finalList.length,
-      inserted,
-      message: "Campaign queue created. Worker will process recipients by batch."
-    });
+if (campaignErr) throw campaignErr;
+
+const threadRows = finalList.map(t => {
+  const p = normalizePhone(t.customer_phone);
+  const name = String(t.customer_name || "Cik").trim() || "Cik";
+
+  return {
+    campaign_id: campaign.id,
+    thread_id: t.id,
+    customer_phone: p || t.customer_phone,
+    status: "PENDING",
+    sent_at: null,
+    error_message: null,
+    meta: {
+      recipient_type: "THREAD",
+      customer_id: t.customer_id || null,
+      customer_name: name,
+      title,
+      body: personalizeText(message, t),
+      target_url,
+      campaign_type: campaignType
+    }
+  };
+});
+
+if (includeDeviceTokens && tokenRows.length){
+  tokenRows = tokenRows.map(r => ({
+    ...r,
+    campaign_id: campaign.id
+  }));
+}
+
+const rows = [
+  ...threadRows,
+  ...tokenRows
+];
+
+let inserted = 0;
+
+if (rows.length){
+  for (const batch of chunkArray(rows, 100)){
+    const { error: recErr } = await supabase
+      .from("notification_campaign_recipients")
+      .insert(batch);
+
+    if (recErr) throw recErr;
+    inserted += batch.length;
+  }
+}
+
+return json(200, {
+  ok: true,
+  queued: true,
+  campaign_id: campaign.id,
+  total: totalTarget,
+  thread_target: finalList.length,
+  token_target: tokenRows.length,
+  inserted,
+  message: "Campaign queue created. Worker will process recipients by batch."
+});
 
   }catch(e){
     console.error("[admin-notification-send error]", e);

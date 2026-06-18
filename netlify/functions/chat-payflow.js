@@ -445,15 +445,29 @@ exports.handle = async function handle(ctx = {}) {
       pay_started_at: nowIso()
     };
 
-    await updateThread(sb, threadId, { status: "PAY_WAIT_UPLOAD", meta: nextMeta });
+   await updateThread(sb, threadId, { status: "PAY_WAIT_UPLOAD", meta: nextMeta });
 
-    const reply =
-      `Baik cik ✅ Saya jumpa 1 order yang masih *PENDING*.\n\n` +
-      `• Order: *${displayCode}*\n` +
-      (amountRm > 0 ? `• Jumlah: *${fmtRM(amountRm)}*\n\n` : `\n`) +
-      `Sekarang sila *upload slip bayaran* di sini (gambar / PDF).`;
+// ✅ Jika customer tekan "Saya dah bayar nak hantar slip"
+// dan terus upload gambar/PDF sekali,
+// jangan suruh upload lagi. Terus proses attachment itu.
+if (attachment && attachment.url) {
+  return await exports.handle({
+    ...ctx,
+    thread: {
+      ...(thread || {}),
+      status: "PAY_WAIT_UPLOAD",
+      meta: nextMeta
+    }
+  });
+}
 
-    return { reply, action: "payflow_start_single", meta: { payflow: true, step: "PAY_WAIT_UPLOAD", slip_id: slipId } };
+const reply =
+  `Baik cik ✅ Saya jumpa 1 order yang masih *PENDING*.\n\n` +
+  `• Order: *${displayCode}*\n` +
+  (amountRm > 0 ? `• Jumlah: *${fmtRM(amountRm)}*\n\n` : `\n`) +
+  `Sekarang sila *upload slip bayaran* di sini (gambar / PDF).`;
+
+return { reply, action: "payflow_start_single", meta: { payflow: true, step: "PAY_WAIT_UPLOAD", slip_id: slipId } };
   }
 
   // ===== STEP 2: WAIT UPLOAD =====
@@ -546,24 +560,13 @@ exports.handle = async function handle(ctx = {}) {
         `Kalau cik nak saya *baca butiran slip secara automatik*, tolong hantar *screenshot/imej* slip tu ya (gambar lebih mudah dibaca).`;
     }
 
-   const slipLink = attachment?.url ? String(attachment.url) : "";
-const slipLinkText = slipLink ? `\n\n📎 Slip yang cik hantar:\n${slipLink}` : "";
-
-const reply =
+ const reply =
       `✅ Baik cik, slip bayaran telah diterima.\n` +
       `Kami akan semak & padankan bayaran (statement) ya. Terima kasih 🙏` +
       (slipDetailText || "") +
-      (pdfHint || "") +
-      slipLinkText;
+      (pdfHint || "");
 
-    try {
-      await insertAiMessage(sb, threadId, reply, {
-        payflow: true,
-        slip_id: slipId,
-        file_url: attachment.url,
-        slip_extract: slipExtract || null
-      });
-    } catch (_) {}
+    
 
     return {
       reply,

@@ -514,7 +514,34 @@
     color:#111827;
     margin-top:8px;
   }
+.status-ref-card{
+  margin-bottom:8px;
+  padding:10px 11px;
+  border-radius:12px;
+  background:#fff7ed;
+  border:1px solid #fdba74;
+  color:#7c2d12;
+  font-size:12px;
+  line-height:1.35;
+}
 
+.status-ref-title{
+  font-weight:900;
+  margin-bottom:6px;
+}
+
+.status-ref-caption{
+  margin-top:5px;
+  white-space:pre-wrap;
+}
+
+.status-ref-link{
+  display:inline-block;
+  margin-top:7px;
+  font-weight:800;
+  color:#9a3412;
+  text-decoration:underline;
+}
   .reply-quote{
     border-left:3px solid #94a3b8;
     padding-left:8px;
@@ -1723,10 +1750,15 @@ await subscribeActiveThread(threadId);
       const type = roleType(m);
       const label = roleLabel(m);
       const textHtml = linkify(m.text || "");
-      const att = attachmentFromMessage(m);
-      const reacts = reactionsFromMeta(m.meta || {});
-      const adminComment = commentFromMeta(m.meta || {});
-      const replyPreviewMeta = m?.meta?.reply_preview || null;
+    const meta = m.meta || {};
+const att = attachmentFromMessage(m);
+const reacts = reactionsFromMeta(meta);
+const adminComment = commentFromMeta(meta);
+const replyPreviewMeta = meta?.reply_preview || null;
+
+const statusRef = meta?.status_ref || null;
+const isStatusMessage =
+  String(meta?.source || "").toLowerCase() === "status";
 
       let replyHtml = "";
       if (replyPreviewMeta) {
@@ -1741,7 +1773,49 @@ await subscribeActiveThread(threadId);
           </div>
         `;
       }
+let statusHtml = "";
 
+if (isStatusMessage && statusRef) {
+  const caption =
+    statusRef.status_caption ||
+    statusRef.caption ||
+    statusRef.text ||
+    "";
+
+  const statusLink =
+    statusRef.status_link ||
+    statusRef.link ||
+    "";
+
+  const mediaUrl =
+    statusRef.status_media_url ||
+    statusRef.media_url ||
+    "";
+
+  statusHtml = `
+    <div class="status-ref-card">
+      <div class="status-ref-title">📢 Pertanyaan Dari Status</div>
+
+      ${
+        caption
+          ? `<div class="status-ref-caption">${escapeHtml(caption)}</div>`
+          : ``
+      }
+
+      ${
+        mediaUrl
+          ? `<a class="status-ref-link" href="${escapeHtml(mediaUrl)}" target="_blank" rel="noopener">🖼️ Buka media status</a>`
+          : ``
+      }
+
+      ${
+        statusLink
+          ? `<br><a class="status-ref-link" href="${escapeHtml(statusLink)}" target="_blank" rel="noopener">🔗 Buka status asal</a>`
+          : ``
+      }
+    </div>
+  `;
+}
       let attachHtml = "";
       if (att && att.url) {
         const isImg = /^image\//i.test(att.mime || "");
@@ -1798,9 +1872,10 @@ await subscribeActiveThread(threadId);
           <div class="msg-row ${type}">
             <div class="bubble">
               <div class="msg-role">${escapeHtml(label)}</div>
-              ${replyHtml}
-              <div>${textHtml}</div>
-              ${attachHtml}
+            ${replyHtml}
+${statusHtml}
+<div>${textHtml}</div>
+${attachHtml}
               ${reactsHtml}
               ${commentHtml}
               ${actionsHtml}

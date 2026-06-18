@@ -195,7 +195,32 @@
   .store-row{gap:8px}
   .app-download-title{font-size:16px}
 }
-  </style>
+
+
+/* ===== CONFIRM + PENDING — ikut live-now ===== */
+.live-confirm-backdrop{
+  position:fixed;inset:0;background:rgba(2,6,23,.78);display:none;
+  align-items:flex-end;justify-content:center;z-index:1000002;backdrop-filter:blur(7px);
+}
+.live-confirm-sheet{
+  width:100%;max-width:520px;max-height:92vh;overflow:auto;background:#fff;color:#111827;
+  border-radius:24px 24px 0 0;box-shadow:0 -24px 70px rgba(0,0,0,.45);padding:16px;
+}
+.live-confirm-item{display:flex;gap:12px;padding:12px;border:1px solid #e5e7eb;border-radius:18px;background:#f9fafb;}
+.live-confirm-img{width:78px;height:78px;border-radius:15px;object-fit:cover;background:#e5e7eb;}
+.live-confirm-note{border:1px solid #fecaca;background:#fff1f2;color:#991b1b;border-radius:16px;padding:12px;font-size:14px;line-height:1.45;}
+.pending-card-live{display:flex;gap:10px;padding:10px;border:1px solid #e5e7eb;border-radius:15px;background:#fff;margin-top:8px;}
+.pending-card-live img{width:58px;height:58px;border-radius:12px;object-fit:cover;background:#e5e7eb;}
+.atome-off-note{border:1px solid #e5e7eb;background:#f9fafb;color:#6b7280;border-radius:14px;padding:10px 12px;font-size:13px;font-weight:800;}
+  
+.live-checkout-handle{
+  width:48px;
+  height:5px;
+  border-radius:999px;
+  background:#d1d5db;
+  margin:0 auto 12px;
+}
+</style>
 </head>
 
 <body>
@@ -364,8 +389,36 @@
     </div>
 
     <div class="submit-wrap">
-      <button id="submitBtn" class="btn btn-danger big-btn w-100" onclick="submitToAiDan()">
+      <button id="submitBtn" class="btn btn-danger big-btn w-100" onclick="openLiveConfirmBeforeSubmit()">
         Submit Lock & Dapat Detail Bayaran
+      </button>
+    </div>
+  </div>
+</div>
+
+
+
+<div id="liveConfirmModal" class="live-confirm-backdrop">
+  <div class="live-confirm-sheet">
+    <div class="live-checkout-handle"></div>
+
+    <div class="d-flex justify-content-between align-items-center mb-2">
+      <div>
+        <div style="font-weight:950;font-size:20px;">Sahkan Belian LIVE</div>
+        <div class="text-muted small">Semak dahulu sebelum order dibuat</div>
+      </div>
+      <button type="button" class="btn btn-light rounded-pill" onclick="closeLiveConfirmModal()">✕</button>
+    </div>
+
+    <div id="liveConfirmBody"></div>
+
+    <div class="d-flex gap-2 mt-3">
+      <button type="button" class="btn btn-light fw-bold flex-fill rounded-pill py-3" onclick="closeLiveConfirmModal()">
+        Semak Balik
+      </button>
+
+      <button id="btnConfirmCreateLiveOrder" type="button" class="btn btn-danger fw-bold flex-fill rounded-pill py-3" onclick="submitLiveLockConfirmed()">
+        Ya, Teruskan Buat Order
       </button>
     </div>
   </div>
@@ -401,6 +454,49 @@ let state = {
   length_cm: 0
 };
 
+let LIVE_ATOME_ENABLED = false;
+
+function safeTxt(v){
+  return String(v || "")
+    .replace(/&/g,"&amp;")
+    .replace(/</g,"&lt;")
+    .replace(/>/g,"&gt;")
+    .replace(/"/g,"&quot;")
+    .replace(/'/g,"&#039;");
+}
+
+async function loadLivePaymentSettings(){
+  try{
+    const { data, error } = await sb
+      .from("live_payment_settings")
+      .select("atome_enabled")
+      .eq("id", 1)
+      .maybeSingle();
+
+    if (error) throw error;
+    LIVE_ATOME_ENABLED = !!data?.atome_enabled;
+  }catch(e){
+    console.warn("loadLivePaymentSettings error:", e);
+    LIVE_ATOME_ENABLED = false;
+  }
+}
+
+function applyAtomeVisibility(){
+  const btn = document.getElementById("payAtome");
+  if (!btn) return;
+
+  if (state.type !== "916"){
+    btn.style.display = "none";
+    return;
+  }
+
+  btn.style.display = LIVE_ATOME_ENABLED ? "" : "none";
+
+  if (!LIVE_ATOME_ENABLED && String(state.pay || "").toUpperCase() === "ATOME"){
+    state.pay = "TRANSFER";
+  }
+}
+
 function money(n){
   return "RM " + Number(n || 0).toFixed(2);
 }
@@ -416,6 +512,48 @@ function normalizePhone(msisdn){
 
 function getLiveUserPhone(){
   return normalizePhone(liveUser?.phone || liveUser?.msisdn || "");
+}
+
+
+function getPostFeeByAddress(address){
+  const raw = String(address || "").trim();
+  if (!raw) return 10;
+
+  const txt = raw.toLowerCase();
+
+  // Singapore / Singapura = RM50
+  if (/\b(singapore|singapura|sg)\b/i.test(txt)) return 50;
+
+  // Sabah / Sarawak / Labuan = RM20
+  if (/\b(sabah|sarawak|labuan)\b/i.test(txt)) return 20;
+
+  // Kesan ikut poskod Malaysia Timur
+  const postcodes = raw.match(/\b\d{5}\b/g) || [];
+  for (const pc of postcodes){
+    const prefix = Number(pc.slice(0,2));
+
+    // Labuan 87xxx, Sabah 88xxx-91xxx, Sarawak 93xxx-98xxx
+    if (prefix === 87 || (prefix >= 88 && prefix <= 91) || (prefix >= 93 && prefix <= 98)){
+      return 20;
+    }
+  }
+
+  // Default Semenanjung = RM10
+  return 10;
+}
+
+function getLiveShipFee(){
+  if (String(state.ship || "POST").toUpperCase() !== "POST") return 0;
+  const address = String(document.getElementById("address")?.value || "").trim();
+  return getPostFeeByAddress(address);
+}
+
+function bindLiveAddressFee(){
+  const el = document.getElementById("address");
+  if (!el || el.dataset.shipFeeBind === "1") return;
+  el.dataset.shipFeeBind = "1";
+  el.addEventListener("input", renderTotal);
+  el.addEventListener("change", renderTotal);
 }
 
 function fmtCm(v){
@@ -666,6 +804,7 @@ function renderItem(){
     document.getElementById("currentLen").value = state.length_cm + "cm";
   }
 
+  applyAtomeVisibility();
   renderTotal();
 }
 
@@ -709,7 +848,45 @@ async function getAuthUidForLiveLock(){
   return null;
 }
 
+async function getTabungLiveLockCustomer(){
+  const raw = liveUser?.phone || liveUser?.msisdn || "";
+  const digits = String(raw || "").replace(/\D/g, "");
+  const phone = digits.startsWith("60")
+    ? digits
+    : (digits.startsWith("0") ? "6" + digits : "60" + digits);
+
+  if (!phone) return null;
+
+  const variants = Array.from(new Set([
+    phone,
+    "+" + phone,
+    phone.startsWith("60") ? "0" + phone.slice(2) : phone
+  ].filter(Boolean)));
+
+  for (const ph of variants){
+    try{
+      const { data, error } = await sb
+        .from("customers")
+        .select("id,name,phone")
+        .eq("phone", ph)
+        .limit(1)
+        .maybeSingle();
+
+      if (!error && data) return data;
+    }catch(e){}
+  }
+
+  return null;
+}
+
 async function setPay(method){
+  method = String(method || "").toUpperCase();
+
+  if (method === "ATOME" && !LIVE_ATOME_ENABLED){
+    alert("Atome LIVE sedang OFF buat masa ini.");
+    method = "TRANSFER";
+  }
+
   state.pay = method;
 
   document.getElementById("payQR")?.classList.toggle("active", method === "QR");
@@ -722,6 +899,8 @@ async function setPay(method){
 
   const box = document.getElementById("tabungBox");
 
+  // Ikut live-now: hanya TABUNG_TOPUP sahaja boleh simpan nilai tabung.
+  // QR / TRANSFER / ATOME mesti kosongkan nilai tabung supaya confirm/submit tidak tersasar.
   if (state.type !== "916" || method !== "TABUNG_TOPUP"){
     window.__llTabungUnits = 0;
     window.__llTabungValue = 0;
@@ -748,6 +927,9 @@ async function setPay(method){
     const authId = await getAuthUidForLiveLock();
     if (!authId) throw new Error("Sesi login tamat.");
 
+    // IKUT LIVE-NOW SEBIJIK:
+    // Tabung + Topup ambil transaksi dari tabung_txn guna authId,
+    // match dua column sekali: user_id ATAU user_auth_id.
     const { data, error } = await sb
       .from("tabung_txn")
       .select("units, kind, type, status, user_id, user_auth_id, meta")
@@ -766,9 +948,23 @@ async function setPay(method){
       if (!units) return;
       if (status !== "PAID" && status !== "APPROVED") return;
 
-      if (kind === "BUY") totalUnits += units;
-      if (kind === "SELL" || kind === "WITHDRAW" || kind === "CONVERT_916") totalUnits -= units;
-      if (type === "BONUS") totalUnits += units;
+      // PENTING: ikut live-now sebijik.
+      // Kena return setiap condition, kalau tidak rekod BONUS yang kind BUY
+      // akan terkira 2 kali dan baki jadi terlebih.
+      if (kind === "BUY"){
+        totalUnits += units;
+        return;
+      }
+
+      if (kind === "SELL" || kind === "WITHDRAW" || kind === "CONVERT_916"){
+        totalUnits -= units;
+        return;
+      }
+
+      if (type === "BONUS"){
+        totalUnits += units;
+        return;
+      }
     });
 
     totalUnits = Math.max(0, totalUnits);
@@ -818,7 +1014,7 @@ async function setPay(method){
 }
 function renderTotal(){
   const subtotal = Number(state.price || 0);
-  const shipFee = state.ship === "POST" ? 10 : 0;
+  const shipFee = getLiveShipFee();
   const payMethod = String(state.pay || "").toUpperCase();
 
   const useTabung = state.type === "916" && payMethod === "TABUNG_TOPUP";
@@ -903,7 +1099,10 @@ function renderTotal(){
         if (city && !addr.toLowerCase().includes(city.toLowerCase())) addr += (addr ? ", " : "") + city;
         if (stateName && !addr.toLowerCase().includes(stateName.toLowerCase())) addr += (addr ? ", " : "") + stateName;
 
-        if (addr) document.getElementById("address").value = addr;
+        if (addr){
+          document.getElementById("address").value = addr;
+          renderTotal();
+        }
         return;
       }
     }
@@ -933,9 +1132,297 @@ async function chatSendLive(payload){
   return j;
 }
 
+
+function getLiveConfirmData(){
+  const row = state.row || {};
+  const ship = String(state.ship || "POST").toUpperCase();
+  const payMethod = String(state.pay || "TRANSFER").toUpperCase();
+  const shipFee = ship === "POST" ? getPostFeeByAddress(document.getElementById("address")?.value || "") : 0;
+  const itemPrice = Number(state.price || 0);
+  const useAtome = state.type === "916" && payMethod === "ATOME";
+  const useTabung = state.type === "916" && payMethod === "TABUNG_TOPUP";
+  const tabungValue = useTabung ? Number(window.__llTabungValue || 0) : 0;
+
+  let finalTotal = itemPrice + shipFee - tabungValue;
+  if (useAtome) finalTotal = Math.round((itemPrice + shipFee) * 1.08);
+  if (state.type === "999"){
+    finalTotal = Math.max(0,
+      itemPrice + shipFee -
+      Number(row.__ea_payment_discount_rm || 0) -
+      Number(row.__ea_aidan_discount_rm || 0)
+    );
+  }
+
+  let img = "", name = "", code = String(state.code || CODE || ""), detail = "";
+  if (state.type === "999"){
+    img = row.image_url || "";
+    name = `${row.kind_label || kind999Label(row.kind)} ${row.weight_label || (Number(row.weight_g || 0) + "g")}`;
+    detail = row.design_name || row.card_type || "Gold 999.9";
+  }else{
+    img = first916Img(row);
+    name = row.name || row.product_name || row.design_name || code || "Barang 916";
+    detail = liveDimText(row);
+  }
+
+  return { row, ship, payMethod, shipFee, itemPrice, finalTotal, img, name, code, detail };
+}
+
+async function fetchLivePendingOrders(){
+  const raw = String(getLiveUserPhone() || liveUser?.phone || liveUser?.msisdn || "").trim();
+  const d = raw.replace(/\D/g, "");
+  if (!d) return [];
+
+  const p0  = d.startsWith("0") ? d : (d.startsWith("60") ? "0" + d.slice(2) : "0" + d);
+  const p60 = d.startsWith("60") ? d : (d.startsWith("0") ? "6" + d : "60" + d);
+  const phoneVariants = Array.from(new Set([raw,d,p0,p60,"+"+p60].filter(Boolean)));
+  const all = [];
+
+  try{
+    const { data, error } = await sb
+      .from("j916_orders")
+      .select("*")
+      .in("phone", phoneVariants)
+      .eq("status", "PENDING")
+      .order("created_at", { ascending:false })
+      .limit(10);
+
+    if (!error){
+      (data || []).forEach(r=>all.push({__type:"916", ...r}));
+    }
+  }catch(e){ console.warn("fetch pending j916_orders error:", e); }
+
+  const codes916 = all.filter(r=>r.__type === "916").map(r=>String(r.code || "").toUpperCase().trim()).filter(Boolean);
+
+  if (codes916.length){
+    try{
+      const { data:itemRows, error } = await sb
+        .from("j916_items")
+        .select(`code, design:j916_designs (name,img1_url,img2_url,img3_url,img1,img2,img3)`)
+        .in("code", codes916);
+
+      if (!error && Array.isArray(itemRows)){
+        const imgMap = new Map();
+        itemRows.forEach(x=>{
+          const dsg = x.design || {};
+          imgMap.set(String(x.code || "").toUpperCase().trim(), {
+            name: dsg.name || "",
+            img: dsg.img1_url || dsg.img1 || dsg.img2_url || dsg.img2 || dsg.img3_url || dsg.img3 || ""
+          });
+        });
+        all.forEach(r=>{
+          const m = imgMap.get(String(r.code || "").toUpperCase().trim());
+          if (m?.img) r.__pending_img = m.img;
+          if (m?.name) r.__pending_name = m.name;
+        });
+      }
+    }catch(e){ console.warn("attach pending 916 image error:", e); }
+  }
+
+  try{
+    const { data, error } = await sb
+      .from("goldbar_order")
+      .select("*")
+      .or(`customer_phone.eq.${p60},customer_phone.eq.${p0},phone.eq.${p60},phone.eq.${p0}`)
+      .eq("status", "PENDING")
+      .order("created_at", { ascending:false })
+      .limit(10);
+
+    if (!error){
+      (data || []).forEach(r=>all.push({__type:"999", ...r}));
+    }
+  }catch(e){ console.warn("fetch pending goldbar_order error:", e); }
+
+  const seen = new Set();
+  return all.filter(r=>{
+    const key = String(r.id || r.reference || r.order_code || r.code || JSON.stringify(r));
+    if (seen.has(key)) return false;
+    seen.add(key);
+    return true;
+  }).slice(0,8);
+}
+
+function pendingOrderHTML(list){
+  if (!list.length){
+    return `<div class="small text-muted mt-2">Tiada pending order lain dijumpai.</div>`;
+  }
+
+  return list.map(r=>{
+    const type = r.__type || "";
+    const code = String(r.code || r.live_code || r.item_code || r.design_id || "-");
+    const name = String(r.__pending_name || r.name || r.item_name || r.product_name || r.design_name || r.title || (type === "999" ? "Gold 999.9" : "Barang 916"));
+    const berat = Number(r.weight_g || r.berat || r.grams || 0);
+    const panjang = fmtCm(r.length_cm || r.panjang_cm || r.current_length_cm || 0);
+    const price = Number(r.grand_total_rm ?? r.total_rm ?? r.unit_rm ?? r.price_rm ?? r.final_amount ?? r.amount_rm ?? r.total ?? 0);
+    const img = String(r.__pending_img || r.image_url || r.img1_url || r.img_url || r.img || r.product_img1 || r.design_img1 || "");
+    const spec = [berat > 0 ? `Berat ${berat.toFixed(2)}g` : "", panjang ? `Panjang ${panjang}` : ""].filter(Boolean).join(" • ");
+    const imgSrc = img || "https://placehold.co/120x120?text=" + encodeURIComponent(code || "ITEM");
+
+    return `
+      <div class="pending-card-live">
+        <img src="${safeTxt(imgSrc)}" alt="${safeTxt(code)}" onerror="this.onerror=null;this.src='https://placehold.co/120x120?text=${encodeURIComponent(code || "ITEM")}'">
+        <div style="min-width:0;flex:1;">
+          <div class="fw-bold">${safeTxt(name)}</div>
+          <div class="small text-muted">${safeTxt(code)}</div>
+          <div class="small text-muted">${safeTxt(spec || "-")}</div>
+          <div class="fw-bold text-danger">${price > 0 ? money(price) : "RM -"}</div>
+        </div>
+      </div>`;
+  }).join("");
+}
+
+function closeLiveConfirmModal(){
+  const modal = document.getElementById("liveConfirmModal");
+  if (modal) modal.style.display = "none";
+}
+
+async function openLiveConfirmBeforeSubmit(){
+  const msg = document.getElementById("msg");
+  const btn = document.getElementById("submitBtn");
+
+  try{
+    if (!liveUser){
+      document.getElementById("checkoutBox").style.display = "none";
+      document.getElementById("loginBox").style.display = "";
+      return;
+    }
+
+    const ship = String(state.ship || "POST").toUpperCase();
+    const payMethod = String(state.pay || "TRANSFER").toUpperCase();
+    const address = String(document.getElementById("address")?.value || "").trim();
+    const pickupWhen = String(document.getElementById("pickupWhen")?.value || "").trim();
+
+    if (ship === "POST" && address.length < 12) throw new Error("Sila isi alamat penuh dahulu.");
+    if (ship === "PICKUP" && !pickupWhen) throw new Error("Sila isi masa ambil kedai dahulu.");
+
+    if (state.type === "916"){
+      const cut = String(state.cut || "NO").toUpperCase();
+      const cutTo = String(document.getElementById("cutTo")?.value || "").trim();
+      const currentLength = String(document.getElementById("currentLen")?.value || "").trim();
+
+      if (cut === "YES"){
+        if (!currentLength || !cutTo){
+          throw new Error("Sila isi panjang asal dan potong jadi berapa cm.");
+        }
+
+        const currNum = Number(String(currentLength).replace(/[^0-9.]/g, ""));
+        const cutNum = Number(String(cutTo).replace(/[^0-9.]/g, ""));
+
+        if (!currNum || !cutNum){
+          throw new Error("Panjang asal / potong jadi mesti nombor cm yang sah.");
+        }
+
+        if (cutNum >= currNum){
+          throw new Error("Potong jadi mesti lebih pendek dari panjang asal.");
+        }
+      }
+    }
+
+    if (msg) msg.textContent = "Menyemak pending order...";
+    if (btn) btn.disabled = true;
+
+    const d = getLiveConfirmData();
+    const pending = await fetchLivePendingOrders();
+    const pendingLimitReached = pending.length >= 2;
+
+    let payNote = "";
+
+    if (d.payMethod === "ATOME"){
+      payNote = `
+        Ini adalah bayaran menggunakan <b>Atome</b>.<br>
+        Ansuran bulanan dan tempoh bayaran ditentukan sendiri di aplikasi Atome.
+        Minimum 3 bulan.<br><br>
+
+        Sila lengkapkan proses pembayaran Atome dalam tempoh <b>30 minit</b> selepas order dibuat.<br>
+        Jika perlukan masa tambahan, sila chat dengan admin dalam Ai-Dan sebelum masa tamat.<br><br>
+
+        ⚠️ Order akan dibatalkan secara automatik selepas 30 minit jika pembayaran Atome tidak berjaya diselesaikan dan tiada tambahan masa diberikan oleh admin.
+      `;
+    }else{
+      payNote = `
+        Ini adalah <b>belian tunai</b>.<br>
+        Bayaran perlu dibuat dalam tempoh <b>30 minit</b> selepas order dibuat.<br>
+        Jika perlukan masa tambahan, sila chat dengan admin dalam Ai-Dan sebelum masa tamat.<br><br>
+        ⚠️ Order akan dibatalkan secara automatik selepas 30 minit jika tiada bayaran, tiada bukti bayaran dihantar dan tiada tambahan masa diberikan oleh admin.
+      `;
+    }
+
+    const body = document.getElementById("liveConfirmBody");
+
+    if (body){
+      body.innerHTML = `
+        <div class="live-confirm-item mb-3">
+          <img class="live-confirm-img" src="${safeTxt(d.img || "https://placehold.co/200x200?text=LIVE")}" alt="${safeTxt(d.code)}" onerror="this.onerror=null;this.src='https://placehold.co/200x200?text=LIVE'">
+          <div style="min-width:0;flex:1;">
+            <div class="fw-bold">${safeTxt(d.name)}</div>
+            <div class="small text-muted">${safeTxt(d.code)}</div>
+            <div class="small text-muted">${safeTxt(d.detail || "-")}</div>
+            <div class="fw-black text-danger mt-1" style="font-weight:950;">${money(d.itemPrice)}</div>
+          </div>
+        </div>
+
+        <div class="rounded-4 p-3 mb-3" style="background:#f9fafb;border:1px solid #e5e7eb;">
+          <div class="d-flex justify-content-between">
+            <span>Subtotal</span>
+            <b>${money(d.itemPrice)}</b>
+          </div>
+          <div class="d-flex justify-content-between">
+            <span>Caj pos</span>
+            <b>${money(d.shipFee)}</b>
+          </div>
+          <hr>
+          <div class="d-flex justify-content-between fs-5">
+            <b>Total anggaran</b>
+            <b class="text-danger">${money(d.finalTotal)}</b>
+          </div>
+        </div>
+
+        <div class="live-confirm-note mb-3">
+          ${payNote}
+        </div>
+
+        <div class="fw-bold mb-1">Pending order anda</div>
+
+        ${
+          pendingLimitReached
+            ? `<div class="live-confirm-note mb-3">
+                 Anda sudah ada <b>2 pending order</b>.<br>
+                 Sila selesaikan bayaran dahulu sebelum lock item baru.
+               </div>`
+            : ""
+        }
+
+        ${pendingOrderHTML(pending)}
+      `;
+    }
+
+    const confirmBtn = document.getElementById("btnConfirmCreateLiveOrder");
+    if (confirmBtn){
+      confirmBtn.disabled = pendingLimitReached;
+      confirmBtn.textContent = pendingLimitReached
+        ? "Selesaikan Pending Order Dulu"
+        : "Ya, Teruskan Buat Order";
+    }
+
+    const modal = document.getElementById("liveConfirmModal");
+    if (modal) modal.style.display = "flex";
+
+    if (msg) msg.textContent = "";
+
+  }catch(e){
+    if (msg) msg.textContent = "❌ " + (e?.message || e);
+  }finally{
+    if (btn) btn.disabled = false;
+  }
+}
+
+async function submitLiveLockConfirmed(){
+  await submitToAiDan();
+}
+
 async function submitToAiDan(){
   const btn = document.getElementById("submitBtn");
   const msg = document.getElementById("msg");
+  const confirmBtn = document.getElementById("btnConfirmCreateLiveOrder");
 
   try{
     if (!liveUser){
@@ -960,8 +1447,9 @@ async function submitToAiDan(){
       throw new Error("Sila isi masa ambil kedai dahulu.");
     }
 
-    btn.disabled = true;
-    msg.textContent = "Sedang submit lock ke Ai-Dan…";
+    if (btn) btn.disabled = true;
+    if (confirmBtn) confirmBtn.disabled = true;
+    if (msg) msg.textContent = "Sedang submit lock ke Ai-Dan…";
 
     let payload;
 
@@ -975,7 +1463,7 @@ async function submitToAiDan(){
         "|design_id=" + encodeURIComponent(String(row.design_id || "")) +
         "|design_name=" + encodeURIComponent(String(row.design_name || "")) +
         "|card=" + encodeURIComponent(String(row.card_type || "READY")) +
-        "|qty=" + encodeURIComponent("1") +
+        "|qty=1" +
         "|price_rm=" + encodeURIComponent(String(state.price || 0)) +
         "|ship=" + encodeURIComponent(ship) +
         "|address=" + encodeURIComponent(ship === "POST" ? address : "") +
@@ -1003,7 +1491,6 @@ async function submitToAiDan(){
         ship,
         address: ship === "POST" ? address : "",
         pickup_when: ship === "PICKUP" ? pickupWhen : "",
-
         pay_method: payMethod
       };
 
@@ -1029,71 +1516,128 @@ async function submitToAiDan(){
         }
       }
 
-     const useTabungTopup = payMethod === "TABUNG_TOPUP";
+      // PENTING: asingkan flow bayar ikut live-now.
+      // ATOME / QR / TRANSFER terus chat-send sahaja.
+      // Hanya TABUNG_TOPUP sahaja buat tabung_request_convert916_simple_v1.
+      const useTabungTopup = payMethod === "TABUNG_TOPUP";
+      const useAtome = payMethod === "ATOME";
 
-const tabungUnitsUsed = useTabungTopup
-  ? Number(window.__llTabungUnits || 0)
-  : 0;
+      if (!useTabungTopup){
+        window.__llTabungUnits = 0;
+        window.__llTabungValue = 0;
+        window.__llTopupValue = 0;
+      }
 
-const tabungValueRm = useTabungTopup
-  ? Number(window.__llTabungValue || 0)
-  : 0;
+      const tabungUnitsUsed = useTabungTopup ? Number(window.__llTabungUnits || 0) : 0;
+      const tabungValueRm = useTabungTopup ? Number(window.__llTabungValue || 0) : 0;
+      const topupRm = useTabungTopup ? Number(window.__llTopupValue || 0) : Number(state.price || 0);
+      const shipFee = ship === "POST" ? getPostFeeByAddress(address) : 0;
 
-const topupRm = useTabungTopup
-  ? Number(window.__llTopupValue || 0)
-  : Number(state.price || 0);
+      const finalTopupRm = useTabungTopup
+        ? Number((topupRm + shipFee).toFixed(2))
+        : (
+            useAtome
+              ? Math.round((Number(state.price || 0) + shipFee) * 1.08)
+              : Number((Number(state.price || 0) + shipFee).toFixed(2))
+          );
 
-const shipFee = ship === "POST" ? 10 : 0;
+      let tabungRequestId = "";
 
-const finalTopupRm = useTabungTopup
-  ? Number((topupRm + shipFee).toFixed(2))
-  : (
-      payMethod === "ATOME"
-        ? Math.round((Number(state.price || 0) + shipFee) * 1.08)
-        : Number((Number(state.price || 0) + shipFee).toFixed(2))
-    );
+      if (useTabungTopup){
+        if (tabungUnitsUsed <= 0){
+          throw new Error("Tiada unit Tabung yang boleh digunakan.");
+        }
 
-payload = {
-  phone,
-  is_logged_in: true,
-  action: "live_checkout_submit",
-  source: "live_lock_916",
+        if (msg) msg.textContent = "Sedang buat permohonan Tabung + Topup…";
 
-  message:
-    "LIVE_CHECKOUT_SUBMIT" +
-    "|code=" + encodeURIComponent(String(state.code || "")) +
-    "|price_rm=" + encodeURIComponent(String(finalTopupRm || 0)) +
+        const authId = await getAuthUidForLiveLock();
+        if (!authId) throw new Error("Sesi login tamat. Sila login semula.");
+
+        const cust = await getTabungLiveLockCustomer();
+        const custName = cust?.name || liveUser?.name || "Pelanggan";
+        const custPhone = cust?.phone || String(phone || "").replace(/\D/g, "");
+        const unitPriceUsed = tabungValueRm / tabungUnitsUsed;
+
+        const respTabung = await sb.rpc("tabung_request_convert916_simple_v1", {
+          p_user_id: authId,
+          p_units: tabungUnitsUsed,
+          p_price_per_unit: unitPriceUsed,
+          p_name: custName,
+          p_phone: custPhone,
+          p_notes:
+            "LIVE Tabung + Topup | Item " +
+            String(state.code || "") +
+            " | Nilai tabung " +
+            money(tabungValueRm) +
+            " | Topup " +
+            money(finalTopupRm)
+        });
+
+        if (respTabung.error) throw respTabung.error;
+
+        tabungRequestId =
+          respTabung.data?.id ||
+          respTabung.data?.request_id ||
+          (typeof respTabung.data === "string" ? respTabung.data : "");
+
+        if (!tabungRequestId){
+          throw new Error("Server tidak pulangkan id transaksi tabung.");
+        }
+      }
+
+      payload = {
+        phone,
+        name: liveUser?.name || "Pelanggan",
+        is_logged_in: true,
+        action: "live_checkout_submit",
+        source: "live_lock_916",
+
+        message:
+          "LIVE_CHECKOUT_SUBMIT" +
+          "|code=" + encodeURIComponent(String(state.code || "")) +
+          "|price_rm=" + encodeURIComponent(String(state.price || 0)) +
           "|ship=" + encodeURIComponent(ship) +
           "|address=" + encodeURIComponent(ship === "POST" ? address : "") +
           "|pickup_when=" + encodeURIComponent(ship === "PICKUP" ? pickupWhen : "") +
           "|cut=" + encodeURIComponent(cut) +
-          "|cut_to=" + encodeURIComponent(cutTo) +
-          "|pay_method=" + encodeURIComponent(payMethod),
+          "|cut_to=" + encodeURIComponent(cut === "YES" ? cutTo : "") +
+          "|pay_method=" + encodeURIComponent(payMethod) +
+          "|tabung_request_id=" + encodeURIComponent(tabungRequestId || "") +
+          "|tabung_units=" + encodeURIComponent(String(tabungUnitsUsed || 0)) +
+          "|tabung_value_rm=" + encodeURIComponent(String(tabungValueRm || 0)) +
+          "|topup_rm=" + encodeURIComponent(String(finalTopupRm || 0)),
 
         code: String(state.code || ""),
-        price_rm: Number(finalTopupRm || 0),
-tabung_units_used: tabungUnitsUsed,
-tabung_value_rm: tabungValueRm,
-topup_rm: finalTopupRm,
-
+        price_rm: Number(state.price || 0),
         ship,
         address: ship === "POST" ? address : "",
         pickup_when: ship === "PICKUP" ? pickupWhen : "",
-
         cut,
         cut_to: cut === "YES" ? cutTo : "",
+        pay_method: payMethod,
 
-        pay_method: payMethod
+        tabung_request_id: tabungRequestId || "",
+        tabung_units: Number(tabungUnitsUsed || 0),
+        tabung_units_used: Number(tabungUnitsUsed || 0),
+        tabung_value_rm: Number(tabungValueRm || 0),
+        topup_rm: Number(finalTopupRm || 0)
       };
     }
+
+    if (msg) msg.textContent = "Sedang submit lock ke Ai-Dan…";
 
     const res = await chatSendLive(payload);
     const threadId = res.thread_id;
     if (!threadId) throw new Error("Thread ID tidak diterima.");
 
-    msg.textContent = "Berjaya ✅ Buka Ai-Dan untuk detail bayaran.";
+    if (msg){
+      msg.textContent = (String(state.pay || "").toUpperCase() === "TABUNG_TOPUP")
+        ? "Berjaya ✅ Permohonan Tabung + Topup dibuat. Buka Ai-Dan untuk detail bayaran."
+        : "Berjaya ✅ Buka Ai-Dan untuk detail bayaran.";
+    }
 
     setTimeout(()=>{
+      closeLiveConfirmModal();
       location.href =
         "chat.html?thread=" + encodeURIComponent(threadId) +
         "&live_lock_done=1";
@@ -1101,8 +1645,9 @@ topup_rm: finalTopupRm,
 
   }catch(e){
     console.warn(e);
-    msg.textContent = "❌ " + (e?.message || e);
-    btn.disabled = false;
+    if (msg) msg.textContent = "❌ " + (e?.message || e);
+    if (btn) btn.disabled = false;
+    if (confirmBtn) confirmBtn.disabled = false;
   }
 }
 
@@ -1111,6 +1656,8 @@ async function init(){
     if (!CODE){
       throw new Error("Code barang tiada dalam link.");
     }
+
+    await loadLivePaymentSettings();
 
     if (TYPE === "999") await load999();
     else await load916();
@@ -1125,7 +1672,9 @@ async function init(){
     }
 
     document.getElementById("checkoutBox").style.display = "";
+    bindLiveAddressFee();
     await fillCustomerAddress();
+    renderTotal();
 
   }catch(e){
     document.getElementById("loadingBox").innerHTML =

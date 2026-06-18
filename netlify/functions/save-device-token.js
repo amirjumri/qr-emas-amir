@@ -50,14 +50,14 @@ exports.handler = async (event) => {
     const body = JSON.parse(event.body || "{}");
     const token = String(body.token || "").trim();
 
-let platform = String(body.platform || "").trim().toLowerCase();
-if (platform === "web") platform = "pwa";
-if (platform === "ios") platform = "ios";
-if (platform === "android") platform = "android";
+    let platform = String(body.platform || "").trim().toLowerCase();
+    if (platform === "web") platform = "pwa";
+    if (platform === "ios") platform = "ios";
+    if (platform === "android") platform = "android";
 
-const token_type = platform === "android" ? "fcm" : "apns";
+    const token_type = platform === "android" ? "fcm" : "apns";
 
-const phone = normalizePhone(body.phone || "");
+    const phone = normalizePhone(body.phone || "");
     const thread_id = body.thread_id || null;
     const user_agent = String(body.user_agent || "").trim();
 
@@ -69,31 +69,40 @@ const phone = normalizePhone(body.phone || "");
       return json(400, { ok: false, error: "platform required" });
     }
 
-    if (!phone) {
-      return json(400, { ok: false, error: "phone required" });
+    const payload = {
+      device_token: token,
+      platform,
+      token_type,
+      user_agent,
+      is_active: true,
+      updated_at: new Date().toISOString()
+    };
+
+    if (phone) {
+      payload.customer_phone = phone;
     }
 
-   const { error } = await sb.from("chat_device_tokens").upsert(
-  {
-    device_token: token,
-    platform,
-    token_type,
-    customer_phone: phone,
-    thread_id,
-    user_agent,
-    is_active: true,
-    updated_at: new Date().toISOString()
-  },
-  {
-    onConflict: "device_token"
-  }
-);
+    if (thread_id) {
+      payload.thread_id = thread_id;
+    }
+
+    const { error } = await sb
+      .from("chat_device_tokens")
+      .upsert(payload, {
+        onConflict: "device_token"
+      });
 
     if (error) {
       return json(500, { ok: false, error: error.message || "save failed" });
     }
 
-    return json(200, { ok: true });
+    return json(200, {
+      ok: true,
+      anonymous: !phone,
+      attached_phone: !!phone,
+      attached_thread: !!thread_id
+    });
+
   } catch (e) {
     return json(500, { ok: false, error: e.message || String(e) });
   }

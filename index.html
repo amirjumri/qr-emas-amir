@@ -55,8 +55,8 @@
     }
 
     body{
-      padding-bottom:96px;
-    }
+  padding-bottom:125px;
+}
 
     a{text-decoration:none}
 
@@ -885,46 +885,56 @@
 
     /* ===== BOTTOM NAV ===== */
     .ea-bottom-nav{
-      position:fixed;
-      left:50%;
-      bottom:0;
-      transform:translateX(-50%);
-      width:min(520px,100vw);
-      height:86px;
-      padding:9px 14px calc(9px + env(safe-area-inset-bottom,0px));
-      z-index:10010;
-      background:
-        linear-gradient(180deg,rgba(15,23,42,.78),rgba(3,4,10,.96));
-      border-top:1px solid rgba(255,255,255,.10);
-      border-radius:24px 24px 0 0;
-      backdrop-filter:blur(16px);
-      display:grid;
-      grid-template-columns:repeat(5,1fr);
-      gap:4px;
-      box-shadow:0 -18px 40px rgba(0,0,0,.38);
-    }
+  position:fixed;
+  left:50%;
+  bottom:0;
+  transform:translateX(-50%);
+  width:min(520px,100vw);
+
+  height:102px;
+
+  padding:14px 14px calc(16px + env(safe-area-inset-bottom,0px));
+
+  z-index:10010;
+  background:
+    linear-gradient(180deg,rgba(15,23,42,.88),rgba(3,4,10,.98));
+
+  border-top:1px solid rgba(255,255,255,.10);
+  border-radius:24px 24px 0 0;
+
+  backdrop-filter:blur(18px);
+
+  display:grid;
+  grid-template-columns:repeat(5,1fr);
+  gap:4px;
+
+  box-shadow:0 -18px 40px rgba(0,0,0,.38);
+}
 
     .ea-nav-item{
-      color:#9ca3af;
-      display:flex;
-      flex-direction:column;
-      align-items:center;
-      justify-content:center;
-      gap:4px;
-      font-size:11px;
-      font-weight:850;
-      position:relative;
-    }
+  color:#9ca3af;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  justify-content:center;
+
+  gap:6px;
+
+  font-size:12px;
+
+  font-weight:900;
+  position:relative;
+}
 
     .ea-nav-item:hover{
       color:#facc15;
     }
 
-    .ea-nav-ico{
-      font-size:23px;
-      line-height:1;
-      filter:grayscale(.25);
-    }
+   .ea-nav-ico{
+  font-size:28px;
+  line-height:1;
+  filter:grayscale(.25);
+}
 
     .ea-nav-item.active{
       color:#facc15;
@@ -1687,10 +1697,11 @@
 .ea-mini-stat{
   min-width:112px;
 } 
+
 .ea-store-card{
-  margin-top:12px;
-  width:100%;
-  height:120px;
+  margin-top:0;
+  width:150px;
+  height:98px;
   border-radius:24px;
   overflow:hidden;
   position:relative;
@@ -1699,12 +1710,15 @@
     0 18px 40px rgba(0,0,0,.35),
     inset 0 1px 0 rgba(255,255,255,.08);
   background:#111;
+  padding:0;
+  flex:0 0 150px;
 }
 
 .ea-store-card img{
   width:100%;
   height:100%;
   object-fit:cover;
+  object-position:35% center;
   display:block;
   filter:saturate(1.05) contrast(1.02);
 }
@@ -1713,27 +1727,491 @@
   content:"";
   position:absolute;
   inset:0;
-  background:
-    linear-gradient(
-      to top,
-      rgba(0,0,0,.55),
-      rgba(0,0,0,.05)
-    );
+  background:linear-gradient(to top,rgba(0,0,0,.55),rgba(0,0,0,.05));
+  pointer-events:none;
 }
 
 .ea-store-card:before{
-  content:"EMAS AMIR KULIM";
+  display:none;
+}
+.ea-status-store-card{
+  cursor:pointer;
+}
+
+.ea-status-store-card.has-status{
+  border-color:rgba(250,204,21,.85);
+  box-shadow:
+    0 18px 40px rgba(0,0,0,.35),
+    0 0 0 3px rgba(250,204,21,.16),
+    0 0 26px rgba(250,204,21,.34);
+}
+
+.ea-status-badge{
+  position:absolute;
+  top:9px;
+  right:9px;
+  z-index:4;
+  min-width:30px;
+  height:30px;
+  padding:0 9px;
+  border-radius:999px;
+  background:linear-gradient(135deg,#ef4444,#be123c);
+  color:#fff;
+  font-size:13px;
+  font-weight:950;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+}
+
+.ea-status-hint{
+  position:absolute;
+  right:10px;
+  bottom:10px;
+  z-index:4;
+  border-radius:999px;
+  background:rgba(0,0,0,.58);
+  color:#fef3c7;
+  border:1px solid rgba(250,204,21,.35);
+  padding:6px 9px;
+  font-size:11px;
+  font-weight:900;
+}
+
+.ea-status-viewer{
+  position:fixed;
+  inset:0;
+  z-index:10080;
+  background:#020617;
+  display:none;
+  color:#fff;
+}
+
+.ea-status-viewer.show{
+  display:block;
+}
+
+.ea-status-admin-panel{
+  position:absolute;
+  left:12px;
+  right:12px;
+  bottom:calc(82px + env(safe-area-inset-bottom,0px));
+  z-index:9;
+  display:none;
+  background:rgba(15,23,42,.88);
+  border:1px solid rgba(250,204,21,.25);
+  border-radius:18px;
+  padding:12px;
+  backdrop-filter:blur(14px);
+}
+
+.ea-status-admin-panel.show{
+  display:block;
+}
+
+.ea-status-admin-panel input,
+.ea-status-admin-panel textarea,
+.ea-status-admin-panel select{
+  width:100%;
+  border:1px solid rgba(255,255,255,.14);
+  background:rgba(0,0,0,.28);
+  color:#fff;
+  border-radius:12px;
+  padding:10px;
+  font-size:13px;
+  margin-bottom:8px;
+}
+
+.ea-status-admin-panel textarea{
+  min-height:70px;
+}
+
+.ea-status-progress{
+  position:absolute;
+  top:calc(10px + env(safe-area-inset-top,0px));
+  left:10px;
+  right:10px;
+  z-index:5;
+  display:flex;
+  gap:5px;
+}
+
+.ea-status-bar{
+  flex:1;
+  height:4px;
+  border-radius:999px;
+  background:rgba(255,255,255,.25);
+  overflow:hidden;
+}
+
+.ea-status-bar span{
+  display:block;
+  height:100%;
+  width:0%;
+  background:#facc15;
+}
+
+.ea-status-top{
+  position:absolute;
+  top:calc(24px + env(safe-area-inset-top,0px));
+  left:14px;
+  right:14px;
+  z-index:6;
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:10px;
+}
+
+.ea-status-profile{
+  display:flex;
+  align-items:center;
+  gap:9px;
+}
+
+.ea-status-profile img{
+  width:36px;
+  height:36px;
+  border-radius:12px;
+  object-fit:cover;
+}
+
+.ea-status-name{
+  font-size:14px;
+  font-weight:950;
+}
+
+.ea-status-time{
+  font-size:11px;
+  color:#cbd5e1;
+  font-weight:800;
+}
+
+.ea-status-close,
+.ea-status-admin-btn{
+  width:38px;
+  height:38px;
+  border:0;
+  border-radius:999px;
+  background:rgba(255,255,255,.14);
+  color:#fff;
+  font-size:20px;
+  line-height:1;
+}
+
+.ea-status-media{
+  width:100%;
+  height:100%;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  background:#020617;
+}
+
+.ea-status-media img,
+.ea-status-media video{
+  width:100%;
+  height:100%;
+  object-fit:contain;
+  display:block;
+}
+
+/* turunkan control video */
+.ea-status-media{
+  position:relative;
+}
+
+.ea-status-media video::-webkit-media-controls-panel{
+  transform:translateY(60px);
+}
+
+.ea-status-text-only{
+  width:100%;
+  min-height:100%;
+  padding:120px 28px 140px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  text-align:center;
+  font-size:30px;
+  line-height:1.25;
+  font-weight:950;
+  color:#fef3c7;
+}
+
+.ea-status-caption{
   position:absolute;
   left:16px;
-  bottom:14px;
-  z-index:2;
+  right:16px;
+  bottom:calc(76px + env(safe-area-inset-bottom,0px));
+  z-index:6;
   color:#fff;
+  font-size:16px;
+  font-weight:850;
+  line-height:1.35;
+  text-shadow:0 4px 18px rgba(0,0,0,.80);
+}
+
+.ea-status-actions{
+  position:absolute;
+  left:16px;
+  right:16px;
+  bottom:calc(18px + env(safe-area-inset-bottom,0px));
+  z-index:7;
+  display:flex;
+  gap:10px;
+}
+
+.ea-status-action-btn{
+  flex:1;
+  min-height:46px;
+  border:0;
+  border-radius:999px;
+  background:rgba(255,255,255,.14);
+  color:#fff;
+  font-size:13px;
+  font-weight:950;
+}
+
+.ea-status-action-btn.gold{
+  background:linear-gradient(135deg,#facc15,#f59e0b);
+  color:#111827;
+}
+.ea-status-store-card{
+  padding:0;
+  cursor:pointer;
+}
+
+.ea-status-store-card.has-status{
+  border-color:rgba(250,204,21,.75);
+  box-shadow:
+    0 18px 40px rgba(0,0,0,.35),
+    0 0 0 3px rgba(250,204,21,.15),
+    0 0 28px rgba(250,204,21,.32);
+  animation:eaStatusGlow 1.6s ease-in-out infinite;
+}
+
+@keyframes eaStatusGlow{
+  0%,100%{ box-shadow:0 18px 40px rgba(0,0,0,.35),0 0 0 3px rgba(250,204,21,.12),0 0 18px rgba(250,204,21,.20); }
+  50%{ box-shadow:0 18px 40px rgba(0,0,0,.35),0 0 0 4px rgba(250,204,21,.22),0 0 34px rgba(250,204,21,.42); }
+}
+
+.ea-status-badge{
+  position:absolute;
+  top:10px;
+  right:10px;
+  z-index:4;
+  min-width:30px;
+  height:30px;
+  padding:0 9px;
+  border-radius:999px;
+  background:linear-gradient(135deg,#ef4444,#be123c);
+  color:#fff;
+  font-size:13px;
+  font-weight:950;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  box-shadow:0 10px 22px rgba(225,29,72,.35);
+}
+
+.ea-status-hint{
+  position:absolute;
+  right:12px;
+  bottom:12px;
+  z-index:4;
+  border-radius:999px;
+  background:rgba(0,0,0,.58);
+  color:#fef3c7;
+  border:1px solid rgba(250,204,21,.35);
+  padding:7px 10px;
+  font-size:11px;
   font-weight:900;
-  font-size:15px;
-  letter-spacing:.5px;
-  text-shadow:0 4px 18px rgba(0,0,0,.45);
-} 
-.ea-gold-visual img,
+  backdrop-filter:blur(10px);
+}
+
+.ea-status-viewer{
+  position:fixed;
+  inset:0;
+  z-index:10080;
+  background:#020617;
+  display:none;
+  color:#fff;
+}
+
+.ea-status-viewer.show{
+  display:block;
+}
+
+.ea-status-progress{
+  position:absolute;
+  top:calc(10px + env(safe-area-inset-top,0px));
+  left:10px;
+  right:10px;
+  z-index:5;
+  display:flex;
+  gap:5px;
+}
+
+.ea-status-bar{
+  flex:1;
+  height:4px;
+  border-radius:999px;
+  background:rgba(255,255,255,.25);
+  overflow:hidden;
+}
+
+.ea-status-bar span{
+  display:block;
+  height:100%;
+  width:0%;
+  background:#facc15;
+}
+
+.ea-status-top{
+  position:absolute;
+  top:calc(24px + env(safe-area-inset-top,0px));
+  left:14px;
+  right:14px;
+  z-index:6;
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:10px;
+}
+
+.ea-status-profile{
+  display:flex;
+  align-items:center;
+  gap:9px;
+  min-width:0;
+}
+
+.ea-status-profile img{
+  width:36px;
+  height:36px;
+  border-radius:12px;
+  object-fit:cover;
+}
+
+.ea-status-name{
+  font-size:14px;
+  font-weight:950;
+}
+
+.ea-status-time{
+  font-size:11px;
+  color:#cbd5e1;
+  font-weight:800;
+}
+
+.ea-status-close{
+  width:38px;
+  height:38px;
+  border:0;
+  border-radius:999px;
+  background:rgba(255,255,255,.14);
+  color:#fff;
+  font-size:26px;
+  line-height:1;
+}
+
+.ea-status-media{
+  width:100%;
+  height:100%;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  background:
+    radial-gradient(circle at 50% 15%, rgba(250,204,21,.15), transparent 34%),
+    #020617;
+  position:relative;
+}
+
+.ea-status-media img,
+.ea-status-media video{
+  width:100%;
+  height:100%;
+  object-fit:contain;
+  display:block;
+}
+
+.ea-status-media video{
+  padding-bottom:0;
+}
+
+.ea-status-sound-btn{
+  position:absolute;
+  right:18px;
+  bottom:calc(74px + env(safe-area-inset-bottom,0px));
+  z-index:9;
+  border:0;
+  border-radius:999px;
+  min-height:42px;
+  padding:0 14px;
+  background:rgba(15,23,42,.76);
+  color:#fff;
+  font-size:13px;
+  font-weight:950;
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  backdrop-filter:blur(14px);
+  box-shadow:0 12px 28px rgba(0,0,0,.35);
+}
+.ea-status-text-only{
+  width:100%;
+  min-height:100%;
+  padding:120px 28px 140px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  text-align:center;
+  font-size:30px;
+  line-height:1.25;
+  font-weight:950;
+  color:#fef3c7;
+}
+
+.ea-status-caption{
+  position:absolute;
+  left:16px;
+  right:16px;
+  bottom:calc(76px + env(safe-area-inset-bottom,0px));
+  z-index:6;
+  color:#fff;
+  font-size:16px;
+  font-weight:850;
+  line-height:1.35;
+  text-shadow:0 4px 18px rgba(0,0,0,.80);
+}
+
+.ea-status-actions{
+  position:absolute;
+  left:16px;
+  right:16px;
+  bottom:calc(18px + env(safe-area-inset-bottom,0px));
+  z-index:7;
+  display:flex;
+  gap:10px;
+}
+
+.ea-status-action-btn{
+  flex:1;
+  min-height:46px;
+  border:0;
+  border-radius:999px;
+  background:rgba(255,255,255,.14);
+  color:#fff;
+  font-size:13px;
+  font-weight:950;
+  backdrop-filter:blur(12px);
+}
+
+.ea-status-action-btn.gold{
+  background:linear-gradient(135deg,#facc15,#f59e0b);
+  color:#111827;
+}.ea-gold-visual img,
 .ea-tabung-visual img{
   display:none !important;
 } 
@@ -1850,6 +2328,106 @@
   font-size:14px;
   font-weight:950;
 }
+/* FIX HEADER STATUS UNTUK PHONE KECIL */
+@media (max-width:430px){
+
+  .ea-header{
+    display:grid;
+    grid-template-columns:minmax(0, 1fr) 150px;
+    align-items:start;
+    gap:10px;
+  }
+
+  .ea-top-head{
+    min-width:0;
+  }
+
+  .ea-brand-name{
+    font-size:25px;
+    white-space:nowrap;
+  }
+
+  .ea-brand-sub{
+    font-size:12px;
+    line-height:1.25;
+  }
+
+  .ea-brand-icon{
+    width:50px;
+    height:50px;
+    flex:0 0 50px;
+  }
+
+  .ea-top-mini-row{
+    gap:8px;
+  }
+
+  .ea-mini-stat{
+    min-width:0;
+    flex:1;
+    padding:8px 6px;
+  }
+
+  .ea-store-card{
+    width:150px;
+    height:98px;
+    flex:0 0 150px;
+    justify-self:end;
+    margin-top:0;
+  }
+}
+
+/* PHONE PALING KECIL */
+@media (max-width:375px){
+
+  .ea-header{
+    grid-template-columns:minmax(0, 1fr) 132px;
+    gap:8px;
+  }
+
+  .ea-store-card{
+    width:132px;
+    height:88px;
+    flex:0 0 132px;
+    border-radius:20px;
+  }
+
+  .ea-status-badge{
+    min-width:24px;
+    height:24px;
+    font-size:11px;
+    top:7px;
+    right:7px;
+  }
+
+  .ea-status-hint{
+    right:7px;
+    bottom:7px;
+    font-size:10px;
+    padding:5px 7px;
+  }
+
+  .ea-brand-name{
+    font-size:23px;
+  }
+
+  .ea-brand-icon{
+    width:46px;
+    height:46px;
+  }
+
+  .ea-mini-stat .ico{
+    font-size:16px;
+  }
+
+  .ea-mini-stat .txt{
+    font-size:10px;
+  }
+
+  .ea-mini-stat .val{
+    font-size:13px;
+  }
+}
   </style>
 </head>
 
@@ -1933,12 +2511,14 @@
     </div>
 
   </div>
-<div class="ea-store-card">
+<button id="eaStatusStoreBtn" class="ea-store-card ea-status-store-card" type="button">
   <img
     src="https://dduizetstqqjrpsezbpi.supabase.co/storage/v1/object/public/logo%20app/gmbr%20depan%20kedai.jpeg"
     alt="Kedai Emas Amir">
-</div>
-</header>
+
+  <span id="eaStatusBadge" class="ea-status-badge" style="display:none;">0</span>
+  <span id="eaStatusHint" class="ea-status-hint" style="display:none;">Status</span>
+</button></header>
 
     <!-- LIVE STATUS TOP -->
     <div class="ea-live-strip">
@@ -2172,10 +2752,10 @@
       <div>Chat</div>
     </a>
 
-    <a href="/account.html" class="ea-nav-item">
-      <div class="ea-nav-ico">👤</div>
-      <div>Akaun</div>
-    </a>
+<a href="javascript:void(0)" class="ea-nav-item" onclick="goBottomAccount()">
+  <div class="ea-nav-ico">👤</div>
+  <div>Akaun</div>
+</a>
   </nav>
 
   <!-- ===== FORCE NOTIFICATION POPUP HOME ===== -->
@@ -2303,6 +2883,126 @@
     </iframe>
   </div>
 
+<!-- STATUS EMAS AMIR VIEWER -->
+<div id="eaStatusViewer" class="ea-status-viewer" aria-hidden="true">
+  <div id="eaStatusProgress" class="ea-status-progress"></div>
+
+  <div class="ea-status-top">
+    <div class="ea-status-profile">
+      <img
+        src="https://dduizetstqqjrpsezbpi.supabase.co/storage/v1/object/public/logo%20app/icon%20appstore.png"
+        alt="Emas Amir">
+      <div>
+        <div class="ea-status-name">Emas Amir</div>
+        <div id="eaStatusTime" class="ea-status-time">Status terkini</div>
+      </div>
+    </div>
+
+    <div style="display:flex;gap:8px;">
+      <button id="eaStatusAdminBtn" class="ea-status-admin-btn" type="button" style="display:none;">＋</button>
+      <button id="eaStatusCloseBtn" class="ea-status-close" type="button">×</button>
+    </div>
+  </div>
+
+  <div id="eaStatusMedia" class="ea-status-media"></div>
+  <div id="eaStatusCaption" class="ea-status-caption"></div>
+
+  <button id="eaStatusSoundBtn"
+          class="ea-status-sound-btn"
+          type="button"
+          style="display:none;">
+    🔇 Buka Suara
+  </button>
+
+  <div id="eaStatusAdminPanel" class="ea-status-admin-panel">
+    <select id="eaStatusType">
+  <option value="text">Tulisan sahaja</option>
+  <option value="image">Gambar</option>
+  <option value="video">Video</option>
+</select>
+
+<input id="eaStatusFile" type="file" accept="image/*,video/*">
+<input id="eaStatusMediaUrl" type="hidden">
+
+<textarea id="eaStatusText" placeholder="Tulis status / caption"></textarea>
+
+<div style="border:1px solid rgba(250,204,21,.22);border-radius:14px;padding:10px;margin:8px 0;background:rgba(0,0,0,.18);">
+  <label style="display:flex;align-items:center;gap:8px;font-size:13px;font-weight:900;margin-bottom:8px;">
+    <input id="eaStatusNotifyOn" type="checkbox" style="width:auto;margin:0;" checked>
+    Hantar notifikasi ikut Admin Notification
+  </label>
+
+<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:8px;">
+
+  <div>
+    <label style="display:flex;align-items:center;gap:8px;font-size:13px;font-weight:900;color:#fff;margin-bottom:6px;">
+      <input id="eaStatusUseThread" type="checkbox" style="width:auto;margin:0;" checked>
+      Hantar ikut Thread
+    </label>
+
+    <select id="eaStatusNotifySegment">
+      <option value="30D">Aktif 30 hari</option>
+      <option value="ALL">Semua thread</option>
+      <option value="MANUAL">Manual / test nombor</option>
+    </select>
+  </div>
+
+  <div>
+    <label style="display:flex;align-items:center;gap:8px;font-size:13px;font-weight:900;color:#fff;margin-bottom:6px;">
+      <input id="eaStatusUseToken" type="checkbox" style="width:auto;margin:0;">
+      Hantar ikut Token
+    </label>
+
+    <select id="eaStatusTokenSegment">
+  <option value="WITH_THREAD">Token + Thread ID</option>
+  <option value="TOKEN_ONLY">Token sahaja</option>
+  <option value="MANUAL">Manual / test nombor</option>
+</select>
+  </div>
+
+</div>
+<div style="font-size:11px;color:#fef3c7;line-height:1.35;margin-top:6px;">
+  Thread = masuk chat + push ikut thread.<br>
+  Token = push notifikasi sahaja, buka terus status.<br>
+  Boleh tick salah satu atau dua-dua.
+</div>
+  <textarea id="eaStatusManualPhones" placeholder="Manual sahaja. Contoh:
+60134456002
+0134456002" style="min-height:62px;display:none;"></textarea>
+
+  <button id="eaStatusPreviewBtn" class="ea-status-action-btn" type="button" style="margin-top:6px;">
+    Preview Target
+  </button>
+
+  <div id="eaStatusPreviewBox" style="font-size:12px;color:#cbd5e1;margin-top:7px;">
+    Target belum preview.
+  </div>
+</div>
+
+<button id="eaStatusSaveBtn" class="ea-status-action-btn gold" type="button">
+  Simpan Status 24 Jam
+</button>
+
+<button id="eaStatusDeleteBtn" class="ea-status-action-btn" type="button" style="margin-top:8px;background:rgba(225,29,72,.22);color:#fecdd3;">
+  Delete Status Ini
+</button>
+
+<button id="eaStatusStatsBtn" class="ea-status-action-btn" type="button" style="margin-top:8px;">
+  Lihat Statistik
+</button>
+
+<button id="eaStatusPanelCloseBtn" class="ea-status-action-btn" type="button" style="margin-top:8px;">
+  Tutup Panel
+</button>
+    <div id="eaStatusAdminMsg" style="font-size:12px;color:#cbd5e1;margin-top:8px;"></div>
+  </div>
+
+  <div class="ea-status-actions">
+    <button id="eaStatusPrevBtn" class="ea-status-action-btn" type="button">‹ Sebelum</button>
+    <button id="eaStatusAskBtn" class="ea-status-action-btn gold" type="button">💬 Tanya Admin</button>
+    <button id="eaStatusNextBtn" class="ea-status-action-btn" type="button">Seterusnya ›</button>
+  </div>
+</div>
 <!-- PWA BANNER -->
   <div id="pwaBanner" class="pwa-banner">
     <div class="pwa-row">
@@ -3866,6 +4566,38 @@ restartHomeRoll();
         }
       }
 
+function eaInstallNativePushOpenChat(){
+  try{
+    if (!isNativeCapacitorApp()) return;
+
+    const PushNotifications = getNativePushPlugin();
+    if (!PushNotifications) return;
+
+    PushNotifications.addListener("pushNotificationActionPerformed", (action) => {
+      try{
+        const data = action?.notification?.data || {};
+
+        const rawUrl =
+          data.url ||
+          data.deeplink ||
+          data.target_url ||
+          "/chat.html";
+
+        const url = new URL(rawUrl, window.location.origin).href;
+
+        window.location.href = url;
+      }catch(e){
+        console.warn("[home push open chat error]", e);
+        window.location.href = "/chat.html";
+      }
+    });
+  }catch(e){
+    console.warn("[home install push listener error]", e);
+  }
+}
+
+eaInstallNativePushOpenChat();
+
       function getNativePlatform(){
         try{
           return String(window.Capacitor?.getPlatform?.() || "").toLowerCase();
@@ -3996,6 +4728,7 @@ restartHomeRoll();
         }
 
         PushNotifications.removeAllListeners();
+eaInstallNativePushOpenChat();
 
         return await new Promise((resolve) => {
           let done = false;
@@ -4120,19 +4853,11 @@ restartHomeRoll();
           btnEnable.disabled = true;
           btnLater.disabled = true;
 
-          const phone = normalizePhoneForNotif(getAuthPhone());
+        const phone = normalizePhoneForNotif(getAuthPhone());
 
-          if (!phone){
-            setStatus("Sila log masuk dahulu untuk aktifkan notifikasi.");
-            btnEnable.disabled = false;
-            btnLater.disabled = false;
-
-            setTimeout(function(){
-              window.location.href = "/login.html#login";
-            }, 900);
-
-            return;
-          }
+// ✅ Phone tidak wajib.
+// Belum daftar pun boleh simpan token anonymous.
+// Bila customer daftar / buka chat nanti, token sama akan update phone + thread_id.
 
           setStatus("Meminta kebenaran notifikasi...");
 
@@ -4760,5 +5485,1095 @@ function restartHomeRoll(){
 window.addEventListener("load", ()=>{
   setTimeout(restartHomeRoll, 1200);
 });
-</script></body>
+</script>
+<script>
+function goBottomAccount(){
+  const auth = window.auth_get && window.auth_get();
+
+  if (auth){
+    location.href = "/account.html";
+    return;
+  }
+
+  location.href = "/login.html?next=" + encodeURIComponent("/account.html") + "#login";
+}
+</script>
+<script>
+(function(){
+  const sb = window.sb;
+
+  const storeBtn = document.getElementById("eaStatusStoreBtn");
+  const badge = document.getElementById("eaStatusBadge");
+  const hint = document.getElementById("eaStatusHint");
+
+  const viewer = document.getElementById("eaStatusViewer");
+  const progress = document.getElementById("eaStatusProgress");
+  const mediaBox = document.getElementById("eaStatusMedia");
+  const captionEl = document.getElementById("eaStatusCaption");
+  const timeEl = document.getElementById("eaStatusTime");
+
+    const closeBtn = document.getElementById("eaStatusCloseBtn");
+  const prevBtn = document.getElementById("eaStatusPrevBtn");
+  const nextBtn = document.getElementById("eaStatusNextBtn");
+  const askBtn = document.getElementById("eaStatusAskBtn");
+  const soundBtn = document.getElementById("eaStatusSoundBtn");
+
+  const adminBtn = document.getElementById("eaStatusAdminBtn");
+  const adminPanel = document.getElementById("eaStatusAdminPanel");
+  const statusType = document.getElementById("eaStatusType");
+  const statusMediaUrl = document.getElementById("eaStatusMediaUrl");
+  const statusText = document.getElementById("eaStatusText");
+const saveBtn = document.getElementById("eaStatusSaveBtn");
+const deleteBtn = document.getElementById("eaStatusDeleteBtn");
+const statsBtn = document.getElementById("eaStatusStatsBtn");
+
+const notifyOn = document.getElementById("eaStatusNotifyOn");
+const notifySegment = document.getElementById("eaStatusNotifySegment");
+const notifyTokenSegment = document.getElementById("eaStatusTokenSegment");
+const notifyUseThread = document.getElementById("eaStatusUseThread");
+const notifyUseToken = document.getElementById("eaStatusUseToken");
+const manualPhonesBox = document.getElementById("eaStatusManualPhones");
+const previewBtn = document.getElementById("eaStatusPreviewBtn");
+const previewBox = document.getElementById("eaStatusPreviewBox");
+
+let lastStatusPreviewTotal = 0;
+const panelCloseBtn = document.getElementById("eaStatusPanelCloseBtn");
+const adminMsg = document.getElementById("eaStatusAdminMsg");
+
+  let statuses = [];
+  let currentIndex = 0;
+  let timer = null;
+  let raf = null;
+  let startedAt = 0;
+
+  function getAuth(){
+    try{
+      if (window.auth_get) return window.auth_get();
+    }catch(e){}
+    return {};
+  }
+
+  function isAdmin(){
+    return !!window.__isAdmin;
+  }
+
+  function esc(v){
+    return String(v || "")
+      .replace(/&/g,"&amp;")
+      .replace(/</g,"&lt;")
+      .replace(/>/g,"&gt;")
+      .replace(/"/g,"&quot;")
+      .replace(/'/g,"&#039;");
+  }
+
+  function duration(row){
+    return String(row?.media_type || "").toLowerCase() === "video" ? 15000 : 6500;
+  }
+
+  function timeAgo(dateStr){
+    const t = dateStr ? new Date(dateStr).getTime() : 0;
+    if (!t) return "Status terkini";
+
+    const min = Math.max(1, Math.floor((Date.now() - t) / 60000));
+    if (min < 60) return min + " min lalu";
+
+    const h = Math.floor(min / 60);
+    if (h < 24) return h + " jam lalu";
+
+    return "Hari ini";
+  }
+
+let seenStatusIds = new Set();
+
+function getSeenLocalKey(){
+  const auth = getAuth();
+  const phone = auth?.phone || "";
+  const uid = auth?.id || auth?.user_id || "";
+
+  if (phone) return "ea_status_seen_phone_" + phone;
+  if (uid) return "ea_status_seen_user_" + uid;
+
+  return "ea_status_seen_guest";
+}
+
+function getLocalSeenSet(){
+  try{
+    const raw = localStorage.getItem(getSeenLocalKey()) || "[]";
+    const arr = JSON.parse(raw);
+    return new Set(Array.isArray(arr) ? arr : []);
+  }catch(e){
+    return new Set();
+  }
+}
+
+function saveLocalSeenSet(){
+  try{
+    localStorage.setItem(
+      getSeenLocalKey(),
+      JSON.stringify(Array.from(seenStatusIds))
+    );
+  }catch(e){}
+}
+
+function isStatusSeen(row){
+  return !!row?.id && seenStatusIds.has(row.id);
+}
+
+async function loadSeenStatusIds(){
+  seenStatusIds = getLocalSeenSet();
+
+  if (!sb || !statuses.length) return;
+
+  const ids = statuses.map(x => x.id).filter(Boolean);
+  if (!ids.length) return;
+
+  const auth = getAuth();
+  const phone = auth?.phone || "";
+  const uid = auth?.id || auth?.user_id || "";
+
+  if (!phone && !uid) return;
+
+  try{
+    let q = sb
+      .from("app_status_views")
+      .select("status_id")
+      .in("status_id", ids);
+
+    if (phone){
+      q = q.eq("phone", phone);
+    }else{
+      q = q.eq("user_id", uid);
+    }
+
+    const { data, error } = await q;
+
+    if (error) throw error;
+
+    (data || []).forEach(x => {
+      if (x.status_id) seenStatusIds.add(x.status_id);
+    });
+
+    saveLocalSeenSet();
+  }catch(err){
+    console.warn("load seen status error:", err);
+  }
+}
+
+  function setStoreState(){
+  if (!storeBtn) return;
+
+  const unreadCount = statuses.filter(row => !isStatusSeen(row)).length;
+
+  if (!statuses.length || unreadCount <= 0){
+    storeBtn.classList.remove("has-status");
+    if (badge) badge.style.display = "none";
+    if (hint) hint.style.display = "none";
+    return;
+  }
+
+  storeBtn.classList.add("has-status");
+
+  if (badge){
+    badge.textContent = unreadCount;
+    badge.style.display = "flex";
+  }
+
+  if (hint) hint.style.display = "inline-flex";
+}
+
+ async function loadStatuses(){
+  if (!sb) return;
+
+  try{
+    const { data, error } = await sb
+      .from("app_statuses")
+      .select("id,media_url,media_type,caption,link_url,link_label,created_at,expires_at")
+      .eq("is_active", true)
+      .gt("expires_at", new Date().toISOString())
+      .order("created_at", { ascending:true })
+      .limit(20);
+
+    if (error) throw error;
+
+    statuses = Array.isArray(data) ? data : [];
+
+    await loadSeenStatusIds();
+    setStoreState();
+  }catch(err){
+    console.warn("load status error:", err);
+    statuses = [];
+    seenStatusIds = getLocalSeenSet();
+    setStoreState();
+  }
+}
+
+  async function saveView(row){
+  if (!row?.id) return;
+
+  seenStatusIds.add(row.id);
+  saveLocalSeenSet();
+  setStoreState();
+
+  if (!sb) return;
+
+  try{
+    const auth = getAuth();
+
+    await sb.from("app_status_views").insert({
+      status_id: row.id,
+      user_id: auth?.id || auth?.user_id || null,
+      phone: auth?.phone || null,
+      viewer_name: auth?.name || auth?.full_name || auth?.username || null
+    });
+  }catch(err){
+    console.warn("save status view error:", err);
+  }
+}
+
+let isPaused = false;
+let pausedAt = 0;
+let elapsedBeforePause = 0;
+let adminEditingStatus = false;
+
+function stopTimers(){
+  clearTimeout(timer);
+  timer = null;
+
+  if (raf){
+    cancelAnimationFrame(raf);
+    raf = null;
+  }
+}
+
+function pauseStatus(){
+  if (isPaused) return;
+
+  isPaused = true;
+  pausedAt = Date.now();
+  elapsedBeforePause += Math.max(0, pausedAt - startedAt);
+
+  clearTimeout(timer);
+  timer = null;
+
+  if (raf){
+    cancelAnimationFrame(raf);
+    raf = null;
+  }
+
+  const video = mediaBox ? mediaBox.querySelector("video") : null;
+  if (video) video.pause();
+}
+
+function resumeStatus(){
+  if (adminEditingStatus) return;
+  if (!isPaused) return;
+
+  const row = statuses[currentIndex];
+  if (!row) return;
+
+  isPaused = false;
+  startedAt = Date.now();
+
+  const remain = Math.max(800, duration(row) - elapsedBeforePause);
+
+  updateProgress();
+
+  const video = mediaBox ? mediaBox.querySelector("video") : null;
+  if (video) video.play().catch(()=>{});
+
+  timer = setTimeout(nextStatus, remain);
+}
+
+  function renderProgress(){
+    if (!progress) return;
+
+    progress.innerHTML = statuses.map((row, i) => {
+      return `<div class="ea-status-bar"><span id="eaStatusBar${i}"></span></div>`;
+    }).join("");
+  }
+
+  function updateProgress(){
+    const row = statuses[currentIndex];
+    if (!row) return;
+
+    const runningElapsed = isPaused ? 0 : Math.max(0, Date.now() - startedAt);
+const totalElapsed = elapsedBeforePause + runningElapsed;
+const pct = Math.min(100, (totalElapsed / duration(row)) * 100);
+
+    statuses.forEach((s, i) => {
+      const bar = document.getElementById("eaStatusBar" + i);
+      if (!bar) return;
+
+      if (i < currentIndex) bar.style.width = "100%";
+      else if (i === currentIndex) bar.style.width = pct + "%";
+      else bar.style.width = "0%";
+    });
+
+    raf = requestAnimationFrame(updateProgress);
+  }
+
+  function renderCurrent(){
+    const row = statuses[currentIndex];
+    if (!row || !mediaBox) return;
+
+    stopTimers();
+
+    const type = String(row.media_type || "text").toLowerCase();
+    const cap = row.caption || "";
+
+    if (timeEl) timeEl.textContent = timeAgo(row.created_at);
+    if (captionEl) captionEl.textContent = cap || "";
+
+       if (soundBtn){
+      soundBtn.style.display = "none";
+      soundBtn.textContent = "🔇 Buka Suara";
+    }
+
+    if (type === "image" && row.media_url){
+      mediaBox.innerHTML = `<img src="${esc(row.media_url)}" alt="Status Emas Amir">`;
+    }else if (type === "video" && row.media_url){
+      mediaBox.innerHTML = `
+        <video
+          src="${esc(row.media_url)}"
+          autoplay
+          muted
+          playsinline
+          webkit-playsinline
+          controlslist="nodownload noplaybackrate"
+        ></video>
+      `;
+
+      const video = mediaBox.querySelector("video");
+
+      if (video){
+        video.controls = false;
+        video.muted = true;
+        video.play().catch(()=>{});
+      }
+
+      if (soundBtn){
+        soundBtn.style.display = "inline-flex";
+        soundBtn.textContent = "🔇 Buka Suara";
+      }
+    }else{
+      mediaBox.innerHTML = `<div class="ea-status-text-only">${esc(cap || "Status Emas Amir")}</div>`;
+      if (captionEl) captionEl.textContent = "";
+    }
+
+    saveView(row);
+
+    isPaused = false;
+pausedAt = 0;
+elapsedBeforePause = 0;
+
+startedAt = Date.now();
+updateProgress();
+
+timer = setTimeout(nextStatus, duration(row));
+  }
+
+  function openViewer(){
+    if (!viewer) return;
+
+    if (!statuses.length && !isAdmin()){
+      alert("Belum ada status Emas Amir.");
+      return;
+    }
+
+    viewer.classList.add("show");
+    viewer.setAttribute("aria-hidden","false");
+    document.body.style.overflow = "hidden";
+
+    if (adminBtn) adminBtn.style.display = isAdmin() ? "block" : "none";
+
+    if (!statuses.length && isAdmin()){
+      if (mediaBox){
+        mediaBox.innerHTML = `<div class="ea-status-text-only">＋ Tambah Status Emas Amir</div>`;
+      }
+      if (captionEl) captionEl.textContent = "";
+      if (progress) progress.innerHTML = "";
+      if (adminPanel) adminPanel.classList.add("show");
+      return;
+    }
+
+    const firstUnreadIndex = statuses.findIndex(row => !isStatusSeen(row));
+
+currentIndex = firstUnreadIndex >= 0 ? firstUnreadIndex : 0;
+
+renderProgress();
+renderCurrent();
+  }
+
+  function closeViewer(){
+adminEditingStatus = false;
+    stopTimers();
+
+    if (viewer){
+      viewer.classList.remove("show");
+      viewer.setAttribute("aria-hidden","true");
+    }
+
+    document.body.style.overflow = "";
+
+    if (mediaBox) mediaBox.innerHTML = "";
+    if (adminPanel) adminPanel.classList.remove("show");
+  }
+
+  function nextStatus(){
+    if (!statuses.length) return;
+
+    if (currentIndex >= statuses.length - 1){
+      closeViewer();
+      return;
+    }
+
+    currentIndex++;
+    renderCurrent();
+  }
+
+  function prevStatus(){
+    if (!statuses.length) return;
+
+    currentIndex = Math.max(0, currentIndex - 1);
+    renderCurrent();
+  }
+
+  function askAdmin(){
+  const row = statuses[currentIndex];
+
+  if (!row?.id){
+    location.href = "/chat.html?from=status";
+    return;
+  }
+
+  const caption = String(row.caption || "").trim();
+  const mediaUrl = String(row.media_url || "").trim();
+  const mediaType = String(row.media_type || "text").trim();
+
+  const statusLink =
+    window.location.origin +
+    "/index.html?openStatus=1&status_id=" +
+    encodeURIComponent(row.id);
+
+  const msg =
+    "📢 Pertanyaan dari Status Emas Amir\n\n" +
+    (caption ? "📝 Status:\n" + caption + "\n\n" : "") +
+    (mediaUrl ? "🖼️ Media status:\n" + mediaUrl + "\n\n" : "") +
+    "🔗 Link status:\n" + statusLink + "\n\n" +
+    "Saya nak tanya tentang status ini.";
+
+  try{
+    localStorage.setItem("ea_chat_from_status", JSON.stringify({
+      source: "status",
+      status_id: row.id,
+      status_caption: caption,
+      status_media_url: mediaUrl,
+      status_media_type: mediaType,
+      status_link: statusLink,
+      created_at: row.created_at || "",
+      from_page: "index_status"
+    }));
+  }catch(e){}
+
+  location.href =
+    "/chat.html?from=status" +
+    "&status_id=" + encodeURIComponent(row.id) +
+    "&text=" + encodeURIComponent(msg);
+}
+function normalizeStatusPhone(raw){
+  let d = String(raw || "").replace(/\D+/g, "");
+  if (!d) return "";
+  if (d.startsWith("00")) d = d.slice(2);
+  if (d.startsWith("0")) d = "60" + d.slice(1);
+  if (d.length === 8 && (d.startsWith("8") || d.startsWith("9"))) d = "65" + d;
+  return d;
+}
+
+function getStatusManualPhones(){
+  const raw = String(manualPhonesBox?.value || "")
+    .split(/\n|,|\s+/)
+    .map(normalizeStatusPhone)
+    .filter(Boolean);
+
+  return Array.from(new Set(raw)).slice(0, 10);
+}
+
+function statusSegmentLabel(seg){
+  if (seg === "30D") return "Aktif 30 hari";
+  if (seg === "ALL") return "Semua thread";
+  if (seg === "MANUAL") return "Manual / test nombor";
+  return seg;
+}
+
+async function apiPostStatus(url, body){
+  const res = await fetch(url, {
+    method: "POST",
+    headers: { "Content-Type":"application/json" },
+    body: JSON.stringify(body || {})
+  });
+
+  const json = await res.json().catch(() => ({}));
+  if (!res.ok || json.ok !== true){
+    throw new Error(json.error || ("HTTP " + res.status));
+  }
+
+  return json;
+}
+
+async function previewStatusNotification(){
+  try{
+    if (!previewBox) return;
+
+    const useThread = !!notifyUseThread?.checked;
+    const useToken = !!notifyUseToken?.checked;
+
+    const threadSeg = notifySegment?.value || "30D";
+    const tokenSeg = notifyTokenSegment?.value || "WITH_THREAD";
+
+    const phones = (threadSeg === "MANUAL" || tokenSeg === "MANUAL")
+      ? getStatusManualPhones()
+      : [];
+
+    if (!useThread && !useToken){
+      previewBox.textContent = "Pilih Thread atau Token dulu.";
+      return;
+    }
+
+    if (useThread && threadSeg === "MANUAL" && phones.length < 1){
+      previewBox.textContent = "Thread manual: masukkan nombor dulu.";
+      return;
+    }
+
+    if (useToken && tokenSeg === "MANUAL" && phones.length < 1){
+      previewBox.textContent = "Token manual: masukkan nombor dulu.";
+      return;
+    }
+
+    previewBox.textContent = "Mengira target...";
+
+    let threadTotal = 0;
+    let threadSample = [];
+
+    if (useThread){
+      const j = await apiPostStatus("/.netlify/functions/admin-notification-preview", {
+        segment_type: threadSeg,
+        phones
+      });
+
+      threadTotal = Number(j.total || 0);
+      threadSample = Array.isArray(j.sample) ? j.sample : [];
+    }
+
+    let tokenTotal = 0;
+    let tokenSample = [];
+
+    if (useToken && sb){
+      let q = sb
+        .from("chat_device_tokens")
+        .select("customer_phone, thread_id, platform, updated_at", { count:"exact" })
+        .eq("is_active", true)
+        .not("device_token", "is", null)
+        .neq("device_token", "");
+
+   if (tokenSeg === "WITH_THREAD"){
+  q = q.not("thread_id", "is", null);
+}
+
+      if (tokenSeg === "TOKEN_ONLY"){
+        q = q.is("thread_id", null);
+      }
+
+      if (tokenSeg === "MANUAL"){
+        q = q.in("customer_phone", phones);
+      }
+
+      const { data, count, error } = await q
+        .order("updated_at", { ascending:false })
+        .limit(5);
+
+      if (error) throw error;
+
+      tokenTotal = Number(count || 0);
+      tokenSample = Array.isArray(data) ? data : [];
+    }
+
+    const lines = [];
+
+    if (useThread){
+      lines.push("THREAD: " + threadTotal + " | " + statusSegmentLabel(threadSeg));
+      threadSample.slice(0, 5).forEach((x, i) => {
+        lines.push("T" + (i + 1) + ". " + (x.customer_phone || "-"));
+      });
+    }else{
+      lines.push("THREAD: OFF");
+    }
+
+    if (useToken){
+      const tokenLabel =
+        tokenSeg === "WITH_THREAD" ? "Token + Thread ID" :
+        tokenSeg === "TOKEN_ONLY" ? "Token sahaja" :
+        "Manual / test nombor";
+
+      lines.push("");
+      lines.push("TOKEN: " + tokenTotal + " | " + tokenLabel);
+      tokenSample.slice(0, 5).forEach((x, i) => {
+        lines.push("K" + (i + 1) + ". " + (x.customer_phone || "-") + " " + (x.thread_id ? "(ada thread)" : "(tiada thread)"));
+      });
+    }else{
+      lines.push("");
+      lines.push("TOKEN: OFF");
+    }
+
+    lastStatusPreviewTotal = threadTotal + tokenTotal;
+    lines.push("");
+    lines.push("JUMLAH PREVIEW: " + lastStatusPreviewTotal);
+
+    previewBox.textContent = lines.join("\n");
+
+  }catch(err){
+    lastStatusPreviewTotal = 0;
+    if (previewBox) previewBox.textContent = "Ralat preview: " + (err.message || err);
+  }
+}
+async function sendStatusNotification(savedStatus){
+  const isOn = !!notifyOn?.checked;
+  if (!isOn) return { skipped:true };
+
+  const threadSeg = notifySegment?.value || "30D";
+  const tokenSeg = notifyTokenSegment?.value || "WITH_THREAD";
+
+  const useThread = !!notifyUseThread?.checked;
+  const useToken = !!notifyUseToken?.checked;
+
+  if (!useThread && !useToken){
+    throw new Error("Pilih sekurang-kurangnya Thread atau Token.");
+  }
+
+  const phones = threadSeg === "MANUAL" || tokenSeg === "MANUAL"
+    ? getStatusManualPhones()
+    : [];
+
+  if ((useThread && threadSeg === "MANUAL") && phones.length < 1){
+    throw new Error("Thread manual dipilih tapi nombor kosong.");
+  }
+
+  if ((useToken && tokenSeg === "MANUAL") && phones.length < 1){
+    throw new Error("Token manual dipilih tapi nombor kosong.");
+  }
+
+  const caption = String(savedStatus?.caption || statusText?.value || "").trim();
+  const statusId = String(savedStatus?.id || "");
+
+  const url = "/index.html?openStatus=1&status_id=" + encodeURIComponent(statusId);
+
+  const msg =
+    "📢 Status baru Emas Amir\n\n" +
+    (caption ? caption.slice(0, 140) + "\n\n" : "") +
+    "Tekan untuk lihat status terbaru.";
+
+  return await apiPostStatus("/.netlify/functions/admin-notification-send", {
+    segment_type: threadSeg,
+    token_segment_type: tokenSeg,
+    phones,
+
+    title: "Status Baru Emas Amir",
+    message: msg,
+    target_url: url,
+    campaign_type: "APP_STATUS",
+    notification_target: "STATUS",
+
+    use_thread_targets: useThread,
+    include_device_tokens: useToken,
+
+    device_token_only_for_missing_thread: false,
+    token_only: !useThread && useToken
+  });
+}async function deleteCurrentStatus(){
+  if (!sb || !isAdmin()) return;
+
+  const row = statuses[currentIndex];
+  if (!row?.id){
+    adminMsg.textContent = "Tiada status untuk delete.";
+    return;
+  }
+
+  if (!window.eaStatusConfirmDelete){
+  const ok = window.confirm ? window.confirm("Delete status ini?") : true;
+  if (!ok) return;
+}
+
+  try{
+    adminMsg.textContent = "Deleting status...";
+
+   const res = await fetch("/.netlify/functions/admin-status-delete", {
+  method: "POST",
+  headers: { "Content-Type":"application/json" },
+  body: JSON.stringify({ id: row.id })
+});
+
+const j = await res.json().catch(() => ({}));
+
+if (!res.ok || j.ok !== true){
+  throw new Error(j.error || ("HTTP " + res.status));
+}
+
+    adminMsg.textContent = "Status sudah delete.";
+    await loadStatuses();
+
+    currentIndex = Math.max(0, Math.min(currentIndex, statuses.length - 1));
+
+    if (statuses.length){
+      renderProgress();
+      renderCurrent();
+    }else{
+      if (mediaBox) mediaBox.innerHTML = "";
+      if (captionEl) captionEl.textContent = "Tiada status aktif.";
+      if (progress) progress.innerHTML = "";
+      setStoreState();
+    }
+  }catch(err){
+    console.error(err);
+    adminMsg.textContent = "Gagal delete status.";
+  }
+}
+  async function saveStatus(){
+  if (!sb || !isAdmin()) return;
+
+  const type = statusType.value || "text";
+  const mediaUrl = statusMediaUrl.value.trim();
+  const text = statusText.value.trim();
+
+  if (type !== "text" && !mediaUrl){
+    adminMsg.textContent = "Masukkan link gambar/video dulu.";
+    return;
+  }
+
+  if (!text && type === "text"){
+    adminMsg.textContent = "Tulis status dulu.";
+    return;
+  }
+
+  const notifyEnabled = !!notifyOn?.checked;
+  const seg = notifySegment?.value || "30D";
+  const phones = seg === "MANUAL" ? getStatusManualPhones() : [];
+
+  if (notifyEnabled && seg === "MANUAL" && phones.length < 1){
+    adminMsg.textContent = "Manual dipilih. Masukkan nombor test dulu.";
+    return;
+  }
+
+  if (notifyEnabled){
+    const ok = window.confirm ? window.confirm(
+  "Simpan status dan hantar notification?\n\n" +
+  "Target: " + statusSegmentLabel(seg) + "\n" +
+  "Anggaran preview: " + (lastStatusPreviewTotal || "-") + "\n\n" +
+  "Notification akan guna queue Admin Notification."
+) : true;
+
+if (!ok) return;
+  }
+
+  adminMsg.textContent = "Menyimpan status...";
+
+  try{
+    const auth = getAuth();
+
+    const { data: savedStatus, error } = await sb.from("app_statuses")
+      .insert({
+        media_type: type,
+        media_url: type === "text" ? null : mediaUrl,
+        caption: text,
+        expires_at: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString(),
+        is_active: true,
+        created_by: auth?.id || auth?.user_id || null
+      })
+      .select("id,caption,media_type,media_url,created_at")
+      .single();
+
+    if (error) throw error;
+
+    let notifyText = "";
+
+    if (notifyEnabled){
+      adminMsg.textContent = "Status siap. Memulakan queue notification...";
+      try{
+        const j = await sendStatusNotification(savedStatus);
+        notifyText =
+          " Notification queue dimulakan. Target: " +
+          (j.total || lastStatusPreviewTotal || 0) +
+          " | Campaign: " + (j.campaign_id || "-");
+      }catch(nErr){
+        console.error(nErr);
+        notifyText = " Tapi notification gagal: " + (nErr.message || nErr);
+      }
+    }else{
+      notifyText = " Notification OFF.";
+    }
+
+    statusMediaUrl.value = "";
+    statusText.value = "";
+
+    const fileInput2 = document.getElementById("eaStatusFile");
+    if (fileInput2) fileInput2.value = "";
+
+    adminMsg.textContent = "Siap. Status aktif 24 jam." + notifyText;
+
+    await loadStatuses();
+    currentIndex = Math.max(0, statuses.length - 1);
+    renderProgress();
+    renderCurrent();
+
+  }catch(err){
+    console.error(err);
+    adminMsg.textContent = "Gagal simpan status. Check RLS / permission table.";
+  }
+}
+
+  async function showStats(){
+  if (!sb || !isAdmin()) return;
+
+  adminMsg.textContent = "Memuatkan statistik...";
+
+  try{
+    const row = statuses[currentIndex];
+
+    if (!row?.id){
+      adminMsg.textContent = "Tiada status dipilih.";
+      return;
+    }
+
+    const { data, error } = await sb
+      .from("app_status_views")
+      .select("phone,viewer_name,viewed_at")
+      .eq("status_id", row.id)
+      .order("viewed_at", { ascending:false })
+      .limit(100);
+
+    if (error) throw error;
+
+    const total = data?.length || 0;
+    const phones = new Set((data || []).map(x => x.phone).filter(Boolean));
+
+    const latest = (data || []).slice(0,8).map(x => {
+      return "• " + (x.viewer_name || x.phone || "Customer") +
+        " - " + new Date(x.viewed_at).toLocaleString("ms-MY");
+    }).join("<br>");
+
+    adminMsg.innerHTML =
+      "View status ini: <b>" + total + "</b><br>" +
+      "Unique phone: <b>" + phones.size + "</b><br><br>" +
+      latest;
+  }catch(err){
+    console.error(err);
+    adminMsg.textContent = "Gagal load statistik status ini.";
+  }
+}
+async function openStatusFromUrl(){
+  const qs = new URLSearchParams(window.location.search);
+
+  if (qs.get("openStatus") !== "1") return;
+
+  await loadStatuses();
+
+  const sid = qs.get("status_id") || "";
+
+  if (sid){
+    const ix = statuses.findIndex(x => String(x.id) === String(sid));
+    if (ix >= 0){
+      currentIndex = ix;
+    }
+  }
+
+  if (!statuses.length){
+    return;
+  }
+
+  renderProgress();
+
+  if (viewer){
+    viewer.classList.add("show");
+    viewer.setAttribute("aria-hidden","false");
+    document.body.style.overflow = "hidden";
+  }
+
+  if (adminBtn) adminBtn.style.display = isAdmin() ? "block" : "none";
+
+  renderCurrent();
+}
+
+window.addEventListener("load", function(){
+  setTimeout(openStatusFromUrl, 900);
+});
+  if (storeBtn) storeBtn.addEventListener("click", openViewer);
+  if (closeBtn) closeBtn.addEventListener("click", closeViewer);
+  if (prevBtn) prevBtn.addEventListener("click", prevStatus);
+  if (nextBtn) nextBtn.addEventListener("click", nextStatus);
+  if (askBtn) askBtn.addEventListener("click", askAdmin);
+
+  if (soundBtn){
+    soundBtn.addEventListener("click", function(e){
+      e.preventDefault();
+      e.stopPropagation();
+
+      const video = mediaBox ? mediaBox.querySelector("video") : null;
+      if (!video) return;
+
+      video.muted = !video.muted;
+
+      if (video.muted){
+        soundBtn.textContent = "🔇 Buka Suara";
+      }else{
+        soundBtn.textContent = "🔊 Suara On";
+        video.play().catch(()=>{});
+      }
+    });
+  }
+if (mediaBox){
+  mediaBox.addEventListener("click", function(e){
+    if (adminEditingStatus) return;
+
+    const x = e.clientX || 0;
+    const w = window.innerWidth || document.documentElement.clientWidth || 1;
+
+    if (x > w / 2){
+      nextStatus();
+    }else{
+      prevStatus();
+    }
+  });
+}
+if (mediaBox){
+  mediaBox.addEventListener("pointerdown", pauseStatus);
+  mediaBox.addEventListener("pointerup", resumeStatus);
+  mediaBox.addEventListener("pointercancel", resumeStatus);
+  mediaBox.addEventListener("pointerleave", resumeStatus);
+}
+
+
+
+ if (adminBtn){
+  adminBtn.addEventListener("click", function(e){
+    e.preventDefault();
+    e.stopPropagation();
+
+    if (!adminPanel) return;
+
+    const willOpen = !adminPanel.classList.contains("show");
+
+    if (willOpen){
+      adminEditingStatus = true;
+      adminPanel.classList.add("show");
+      pauseStatus();
+    }else{
+      adminEditingStatus = false;
+      adminPanel.classList.remove("show");
+      resumeStatus();
+    }
+  });
+}
+
+function updateStatusManualBox(){
+  const threadSeg = notifySegment?.value || "";
+  const tokenSeg = notifyTokenSegment?.value || "";
+
+  if (manualPhonesBox){
+    manualPhonesBox.style.display =
+      (threadSeg === "MANUAL" || tokenSeg === "MANUAL")
+        ? "block"
+        : "none";
+  }
+
+  lastStatusPreviewTotal = 0;
+  if (previewBox) previewBox.textContent = "Target belum preview.";
+}
+
+if (notifySegment){
+  notifySegment.addEventListener("change", updateStatusManualBox);
+}
+
+if (notifyTokenSegment){
+  notifyTokenSegment.addEventListener("change", updateStatusManualBox);
+}
+
+updateStatusManualBox();
+const statusFile = document.getElementById("eaStatusFile");
+
+if (statusFile){
+  statusFile.addEventListener("change", async function(){
+    const file = statusFile.files && statusFile.files[0];
+    if (!file) return;
+
+    try{
+      adminMsg.textContent = "Uploading media status...";
+
+      const ext = (file.name.split(".").pop() || "bin").toLowerCase();
+      const path = "status/" + Date.now() + "-" + Math.random().toString(36).slice(2) + "." + ext;
+
+      const { error } = await sb.storage
+        .from("app-status")
+        .upload(path, file, {
+          cacheControl: "3600",
+          upsert: false,
+          contentType: file.type || undefined
+        });
+
+      if (error) throw error;
+
+      const { data } = sb.storage
+        .from("app-status")
+        .getPublicUrl(path);
+
+      statusMediaUrl.value = data.publicUrl || "";
+      adminMsg.textContent = "Media siap upload. Boleh simpan status.";
+    }catch(err){
+      console.error(err);
+      statusMediaUrl.value = "";
+      adminMsg.textContent = "Gagal upload media. Cuba gambar/video lain.";
+    }
+  });
+}
+
+if (previewBtn) previewBtn.addEventListener("click", previewStatusNotification);
+if (saveBtn) saveBtn.addEventListener("click", saveStatus);
+if (deleteBtn) deleteBtn.addEventListener("click", deleteCurrentStatus);
+if (statsBtn) statsBtn.addEventListener("click", showStats);
+
+if (previewBtn) previewBtn.addEventListener("click", previewStatusNotification);
+
+notifyUseThread?.addEventListener("change", previewStatusNotification);
+notifyUseToken?.addEventListener("change", previewStatusNotification);
+
+notifySegment?.addEventListener("change", previewStatusNotification);
+notifyTokenSegment?.addEventListener("change", previewStatusNotification);
+
+manualPhonesBox?.addEventListener("input", () => {
+  previewStatusNotification();
+});
+
+if (saveBtn) saveBtn.addEventListener("click", saveStatus);
+if (deleteBtn) deleteBtn.addEventListener("click", deleteCurrentStatus);
+if (statsBtn) statsBtn.addEventListener("click", showStats);
+
+if (panelCloseBtn){
+  panelCloseBtn.addEventListener("click", function(e){
+    e.preventDefault();
+    e.stopPropagation();
+
+    adminEditingStatus = false;
+
+    if (adminPanel) adminPanel.classList.remove("show");
+
+    resumeStatus();
+  });
+}
+
+  window.addEventListener("load", function(){
+    setTimeout(function(){
+      if (adminBtn) adminBtn.style.display = isAdmin() ? "block" : "none";
+      loadStatuses();
+    }, 900);
+  });
+})();
+</script>
+</body>
 </html>

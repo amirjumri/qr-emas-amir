@@ -1300,9 +1300,13 @@ exports.handler = async function handler(event) {
     try { body = JSON.parse(event.body || "{}"); }
     catch { return json(400, { ok: false, error: "Body JSON tak sah" }); }
 
-    const rawPhone = body.phone || body.customer_phone || "";
-    const msg = String(body.message || "").trim();
-    const threadIdIn = body.thread_id || null;
+ const rawPhone = body.phone || body.customer_phone || "";
+const msg = String(body.message || "").trim();
+const threadIdIn = body.thread_id || null;
+
+const source = String(body.source || body.from || "").toLowerCase();
+const statusRef = body.status_ref || null;
+const isFromStatus = source === "status" || source === "app_status";
 
     const attachment = body.attachment || null;
     const fileUrl =
@@ -1381,6 +1385,9 @@ exports.handler = async function handler(event) {
 const threadMeta = th.data?.meta || {};
 const adminMode = threadMeta.admin_mode === true;
 
+// ✅ elak notifikasi admin duplicate
+let adminAlreadyNotified = false;
+
 
 // ✅ LOCK dianggap aktif kalau:
 // 1) status thread memang LOCK_*
@@ -1408,17 +1415,20 @@ if (!inLockFlow) {
     if (isImage) tagExtracted = await extractTagFromImage(fileUrl);
 
     /* ========= 3) SAVE CUSTOMER MESSAGE ========= */
-    const insMsg = await supabase.from("chat_messages").insert({
-      thread_id: threadId,
-      role: "customer",
-      text: msg || "(lampiran)",
-      meta: {
-        country: p.country,
-        is_logged_in: isLoggedIn,
-        attachment: fileUrl ? { url: fileUrl, name: fileName, mime: fileMime } : null,
-        tag_extracted: tagExtracted || null
-      }
-    });
+   const insMsg = await supabase.from("chat_messages").insert({
+  thread_id: threadId,
+  role: "customer",
+  text: msg || "(lampiran)",
+  meta: {
+    country: p.country,
+    is_logged_in: isLoggedIn,
+    attachment: fileUrl ? { url: fileUrl, name: fileName, mime: fileMime } : null,
+    tag_extracted: tagExtracted || null,
+
+    source: isFromStatus ? "status" : (source || null),
+    status_ref: isFromStatus ? statusRef : null
+  }
+});
     if (insMsg.error) throw insMsg.error;
 
     const nowIso = new Date().toISOString();
@@ -1431,6 +1441,11 @@ await supabase
   })
   .eq("id", threadId);
 // 🔥 ADMIN MODE: simpan mesej customer, tapi AI jangan balas
+// KECUALI:
+// 1) order/live checkout
+// 2) live lock
+// 3) slip/resit/bukti bayaran gambar/PDF
+// 4) ayat "dah bayar / slip / resit" supaya payflow tetap jalan
 if (adminMode) {
   let adminNotify = null;
 
@@ -1442,24 +1457,51 @@ if (adminMode) {
       message: msg || "(lampiran)",
       attachment: fileUrl ? { url: fileUrl, name: fileName, mime: fileMime } : null
     });
+
+    adminAlreadyNotified = true;
   } catch (notifyErr) {
     console.error("notify admin customer chat error:", notifyErr);
   }
 
-  return json(200, {
-    ok: true,
-    thread_id: threadId,
-    reply: "",
-    action: "admin_mode_hold",
-    meta: {
-      admin_mode: true,
-      no_ai_reply: true,
-      admin_notify: adminNotify
-    }
-  });
+  const isLiveCheckoutSubmitNow =
+    String(body.action || "").toLowerCase() === "live_checkout_submit";
+
+  const isLiveLockNow = isLiveLockRequest(body);
+
+  const isProofUploadNow =
+    !!fileUrl &&
+    (
+      String(fileMime || "").toLowerCase().startsWith("image/") ||
+      String(fileMime || "").toLowerCase() === "application/pdf"
+    );
+
+  const isPaidProofTextNow = looksLikePaidProof(msg);
+
+  const allowPayflowInManual =
+    isProofUploadNow ||
+    isPaidProofTextNow;
+
+  if (
+    !isLiveCheckoutSubmitNow &&
+    !isLiveLockNow &&
+    !allowPayflowInManual
+  ) {
+    return json(200, {
+      ok: true,
+      thread_id: threadId,
+      reply: "",
+      action: "admin_mode_hold",
+      meta: {
+        admin_mode: true,
+        no_ai_reply: true,
+        admin_notify: adminNotify
+      }
+    });
+  }
 }
 
 // 🔔 AI-DAN MODE: notify admin hanya jika chat penting / ada order / pending / bayaran
+// Jika adminMode sudah notify di atas, jangan notify kali kedua.
 try {
   const aiNeedNotifyAdmin = await shouldNotifyAdminAiMode({
     supabase,
@@ -1470,7 +1512,7 @@ try {
     body
   });
 
-  if (aiNeedNotifyAdmin) {
+  if (aiNeedNotifyAdmin && !adminAlreadyNotified) {
     await notifyAdminsCustomerChat({
       supabase,
       threadId,
@@ -1478,11 +1520,12 @@ try {
       message: msg || "(lampiran / order masuk)",
       attachment: fileUrl ? { url: fileUrl, name: fileName, mime: fileMime } : null
     });
+
+    adminAlreadyNotified = true;
   }
 } catch (notifyErr) {
   console.error("notify admin ai-mode important chat error:", notifyErr);
 }
-
  const tLower = String(msg || "").toLowerCase();
 
 
@@ -1911,13 +1954,13 @@ const isProofFile =
     String(fileMime || "").toLowerCase() === "application/pdf"
   );
 
-// ✅ payflow hanya cuba bila:
-// - user memang mention bukti bayar / resit
-// - ATAU thread memang PAY_* (masa tu attachment pun dianggap bukti)
+// ✅ Bila customer terus upload slip gambar/PDF,
+// terus masuk payflow dan baca attachment itu.
+// Jangan suruh customer upload sekali lagi.
 const payflowShouldTry =
+  isProofFile ||
   looksLikePaidProof(msg) ||
-  inPayFlow ||
-  (inPayFlow && isProofFile);
+  inPayFlow;
 if (payflowShouldTry && payflow) 
 {
   // sokong 2 style export: function atau {handle}

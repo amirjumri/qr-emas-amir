@@ -134,6 +134,73 @@ async function sendIosPushSafe({ supabase, phone, title, body, url }){
   }
 }
 
+async function sendPushToDeviceTokenSafe({ supabase, recipient, title, body, url }){
+  const meta = recipient.meta || {};
+  const deviceToken = String(meta.device_token || "").trim();
+  const platform = String(meta.platform || "").toLowerCase();
+  const tokenType = String(meta.token_type || "").toLowerCase();
+
+  if (!deviceToken) return false;
+
+  const isAndroid =
+    platform === "android" ||
+    tokenType === "fcm" ||
+    deviceToken.includes(":") ||
+    deviceToken.length > 120;
+
+  try{
+    const endpoint = isAndroid
+      ? "https://earnest-bombolone-4d2e8a.netlify.app/.netlify/functions/send-push-android"
+      : "https://emasamir.app/.netlify/functions/send-push";
+
+    const payload = {
+      deviceToken,
+      platform: isAndroid ? "fcm" : "ios",
+      token_type: isAndroid ? "fcm" : "apns",
+      title: title || "Emas Amir",
+      body: cutText(body || "Notifikasi Emas Amir", 120),
+      url: url || "/index.html",
+      deeplink: url || "/index.html",
+      target_url: url || "/index.html"
+    };
+
+    const res = await fetch(endpoint, {
+      method:"POST",
+      headers:{ "Content-Type":"application/json" },
+      body:JSON.stringify(payload)
+    });
+
+    const j = await res.json().catch(() => ({}));
+
+    console.log("📲 TOKEN PUSH RESULT:", {
+      recipient_id: recipient.id,
+      platform,
+      token_type: tokenType,
+      status: res.status,
+      response: j
+    });
+
+    if (j?.success){
+      await supabase
+        .from("chat_device_tokens")
+        .update({ updated_at: new Date().toISOString() })
+        .eq("device_token", deviceToken);
+
+      return true;
+    }
+
+    return false;
+
+  }catch(e){
+    console.error("❌ TOKEN PUSH ERROR:", {
+      recipient_id: recipient.id,
+      error: e.message || String(e)
+    });
+
+    return false;
+  }
+}
+
 async function sendAndroidPushSafe({ supabase, phone, title, body, url }){
   const p = normalizePhone(phone);
   if (!p) return;
@@ -343,43 +410,84 @@ const realHandler = async (event) => {
       try{
         const now = new Date().toISOString();
 
-        const customerName = String(
-          r.meta?.customer_name ||
-          r.customer_name ||
-          "Cik"
-        ).trim() || "Cik";
+const recipientType = String(r.meta?.recipient_type || "THREAD").toUpperCase();
 
-        const finalMessage = personalizeMessage(
-          campaign.body,
-          customerName
-        );
+const customerName = String(
+  r.meta?.customer_name ||
+  r.customer_name ||
+  "Cik"
+).trim() || "Cik";
 
-        console.log("✉️ SEND RECIPIENT:", {
-          recipient_id: r.id,
-          thread_id: r.thread_id,
-          phone: r.customer_phone,
-          name: customerName
-        });
+const finalMessage = personalizeMessage(
+  campaign.body,
+  customerName
+);
 
-        const { error: msgErr } = await supabase
-          .from("chat_messages")
-          .insert({
-            thread_id: r.thread_id,
-            role: "notification",
-            text: finalMessage,
-            meta: {
-              notification: true,
-              campaign_id: campaign.id,
-              campaign_type: campaign.meta?.campaign_type || "",
-              title: campaign.title || "",
-              target_url: campaign.target_url || "",
-              customer_name: customerName,
-              customer_id: r.meta?.customer_id || null,
-              worker_sent_at: now
-            }
-          });
+console.log("✉️ SEND RECIPIENT:", {
+  recipient_id: r.id,
+  recipient_type: recipientType,
+  thread_id: r.thread_id,
+  phone: r.customer_phone,
+  name: customerName
+});
 
-        if (msgErr) throw msgErr;
+/*
+  ✅ TAMBAHAN BARU:
+  TOKEN recipient = push sahaja.
+  Tidak masuk chat sebab mungkin tiada thread_id.
+  Klik notification terus buka target_url status/live/promo.
+*/
+if (recipientType === "TOKEN") {
+  const ok = await sendPushToDeviceTokenSafe({
+    supabase,
+    recipient: r,
+    title: campaign.title || "Emas Amir",
+    body: finalMessage,
+    url: campaign.target_url || "/index.html"
+  });
+
+  if (!ok){
+    throw new Error("Token push failed");
+  }
+
+  const { error: tokenSentErr } = await supabase
+    .from("notification_campaign_recipients")
+    .update({
+      status: "SENT",
+      sent_at: now,
+      error_message: null
+    })
+    .eq("id", r.id);
+
+  if (tokenSentErr) throw tokenSentErr;
+
+  success++;
+  continue;
+}
+
+/*
+  Flow lama THREAD kekal:
+  Masuk chat + update thread + push ikut phone.
+*/
+const { error: msgErr } = await supabase
+  .from("chat_messages")
+  .insert({
+    thread_id: r.thread_id,
+    role: "notification",
+    text: finalMessage,
+    meta: {
+      notification: true,
+      campaign_id: campaign.id,
+      campaign_type: campaign.meta?.campaign_type || "",
+      title: campaign.title || "",
+      target_url: campaign.target_url || "",
+      customer_name: customerName,
+      customer_id: r.meta?.customer_id || null,
+      worker_sent_at: now
+    }
+  });
+
+if (msgErr) throw msgErr;
 
         const { error: threadErr } = await supabase
           .from("chat_threads")

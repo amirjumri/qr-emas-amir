@@ -28,8 +28,9 @@ exports.handler = async (event) => {
     const body = JSON.parse(event.body || "{}");
 
     const token = String(body.deviceToken || "").trim();
-    const title = body.title || "Emas Amir";
-    const message = body.body || "Ada mesej baru";
+   const title = body.title || "Emas Amir";
+const message = body.body || "Ada mesej baru";
+const url = String(body.url || body.deeplink || body.target_url || "/chat.html");
 
     if (!token) {
       return json(400, { success: false, error: "No token" });
@@ -37,19 +38,25 @@ exports.handler = async (event) => {
 
     const fb = initFirebase();
 
-    const res = await fb.messaging().send({
-      token,
-      notification: {
-        title,
-        body: message,
-      },
-      android: {
-        priority: "high",
-        notification: {
-          sound: "default",
-        },
-      },
-    });
+   const res = await fb.messaging().send({
+  token,
+  notification: {
+    title,
+    body: message,
+  },
+  data: {
+    url,
+    deeplink: url,
+    target_url: url,
+    source: "emasamir_chat",
+  },
+  android: {
+    priority: "high",
+    notification: {
+      sound: "default",
+    },
+  },
+});
 
     console.log("FCM SENT:", res);
 

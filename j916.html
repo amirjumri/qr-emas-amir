@@ -220,7 +220,38 @@ body.swipe-peek{
 }
 .video-wrap.video-playing .j916-video-thumb{
   display:none;
-}</style>
+}
+
+/* ===== J916 LOCK CARA BARU (ikut Live Now) ===== */
+#btnOpenCart{display:none!important;}
+.j916-varian-list{display:grid;gap:10px;}
+.j916-varian-card{border:1px solid #e5e7eb;border-radius:16px;background:#fff;padding:12px;display:flex;gap:10px;align-items:center;}
+.j916-varian-card img{width:64px;height:64px;border-radius:12px;object-fit:cover;background:#f3f4f6;}
+.j916-varian-main{min-width:0;flex:1;}
+.j916-varian-code{font-weight:950;font-family:ui-monospace,Menlo,Consolas,monospace;}
+.j916-varian-spec{font-size:13px;color:#6b7280;line-height:1.35;}
+.j916-varian-price{font-weight:950;color:#dc2626;}
+.j916-lock-backdrop,.j916-lock-confirm-backdrop{position:fixed;inset:0;background:rgba(2,6,23,.76);display:none;align-items:flex-end;justify-content:center;z-index:1000005;backdrop-filter:blur(7px);}
+.j916-lock-sheet,.j916-lock-confirm-sheet{width:100%;max-width:520px;max-height:92vh;overflow:auto;background:#fff;color:#111827;border-radius:24px 24px 0 0;box-shadow:0 -24px 70px rgba(0,0,0,.45);padding:16px;}
+.j916-lock-handle{width:48px;height:5px;border-radius:999px;background:#d1d5db;margin:0 auto 12px;}
+.j916-lock-item{display:flex;gap:12px;align-items:center;padding:12px;border:1px solid #e5e7eb;border-radius:16px;background:#f9fafb;}
+.j916-lock-img{width:76px;height:76px;border-radius:14px;object-fit:cover;background:#e5e7eb;}
+.j916-lock-choice{border:1px solid #d1d5db;border-radius:14px;padding:10px 12px;background:#fff;font-weight:900;}
+.j916-lock-choice.active{border-color:#e11d48;background:#fff1f2;color:#be123c;}
+.j916-lock-submit-bar{position:sticky;bottom:0;background:#fff;padding-top:12px;border-top:1px solid #eef2f7;}
+.j916-lock-note{border:1px solid #fecaca;background:#fff1f2;color:#991b1b;border-radius:16px;padding:12px;font-size:14px;line-height:1.45;}
+.j916-pending-card{display:flex;gap:10px;padding:10px;border:1px solid #e5e7eb;border-radius:15px;background:#fff;margin-top:8px;}
+.j916-pending-card img{width:58px;height:58px;border-radius:12px;object-fit:cover;background:#e5e7eb;}
+@media(max-width:560px){.j916-lock-sheet,.j916-lock-confirm-sheet{max-height:94vh}.j916-varian-card{align-items:flex-start}.j916-varian-card img{width:58px;height:58px}}
+
+
+/* FIX: buang footer lama pilihan barang */
+#modalDesign .modal-footer{display:none!important;}
+#modalDesign #mdCheckAll{display:none!important;}
+#modalDesign thead th:first-child{display:none!important;}
+.j916-varian-card .btn{min-width:92px;}
+
+</style>
 </head>
 <body>
 
@@ -424,6 +455,30 @@ body.swipe-peek{
     </div>
   </div>
 </div>
+
+
+
+<!-- J916 LOCK CARA BARU: ikut Live Now -->
+<div id="j916LockModal" class="j916-lock-backdrop">
+  <div class="j916-lock-sheet">
+    <div class="j916-lock-handle"></div>
+    <div class="d-flex justify-content-between align-items-center mb-2">
+      <div><div style="font-weight:950;font-size:20px;">Checkout 916</div><div class="text-muted small">Semak item & terus submit ke Ai-Dan</div></div>
+      <button type="button" class="btn btn-light rounded-pill" onclick="closeJ916LockCheckout()">✕</button>
+    </div>
+    <div id="j916LockItem" class="j916-lock-item mb-3"></div>
+    <div class="mb-3"><div class="fw-bold mb-2">Penghantaran</div><div class="d-flex gap-2"><button id="j916ShipPickup" type="button" class="j916-lock-choice flex-fill" onclick="setJ916Ship('PICKUP')">Ambil Kedai</button><button id="j916ShipPost" type="button" class="j916-lock-choice flex-fill active" onclick="setJ916Ship('POST')">Pos</button></div></div>
+    <div id="j916AddressBox" class="mb-3"><div class="fw-bold mb-1">Alamat</div><textarea id="j916Address" class="form-control" rows="3" placeholder="Alamat penuh + poskod + bandar + negeri"></textarea></div>
+    <div id="j916PickupBox" class="mb-3" style="display:none;"><div class="fw-bold mb-1">Masa ambil kedai</div><input id="j916PickupWhen" class="form-control" placeholder="Contoh: hari ni / esok petang / 3pm"></div>
+    <div id="j916CutSection" class="mb-3"><div class="fw-bold mb-2">Potong panjang?</div><div class="d-flex gap-2"><button id="j916CutNo" type="button" class="j916-lock-choice flex-fill active" onclick="setJ916Cut('NO')">Tak Potong</button><button id="j916CutYes" type="button" class="j916-lock-choice flex-fill" onclick="setJ916Cut('YES')">Potong</button></div><div id="j916CutBox" class="mt-3" style="display:none;"><div class="row g-2"><div class="col-6"><label class="small text-muted">Panjang asal</label><input id="j916CurrentLen" class="form-control bg-light fw-bold" readonly></div><div class="col-6"><label class="small text-muted">Potong jadi</label><input id="j916CutTo" class="form-control" placeholder="55cm"></div></div></div></div>
+    <div class="mb-3"><div class="fw-bold mb-2">Cara Bayar</div><div class="d-flex gap-2 flex-wrap"><button id="j916PayQR" type="button" class="j916-lock-choice flex-fill" onclick="setJ916Pay('QR')">QR</button><button id="j916PayTransfer" type="button" class="j916-lock-choice flex-fill active" onclick="setJ916Pay('TRANSFER')">Transfer</button><button id="j916PayTabung" type="button" class="j916-lock-choice flex-fill" onclick="setJ916Pay('TABUNG_TOPUP')">Tabung + Topup</button><button id="j916PayAtome" type="button" class="j916-lock-choice flex-fill" onclick="setJ916Pay('ATOME')">Atome</button></div></div>
+    <div id="j916TabungBox" class="mb-3" style="display:none;background:#fffbea;border:1px solid #fde68a;border-radius:18px;padding:14px;"><b>Tabung + Topup</b><br><span class="small text-muted">Admin akan semak baki tabung dahulu. Baki topup akan diberi dalam chat Ai-Dan.</span></div>
+    <div class="rounded-4 p-3 mb-3" style="background:#f9fafb;border:1px solid #e5e7eb;"><div class="d-flex justify-content-between"><span>Subtotal</span><b id="j916Subtotal">RM 0.00</b></div><div class="d-flex justify-content-between"><span>Caj pos</span><b id="j916ShipFee">RM 10.00</b></div><hr><div class="d-flex justify-content-between fs-5"><b>Total anggaran</b><b id="j916Total" class="text-danger">RM 0.00</b></div></div>
+    <div id="j916LockMsg" class="small text-muted mb-2"></div>
+    <div class="j916-lock-submit-bar"><button id="btnSubmitJ916Lock" type="button" class="btn btn-danger fw-bold w-100 rounded-pill py-3" onclick="submitJ916LockCheckout()">Submit Lock & Dapat Detail Bayaran</button></div>
+  </div>
+</div>
+<div id="j916LockConfirmModal" class="j916-lock-confirm-backdrop"><div class="j916-lock-confirm-sheet"><div class="j916-lock-handle"></div><div class="d-flex justify-content-between align-items-center mb-2"><div><div style="font-weight:950;font-size:20px;">Sahkan Belian 916</div><div class="text-muted small">Semak dahulu sebelum order dibuat</div></div><button type="button" class="btn btn-light rounded-pill" onclick="closeJ916LockConfirm()">✕</button></div><div id="j916LockConfirmContent"></div><div class="d-flex gap-2 mt-3"><button type="button" class="btn btn-light fw-bold flex-fill rounded-pill py-3" onclick="closeJ916LockConfirm()">Semak Balik</button><button id="btnConfirmJ916Lock" type="button" class="btn btn-danger fw-bold flex-fill rounded-pill py-3" onclick="submitJ916LockConfirmed()">Ya, Teruskan Buat Order</button></div></div></div>
 
 <!-- MODAL: Senarai + Checkout -->
 <div class="modal fade" id="modalConfirm" tabindex="-1" aria-hidden="true">
@@ -1166,7 +1221,7 @@ function renderDesignCards(groups){
 
         <div class="card-actions">
           <button class="btn btn-primary btn-sm" data-open="${key}" ${isEmpty ? 'disabled' : ''}>
-            Lihat Pilihan
+            Pilih Barang
           </button>
 
           <button class="btn btn-outline-secondary btn-sm" data-share="${key}">
@@ -2707,6 +2762,1081 @@ if (productId916) {
   });
 }
 </script>
+
+<script>
+/* J916 CARA LOCK BARU — ikut Live Now 100% gaya lock */
+const J916_LOCK_LIMIT = 2;
+
+let J916_ATOME_ENABLED = false;
+let j916LockState = {
+  item:null,
+  ship:"POST",
+  pay:"TRANSFER",
+  cut:"NO",
+  price:0,
+  tabungUnits:0,
+  tabungValue:0,
+  topupValue:0,
+  tabungRequestId:""
+};
+
+function esc916(s){
+  return String(s ?? "").replace(/[&<>"]/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[m]));
+}
+function j916Money(n){ return "RM " + Number(n || 0).toFixed(2); }
+function j916Img(it){ return it?.img1 || it?.img2 || it?.img3 || "https://placehold.co/200x200?text=916"; }
+function j916Spec(it){
+  const p=[];
+  if(Number(it?.weight_g||0)>0) p.push(Number(it.weight_g).toFixed(2)+"g");
+  if(Number(it?.length_cm||0)>0) p.push("Panjang "+Number(it.length_cm).toFixed(1)+"cm");
+  if(Number(it?.width_cm||0)>0) p.push("Lebar "+Number(it.width_cm).toFixed(1)+"cm");
+  return p.join(" • ") || "-";
+}
+function normalizePhone916(s){
+  const d = String(s || "").replace(/\D/g,"");
+  if (!d) return "";
+  if (d.startsWith("60")) return d;
+  if (d.startsWith("0")) return "6" + d;
+  return "60" + d;
+}
+function getJ916PhoneVariants(phone){
+  const raw = String(phone || "").trim();
+  const d = raw.replace(/\D/g,"");
+  if (!d) return [];
+  const p0 = d.startsWith("0") ? d : (d.startsWith("60") ? "0" + d.slice(2) : "0" + d);
+  const p60 = d.startsWith("60") ? d : (d.startsWith("0") ? "6" + d : "60" + d);
+  return Array.from(new Set([raw,d,p0,p60,"+"+p60].filter(Boolean)));
+}
+function getJ916UserPhone(){
+  const a = getAuth() || {};
+  return String(a.phone || a.msisdn || "").trim();
+}
+
+async function loadJ916PaymentSettings(){
+  try{
+    const { data, error } = await sb
+      .from("live_payment_settings")
+      .select("atome_enabled")
+      .eq("id", 1)
+      .maybeSingle();
+    if (error) throw error;
+    J916_ATOME_ENABLED = !!data?.atome_enabled;
+  }catch(e){
+    console.warn("loadJ916PaymentSettings error:", e);
+    J916_ATOME_ENABLED = false;
+  }
+
+  const atomeBtn = document.getElementById("j916PayAtome");
+  if (atomeBtn){
+    atomeBtn.style.display = J916_ATOME_ENABLED ? "" : "none";
+  }
+
+  if (!J916_ATOME_ENABLED && j916LockState.pay === "ATOME"){
+    j916LockState.pay = "TRANSFER";
+  }
+}
+
+function getPostFeeByAddress916(address){
+  const raw = String(address || "").trim();
+  if (!raw) return 10;
+  const txt = raw.toLowerCase();
+
+  if (/\b(singapore|singapura|sg)\b/i.test(txt)) return 50;
+  if (/\b(sabah|sarawak|labuan)\b/i.test(txt)) return 20;
+
+  const postcodes = raw.match(/\b\d{5}\b/g) || [];
+  for (const pc of postcodes){
+    const prefix = Number(pc.slice(0,2));
+    if (prefix === 87 || (prefix >= 88 && prefix <= 91) || (prefix >= 93 && prefix <= 98)){
+      return 20;
+    }
+  }
+  return 10;
+}
+function getJ916ShipFee(){
+  if (j916LockState.ship !== "POST") return 0;
+  return getPostFeeByAddress916(document.getElementById("j916Address")?.value || "");
+}
+function getJ916FinalTotal(){
+  const itemPrice = Number(j916LockState.price || 0);
+  const shipFee = getJ916ShipFee();
+
+  if (j916LockState.pay === "TABUNG_TOPUP"){
+    return Number((Number(j916LockState.topupValue || itemPrice) + shipFee).toFixed(2));
+  }
+
+  if (j916LockState.pay === "ATOME"){
+    return Math.round((itemPrice + shipFee) * 1.08);
+  }
+
+  return Number((itemPrice + shipFee).toFixed(2));
+}
+
+async function getAuthUidForJ916Tabung(){
+  try{
+    const r = await sb.auth.getUser();
+    const uid = r?.data?.user?.id || null;
+    if (uid) return uid;
+  }catch(e){}
+
+  try{
+    const a = getAuth();
+    if (a?.id) return a.id;
+    if (a?.customer_id) return a.customer_id;
+    if (a?.user_id) return a.user_id;
+  }catch(e){}
+
+  return null;
+}
+
+async function getJ916Customer(){
+  const auth = getAuth() || {};
+  const phone = normalizePhone916(auth.phone || auth.msisdn || "");
+  if (!phone) return null;
+
+  const { data, error } = await sb
+    .from("customers")
+    .select("id,name,phone,alamat,postcode,city,state")
+    .eq("phone", phone)
+    .maybeSingle();
+
+  if (error) return null;
+  return data || null;
+}
+
+async function fillJ916CustomerAddress(){
+  try{
+    const auth = getAuth() || {};
+    const variants = getJ916PhoneVariants(auth.phone || auth.msisdn || "");
+    if (!variants.length) return;
+
+    for (const ph of variants){
+      const { data, error } = await sb
+        .from("customers")
+        .select("alamat,postcode,city,state")
+        .eq("phone", ph)
+        .limit(1)
+        .maybeSingle();
+
+      if (!error && data){
+        const alamat = String(data.alamat || "").trim();
+        const postcode = String(data.postcode || "").trim();
+        const city = String(data.city || "").trim();
+        const negeri = String(data.state || "").trim();
+
+        let addr = alamat;
+        if (postcode && !addr.includes(postcode)) addr += (addr ? ", " : "") + postcode;
+        if (city && !addr.toLowerCase().includes(city.toLowerCase())) addr += (addr ? ", " : "") + city;
+        if (negeri && !addr.toLowerCase().includes(negeri.toLowerCase())) addr += (addr ? ", " : "") + negeri;
+
+        if (addr && document.getElementById("j916Address")){
+          document.getElementById("j916Address").value = addr;
+          return;
+        }
+      }
+    }
+  }catch(e){
+    console.warn("fillJ916CustomerAddress error:", e);
+  }
+}
+
+function clearJ916Tabung(){
+  j916LockState.tabungUnits = 0;
+  j916LockState.tabungValue = 0;
+  j916LockState.topupValue = 0;
+  j916LockState.tabungRequestId = "";
+}
+
+async function loadJ916TabungTopupBox(){
+  const box = document.getElementById("j916TabungBox");
+  if (!box) return;
+
+  if (j916LockState.pay !== "TABUNG_TOPUP"){
+    clearJ916Tabung();
+    box.style.display = "none";
+    box.innerHTML = "";
+    return;
+  }
+
+  box.style.display = "block";
+  box.innerHTML = `<div class="small text-muted">Mengira baki tabung...</div>`;
+
+  try{
+    const authId = await getAuthUidForJ916Tabung();
+    if (!authId) throw new Error("Sesi login tamat. Sila login semula.");
+
+    const { data, error } = await sb
+      .from("tabung_txn")
+      .select("units, kind, type, status, user_id, user_auth_id, meta")
+      .or(`user_id.eq.${authId},user_auth_id.eq.${authId}`);
+
+    if (error) throw error;
+
+    let totalUnits = 0;
+    (data || []).forEach(r=>{
+      const kind = String(r?.kind || "").toUpperCase();
+      const type = String(r?.type || "").toUpperCase();
+      const status = String(r?.status || "").toUpperCase();
+      const units = Number(r?.units || 0);
+      if (!units) return;
+      if (status !== "PAID" && status !== "APPROVED") return;
+
+      if (kind === "BUY" || type === "BONUS"){
+        totalUnits += units;
+      }else if (kind === "SELL" || kind === "WITHDRAW" || kind === "CONVERT_916"){
+        totalUnits -= units;
+      }
+    });
+
+    totalUnits = Math.max(0, totalUnits);
+
+    const { data: gp } = await sb
+      .from("gold_prices")
+      .select("price_9999")
+      .order("ddate", { ascending:false })
+      .limit(1)
+      .maybeSingle();
+
+    const price1g = Number(gp?.price_9999 || 0);
+    const unitValue = price1g / 10;
+    if (!unitValue || unitValue <= 0) throw new Error("Harga tabung semasa tidak dijumpai.");
+
+    const itemPrice = Number(j916LockState.price || 0);
+    let maxUseUnits = Math.floor(itemPrice / unitValue);
+    if (maxUseUnits > totalUnits) maxUseUnits = totalUnits;
+    maxUseUnits = Math.max(0, maxUseUnits);
+
+    const tabungValue = maxUseUnits * unitValue;
+    const topup = Math.max(0, itemPrice - tabungValue);
+
+    j916LockState.tabungUnits = maxUseUnits;
+    j916LockState.tabungValue = tabungValue;
+    j916LockState.topupValue = topup;
+
+    if (totalUnits <= 0){
+      box.innerHTML = `
+        <div class="fw-bold mb-1">Tabung Emas</div>
+        <div class="small text-muted">
+          Belum ada baki Tabung Emas. Simpan emas dulu untuk guna fitur ini ✨
+        </div>
+      `;
+      renderJ916LockTotal();
+      return;
+    }
+
+    box.innerHTML = `
+      <div class="fw-bold mb-2" style="font-size:15px;">🎯 Gunakan Tabung Untuk Item Ini</div>
+      <div class="small mb-1">Harga item: <b class="text-danger">${j916Money(itemPrice)}</b></div>
+      <div class="small mb-1">Harga tabung semasa: <b>${j916Money(unitValue)} / 0.1g</b></div>
+      <div class="small mb-1">Baki tabung anda: <b>${totalUnits} unit (${(totalUnits/10).toFixed(1)}g)</b></div>
+      <div class="small mb-1">Digunakan: <b>${maxUseUnits} unit</b> = <b>${j916Money(tabungValue)}</b></div>
+      <div class="small mb-2">Tambah bayaran: <b class="text-danger">${j916Money(topup)}</b> sahaja</div>
+      <div class="small text-muted">
+        Nota:<br>
+        Sistem akan buat permohonan keluar/convert tabung dahulu untuk semakan admin.<br>
+        Baki kecil boleh ditambah melalui QR atau Transfer.
+      </div>
+    `;
+
+    renderJ916LockTotal();
+  }catch(e){
+    clearJ916Tabung();
+    renderJ916LockTotal();
+    box.innerHTML = `<div class="small text-danger">${esc916(e?.message || e)}</div>`;
+  }
+}
+
+function renderJ916LockTotal(){
+  const item = j916LockState.item || {};
+  const cutSection = document.getElementById("j916CutSection");
+  if (cutSection){
+    const canCut = Number(item.length_cm || 0) > 0;
+    cutSection.style.display = (j916LockState.ship === "PICKUP" && canCut) ? "" : "none";
+    if (j916LockState.ship !== "PICKUP") j916LockState.cut = "NO";
+  }
+
+  const itemPrice = Number(j916LockState.price || 0);
+  const normalShipFee = getJ916ShipFee();
+  const payMethod = String(j916LockState.pay || "").toUpperCase();
+  const useAtome = payMethod === "ATOME";
+  const useTabung = payMethod === "TABUNG_TOPUP";
+  const tabungValue = useTabung ? Number(j916LockState.tabungValue || 0) : 0;
+
+  let displaySubtotal = itemPrice;
+  let displayShipFee = normalShipFee;
+  let total = itemPrice + normalShipFee - tabungValue;
+
+  document.getElementById("j916TabungDeductRow")?.remove();
+
+  if (useAtome){
+    const atomeFinal = (itemPrice + normalShipFee) * 1.08;
+    displaySubtotal = Math.round(atomeFinal);
+    displayShipFee = 0;
+    total = displaySubtotal;
+  }
+
+  total = Math.max(0, total);
+
+  document.getElementById("j916Subtotal").textContent = j916Money(displaySubtotal);
+  document.getElementById("j916ShipFee").textContent = j916Money(displayShipFee);
+  document.getElementById("j916Total").textContent = j916Money(total);
+
+  const itemPriceText = document.getElementById("j916LockItemPriceText");
+  if (itemPriceText){
+    itemPriceText.textContent = useAtome ? j916Money(total) : j916Money(itemPrice);
+  }
+
+  if (useTabung && tabungValue > 0){
+    const shipEl = document.getElementById("j916ShipFee");
+    if (shipEl && !document.getElementById("j916TabungDeductRow")){
+      const row = document.createElement("div");
+      row.id = "j916TabungDeductRow";
+      row.className = "d-flex justify-content-between text-success";
+      row.innerHTML = `<span>Tolak Tabung</span><b>- ${j916Money(tabungValue)}</b>`;
+      shipEl.closest(".d-flex").insertAdjacentElement("afterend", row);
+    }
+  }
+
+  ["Pickup","Post"].forEach(x=>document.getElementById("j916Ship"+x)?.classList.remove("active"));
+  document.getElementById(j916LockState.ship === "PICKUP" ? "j916ShipPickup" : "j916ShipPost")?.classList.add("active");
+
+  document.getElementById("j916AddressBox").style.display = j916LockState.ship === "POST" ? "" : "none";
+  document.getElementById("j916PickupBox").style.display = j916LockState.ship === "PICKUP" ? "" : "none";
+
+  ["QR","Transfer","Tabung","Atome"].forEach(x=>document.getElementById("j916Pay"+x)?.classList.remove("active"));
+  const payId =
+    j916LockState.pay === "QR" ? "j916PayQR" :
+    j916LockState.pay === "ATOME" ? "j916PayAtome" :
+    j916LockState.pay === "TABUNG_TOPUP" ? "j916PayTabung" :
+    "j916PayTransfer";
+  document.getElementById(payId)?.classList.add("active");
+
+  ["No","Yes"].forEach(x=>document.getElementById("j916Cut"+x)?.classList.remove("active"));
+  document.getElementById(j916LockState.cut === "YES" ? "j916CutYes" : "j916CutNo")?.classList.add("active");
+  document.getElementById("j916CutBox").style.display = j916LockState.cut === "YES" ? "" : "none";
+
+  const box = document.getElementById("j916TabungBox");
+  if (box) box.style.display = j916LockState.pay === "TABUNG_TOPUP" ? "block" : "none";
+}
+
+function setJ916Ship(v){ j916LockState.ship = v; renderJ916LockTotal(); }
+async function setJ916Pay(v){
+  if (v === "ATOME" && !J916_ATOME_ENABLED){
+    alert("Atome belum dibuka untuk lock sekarang.");
+    return;
+  }
+  j916LockState.pay = v;
+  if (v === "TABUNG_TOPUP"){
+    await loadJ916TabungTopupBox();
+  }else{
+    clearJ916Tabung();
+    renderJ916LockTotal();
+  }
+}
+function setJ916Cut(v){ j916LockState.cut = v; renderJ916LockTotal(); }
+
+function closeJ916LockCheckout(){
+  document.getElementById("j916LockModal").style.display = "none";
+  document.body.style.overflow = "";
+}
+function closeJ916LockConfirm(){
+  document.getElementById("j916LockConfirmModal").style.display = "none";
+}
+
+async function openJ916LockCheckout(item){
+  const auth = getAuth();
+  if (!auth){
+    alert("Sila log masuk dahulu untuk lock barang.");
+    location.href = "login.html#login";
+    return;
+  }
+
+  await loadJ916PaymentSettings();
+
+  j916LockState = {
+    item,
+    ship:"POST",
+    pay:"TRANSFER",
+    cut:"NO",
+    price:calcUnit916(item.weight_g,item.upah_rm),
+    tabungUnits:0,
+    tabungValue:0,
+    topupValue:0,
+    tabungRequestId:""
+  };
+
+  document.getElementById("j916LockItem").innerHTML = `
+    <img class="j916-lock-img" src="${esc916(j916Img(item))}" alt="${esc916(item.code)}">
+    <div style="min-width:0;flex:1;">
+      <div class="fw-bold">${esc916(item.design_name || "Barang Kemas 916")}</div>
+      <div class="small text-muted">${esc916(item.code || "")}</div>
+      <div class="small text-muted">${esc916(j916Spec(item))}</div>
+      <div id="j916LockItemPriceText" class="fw-black text-danger mt-1" style="font-weight:950;">${j916Money(j916LockState.price)}</div>
+    </div>
+  `;
+
+  document.getElementById("j916CurrentLen").value = Number(item.length_cm || 0).toFixed(1) + "cm";
+  document.getElementById("j916Address").value = localStorage.getItem("emasamir_last_address") || "";
+  document.getElementById("j916PickupWhen").value = "";
+  document.getElementById("j916CutTo").value = "";
+  document.getElementById("j916LockMsg").textContent = "";
+
+  await fillJ916CustomerAddress();
+
+  const addrEl = document.getElementById("j916Address");
+  if (addrEl && addrEl.dataset.bindFee !== "1"){
+    addrEl.dataset.bindFee = "1";
+    addrEl.addEventListener("input", renderJ916LockTotal);
+    addrEl.addEventListener("change", renderJ916LockTotal);
+  }
+
+  renderJ916LockTotal();
+  document.getElementById("j916LockModal").style.display = "flex";
+  document.body.style.overflow = "hidden";
+}
+
+async function fetchJ916PendingOrders(){
+  const a = getAuth() || {};
+
+  const rawPhone = String(
+    getJ916UserPhone() ||
+    a.phone ||
+    a.msisdn ||
+    localStorage.getItem("auth_phone") ||
+    localStorage.getItem("emasamir_phone") ||
+    localStorage.getItem("phone") ||
+    ""
+  ).trim();
+
+  const variants = getJ916PhoneVariants(rawPhone);
+  if (!variants.length) return [];
+
+  const all = [];
+
+  async function queryJ916ByPhoneField(field){
+    try{
+      const { data, error } = await sb
+        .from("j916_orders")
+        .select("*")
+        .in(field, variants)
+        .eq("status","PENDING")
+        .order("created_at",{ascending:false})
+        .limit(10);
+
+      if (!error && Array.isArray(data)){
+        data.forEach(r => all.push({
+          __table:"j916_orders",
+          __type:"916",
+          ...r
+        }));
+      }
+    }catch(e){
+      console.warn("pending j916 field ignored:", field, e);
+    }
+  }
+
+  // Ikut Live Now: cari pending order ikut semua kemungkinan column telefon.
+  // V4 submit melalui chat-send, sesetengah rekod boleh masuk phone/customer_phone/user_phone/e164.
+  await queryJ916ByPhoneField("phone");
+  await queryJ916ByPhoneField("customer_phone");
+  await queryJ916ByPhoneField("user_phone");
+  await queryJ916ByPhoneField("phone_e164");
+
+  // Backup: kalau order baru simpan user_auth_id / created_by sahaja.
+  try{
+    const uid = a.user_id || a.user_auth_id || a.id || localStorage.getItem("auth_user_id") || "";
+    if (uid){
+      const { data, error } = await sb
+        .from("j916_orders")
+        .select("*")
+        .or(`user_auth_id.eq.${uid},created_by.eq.${uid},user_id.eq.${uid}`)
+        .eq("status","PENDING")
+        .order("created_at",{ascending:false})
+        .limit(10);
+
+      if (!error && Array.isArray(data)){
+        data.forEach(r => all.push({
+          __table:"j916_orders",
+          __type:"916",
+          ...r
+        }));
+      }
+    }
+  }catch(e){
+    console.warn("pending j916 user id ignored:", e);
+  }
+
+  const seen = new Set();
+  const rows = all.filter(r=>{
+    const key = String(r.id || r.reference || r.reference_1 || r.code || JSON.stringify(r));
+    if (seen.has(key)) return false;
+    seen.add(key);
+    return true;
+  }).slice(0, 10);
+
+  const codes = rows.map(r=>String(r.code || "").toUpperCase().trim()).filter(Boolean);
+  if (codes.length){
+    try{
+      const { data: itemRows, error: imgErr } = await sb
+        .from("j916_items")
+        .select(`code, weight_g, length_cm, width_cm, design:j916_designs (name,img1_url,img2_url,img3_url,img1,img2,img3)`)
+        .in("code", codes);
+
+      if (!imgErr && Array.isArray(itemRows)){
+        const imgMap = new Map();
+        itemRows.forEach(x=>{
+          const c = String(x.code || "").toUpperCase().trim();
+          const d = x.design || {};
+          imgMap.set(c, {
+            name:d.name || "",
+            img:d.img1_url || d.img1 || d.img2_url || d.img2 || d.img3_url || d.img3 || "",
+            weight_g:x.weight_g,
+            length_cm:x.length_cm,
+            width_cm:x.width_cm
+          });
+        });
+
+        rows.forEach(r=>{
+          const m = imgMap.get(String(r.code || "").toUpperCase().trim());
+          if (m?.img) r.__pending_img = m.img;
+          if (m?.name) r.__pending_name = m.name;
+          if ((r.weight_g == null || Number(r.weight_g) === 0) && m?.weight_g != null) r.weight_g = m.weight_g;
+          if ((r.length_cm == null || Number(r.length_cm) === 0) && m?.length_cm != null) r.length_cm = m.length_cm;
+          if ((r.width_cm == null || Number(r.width_cm) === 0) && m?.width_cm != null) r.width_cm = m.width_cm;
+        });
+      }
+    }catch(_){}
+  }
+
+  return rows;
+}
+
+function j916PendingHTML(list){
+  if (!list.length){
+    return `<div class="small text-muted mt-2">Tiada pending order lain dijumpai.</div>`;
+  }
+
+  return list.map(r=>`
+    <div class="j916-pending-card">
+      <img src="${esc916(r.__pending_img || 'https://placehold.co/120x120?text=916')}" alt="${esc916(r.code || '')}">
+      <div style="min-width:0;flex:1;">
+        <div class="fw-bold">${esc916(r.__pending_name || r.name || 'Barang 916')}</div>
+        <div class="small text-muted">${esc916(r.code || '-')}</div>
+        <div class="small text-muted">${Number(r.weight_g || 0).toFixed(2)}g${Number(r.length_cm || 0)>0 ? ' • '+Number(r.length_cm).toFixed(1)+'cm' : ''}</div>
+        <div class="fw-bold text-danger">${j916Money(r.grand_total_rm ?? r.total_rm ?? r.unit_rm ?? 0)}</div>
+      </div>
+    </div>
+  `).join("");
+}
+
+function validateJ916LockInput(){
+  const ship = j916LockState.ship;
+  const address = String(document.getElementById("j916Address")?.value || "").trim();
+  const pickupWhen = String(document.getElementById("j916PickupWhen")?.value || "").trim();
+
+  if (ship === "POST" && address.length < 12){
+    throw new Error("Sila isi alamat penuh dahulu.");
+  }
+  if (ship === "PICKUP" && !pickupWhen){
+    throw new Error("Sila isi masa ambil kedai dahulu.");
+  }
+
+  if (j916LockState.pay === "ATOME" && !J916_ATOME_ENABLED){
+    throw new Error("Atome belum dibuka untuk lock sekarang.");
+  }
+
+  if (j916LockState.pay === "TABUNG_TOPUP" && Number(j916LockState.tabungUnits || 0) <= 0){
+    throw new Error("Tiada unit Tabung yang boleh digunakan.");
+  }
+
+  if (j916LockState.cut === "YES"){
+    const curr = Number(String(document.getElementById("j916CurrentLen")?.value || "").replace(/[^0-9.]/g,""));
+    const cut = Number(String(document.getElementById("j916CutTo")?.value || "").replace(/[^0-9.]/g,""));
+    if (!curr || !cut) throw new Error("Panjang asal / potong jadi mesti nombor cm yang sah.");
+    if (cut >= curr) throw new Error("Potong jadi mesti lebih pendek dari panjang asal.");
+  }
+
+  if (ship === "POST") localStorage.setItem("emasamir_last_address", address);
+}
+
+async function submitJ916LockCheckout(){
+  const btn = document.getElementById("btnSubmitJ916Lock");
+  const msg = document.getElementById("j916LockMsg");
+
+  try{
+    if (!j916LockState.item) throw new Error("Barang belum dipilih.");
+    validateJ916LockInput();
+
+    btn.disabled = true;
+    msg.textContent = "Menyemak pending order...";
+
+    const pending = await fetchJ916PendingOrders();
+    const limitReached = pending.length >= J916_LOCK_LIMIT;
+    const item = j916LockState.item;
+    const pay = j916LockState.pay;
+
+    let payNote = "";
+    if (pay === "ATOME"){
+      payNote = `
+        Ini adalah bayaran menggunakan <b>Atome</b>.<br>
+        Ansuran bulanan dan tempoh bayaran ditentukan sendiri di aplikasi Atome.
+        Minimum 3 bulan.<br><br>
+
+        Sila lengkapkan proses pembayaran Atome dalam tempoh <b>30 minit</b> selepas order dibuat.<br>
+        Jika perlukan masa tambahan, sila chat dengan admin dalam Ai-Dan sebelum masa tamat.<br><br>
+
+        ⚠️ Order akan dibatalkan secara automatik selepas 30 minit jika pembayaran Atome tidak berjaya diselesaikan dan tiada tambahan masa diberikan oleh admin.
+      `;
+    }else if (pay === "TABUNG_TOPUP"){
+      payNote = `
+        Ini adalah pilihan <b>Tabung + Topup</b>.<br>
+        Sistem akan terus buat permohonan keluar/convert Tabung untuk semakan admin selepas order dibuat.<br>
+        Baki topup perlu dibayar dalam tempoh <b>30 minit</b> selepas order dibuat.<br>
+        Jika perlukan masa tambahan, sila chat dengan admin dalam Ai-Dan sebelum masa tamat.<br><br>
+
+        ⚠️ Order akan dibatalkan secara automatik selepas 30 minit jika tiada topup, tiada bukti bayaran dihantar dan tiada tambahan masa diberikan oleh admin.
+      `;
+    }else{
+      payNote = `
+        Ini adalah <b>belian tunai</b>.<br>
+        Bayaran perlu dibuat dalam tempoh <b>30 minit</b> selepas order dibuat.<br>
+        Jika perlukan masa tambahan, sila chat dengan admin dalam Ai-Dan sebelum masa tamat.<br><br>
+
+        ⚠️ Order akan dibatalkan secara automatik selepas 30 minit jika tiada bayaran, tiada bukti bayaran dihantar dan tiada tambahan masa diberikan oleh admin.
+      `;
+    }
+
+    const tabungLines = pay === "TABUNG_TOPUP" ? `
+      <div class="rounded-4 p-3 mb-3" style="background:#fffbeb;border:1px solid #fde68a;">
+        <div class="d-flex justify-content-between"><span>Guna Tabung</span><b>${Number(j916LockState.tabungUnits || 0)} unit</b></div>
+        <div class="d-flex justify-content-between"><span>Nilai Tabung</span><b>${j916Money(j916LockState.tabungValue)}</b></div>
+        <div class="d-flex justify-content-between"><span>Topup + caj pos</span><b class="text-danger">${j916Money(getJ916FinalTotal())}</b></div>
+      </div>
+    ` : "";
+
+    document.getElementById("j916LockConfirmContent").innerHTML = `
+      <div class="j916-lock-item mb-3">
+        <img class="j916-lock-img" src="${esc916(j916Img(item))}" alt="${esc916(item.code)}">
+        <div style="min-width:0;flex:1;">
+          <div class="fw-bold">${esc916(item.design_name || 'Barang Kemas 916')}</div>
+          <div class="small text-muted">${esc916(item.code || '')}</div>
+          <div class="small text-muted">${esc916(j916Spec(item))}</div>
+          <div class="fw-black text-danger mt-1" style="font-weight:950;">${j916Money(j916LockState.price)}</div>
+        </div>
+      </div>
+
+      <div class="rounded-4 p-3 mb-3" style="background:#f9fafb;border:1px solid #e5e7eb;">
+        <div class="d-flex justify-content-between"><span>Subtotal</span><b>${j916Money(j916LockState.price)}</b></div>
+        <div class="d-flex justify-content-between"><span>Caj pos</span><b>${j916Money(getJ916ShipFee())}</b></div>
+        <hr>
+        <div class="d-flex justify-content-between fs-5"><b>Total anggaran</b><b class="text-danger">${j916Money(getJ916FinalTotal())}</b></div>
+      </div>
+
+      ${tabungLines}
+
+      <div class="j916-lock-note mb-3">${payNote}</div>
+
+      <div class="fw-bold mb-1">Pending order anda</div>
+      ${limitReached ? `<div class="j916-lock-note mb-3">Anda sudah ada <b>${J916_LOCK_LIMIT} pending order</b>.<br>Sila selesaikan bayaran dahulu sebelum lock item baru.</div>` : ""}
+      ${j916PendingHTML(pending)}
+    `;
+
+    const cbtn = document.getElementById("btnConfirmJ916Lock");
+    cbtn.disabled = limitReached;
+    cbtn.textContent = limitReached ? "Selesaikan Pending Order Dulu" : "Ya, Teruskan Buat Order";
+
+    document.getElementById("j916LockConfirmModal").style.display = "flex";
+    msg.textContent = "";
+  }catch(e){
+    msg.textContent = "❌ " + (e?.message || e);
+  }finally{
+    btn.disabled = false;
+  }
+}
+
+function j916CartItemFromLock(){
+  const it = j916LockState.item || {};
+  return {
+    id:it.id,
+    code:it.code,
+    name:it.design_name || it.name || "Barang Kemas 916",
+    weight_g:Number(it.weight_g || 0),
+    length_cm:Number(it.length_cm || 0),
+    width_cm:Number(it.width_cm || 0),
+    upah_rm:Number(it.upah_rm || 0),
+    img1:j916Img(it),
+    unit_price:Number(j916LockState.price || 0),
+    qty:1
+  };
+}
+
+async function createJ916TabungRequestIfNeeded(){
+  if (j916LockState.pay !== "TABUNG_TOPUP") return "";
+
+  const units = Number(j916LockState.tabungUnits || 0);
+  const tabungValueRm = Number(j916LockState.tabungValue || 0);
+  const finalTopupRm = getJ916FinalTotal();
+
+  if (units <= 0) throw new Error("Tiada unit Tabung yang boleh digunakan.");
+
+  const authId = await getAuthUidForJ916Tabung();
+  if (!authId) throw new Error("Sesi login tamat. Sila login semula.");
+
+  const auth = getAuth() || {};
+  const cust = await getJ916Customer();
+
+  const custName = cust?.name || auth?.name || "Pelanggan";
+  const custPhone = cust?.phone || normalizePhone916(auth?.phone || "");
+
+  const unitPriceUsed = tabungValueRm / units;
+
+  const respTabung = await sb.rpc("tabung_request_convert916_simple_v1", {
+    p_user_id: authId,
+    p_units: units,
+    p_price_per_unit: unitPriceUsed,
+    p_name: custName,
+    p_phone: custPhone,
+    p_notes:
+      "J916 Tabung + Topup | Item " +
+      String(j916LockState.item?.code || "") +
+      " | Nilai tabung " +
+      j916Money(tabungValueRm) +
+      " | Topup " +
+      j916Money(finalTopupRm)
+  });
+
+  if (respTabung.error) throw respTabung.error;
+
+  const tabungRequestId =
+    respTabung.data?.id ||
+    respTabung.data?.request_id ||
+    (typeof respTabung.data === "string" ? respTabung.data : "");
+
+  if (!tabungRequestId){
+    throw new Error("Server tidak pulangkan id transaksi tabung.");
+  }
+
+  j916LockState.tabungRequestId = tabungRequestId;
+
+  const link = typeof confirmURL === "function"
+    ? confirmURL("CONVERT_916", tabungRequestId)
+    : ("https://emasamir.app/tabung-confirm?type=CONVERT_916&id=" + encodeURIComponent(tabungRequestId));
+
+  const msgAdmin = [
+    "*Permohonan Keluar Tabung J916 + Topup*",
+    `ID: ${tabungRequestId}`,
+    `Nama: ${custName}`,
+    `No: ${custPhone}`,
+    `Item: ${String(j916LockState.item?.code || "-")}`,
+    `Harga item: ${j916Money(Number(j916LockState.price || 0))}`,
+    `Guna tabung: ${(units / 10).toFixed(1)} g (${units} unit)`,
+    `Nilai tabung: ${j916Money(tabungValueRm)}`,
+    `Topup customer perlu bayar: ${j916Money(finalTopupRm)}`,
+    "",
+    "✅ Sahkan di:",
+    link,
+    ""
+  ].join("\n");
+
+  const msgCust = [
+    "Permohonan keluar Tabung + Topup diterima.",
+    `ID: ${tabungRequestId}`,
+    `Item: ${String(j916LockState.item?.code || "-")}`,
+    `Guna tabung: ${(units / 10).toFixed(1)} g (${units} unit)`,
+    `Nilai tabung: ${j916Money(tabungValueRm)}`,
+    `Baki topup perlu dibayar: ${j916Money(finalTopupRm)}`,
+    "Admin akan semak dan sahkan permohonan anda."
+  ].join("\n");
+
+  try{
+    if (typeof waNotify === "function"){
+      await waNotify(ADMIN_WA, msgAdmin, "ADMIN J916 TABUNG TOPUP");
+      await waNotify(custPhone, msgCust, "CUST J916 TABUNG TOPUP");
+    }else{
+      await sendWA(normalizePhone916(ADMIN_WA), msgAdmin);
+      await sendWA(normalizePhone916(custPhone), msgCust);
+    }
+  }catch(e){
+    console.warn("WA tabung notify error:", e);
+  }
+
+  return tabungRequestId;
+}
+
+async function notifyJ916LockCustomer(refs){
+  const auth = getAuth() || {};
+  const phone = auth.phone || "";
+  if (!phone) return false;
+
+  const it = j916LockState.item || {};
+  const ship = j916LockState.ship;
+  const pay = j916LockState.pay;
+  const tabungText = pay === "TABUNG_TOPUP"
+    ? [
+        `ID permohonan tabung: ${j916LockState.tabungRequestId || "-"}`,
+        `Guna tabung: ${Number(j916LockState.tabungUnits || 0)} unit`,
+        `Nilai tabung: ${j916Money(j916LockState.tabungValue)}`,
+        `Topup + caj pos: ${j916Money(getJ916FinalTotal())}`
+      ].join("\n")
+    : "";
+
+  const lines = [
+    "Assalamualaikum,",
+    "",
+    "Lock barang kemas 916 Emas Amir diterima.",
+    refs?.length ? `No. Rujukan: ${refs.join(", ")}` : "",
+    auth.name ? `Nama: ${auth.name}` : "",
+    phone ? `No. Telefon: ${phone}` : "",
+    "",
+    `Item: ${it.design_name || "Barang Kemas 916"}`,
+    `Kod: ${it.code || "-"}`,
+    `Detail: ${j916Spec(it)}`,
+    `Kaedah bayar: ${pay}`,
+    `Penghantaran: ${ship === "POST" ? "Pos" : "Ambil Kedai"}`,
+    ship === "POST"
+      ? `Alamat: ${String(document.getElementById("j916Address")?.value || "").trim()}`
+      : `Masa ambil: ${String(document.getElementById("j916PickupWhen")?.value || "").trim()}`,
+    j916LockState.cut === "YES"
+      ? `Potong: ${document.getElementById("j916CurrentLen")?.value || ""} → ${document.getElementById("j916CutTo")?.value || ""}`
+      : "",
+    tabungText,
+    "",
+    "Ringkasan jumlah:",
+    `Subtotal barang: ${j916Money(j916LockState.price)}`,
+    `Penghantaran: ${j916Money(getJ916ShipFee())}`,
+    `Total anggaran: ${j916Money(getJ916FinalTotal())}`,
+    "",
+    pay === "ATOME" ? `Scan / buka QR Atome: ${QR_ATOME_URL}` : "",
+    (pay === "TRANSFER" || pay === "QR" || pay === "TABUNG_TOPUP")
+      ? `QR DuitNow: ${QR_DUITNOW_URL}\nBank: Maybank\nNama: EMAS AMIR SDN. BHD.\nNo Akaun: 552031155695`
+      : "",
+    "",
+    "Sila selesaikan bayaran dalam 30 minit dan hantar resit dalam chat Ai-Dan/admin. ✅"
+  ].filter(Boolean);
+
+  return await sendWA(toMsisdn(phone), lines.join("\n"));
+}
+
+async function chatSendJ916Lock(payload){
+  const res = await fetch("/.netlify/functions/chat-send", {
+    method:"POST",
+    headers:{ "Content-Type":"application/json" },
+    body: JSON.stringify(payload)
+  });
+
+  const raw = await res.text();
+  let j = {};
+  try{ j = JSON.parse(raw); }catch(e){}
+
+  if (!res.ok || !j.ok){
+    throw new Error(j.error || j.message || raw || "Chat-send gagal.");
+  }
+
+  return j;
+}
+
+async function submitJ916LockConfirmed(){
+  const btn = document.getElementById("btnConfirmJ916Lock");
+  const msg = document.getElementById("j916LockMsg");
+
+  try{
+    validateJ916LockInput();
+
+    if (btn) btn.disabled = true;
+    if (msg) msg.textContent = "Sedang submit lock ke Ai-Dan…";
+
+    const user = requireLogin();
+    if (!user) return;
+
+    const phone =
+      normalizePhone916(getJ916UserPhone()) ||
+      normalizePhone916(user.phone || user.msisdn || "");
+
+    if (!phone) throw new Error("Nombor telefon akaun tidak dijumpai.");
+
+    const pending = await fetchJ916PendingOrders();
+    if (pending.length >= J916_LOCK_LIMIT) throw new Error("Anda sudah ada 2 pending order.");
+
+    const item = j916LockState.item || {};
+    const ship = String(j916LockState.ship || "POST").toUpperCase();
+    const payMethod = String(j916LockState.pay || "TRANSFER").toUpperCase();
+
+    const address = String(document.getElementById("j916Address")?.value || "").trim();
+    const pickupWhen = String(document.getElementById("j916PickupWhen")?.value || "").trim();
+
+    const cut = String(j916LockState.cut || "NO").toUpperCase();
+    const cutTo = String(document.getElementById("j916CutTo")?.value || "").trim();
+    const currentLength = String(document.getElementById("j916CurrentLen")?.value || "").trim();
+
+    if (cut === "YES"){
+      if (!currentLength || !cutTo){
+        throw new Error("Sila isi panjang asal dan potong jadi berapa cm.");
+      }
+
+      const currNum = Number(String(currentLength).replace(/[^0-9.]/g, ""));
+      const cutNum = Number(String(cutTo).replace(/[^0-9.]/g, ""));
+
+      if (!currNum || !cutNum){
+        throw new Error("Panjang asal / potong jadi mesti nombor cm yang sah.");
+      }
+
+      if (cutNum >= currNum){
+        throw new Error("Potong jadi mesti lebih pendek dari panjang asal.");
+      }
+    }
+
+    const useTabungTopup = payMethod === "TABUNG_TOPUP";
+    const tabungUnitsUsed = useTabungTopup ? Number(j916LockState.tabungUnits || 0) : 0;
+    const tabungValueRm = useTabungTopup ? Number(j916LockState.tabungValue || 0) : 0;
+    const finalTopupRm = useTabungTopup ? Number(getJ916FinalTotal().toFixed(2)) : 0;
+
+    let tabungRequestId = "";
+    if (useTabungTopup){
+      if (msg) msg.textContent = "Sedang buat permohonan keluar Tabung + Topup…";
+      tabungRequestId = await createJ916TabungRequestIfNeeded();
+    }
+
+    const payload = {
+      phone,
+      name: user?.name || "Pelanggan",
+      is_logged_in: true,
+      action: "live_checkout_submit",
+      source: "j916_lock",
+
+      message:
+        "LIVE_CHECKOUT_SUBMIT" +
+        "|code=" + encodeURIComponent(String(item.code || "")) +
+        "|price_rm=" + encodeURIComponent(String(Number(j916LockState.price || 0))) +
+        "|ship=" + encodeURIComponent(ship) +
+        "|address=" + encodeURIComponent(ship === "POST" ? address : "") +
+        "|pickup_when=" + encodeURIComponent(ship === "PICKUP" ? pickupWhen : "") +
+        "|cut=" + encodeURIComponent(cut) +
+        "|cut_to=" + encodeURIComponent(cut === "YES" ? cutTo : "") +
+        "|pay_method=" + encodeURIComponent(payMethod) +
+        "|tabung_request_id=" + encodeURIComponent(tabungRequestId || "") +
+        "|tabung_units=" + encodeURIComponent(String(tabungUnitsUsed || 0)) +
+        "|tabung_value_rm=" + encodeURIComponent(String(tabungValueRm || 0)) +
+        "|topup_rm=" + encodeURIComponent(String(finalTopupRm || 0)),
+
+      code: String(item.code || ""),
+      price_rm: Number(j916LockState.price || 0),
+      ship,
+      address: ship === "POST" ? address : "",
+      pickup_when: ship === "PICKUP" ? pickupWhen : "",
+      cut,
+      cut_to: cut === "YES" ? cutTo : "",
+      pay_method: payMethod,
+
+      tabung_request_id: tabungRequestId || "",
+      tabung_units: Number(tabungUnitsUsed || 0),
+      tabung_value_rm: Number(tabungValueRm || 0),
+      topup_rm: Number(finalTopupRm || 0)
+    };
+
+    if (msg) msg.textContent = useTabungTopup
+      ? "Sedang submit permohonan Tabung + Topup ke Ai-Dan…"
+      : "Sedang submit lock ke Ai-Dan…";
+
+    const res = await chatSendJ916Lock(payload);
+
+    const threadId = res.thread_id;
+    if (!threadId) throw new Error("Thread ID tidak diterima.");
+
+    if (msg) msg.textContent = useTabungTopup
+      ? "Berjaya ✅ Permohonan Tabung + Topup dibuat. Buka Ai-Dan untuk detail bayaran."
+      : "Berjaya ✅ Buka Ai-Dan untuk detail bayaran.";
+
+    setTimeout(()=>{
+      closeJ916LockConfirm();
+      closeJ916LockCheckout();
+
+      if (typeof openAidanPopup === "function"){
+        openAidanPopup(threadId);
+      }else{
+        location.href = "/chat.html?thread=" + encodeURIComponent(threadId) + "&j916_lock_done=1";
+      }
+    }, 600);
+
+  }catch(e){
+    if (msg) msg.textContent = "❌ " + (e?.message || e);
+    alert(e?.message || e);
+    if (btn) btn.disabled = false;
+  }
+}
+
+
+/* Override modal pilih barang: buang 0 dipilih / tambah / tambah senarai */
+openDesignModal = function(key){
+  const g = state.designGroups[key];
+  if (!g) return;
+
+  document.getElementById("mdTitle").textContent = g.design_name || "Pilihan Barang";
+  document.getElementById("mdCarousel").innerHTML = buildDesignCarousel(g);
+
+  const available = (g.items || [])
+    .filter(it => String(it.status || "").toUpperCase() === "AVAILABLE")
+    .sort((a,b)=>calcUnit916(a.weight_g,a.upah_rm)-calcUnit916(b.weight_g,b.upah_rm));
+
+  const tableWrap = document.getElementById("mdBody")?.closest(".table-responsive");
+  if (tableWrap) tableWrap.style.display = "none";
+
+  document.getElementById("j916VarianListNew")?.remove();
+
+  const box = document.createElement("div");
+  box.id = "j916VarianListNew";
+  box.className = "j916-varian-list";
+
+  box.innerHTML = available.length ? available.map(it=>`
+    <div class="j916-varian-card">
+      <img src="${esc916(j916Img(it))}" alt="${esc916(it.code)}">
+      <div class="j916-varian-main">
+        <div class="j916-varian-code">${esc916(it.code)}</div>
+        <div class="j916-varian-spec">${esc916(j916Spec(it))}</div>
+        <div class="j916-varian-price">${j916Money(calcUnit916(it.weight_g,it.upah_rm))}</div>
+      </div>
+      <button type="button" class="btn btn-danger fw-bold rounded-pill" data-j916-lock-id="${esc916(it.id)}">
+        Pilih
+      </button>
+    </div>
+  `).join("") : `<div class="text-muted">Tiada stok AVAILABLE untuk design ini.</div>`;
+
+  document.querySelector("#modalDesign .modal-body").appendChild(box);
+
+  const footer = document.querySelector("#modalDesign .modal-footer");
+  if (footer) footer.style.display = "none";
+
+  box.querySelectorAll("[data-j916-lock-id]").forEach(btn=>{
+    btn.addEventListener("click", ()=>{
+      const id = btn.getAttribute("data-j916-lock-id");
+      const item = available.find(x => String(x.id) === String(id));
+      if (!item) return;
+      BSDesign = BSDesign || new bootstrap.Modal(document.getElementById("modalDesign"));
+      BSDesign.hide();
+      setTimeout(()=>openJ916LockCheckout(item),220);
+    });
+  });
+
+  BSDesign = BSDesign || new bootstrap.Modal(document.getElementById("modalDesign"));
+  BSDesign.show();
+
+  setTimeout(forceMuteAllJ916Videos,50);
+};
+
+document.getElementById("modalDesign")?.addEventListener("hidden.bs.modal", ()=>{
+  const tbl = document.getElementById("mdBody")?.closest(".table-responsive");
+  if (tbl) tbl.style.display = "";
+  document.getElementById("j916VarianListNew")?.remove();
+  const footer = document.querySelector("#modalDesign .modal-footer");
+  if (footer) footer.style.display = "none";
+});
+
+document.addEventListener("DOMContentLoaded", ()=>{
+  const footer = document.querySelector("#modalDesign .modal-footer");
+  if (footer) footer.style.display = "none";
+  loadJ916PaymentSettings();
+});
+</script>
+
 <script>
 /* =========================
    iPhone-style swipe back (J916) with drag animation
