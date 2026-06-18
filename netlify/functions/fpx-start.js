@@ -78,14 +78,20 @@ exports.handler = async function(event) {
 
     fields.fpx_checkSum = signData(checksumSource);
 
+    // DEBUG UNTUK PAYNET CHECK CHECKSUM
+    // Jangan hantar field ini ke PayNet, hanya papar dekat preview sahaja.
+    const debugFields = {
+      ...fields,
+      debug_checksumSource: checksumSource
+    };
+
     const hiddenInputs = Object.entries(fields).map(([k,v]) =>
       `<input type="hidden" name="${k}" value="${String(v).replace(/"/g, "&quot;")}">`
     ).join("\n");
 
-    const previewRows = Object.entries(fields).map(([k,v]) =>
+    const previewRows = Object.entries(debugFields).map(([k,v]) =>
       `<tr><td>${k}</td><td style="word-break:break-all">${String(v)}</td></tr>`
     ).join("");
-
     const html = `
 <!doctype html>
 <html>
