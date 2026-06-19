@@ -7,13 +7,13 @@ const EXCHANGE_ID = "EX00040523";
 const FPX_AR_URL = "https://uat.mepsfpx.com.my/FPXMain/seller2DReceiver.jsp";
 
 function signData(data){
-const privateKey = require("./fpx-key");
+  const privateKey = require("./fpx-key");
 
-  const signer = crypto.createSign("RSA-SHA256");
-  signer.update(data);
+  const signer = crypto.createSign("RSA-SHA1");
+  signer.update(data, "utf8");
   signer.end();
 
-  return signer.sign(privateKey, "base64");
+  return signer.sign(privateKey).toString("hex").toUpperCase();
 }
 
 exports.handler = async function(event) {
@@ -53,7 +53,7 @@ exports.handler = async function(event) {
       fpx_url: indirectUrl
     };
 
-    const checksumSource = [
+       const checksumSource = [
       fields.fpx_buyerAccNo,
       fields.fpx_buyerBankBranch,
       fields.fpx_buyerBankId,
@@ -73,7 +73,8 @@ exports.handler = async function(event) {
       fields.fpx_sellerTxnTime,
       fields.fpx_txnAmount,
       fields.fpx_txnCurrency,
-      fields.fpx_version
+      fields.fpx_version,
+      fields.fpx_url
     ].join("|");
 
     fields.fpx_checkSum = signData(checksumSource);
