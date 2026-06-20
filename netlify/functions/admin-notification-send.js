@@ -295,20 +295,24 @@ function filterDeviceTokensBySegment(tokens, tokenSegment, phonesInput){
     const p = normalizePhone(t.customer_phone || "");
     const threadId = String(t.thread_id || "").trim();
 
-    if (seg === "WITH_THREAD"){
-      return !!threadId;
-    }
+    if (seg === "ALL_TOKEN"){
+  return true;
+}
 
-    if (seg === "TOKEN_ONLY"){
-      return !threadId;
-    }
+if (seg === "WITH_THREAD"){
+  return !!threadId;
+}
 
-    if (seg === "MANUAL"){
-      if (!manualPhones.size) return false;
-      return !!p && manualPhones.has(p);
-    }
+if (seg === "TOKEN_ONLY"){
+  return !threadId;
+}
 
-    return !!threadId;
+if (seg === "MANUAL"){
+  if (!manualPhones.size) return false;
+  return !!p && manualPhones.has(p);
+}
+
+return !!threadId;
   });
 }
 

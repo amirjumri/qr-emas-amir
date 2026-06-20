@@ -340,13 +340,15 @@
 <div id="pay916" class="choice-row" style="flex-wrap:wrap;">
   <button id="payQR" class="live-choice" onclick="setPay('QR')">QR</button>
   <button id="payTransfer" class="live-choice active" onclick="setPay('TRANSFER')">Transfer</button>
+  <button id="payBillplz" class="live-choice" onclick="setPay('BILLPLZ')">Billplz FPX</button>
   <button id="payTabung" class="live-choice" onclick="setPay('TABUNG_TOPUP')">Tabung + Topup</button>
   <button id="payAtome" class="live-choice" onclick="setPay('ATOME')">Atome</button>
 </div>
 
-<div id="pay999" class="choice-row" style="display:none;">
+<div id="pay999" class="choice-row" style="display:none;flex-wrap:wrap;">
   <button id="pay999QR" class="live-choice active" onclick="setPay('QR')">QR</button>
   <button id="pay999Transfer" class="live-choice" onclick="setPay('TRANSFER')">Transfer</button>
+  <button id="pay999Billplz" class="live-choice" onclick="setPay('BILLPLZ')">Billplz FPX</button>
 </div>
 
 <div id="tabungBox"
@@ -429,6 +431,11 @@ const SB_URL = "https://dduizetstqqjrpsezbpi.supabase.co";
 const SB_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRkdWl6ZXRzdHFxanJwc2V6YnBpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTg3MzI0ODQsImV4cCI6MjA3NDMwODQ4NH0.CrlHXrmHtKgR9qc2192U6quRb5lpFEeOSgwG0Lb8KRM";
 const sb = window.supabase.createClient(SB_URL, SB_KEY);
 
+const EDGE_BASE = SB_URL + "/functions/v1";
+const CREATE_BILL_URL = EDGE_BASE + "/create-bill-j916";
+const CREATE_GOLD_BILL_URL = EDGE_BASE + "/create-bill-j999";
+const REDIRECT_URL = location.origin + "/live-lock.html";
+
 const qs = new URLSearchParams(location.search);
 const TYPE = String(qs.get("type") || "916").toUpperCase();
 const CODE = String(qs.get("code") || "").toUpperCase().trim();
@@ -455,6 +462,13 @@ let state = {
 };
 
 let LIVE_ATOME_ENABLED = false;
+let LIVE_PAYMENT_SETTINGS = {
+  atome_enabled: false,
+  billplz_enabled: true,
+  qr_enabled: true,
+  transfer_enabled: true,
+  tabung_enabled: true
+};
 
 function safeTxt(v){
   return String(v || "")
@@ -469,32 +483,425 @@ async function loadLivePaymentSettings(){
   try{
     const { data, error } = await sb
       .from("live_payment_settings")
-      .select("atome_enabled")
+      .select(`
+        atome_enabled,
+        billplz_enabled,
+        qr_enabled,
+        transfer_enabled,
+        tabung_enabled
+      `)
       .eq("id", 1)
       .maybeSingle();
 
     if (error) throw error;
-    LIVE_ATOME_ENABLED = !!data?.atome_enabled;
+
+    LIVE_PAYMENT_SETTINGS = {
+      atome_enabled: data?.atome_enabled === true,
+      billplz_enabled: data?.billplz_enabled !== false,
+      qr_enabled: data?.qr_enabled !== false,
+      transfer_enabled: data?.transfer_enabled !== false,
+      tabung_enabled: data?.tabung_enabled !== false
+    };
+
+    LIVE_ATOME_ENABLED = LIVE_PAYMENT_SETTINGS.atome_enabled === true;
   }catch(e){
     console.warn("loadLivePaymentSettings error:", e);
+    LIVE_PAYMENT_SETTINGS = {
+      atome_enabled: false,
+      billplz_enabled: true,
+      qr_enabled: true,
+      transfer_enabled: true,
+      tabung_enabled: true
+    };
     LIVE_ATOME_ENABLED = false;
   }
 }
 
-function applyAtomeVisibility(){
-  const btn = document.getElementById("payAtome");
-  if (!btn) return;
+function isLivePayEnabled(method){
+  method = String(method || "").toUpperCase();
+
+  if (method === "QR") return LIVE_PAYMENT_SETTINGS.qr_enabled !== false;
+  if (method === "TRANSFER") return LIVE_PAYMENT_SETTINGS.transfer_enabled !== false;
+  if (method === "BILLPLZ") return LIVE_PAYMENT_SETTINGS.billplz_enabled !== false;
+  if (method === "TABUNG_TOPUP") return LIVE_PAYMENT_SETTINGS.tabung_enabled !== false;
+  if (method === "ATOME") return LIVE_PAYMENT_SETTINGS.atome_enabled === true;
+
+  return true;
+}
+
+function getDefaultLivePay(){
+  if (state.type === "999"){
+    if (isLivePayEnabled("QR")) return "QR";
+    if (isLivePayEnabled("TRANSFER")) return "TRANSFER";
+    if (isLivePayEnabled("BILLPLZ")) return "BILLPLZ";
+    return "QR";
+  }
+
+  if (isLivePayEnabled("TRANSFER")) return "TRANSFER";
+  if (isLivePayEnabled("QR")) return "QR";
+  if (isLivePayEnabled("BILLPLZ")) return "BILLPLZ";
+  if (isLivePayEnabled("TABUNG_TOPUP")) return "TABUNG_TOPUP";
+  if (isLivePayEnabled("ATOME")) return "ATOME";
+
+  return "TRANSFER";
+}
+
+function renderPayActiveState(){
+  const method = String(state.pay || "").toUpperCase();
+
+  document.getElementById("payQR")?.classList.toggle("active", method === "QR");
+  document.getElementById("payTransfer")?.classList.toggle("active", method === "TRANSFER");
+  document.getElementById("payBillplz")?.classList.toggle("active", method === "BILLPLZ");
+  document.getElementById("payTabung")?.classList.toggle("active", method === "TABUNG_TOPUP");
+  document.getElementById("payAtome")?.classList.toggle("active", method === "ATOME");
+
+  document.getElementById("pay999QR")?.classList.toggle("active", method === "QR");
+  document.getElementById("pay999Transfer")?.classList.toggle("active", method === "TRANSFER");
+  document.getElementById("pay999Billplz")?.classList.toggle("active", method === "BILLPLZ");
+}
+
+function applyPaymentVisibility(){
+  const btnQR = document.getElementById("payQR");
+  const btnTransfer = document.getElementById("payTransfer");
+  const btnBillplz = document.getElementById("payBillplz");
+  const btnTabung = document.getElementById("payTabung");
+  const btnAtome = document.getElementById("payAtome");
+  const btn999QR = document.getElementById("pay999QR");
+  const btn999Transfer = document.getElementById("pay999Transfer");
+  const btn999Billplz = document.getElementById("pay999Billplz");
 
   if (state.type !== "916"){
-    btn.style.display = "none";
-    return;
+    if (btnQR) btnQR.style.display = "none";
+    if (btnTransfer) btnTransfer.style.display = "none";
+    if (btnBillplz) btnBillplz.style.display = "none";
+    if (btnTabung) btnTabung.style.display = "none";
+    if (btnAtome) btnAtome.style.display = "none";
+
+    if (btn999QR) btn999QR.style.display = isLivePayEnabled("QR") ? "" : "none";
+    if (btn999Transfer) btn999Transfer.style.display = isLivePayEnabled("TRANSFER") ? "" : "none";
+    if (btn999Billplz) btn999Billplz.style.display = isLivePayEnabled("BILLPLZ") ? "" : "none";
+  }else{
+    if (btnQR) btnQR.style.display = isLivePayEnabled("QR") ? "" : "none";
+    if (btnTransfer) btnTransfer.style.display = isLivePayEnabled("TRANSFER") ? "" : "none";
+    if (btnBillplz) btnBillplz.style.display = isLivePayEnabled("BILLPLZ") ? "" : "none";
+    if (btnTabung) btnTabung.style.display = isLivePayEnabled("TABUNG_TOPUP") ? "" : "none";
+    if (btnAtome) btnAtome.style.display = isLivePayEnabled("ATOME") ? "" : "none";
   }
 
-  btn.style.display = LIVE_ATOME_ENABLED ? "" : "none";
-
-  if (!LIVE_ATOME_ENABLED && String(state.pay || "").toUpperCase() === "ATOME"){
-    state.pay = "TRANSFER";
+  if (!isLivePayEnabled(state.pay)){
+    state.pay = getDefaultLivePay();
   }
+
+  renderPayActiveState();
+}
+
+function applyAtomeVisibility(){
+  applyPaymentVisibility();
+}
+
+function getLivePhoneVariants(raw){
+  const d = String(raw || "").replace(/\D/g, "");
+  if (!d) return [];
+
+  const p60 = d.startsWith("60") ? d : (d.startsWith("0") ? "6" + d : "60" + d);
+  const p0 = p60.startsWith("60") ? "0" + p60.slice(2) : d;
+
+  return Array.from(new Set([raw, d, p0, p60, "+" + p60].filter(Boolean)));
+}
+
+async function findLatestLiveBillplzRefs(phone, code){
+  const variants = getLivePhoneVariants(phone);
+  const codeText = String(code || "").toUpperCase().trim();
+  const found = [];
+
+  async function queryField(field){
+    if (!variants.length || !codeText) return;
+
+    try{
+      const { data, error } = await sb
+        .from("j916_orders")
+        .select("id,reference,reference_1,code,status,created_at")
+        .in(field, variants)
+        .eq("status", "PENDING")
+        .eq("code", codeText)
+        .order("created_at", { ascending:false })
+        .limit(5);
+
+      if (!error && Array.isArray(data)){
+        data.forEach(r=>found.push(r));
+      }
+    }catch(e){
+      console.warn("findLatestLiveBillplzRefs ignored field:", field, e);
+    }
+  }
+
+  await queryField("phone");
+  await queryField("customer_phone");
+  await queryField("user_phone");
+  await queryField("phone_e164");
+
+  const refs = [];
+  const seen = new Set();
+
+  found
+    .sort((a,b)=> new Date(b.created_at || 0) - new Date(a.created_at || 0))
+    .forEach(r=>{
+      const ref = String(r.reference_1 || r.reference || r.id || "").trim();
+      if (ref && !seen.has(ref)){
+        seen.add(ref);
+        refs.push(ref);
+      }
+    });
+
+  return refs.slice(0,1);
+}
+
+async function attachLiveBillplzBill(refs, billId, billUrl){
+  const refList = Array.isArray(refs) ? refs : [refs];
+
+  for (const ref of refList){
+    const payload = {
+      pay_method: "FPX",
+      bill_id: billId || "",
+      bill_id_text: billId || "",
+      payment_url: billUrl || "",
+      updated_at: new Date().toISOString()
+    };
+
+    try { await sb.from("j916_orders").update(payload).eq("reference", ref); } catch(_) {}
+    try { await sb.from("j916_orders").update(payload).eq("reference_1", ref); } catch(_) {}
+    try { await sb.from("j916_orders").update(payload).eq("id", ref); } catch(_) {}
+  }
+}
+
+async function createLiveBillplzBill({ refs, amount, description, name, phone }){
+  const res = await fetch(CREATE_BILL_URL, {
+    method:"POST",
+    headers:{"Content-Type":"application/json","Authorization":"Bearer "+SB_KEY},
+    body: JSON.stringify({
+      txn_id: refs.join(","),
+      amount: Number(Number(amount || 0).toFixed(2)),
+      description: description || "LIVE Barang Kemas 916",
+      redirect_url: REDIRECT_URL,
+      name: name || phone || "Pelanggan",
+      email: "",
+      phone: phone || ""
+    })
+  });
+
+  const j = await res.json().catch(()=>({}));
+  if (!res.ok || !j?.ok || !j?.bill_url){
+    console.error("create live billplz response:", j);
+    throw new Error(j?.error || j?.message || "Billplz ralat.");
+  }
+
+  return j;
+}
+
+async function createLiveGoldBillplzBill({ refs, amount, description, name, phone }){
+  const res = await fetch(CREATE_GOLD_BILL_URL, {
+    method:"POST",
+    headers:{"Content-Type":"application/json","Authorization":"Bearer "+SB_KEY},
+    body: JSON.stringify({
+      txn_id: refs.join(","),
+      amount: Number(Number(amount || 0).toFixed(2)),
+      description: description || "LIVE Gold 999.9",
+      redirect_url: REDIRECT_URL,
+      name: name || phone || "Pelanggan",
+      email: "",
+      phone: phone || ""
+    })
+  });
+
+  const j = await res.json().catch(()=>({}));
+  if (!res.ok || !j?.ok || !j?.bill_url){
+    console.error("create live gold billplz response:", j);
+    throw new Error(j?.error || j?.message || "Billplz 999.9 ralat.");
+  }
+
+  return j;
+}
+
+async function attachLiveGoldBillplzBill(refs, billId, billUrl){
+  const refList = Array.isArray(refs) ? refs : [refs];
+
+  for (const ref of refList){
+    const payload = {
+      bill_id_text: billId || "",
+      bill_id: billId || "",
+      payment_url: billUrl || "",
+      pay_method: "FPX",
+      updated_at: new Date().toISOString()
+    };
+
+    try { await sb.from("goldbar_order").update(payload).eq("id", ref); } catch(_) {}
+    try { await sb.from("goldbar_order").update(payload).eq("reference_1", ref); } catch(_) {}
+    try { await sb.from("goldbar_order").update(payload).eq("reference", ref); } catch(_) {}
+  }
+}
+
+async function createLiveGoldBillplzOrderRefsDirect({ phone, name, ship, address, pickupWhen, totals }){
+  const row = state.row || {};
+
+  const { data, error } = await sb.rpc("goldbar_order_prepare_v1", {
+    p_kind: String(row.kind || "coin").toLowerCase(),
+    p_weight_g: Number(row.weight_g || 0),
+    p_design_id: row.design_id || null,
+    p_design_name: row.design_name || null,
+    p_card_type: String(row.card_type || "READY").toUpperCase(),
+    p_qty: 1,
+    p_price_per_g: Number(row.price_per_g || row.price_per_g_current || row.price_9999 || 0),
+    p_upah_rm: Number(row.upah_rm || row.upah || 0),
+    p_custom_fee_rm: Number(row.custom_fee_rm || row.extra_custom_fee_rm || 0)
+  });
+
+  if (error) throw error;
+
+  const raw = Array.isArray(data) ? data[0] : data;
+  const ref = (typeof raw === "string")
+    ? raw
+    : (raw?.reference_1 || raw?.reference || raw?.order_id || raw?.goldbar_order_id || raw?.id);
+
+  if (!ref) throw new Error("Rujukan order Billplz 999.9 tidak berjaya dibuat.");
+
+  const nowIso = new Date().toISOString();
+  const expIso = new Date(Date.now() + 30 * 60 * 1000).toISOString();
+
+  const patches = [
+    { customer_phone: String(phone || "").replace(/\D/g, "") },
+    { customer_name: name || "Pelanggan" },
+    { pay_method: "FPX" },
+    { payment_method: "FPX" },
+    { shipping_method: ship },
+    { shipping_address: ship === "POST" ? address : "" },
+    { pickup_when: ship === "PICKUP" ? pickupWhen : "" },
+    { shipping_rm: Number(totals?.ship || 0) },
+    { grand_total_rm: Number(totals?.grand || 0) },
+    { source: "live_lock_999" },
+    { notes: "LIVE Lock 999.9 - Billplz FPX" },
+    { lock_source: "live_lock" },
+    { lock_pay_method: "FPX" },
+    { lock_status: "ACTIVE" },
+    { lock_minutes: 30 },
+    { lock_started_at: nowIso },
+    { lock_created_at: nowIso },
+    { lock_expires_at: expIso },
+    { expires_at: expIso },
+    { auto_cancel_at: expIso },
+    { payment_deadline_at: expIso },
+    { lock_until: expIso },
+    { is_live_lock: true },
+    { has_lock_flags: true }
+  ];
+
+  for (const patch of patches){
+    try { await sb.from("goldbar_order").update(patch).eq("id", ref); } catch(_) {}
+    try { await sb.from("goldbar_order").update(patch).eq("reference_1", ref); } catch(_) {}
+    try { await sb.from("goldbar_order").update(patch).eq("reference", ref); } catch(_) {}
+  }
+
+  return [ref];
+}
+
+async function createLiveBillplzOrderRefsDirect({ phone, name, ship, address, pickupWhen, totals, cut, cutFrom, cutTo }){
+  const row = state.row || {};
+  const code = String(state.code || CODE || "").toUpperCase().trim();
+  if (!code) throw new Error("Code barang tidak dijumpai.");
+
+  let item = null;
+  try{
+    const { data, error } = await sb
+      .from("j916_items")
+      .select("id,code,weight_g,length_cm,width_cm,upah_override_rm,design:j916_designs(name,wage_default)")
+      .eq("code", code)
+      .limit(1)
+      .maybeSingle();
+
+    if (!error && data) item = data;
+  }catch(e){
+    console.warn("live billplz item lookup error:", e);
+  }
+
+  const itemDesign = item?.design || {};
+  const itemId = item?.id || row?.item_id || row?.id || null;
+  const itemName = row?.name || row?.product_name || row?.design_name || itemDesign?.name || code;
+  const weightG = Number(row?.weight_g || item?.weight_g || 0);
+  const lengthCm = Number(row?.length_cm || row?.panjang_cm || row?.current_length_cm || item?.length_cm || 0);
+  const widthCm = Number(row?.width_cm || row?.lebar_cm || item?.width_cm || 0);
+  const upahRm = Number(row?.upah_rm || row?.base_upah_rm || row?.upah_default_rm || item?.upah_override_rm || itemDesign?.wage_default || 0);
+  const pricePerG = Number(row?.price_per_g_current || row?.base_price_per_g || row?.ov_price_per_g || row?.price_per_g_live || 0);
+
+  const checkoutGroup =
+    (crypto.randomUUID && crypto.randomUUID()) ||
+    ("live-billplz-" + Date.now() + "-" + Math.random().toString(16).slice(2));
+
+  const { data, error } = await sb.rpc("j916_order_prepare_v1", {
+    p_code: code,
+    p_item_id: itemId,
+    p_name: itemName,
+    p_weight_g: weightG,
+    p_length_cm: lengthCm,
+    p_width_cm: widthCm,
+    p_upah_rm: upahRm,
+    p_price_per_g: pricePerG,
+    p_unit_rm: Number(state.price || 0),
+    p_qty: 1,
+    p_customer_id: null,
+    p_customer_name: name || phone || "Pelanggan",
+    p_phone: phone,
+    p_pay_method: "FPX",
+    p_subtotal_rm: Number(totals?.subtotal || state.price || 0),
+    p_shipping_rm: Number(totals?.ship || 0),
+    p_pay_disc_rm: 0,
+    p_coupon_disc_rm: 0,
+    p_grand_total_rm: Number(totals?.grand || 0),
+    p_checkout_group: checkoutGroup
+  });
+
+  if (error) throw error;
+
+  const ref = (typeof data === "string")
+    ? data
+    : (data?.reference_1 || data?.reference || data?.ref || data?.id);
+
+  if (!ref) throw new Error("Rujukan order Billplz tidak berjaya dibuat.");
+
+  const nowIso = new Date().toISOString();
+  const expIso = new Date(Date.now() + 30 * 60 * 1000).toISOString();
+
+  const metaPatches = [
+    { pay_method: "FPX" },
+    { payment_method: "FPX" },
+    { shipping_method: ship },
+    { shipping_address: ship === "POST" ? address : "" },
+    { pickup_when: ship === "PICKUP" ? pickupWhen : "" },
+    { cut_status: cut },
+    { cut_from: cut === "YES" ? cutFrom : "" },
+    { cut_to: cut === "YES" ? cutTo : "" },
+    { source: "live_lock_916" },
+    { notes: "LIVE Lock - Billplz FPX" },
+    { lock_source: "live_lock" },
+    { lock_pay_method: "FPX" },
+    { lock_status: "ACTIVE" },
+    { lock_minutes: 30 },
+    { lock_started_at: nowIso },
+    { lock_created_at: nowIso },
+    { lock_expires_at: expIso },
+    { expires_at: expIso },
+    { auto_cancel_at: expIso },
+    { payment_deadline_at: expIso },
+    { lock_until: expIso },
+    { is_live_lock: true },
+    { has_lock_flags: true }
+  ];
+
+  for (const patch of metaPatches){
+    try { await sb.from("j916_orders").update(patch).eq("reference", ref); } catch(_) {}
+    try { await sb.from("j916_orders").update(patch).eq("reference_1", ref); } catch(_) {}
+    try { await sb.from("j916_orders").update(patch).eq("id", ref); } catch(_) {}
+  }
+
+  return [ref];
 }
 
 function money(n){
@@ -882,25 +1289,21 @@ async function getTabungLiveLockCustomer(){
 async function setPay(method){
   method = String(method || "").toUpperCase();
 
-  if (method === "ATOME" && !LIVE_ATOME_ENABLED){
-    alert("Atome LIVE sedang OFF buat masa ini.");
-    method = "TRANSFER";
+  if (!isLivePayEnabled(method)){
+    if (method === "ATOME") alert("Atome LIVE sedang OFF buat masa ini.");
+    else if (method === "BILLPLZ") alert("Billplz FPX LIVE sedang OFF buat masa ini.");
+    else alert("Kaedah bayaran ini sedang OFF buat masa ini.");
+
+    method = getDefaultLivePay();
   }
 
   state.pay = method;
-
-  document.getElementById("payQR")?.classList.toggle("active", method === "QR");
-  document.getElementById("payTransfer")?.classList.toggle("active", method === "TRANSFER");
-  document.getElementById("payTabung")?.classList.toggle("active", method === "TABUNG_TOPUP");
-  document.getElementById("payAtome")?.classList.toggle("active", method === "ATOME");
-
-  document.getElementById("pay999QR")?.classList.toggle("active", method === "QR");
-  document.getElementById("pay999Transfer")?.classList.toggle("active", method === "TRANSFER");
+  renderPayActiveState();
 
   const box = document.getElementById("tabungBox");
 
   // Ikut live-now: hanya TABUNG_TOPUP sahaja boleh simpan nilai tabung.
-  // QR / TRANSFER / ATOME mesti kosongkan nilai tabung supaya confirm/submit tidak tersasar.
+  // QR / TRANSFER / BILLPLZ / ATOME mesti kosongkan nilai tabung supaya confirm/submit tidak tersasar.
   if (state.type !== "916" || method !== "TABUNG_TOPUP"){
     window.__llTabungUnits = 0;
     window.__llTabungValue = 0;
@@ -914,7 +1317,6 @@ async function setPay(method){
     renderTotal();
     return;
   }
-
   if (!box){
     renderTotal();
     return;
@@ -1143,14 +1545,24 @@ function getLiveConfirmData(){
   const useTabung = state.type === "916" && payMethod === "TABUNG_TOPUP";
   const tabungValue = useTabung ? Number(window.__llTabungValue || 0) : 0;
 
+  let discountPay = 0;
+  let discountAiDan = 0;
+  let displayItemPrice = itemPrice;
+  let displaySubtotal = itemPrice;
   let finalTotal = itemPrice + shipFee - tabungValue;
-  if (useAtome) finalTotal = Math.round((itemPrice + shipFee) * 1.08);
+
+  if (useAtome){
+    displayItemPrice = Math.round((itemPrice + shipFee) * 1.08);
+    displaySubtotal = displayItemPrice;
+    finalTotal = displayItemPrice;
+  }
+
   if (state.type === "999"){
-    finalTotal = Math.max(0,
-      itemPrice + shipFee -
-      Number(row.__ea_payment_discount_rm || 0) -
-      Number(row.__ea_aidan_discount_rm || 0)
-    );
+    discountPay = Number(row.__ea_payment_discount_rm || 0);
+    discountAiDan = Number(row.__ea_aidan_discount_rm || 0);
+    displayItemPrice = Math.max(0, itemPrice - discountPay - discountAiDan);
+    displaySubtotal = displayItemPrice;
+    finalTotal = Math.max(0, displaySubtotal + shipFee);
   }
 
   let img = "", name = "", code = String(state.code || CODE || ""), detail = "";
@@ -1164,9 +1576,23 @@ function getLiveConfirmData(){
     detail = liveDimText(row);
   }
 
-  return { row, ship, payMethod, shipFee, itemPrice, finalTotal, img, name, code, detail };
+  return {
+    row,
+    ship,
+    payMethod,
+    shipFee,
+    itemPrice,
+    displayItemPrice,
+    displaySubtotal,
+    discountPay,
+    discountAiDan,
+    finalTotal,
+    img,
+    name,
+    code,
+    detail
+  };
 }
-
 async function fetchLivePendingOrders(){
   const raw = String(getLiveUserPhone() || liveUser?.phone || liveUser?.msisdn || "").trim();
   const d = raw.replace(/\D/g, "");
@@ -1337,6 +1763,18 @@ async function openLiveConfirmBeforeSubmit(){
 
         ⚠️ Order akan dibatalkan secara automatik selepas 30 minit jika pembayaran Atome tidak berjaya diselesaikan dan tiada tambahan masa diberikan oleh admin.
       `;
+    }else if (d.payMethod === "BILLPLZ"){
+      payNote = `
+        Ini adalah bayaran <b>Billplz FPX</b>.<br>
+        Selepas tekan teruskan, sistem akan bawa anda ke halaman bayaran Billplz.<br><br>
+
+        Sila buat bayaran terus di Billplz. Jika anda membuka dari browser TikTok, disarankan download dan guna aplikasi Emas Amir dahulu untuk proses bayaran lebih lancar.<br><br>
+
+        Jika status masih <b>PENDING</b>, ini bermaksud bayaran Billplz belum berjaya diselesaikan.
+        Selepas bayaran berjaya, order akan bertukar kepada <b>PAID</b> secara automatik.<br><br>
+
+        Sekiranya terkeluar semasa bayaran Billplz, sila buka Chat Ai-Dan dan tekan semula link Billplz untuk sambung bayaran.
+      `;
     }else{
       payNote = `
         Ini adalah <b>belian tunai</b>.<br>
@@ -1356,25 +1794,44 @@ async function openLiveConfirmBeforeSubmit(){
             <div class="fw-bold">${safeTxt(d.name)}</div>
             <div class="small text-muted">${safeTxt(d.code)}</div>
             <div class="small text-muted">${safeTxt(d.detail || "-")}</div>
-            <div class="fw-black text-danger mt-1" style="font-weight:950;">${money(d.itemPrice)}</div>
+            <div class="fw-black text-danger mt-1" style="font-weight:950;">${money(d.displayItemPrice || d.itemPrice)}</div>
           </div>
         </div>
 
         <div class="rounded-4 p-3 mb-3" style="background:#f9fafb;border:1px solid #e5e7eb;">
-          <div class="d-flex justify-content-between">
-            <span>Subtotal</span>
-            <b>${money(d.itemPrice)}</b>
-          </div>
-          <div class="d-flex justify-content-between">
-            <span>Caj pos</span>
-            <b>${money(d.shipFee)}</b>
-          </div>
-          <hr>
-          <div class="d-flex justify-content-between fs-5">
-            <b>Total anggaran</b>
-            <b class="text-danger">${money(d.finalTotal)}</b>
-          </div>
+  <div class="d-flex justify-content-between">
+    <span>Subtotal</span>
+    <b>${money(d.displaySubtotal || d.itemPrice)}</b>
+  </div>
+
+  <div class="d-flex justify-content-between">
+    <span>Caj pos</span>
+    <b>${money(d.shipFee)}</b>
+  </div>
+
+  ${
+    state.type === "999"
+      ? `
+        <div class="d-flex justify-content-between text-success">
+          <span>Diskaun bayaran</span>
+          <b>- ${money(d.discountPay || 0)}</b>
         </div>
+
+        <div class="d-flex justify-content-between text-success">
+          <span>Diskaun Ai-Dan</span>
+          <b>- ${money(d.discountAiDan || 0)}</b>
+        </div>
+      `
+      : ""
+  }
+
+  <hr>
+
+  <div class="d-flex justify-content-between fs-5">
+    <b>Total anggaran</b>
+    <b class="text-danger">${money(d.finalTotal)}</b>
+  </div>
+</div>
 
         <div class="live-confirm-note mb-3">
           ${payNote}
@@ -1521,6 +1978,7 @@ async function submitToAiDan(){
       // Hanya TABUNG_TOPUP sahaja buat tabung_request_convert916_simple_v1.
       const useTabungTopup = payMethod === "TABUNG_TOPUP";
       const useAtome = payMethod === "ATOME";
+      const useBillplz = payMethod === "BILLPLZ";
 
       if (!useTabungTopup){
         window.__llTabungUnits = 0;
@@ -1585,6 +2043,14 @@ async function submitToAiDan(){
         }
       }
 
+      const cleanCutTo = cut === "YES"
+        ? String(cutTo || "").replace(/cm/gi, "").trim()
+        : "";
+
+      const cleanCutFrom = cut === "YES"
+        ? String(currentLength || state.length_cm || "").replace(/cm/gi, "").trim()
+        : "";
+
       payload = {
         phone,
         name: liveUser?.name || "Pelanggan",
@@ -1600,7 +2066,10 @@ async function submitToAiDan(){
           "|address=" + encodeURIComponent(ship === "POST" ? address : "") +
           "|pickup_when=" + encodeURIComponent(ship === "PICKUP" ? pickupWhen : "") +
           "|cut=" + encodeURIComponent(cut) +
-          "|cut_to=" + encodeURIComponent(cut === "YES" ? cutTo : "") +
+          "|cut_from=" + encodeURIComponent(cleanCutFrom) +
+          "|cut_to=" + encodeURIComponent(cleanCutTo) +
+          "|cut_to_cm=" + encodeURIComponent(cleanCutTo) +
+          "|wants_cut=" + encodeURIComponent(cut === "YES" ? "true" : "false") +
           "|pay_method=" + encodeURIComponent(payMethod) +
           "|tabung_request_id=" + encodeURIComponent(tabungRequestId || "") +
           "|tabung_units=" + encodeURIComponent(String(tabungUnitsUsed || 0)) +
@@ -1613,7 +2082,10 @@ async function submitToAiDan(){
         address: ship === "POST" ? address : "",
         pickup_when: ship === "PICKUP" ? pickupWhen : "",
         cut,
-        cut_to: cut === "YES" ? cutTo : "",
+        cut_from: cleanCutFrom,
+        cut_to: cleanCutTo,
+        cut_to_cm: cleanCutTo,
+        wants_cut: cut === "YES",
         pay_method: payMethod,
 
         tabung_request_id: tabungRequestId || "",
@@ -1624,6 +2096,162 @@ async function submitToAiDan(){
       };
     }
 
+    const selectedPay = String(state.pay || "").toUpperCase();
+
+    if (selectedPay === "BILLPLZ" && state.type === "999"){
+      if (msg) msg.textContent = "Sedang jana link Billplz FPX 999.9…";
+
+      const d = getLiveConfirmData();
+      const row = state.row || {};
+      const refs = await createLiveGoldBillplzOrderRefsDirect({
+        phone,
+        name: liveUser?.name || "Pelanggan",
+        ship,
+        address,
+        pickupWhen,
+        totals: {
+          subtotal: Number(d.itemPrice || state.price || 0),
+          ship: Number(d.shipFee || 0),
+          grand: Number(d.finalTotal || 0)
+        }
+      });
+
+      const bill = await createLiveGoldBillplzBill({
+        refs,
+        amount: d.finalTotal,
+        description: `LIVE Gold 999.9 ${String(d.name || row.design_name || CODE || "")} + shipping`,
+        name: liveUser?.name || "Pelanggan",
+        phone
+      });
+
+      await attachLiveGoldBillplzBill(refs, bill.bill_id || "", bill.bill_url || "");
+
+      try{
+        await chatSendLive({
+          phone,
+          name: liveUser?.name || "Pelanggan",
+          is_logged_in: true,
+          action: "customer_message",
+          source: "live_lock_999_billplz",
+          pay_method: "BILLPLZ",
+          live_code: String(row.live_code || CODE || ""),
+          kind: String(row.kind || ""),
+          weight_g: Number(row.weight_g || 0),
+          design_id: String(row.design_id || ""),
+          design_name: String(row.design_name || ""),
+          card_type: String(row.card_type || "READY"),
+          price_rm: Number(d.finalTotal || 0),
+          billplz_url: bill.bill_url,
+          bill_id: bill.bill_id || "",
+          refs,
+          message: [
+            "Saya pilih bayaran Billplz FPX untuk lock LIVE 999.9.",
+            "",
+            `Order code: ${refs.join(", ")}`,
+            `Item: ${String(d.name || row.design_name || "Gold 999.9")}`,
+            `Detail: ${String(d.detail || "-")}`,
+            `Jumlah: ${money(d.finalTotal)}`,
+            "",
+            "Link bayaran Billplz FPX:",
+            bill.bill_url,
+            "",
+            "Bayaran Billplz akan auto update kepada PAID selepas pembayaran berjaya."
+          ].join("\n")
+        });
+      }catch(chatErr){
+        console.warn("Live 999 Billplz chat link error:", chatErr);
+      }
+
+      if (msg) msg.textContent = "Berjaya ✅ Membuka Billplz FPX…";
+
+      closeLiveConfirmModal();
+
+      setTimeout(()=>{
+        window.location.href = bill.bill_url;
+      }, 300);
+
+      return;
+    }
+
+    if (selectedPay === "BILLPLZ" && state.type === "916"){
+      if (msg) msg.textContent = "Sedang jana link Billplz FPX…";
+
+      const d = getLiveConfirmData();
+      const cut = String(state.cut || "NO").toUpperCase();
+      const currentLength = String(document.getElementById("currentLen")?.value || "").trim();
+      const cutTo = String(document.getElementById("cutTo")?.value || "").trim();
+
+      const refs = await createLiveBillplzOrderRefsDirect({
+        phone,
+        name: liveUser?.name || "Pelanggan",
+        ship,
+        address,
+        pickupWhen,
+        totals: {
+          subtotal: Number(state.price || 0),
+          ship: Number(d.shipFee || 0),
+          grand: Number(d.finalTotal || 0)
+        },
+        cut,
+        cutFrom: currentLength,
+        cutTo
+      });
+
+      const bill = await createLiveBillplzBill({
+        refs,
+        amount: d.finalTotal,
+        description: `LIVE Barang Kemas 916 ${String(state.code || CODE || "")} + shipping`,
+        name: liveUser?.name || "Pelanggan",
+        phone
+      });
+
+      await attachLiveBillplzBill(refs, bill.bill_id || "", bill.bill_url || "");
+
+      try{
+        await chatSendLive({
+          phone,
+          name: liveUser?.name || "Pelanggan",
+          is_logged_in: true,
+          action: "customer_message",
+          source: "live_lock_billplz",
+          pay_method: "BILLPLZ",
+          code: String(state.code || CODE || ""),
+          price_rm: Number(state.price || 0),
+          billplz_url: bill.bill_url,
+          bill_id: bill.bill_id || "",
+          refs,
+          message: [
+            "Saya pilih bayaran Billplz FPX untuk lock 916.",
+            "",
+            `Order code: ${refs.join(", ")}`,
+            `Item: ${String(state.code || CODE || "-")}`,
+            `Jumlah: ${money(d.finalTotal)}`,
+            "",
+            cut === "YES"
+              ? `Potong Panjang: YA\nPanjang Asal: ${currentLength || "-"}\nPotong Jadi: ${cutTo || "-"}cm`
+              : `Potong Panjang: TIDAK\nPanjang Asal: ${currentLength || "-"}`,
+            "",
+            "Link bayaran Billplz FPX:",
+            bill.bill_url,
+            "",
+            "Bayaran Billplz akan auto update kepada PAID selepas pembayaran berjaya."
+          ].join("\n")
+        });
+      }catch(chatErr){
+        console.warn("Live Billplz chat link error:", chatErr);
+      }
+
+      if (msg) msg.textContent = "Berjaya ✅ Membuka Billplz FPX…";
+
+      closeLiveConfirmModal();
+
+      setTimeout(()=>{
+        window.location.href = bill.bill_url;
+      }, 300);
+
+      return;
+    }
+
     if (msg) msg.textContent = "Sedang submit lock ke Ai-Dan…";
 
     const res = await chatSendLive(payload);
@@ -1631,17 +2259,20 @@ async function submitToAiDan(){
     if (!threadId) throw new Error("Thread ID tidak diterima.");
 
     if (msg){
-      msg.textContent = (String(state.pay || "").toUpperCase() === "TABUNG_TOPUP")
-        ? "Berjaya ✅ Permohonan Tabung + Topup dibuat. Buka Ai-Dan untuk detail bayaran."
-        : "Berjaya ✅ Buka Ai-Dan untuk detail bayaran.";
+      msg.textContent = selectedPay === "TABUNG_TOPUP"
+        ? "Berjaya ✅ Permohonan Tabung + Topup dibuat. Membuka Ai-Dan..."
+        : "Berjaya ✅ Membuka Ai-Dan...";
     }
 
+    closeLiveConfirmModal();
+
     setTimeout(()=>{
-      closeLiveConfirmModal();
-      location.href =
+      window.location.href =
         "chat.html?thread=" + encodeURIComponent(threadId) +
         "&live_lock_done=1";
-    }, 500);
+    }, 300);
+
+    return;
 
   }catch(e){
     console.warn(e);

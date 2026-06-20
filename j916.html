@@ -471,7 +471,7 @@ body.swipe-peek{
     <div id="j916AddressBox" class="mb-3"><div class="fw-bold mb-1">Alamat</div><textarea id="j916Address" class="form-control" rows="3" placeholder="Alamat penuh + poskod + bandar + negeri"></textarea></div>
     <div id="j916PickupBox" class="mb-3" style="display:none;"><div class="fw-bold mb-1">Masa ambil kedai</div><input id="j916PickupWhen" class="form-control" placeholder="Contoh: hari ni / esok petang / 3pm"></div>
     <div id="j916CutSection" class="mb-3"><div class="fw-bold mb-2">Potong panjang?</div><div class="d-flex gap-2"><button id="j916CutNo" type="button" class="j916-lock-choice flex-fill active" onclick="setJ916Cut('NO')">Tak Potong</button><button id="j916CutYes" type="button" class="j916-lock-choice flex-fill" onclick="setJ916Cut('YES')">Potong</button></div><div id="j916CutBox" class="mt-3" style="display:none;"><div class="row g-2"><div class="col-6"><label class="small text-muted">Panjang asal</label><input id="j916CurrentLen" class="form-control bg-light fw-bold" readonly></div><div class="col-6"><label class="small text-muted">Potong jadi</label><input id="j916CutTo" class="form-control" placeholder="55cm"></div></div></div></div>
-    <div class="mb-3"><div class="fw-bold mb-2">Cara Bayar</div><div class="d-flex gap-2 flex-wrap"><button id="j916PayQR" type="button" class="j916-lock-choice flex-fill" onclick="setJ916Pay('QR')">QR</button><button id="j916PayTransfer" type="button" class="j916-lock-choice flex-fill active" onclick="setJ916Pay('TRANSFER')">Transfer</button><button id="j916PayTabung" type="button" class="j916-lock-choice flex-fill" onclick="setJ916Pay('TABUNG_TOPUP')">Tabung + Topup</button><button id="j916PayAtome" type="button" class="j916-lock-choice flex-fill" onclick="setJ916Pay('ATOME')">Atome</button></div></div>
+    <div class="mb-3"><div class="fw-bold mb-2">Cara Bayar</div><div class="d-flex gap-2 flex-wrap"><button id="j916PayQR" type="button" class="j916-lock-choice flex-fill" onclick="setJ916Pay('QR')">QR</button><button id="j916PayTransfer" type="button" class="j916-lock-choice flex-fill active" onclick="setJ916Pay('TRANSFER')">Transfer</button><button id="j916PayBillplz" type="button" class="j916-lock-choice flex-fill" onclick="setJ916Pay('BILLPLZ')">Billplz FPX</button><button id="j916PayTabung" type="button" class="j916-lock-choice flex-fill" onclick="setJ916Pay('TABUNG_TOPUP')">Tabung + Topup</button><button id="j916PayAtome" type="button" class="j916-lock-choice flex-fill" onclick="setJ916Pay('ATOME')">Atome</button></div></div>
     <div id="j916TabungBox" class="mb-3" style="display:none;background:#fffbea;border:1px solid #fde68a;border-radius:18px;padding:14px;"><b>Tabung + Topup</b><br><span class="small text-muted">Admin akan semak baki tabung dahulu. Baki topup akan diberi dalam chat Ai-Dan.</span></div>
     <div class="rounded-4 p-3 mb-3" style="background:#f9fafb;border:1px solid #e5e7eb;"><div class="d-flex justify-content-between"><span>Subtotal</span><b id="j916Subtotal">RM 0.00</b></div><div class="d-flex justify-content-between"><span>Caj pos</span><b id="j916ShipFee">RM 10.00</b></div><hr><div class="d-flex justify-content-between fs-5"><b>Total anggaran</b><b id="j916Total" class="text-danger">RM 0.00</b></div></div>
     <div id="j916LockMsg" class="small text-muted mb-2"></div>
@@ -2767,6 +2767,13 @@ if (productId916) {
 /* J916 CARA LOCK BARU — ikut Live Now 100% gaya lock */
 const J916_LOCK_LIMIT = 2;
 
+let J916_PAYMENT_SETTINGS = {
+  QR: true,
+  TRANSFER: true,
+  BILLPLZ: true,
+  TABUNG_TOPUP: true,
+  ATOME: false
+};
 let J916_ATOME_ENABLED = false;
 let j916LockState = {
   item:null,
@@ -2813,27 +2820,77 @@ function getJ916UserPhone(){
 }
 
 async function loadJ916PaymentSettings(){
+  const defaults = {
+    QR: true,
+    TRANSFER: true,
+    BILLPLZ: true,
+    TABUNG_TOPUP: true,
+    ATOME: false
+  };
+
   try{
     const { data, error } = await sb
       .from("live_payment_settings")
-      .select("atome_enabled")
+      .select("*")
       .eq("id", 1)
       .maybeSingle();
     if (error) throw error;
-    J916_ATOME_ENABLED = !!data?.atome_enabled;
+
+    J916_PAYMENT_SETTINGS = {
+      QR: data?.qr_enabled === undefined ? defaults.QR : !!data.qr_enabled,
+      TRANSFER: data?.transfer_enabled === undefined ? defaults.TRANSFER : !!data.transfer_enabled,
+      BILLPLZ: data?.billplz_enabled === undefined ? defaults.BILLPLZ : !!data.billplz_enabled,
+      TABUNG_TOPUP: data?.tabung_topup_enabled === undefined ? defaults.TABUNG_TOPUP : !!data.tabung_topup_enabled,
+      ATOME: data?.atome_enabled === undefined ? defaults.ATOME : !!data.atome_enabled
+    };
   }catch(e){
     console.warn("loadJ916PaymentSettings error:", e);
-    J916_ATOME_ENABLED = false;
+    J916_PAYMENT_SETTINGS = defaults;
   }
 
-  const atomeBtn = document.getElementById("j916PayAtome");
-  if (atomeBtn){
-    atomeBtn.style.display = J916_ATOME_ENABLED ? "" : "none";
-  }
+  J916_ATOME_ENABLED = !!J916_PAYMENT_SETTINGS.ATOME;
+  applyJ916PaymentButtonsVisibility();
 
-  if (!J916_ATOME_ENABLED && j916LockState.pay === "ATOME"){
-    j916LockState.pay = "TRANSFER";
+  if (!isJ916PayEnabled(j916LockState.pay)){
+    j916LockState.pay = getJ916DefaultPay();
   }
+}
+
+function isJ916PayEnabled(pay){
+  const key = String(pay || "TRANSFER").toUpperCase();
+  return J916_PAYMENT_SETTINGS[key] !== false;
+}
+
+function getJ916DefaultPay(){
+  const order = ["TRANSFER", "QR", "BILLPLZ", "TABUNG_TOPUP", "ATOME"];
+  return order.find(k => isJ916PayEnabled(k)) || "TRANSFER";
+}
+
+function applyJ916PaymentButtonsVisibility(){
+  const map = {
+    QR: "j916PayQR",
+    TRANSFER: "j916PayTransfer",
+    BILLPLZ: "j916PayBillplz",
+    TABUNG_TOPUP: "j916PayTabung",
+    ATOME: "j916PayAtome"
+  };
+
+  Object.entries(map).forEach(([key, id])=>{
+    const btn = document.getElementById(id);
+    if (!btn) return;
+    btn.style.display = isJ916PayEnabled(key) ? "" : "none";
+  });
+}
+
+function getJ916PayDisabledText(pay){
+  const label = {
+    QR: "QR",
+    TRANSFER: "Transfer",
+    BILLPLZ: "Billplz FPX",
+    TABUNG_TOPUP: "Tabung + Topup",
+    ATOME: "Atome"
+  }[String(pay || "").toUpperCase()] || "Kaedah bayaran ini";
+  return label + " belum dibuka untuk lock sekarang.";
 }
 
 function getPostFeeByAddress916(address){
@@ -3047,13 +3104,18 @@ async function loadJ916TabungTopupBox(){
 }
 
 function renderJ916LockTotal(){
+  applyJ916PaymentButtonsVisibility();
+  if (!isJ916PayEnabled(j916LockState.pay)) j916LockState.pay = getJ916DefaultPay();
   const item = j916LockState.item || {};
   const cutSection = document.getElementById("j916CutSection");
-  if (cutSection){
-    const canCut = Number(item.length_cm || 0) > 0;
-    cutSection.style.display = (j916LockState.ship === "PICKUP" && canCut) ? "" : "none";
-    if (j916LockState.ship !== "PICKUP") j916LockState.cut = "NO";
+if (cutSection){
+  const canCut = Number(item.length_cm || 0) > 0;
+  cutSection.style.display = canCut ? "" : "none";
+
+  if (!canCut){
+    j916LockState.cut = "NO";
   }
+}
 
   const itemPrice = Number(j916LockState.price || 0);
   const normalShipFee = getJ916ShipFee();
@@ -3103,10 +3165,11 @@ function renderJ916LockTotal(){
   document.getElementById("j916AddressBox").style.display = j916LockState.ship === "POST" ? "" : "none";
   document.getElementById("j916PickupBox").style.display = j916LockState.ship === "PICKUP" ? "" : "none";
 
-  ["QR","Transfer","Tabung","Atome"].forEach(x=>document.getElementById("j916Pay"+x)?.classList.remove("active"));
+  ["QR","Transfer","Billplz","Tabung","Atome"].forEach(x=>document.getElementById("j916Pay"+x)?.classList.remove("active"));
   const payId =
     j916LockState.pay === "QR" ? "j916PayQR" :
     j916LockState.pay === "ATOME" ? "j916PayAtome" :
+    j916LockState.pay === "BILLPLZ" ? "j916PayBillplz" :
     j916LockState.pay === "TABUNG_TOPUP" ? "j916PayTabung" :
     "j916PayTransfer";
   document.getElementById(payId)?.classList.add("active");
@@ -3121,12 +3184,13 @@ function renderJ916LockTotal(){
 
 function setJ916Ship(v){ j916LockState.ship = v; renderJ916LockTotal(); }
 async function setJ916Pay(v){
-  if (v === "ATOME" && !J916_ATOME_ENABLED){
-    alert("Atome belum dibuka untuk lock sekarang.");
+  const pay = String(v || "TRANSFER").toUpperCase();
+  if (!isJ916PayEnabled(pay)){
+    alert(getJ916PayDisabledText(pay));
     return;
   }
-  j916LockState.pay = v;
-  if (v === "TABUNG_TOPUP"){
+  j916LockState.pay = pay;
+  if (pay === "TABUNG_TOPUP"){
     await loadJ916TabungTopupBox();
   }else{
     clearJ916Tabung();
@@ -3156,7 +3220,7 @@ async function openJ916LockCheckout(item){
   j916LockState = {
     item,
     ship:"POST",
-    pay:"TRANSFER",
+    pay:getJ916DefaultPay(),
     cut:"NO",
     price:calcUnit916(item.weight_g,item.upah_rm),
     tabungUnits:0,
@@ -3341,8 +3405,8 @@ function validateJ916LockInput(){
     throw new Error("Sila isi masa ambil kedai dahulu.");
   }
 
-  if (j916LockState.pay === "ATOME" && !J916_ATOME_ENABLED){
-    throw new Error("Atome belum dibuka untuk lock sekarang.");
+  if (!isJ916PayEnabled(j916LockState.pay)){
+    throw new Error(getJ916PayDisabledText(j916LockState.pay));
   }
 
   if (j916LockState.pay === "TABUNG_TOPUP" && Number(j916LockState.tabungUnits || 0) <= 0){
@@ -3382,12 +3446,25 @@ async function submitJ916LockCheckout(){
         Ansuran bulanan dan tempoh bayaran ditentukan sendiri di aplikasi Atome.
         Minimum 3 bulan.<br><br>
 
-        Sila lengkapkan proses pembayaran Atome dalam tempoh <b>30 minit</b> selepas order dibuat.<br>
+        Sila lengkapkan proses pembayaran Atome dalam tempoh <b></b> selepas order dibuat.<br>
         Jika perlukan masa tambahan, sila chat dengan admin dalam Ai-Dan sebelum masa tamat.<br><br>
 
         ⚠️ Order akan dibatalkan secara automatik selepas 30 minit jika pembayaran Atome tidak berjaya diselesaikan dan tiada tambahan masa diberikan oleh admin.
       `;
-    }else if (pay === "TABUNG_TOPUP"){
+  }else if (pay === "BILLPLZ"){
+  payNote = `
+    Ini adalah bayaran <b>Billplz FPX</b>.<br>
+    Selepas tekan teruskan, sistem akan bawa anda ke halaman bayaran Billplz.<br><br>
+
+    Sila buat bayaran terus di Billplz. Jika anda membuka dari browser TikTok, disarankan download dan guna aplikasi Emas Amir dahulu untuk proses bayaran lebih lancar.<br><br>
+
+    Jika status masih <b>PENDING</b>, ini bermaksud bayaran Billplz belum berjaya diselesaikan.
+    Selepas bayaran berjaya, order akan bertukar kepada <b>PAID</b> secara automatik.<br><br>
+
+    Sekiranya terkeluar semasa bayaran Billplz, sila buka Chat Ai-Dan dan tekan semula link Billplz untuk sambung bayaran.
+  `;
+}
+else if (pay === "TABUNG_TOPUP"){
       payNote = `
         Ini adalah pilihan <b>Tabung + Topup</b>.<br>
         Sistem akan terus buat permohonan keluar/convert Tabung untuk semakan admin selepas order dibuat.<br>
@@ -3607,6 +3684,7 @@ async function notifyJ916LockCustomer(refs){
     `Total anggaran: ${j916Money(getJ916FinalTotal())}`,
     "",
     pay === "ATOME" ? `Scan / buka QR Atome: ${QR_ATOME_URL}` : "",
+    pay === "BILLPLZ" ? "Bayaran Billplz FPX: anda akan dibawa ke halaman bank selepas sahkan order." : "",
     (pay === "TRANSFER" || pay === "QR" || pay === "TABUNG_TOPUP")
       ? `QR DuitNow: ${QR_DUITNOW_URL}\nBank: Maybank\nNama: EMAS AMIR SDN. BHD.\nNo Akaun: 552031155695`
       : "",
@@ -3633,6 +3711,181 @@ async function chatSendJ916Lock(payload){
   }
 
   return j;
+}
+
+
+async function markJ916BillplzLockTimer(refs){
+  const nowIso = new Date().toISOString();
+  const expIso = new Date(Date.now() + (30 * 60 * 1000)).toISOString();
+  const refList = (Array.isArray(refs) ? refs : [refs]).filter(Boolean);
+
+  // Penting: jangan campur semua column dalam 1 payload.
+  // Kalau ada column yang belum wujud, Supabase akan reject seluruh update.
+  // Jadi kita update satu-satu; mana column wujud akan masuk, mana tak wujud akan diabaikan.
+  const patches = [
+    { source: "j916_lock", notes: "J916 cara baru - Billplz FPX" },
+    { pay_method: "FPX" },
+    { payment_method: "FPX" },
+    { lock_source: "j916_lock" },
+    { lock_pay_method: "FPX" },
+    { lock_status: "ACTIVE" },
+    { lock_minutes: 30 },
+    { lock_started_at: nowIso },
+    { lock_created_at: nowIso },
+    { lock_expires_at: expIso },
+    { expires_at: expIso },
+    { auto_cancel_at: expIso },
+    { payment_deadline_at: expIso },
+    { lock_until: expIso },
+    { is_live_lock: true },
+    { has_lock_flags: true }
+  ];
+
+  async function patchBy(col, ref, payload){
+    try{
+      const { error } = await sb.from("j916_orders").update(payload).eq(col, ref);
+      if (error) return false;
+      return true;
+    }catch(_){
+      return false;
+    }
+  }
+
+  for (const ref of refList){
+    for (const payload of patches){
+      await patchBy("reference", ref, payload);
+      await patchBy("reference_1", ref, payload);
+      await patchBy("id", ref, payload);
+    }
+  }
+}
+
+
+async function proceedJ916LockBillplzDirect(){
+  const user = requireLogin();
+  if (!user) return;
+
+  const item = j916LockState.item || {};
+  if (!item?.id) throw new Error("Barang belum dipilih.");
+
+  const ship = String(j916LockState.ship || "POST").toUpperCase();
+  const address = String(document.getElementById("j916Address")?.value || "").trim();
+  const pickupWhen = String(document.getElementById("j916PickupWhen")?.value || "").trim();
+  const cut = String(j916LockState.cut || "NO").toUpperCase();
+  const cutTo = String(document.getElementById("j916CutTo")?.value || "").trim();
+  const currentLength = String(document.getElementById("j916CurrentLen")?.value || "").trim();
+
+  state.payMethod = "FPX";
+  state.cart = [j916CartItemFromLock()];
+  updateCartCount?.();
+
+  const totals = {
+    subtotal: Number(j916LockState.price || 0),
+    ship: Number(getJ916ShipFee() || 0),
+    pd: 0,
+    cd: 0,
+    grand: Number(getJ916FinalTotal() || 0)
+  };
+
+  const refs = await createRefsForCart(user, totals);
+  if (!refs?.length) throw new Error("Rujukan order Billplz tidak berjaya dibuat.");
+
+  // Samakan Billplz FPX dengan lock lain: ada countdown 30 minit / auto-cancel flags di dashboard admin.
+  await markJ916BillplzLockTimer(refs);
+
+  const metaPayload = {
+    pay_method: "FPX",
+    shipping_method: ship,
+    shipping_address: ship === "POST" ? address : "",
+    pickup_when: ship === "PICKUP" ? pickupWhen : "",
+    cut_status: cut,
+    cut_to: cut === "YES" ? cutTo : "",
+    cut_from: cut === "YES" ? currentLength : "",
+    source: "j916_lock",
+    notes: "J916 cara baru - Billplz FPX"
+  };
+
+  for (const ref of refs){
+    try { await sb.from("j916_orders").update(metaPayload).eq("reference", ref); } catch(_) {}
+    try { await sb.from("j916_orders").update(metaPayload).eq("reference_1", ref); } catch(_) {}
+    try { await sb.from("j916_orders").update(metaPayload).eq("id", ref); } catch(_) {}
+  }
+
+  const res = await fetch(CREATE_BILL_URL, {
+    method:"POST",
+    headers:{"Content-Type":"application/json","Authorization":"Bearer "+SB_KEY},
+    body: JSON.stringify({
+      txn_id: refs.join(","),
+      amount: Number(totals.grand.toFixed(2)),
+      description: `Barang Kemas 916 ${String(item.code || "")} + shipping`,
+      redirect_url: REDIRECT_URL,
+      name: (user?.name || user?.phone || "Pelanggan"),
+      email: "",
+      phone: (user?.phone || "")
+    })
+  });
+
+  const j = await res.json().catch(()=>({}));
+  if (!res.ok || !j?.ok || !j?.bill_url){
+    console.error("create-bill j916 lock response:", j);
+    throw new Error(j?.error || j?.message || "Billplz ralat.");
+  }
+
+  for (const ref of refs){ await attachBillId(ref, j.bill_id || ""); }
+  await markJ916BillplzLockTimer(refs);
+
+  // Billplz pun masuk Ai-Dan macam cara bayar lain.
+  // Order sudah siap + timer 30 minit sudah aktif; chat ini hanya buka thread dan letak link Billplz.
+  let threadId = "";
+  try{
+    const chatRes = await chatSendJ916Lock({
+      phone: normalizePhone916(user?.phone || user?.msisdn || ""),
+      name: user?.name || "Pelanggan",
+      is_logged_in: true,
+      action: "customer_message",
+      source: "j916_lock_billplz",
+      pay_method: "BILLPLZ",
+      code: String(item.code || ""),
+      price_rm: Number(j916LockState.price || 0),
+      ship,
+      address: ship === "POST" ? address : "",
+      pickup_when: ship === "PICKUP" ? pickupWhen : "",
+      cut,
+      cut_to: cut === "YES" ? cutTo : "",
+      billplz_url: j.bill_url,
+      bill_id: j.bill_id || "",
+      refs,
+      message: [
+  "Saya pilih bayaran Billplz FPX untuk lock 916.",
+  "",
+  `Order code: ${refs.join(", ")}`,
+  `Item: ${String(item.code || "-")}`,
+  `Jumlah: ${j916Money(totals.grand)}`,
+  "",
+  cut === "YES"
+    ? `Potong Panjang: YA\nPanjang Asal: ${currentLength || "-"}\nPotong Jadi: ${cutTo || "-"}cm`
+    : `Potong Panjang: TIDAK\nPanjang Asal: ${currentLength || "-"}`,
+  "",
+  "Link bayaran Billplz FPX:",
+  j.bill_url,
+  "",
+  "Bayaran Billplz akan auto update kepada PAID selepas pembayaran berjaya."
+].join("\n")
+    });
+    threadId = chatRes?.thread_id || "";
+  }catch(chatErr){
+    console.warn("Billplz chat open error:", chatErr);
+  }
+
+  closeJ916LockConfirm();
+  closeJ916LockCheckout();
+
+closeJ916LockConfirm();
+closeJ916LockCheckout();
+
+setTimeout(()=>{
+  window.location.href = j.bill_url;
+}, 300);
 }
 
 async function submitJ916LockConfirmed(){
@@ -3690,48 +3943,70 @@ async function submitJ916LockConfirmed(){
     const tabungValueRm = useTabungTopup ? Number(j916LockState.tabungValue || 0) : 0;
     const finalTopupRm = useTabungTopup ? Number(getJ916FinalTotal().toFixed(2)) : 0;
 
+    if (payMethod === "BILLPLZ"){
+      if (msg) msg.textContent = "Sedang buka bayaran Billplz FPX…";
+      await proceedJ916LockBillplzDirect();
+      return;
+    }
+
     let tabungRequestId = "";
     if (useTabungTopup){
       if (msg) msg.textContent = "Sedang buat permohonan keluar Tabung + Topup…";
       tabungRequestId = await createJ916TabungRequestIfNeeded();
     }
 
-    const payload = {
-      phone,
-      name: user?.name || "Pelanggan",
-      is_logged_in: true,
-      action: "live_checkout_submit",
-      source: "j916_lock",
+    const cleanCutTo = cut === "YES"
+  ? String(cutTo || "").replace(/cm/gi, "").trim()
+  : "";
 
-      message:
-        "LIVE_CHECKOUT_SUBMIT" +
-        "|code=" + encodeURIComponent(String(item.code || "")) +
-        "|price_rm=" + encodeURIComponent(String(Number(j916LockState.price || 0))) +
-        "|ship=" + encodeURIComponent(ship) +
-        "|address=" + encodeURIComponent(ship === "POST" ? address : "") +
-        "|pickup_when=" + encodeURIComponent(ship === "PICKUP" ? pickupWhen : "") +
-        "|cut=" + encodeURIComponent(cut) +
-        "|cut_to=" + encodeURIComponent(cut === "YES" ? cutTo : "") +
-        "|pay_method=" + encodeURIComponent(payMethod) +
-        "|tabung_request_id=" + encodeURIComponent(tabungRequestId || "") +
-        "|tabung_units=" + encodeURIComponent(String(tabungUnitsUsed || 0)) +
-        "|tabung_value_rm=" + encodeURIComponent(String(tabungValueRm || 0)) +
-        "|topup_rm=" + encodeURIComponent(String(finalTopupRm || 0)),
+const cleanCutFrom = cut === "YES"
+  ? String(currentLength || item.length_cm || "").replace(/cm/gi, "").trim()
+  : "";
 
-      code: String(item.code || ""),
-      price_rm: Number(j916LockState.price || 0),
-      ship,
-      address: ship === "POST" ? address : "",
-      pickup_when: ship === "PICKUP" ? pickupWhen : "",
-      cut,
-      cut_to: cut === "YES" ? cutTo : "",
-      pay_method: payMethod,
+const payload = {
+  phone,
+  name: user?.name || "Pelanggan",
+  is_logged_in: true,
+  action: "live_checkout_submit",
+  source: "j916_lock",
 
-      tabung_request_id: tabungRequestId || "",
-      tabung_units: Number(tabungUnitsUsed || 0),
-      tabung_value_rm: Number(tabungValueRm || 0),
-      topup_rm: Number(finalTopupRm || 0)
-    };
+  message:
+    "LIVE_CHECKOUT_SUBMIT" +
+    "|code=" + encodeURIComponent(String(item.code || "")) +
+    "|price_rm=" + encodeURIComponent(String(Number(j916LockState.price || 0))) +
+    "|ship=" + encodeURIComponent(ship) +
+    "|address=" + encodeURIComponent(ship === "POST" ? address : "") +
+    "|pickup_when=" + encodeURIComponent(ship === "PICKUP" ? pickupWhen : "") +
+    "|cut=" + encodeURIComponent(cut) +
+    "|cut_from=" + encodeURIComponent(cleanCutFrom) +
+    "|cut_to=" + encodeURIComponent(cleanCutTo) +
+    "|cut_to_cm=" + encodeURIComponent(cleanCutTo) +
+    "|wants_cut=" + encodeURIComponent(cut === "YES" ? "true" : "false") +
+    "|pay_method=" + encodeURIComponent(payMethod) +
+    "|tabung_request_id=" + encodeURIComponent(tabungRequestId || "") +
+    "|tabung_units=" + encodeURIComponent(String(tabungUnitsUsed || 0)) +
+    "|tabung_value_rm=" + encodeURIComponent(String(tabungValueRm || 0)) +
+    "|topup_rm=" + encodeURIComponent(String(finalTopupRm || 0)),
+
+  code: String(item.code || ""),
+  price_rm: Number(j916LockState.price || 0),
+  ship,
+  address: ship === "POST" ? address : "",
+  pickup_when: ship === "PICKUP" ? pickupWhen : "",
+
+  cut,
+  cut_from: cleanCutFrom,
+  cut_to: cleanCutTo,
+  cut_to_cm: cleanCutTo,
+  wants_cut: cut === "YES",
+
+  pay_method: payMethod,
+
+  tabung_request_id: tabungRequestId || "",
+  tabung_units: Number(tabungUnitsUsed || 0),
+  tabung_value_rm: Number(tabungValueRm || 0),
+  topup_rm: Number(finalTopupRm || 0)
+};
 
     if (msg) msg.textContent = useTabungTopup
       ? "Sedang submit permohonan Tabung + Topup ke Ai-Dan…"

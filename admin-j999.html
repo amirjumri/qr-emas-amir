@@ -1712,8 +1712,12 @@ async function rpcList(page, pageSize, filter, q){
       weight_g:        Number(r.weight_g || 0),
       qty:             Number(r.qty || 1),
       design_name:     r.design_name || '',
-      total_rm:        Number(r.total_rm || 0),
-      grand_total_rm:  Number(r.grand_total_rm || 0),
+      total_rm: Number(
+  r.grand_total_rm ??
+  r.total_rm ??
+  0
+),
+grand_total_rm: Number(r.grand_total_rm || 0),
       subtotal_rm:     Number(r.subtotal_rm || 0),
       shipping_rm:     Number(r.shipping_rm || 0),
       pay_disc_rm:     Number(r.pay_disc_rm || 0),

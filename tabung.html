@@ -203,7 +203,1353 @@ body.swipe-peek{
 
 
 
-  </style>
+  
+/* ================== UI BARU TABUNG EMAS - DARK GOLD (flow asal kekal) ================== */
+:root{
+  --ea-bg:#05070d;
+  --ea-bg2:#090b12;
+  --ea-card:#10131b;
+  --ea-card2:#151922;
+  --ea-line:rgba(255,255,255,.10);
+  --ea-gold:#facc15;
+  --ea-gold2:#f59e0b;
+  --ea-green:#22c55e;
+  --ea-red:#ef4444;
+  --ea-text:#f8fafc;
+  --ea-muted:#9ca3af;
+}
+
+html,body{
+  background:
+    radial-gradient(circle at 18% -10%, rgba(250,204,21,.13), transparent 35%),
+    radial-gradient(circle at 92% 20%, rgba(245,158,11,.11), transparent 32%),
+    linear-gradient(180deg,#06070d 0%, #05070d 55%, #03040a 100%) !important;
+  color:var(--ea-text) !important;
+}
+
+body{
+  padding-bottom:calc(18px + env(safe-area-inset-bottom,0px));
+}
+
+.page-shell{
+  min-height:100vh;
+  background:transparent !important;
+}
+
+body.swipe-peek{
+  background:#111827 !important;
+}
+
+.ea-tabung-wrap{
+  max-width:520px;
+  margin:0 auto;
+  padding:18px 14px 28px;
+}
+
+.ea-tabung-topbar{
+  display:grid;
+  grid-template-columns:86px 1fr 86px;
+  align-items:center;
+  gap:10px;
+  margin-bottom:10px;
+}
+
+.ea-tabung-top-left,
+.ea-tabung-top-right{
+  display:flex;
+  align-items:center;
+  gap:8px;
+}
+
+.ea-tabung-top-right{
+  justify-content:flex-end;
+}
+
+.ea-round-btn{
+  width:42px;
+  height:42px;
+  border-radius:16px;
+  border:1px solid rgba(255,255,255,.14);
+  background:rgba(255,255,255,.055);
+  color:#f8fafc;
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  font-size:22px;
+  font-weight:950;
+  line-height:1;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.06);
+  backdrop-filter:blur(12px);
+  text-decoration:none;
+}
+
+.ea-round-btn:hover{
+  color:#facc15;
+  background:rgba(255,255,255,.09);
+}
+
+.ea-home-btn{
+  color:#111827;
+  background:linear-gradient(135deg,#fff2a8,#d6a419,#f59e0b);
+  box-shadow:0 12px 26px rgba(245,158,11,.28);
+}
+
+.ea-info-mini{
+  color:#facc15;
+  font-family:Georgia,serif;
+  font-style:italic;
+}
+
+.ea-tabung-brand{
+  text-align:center;
+  min-width:0;
+}
+
+.ea-tabung-brand-title{
+  font-size:23px;
+  line-height:1;
+  font-weight:950;
+  letter-spacing:.4px;
+  color:#fff;
+}
+
+.ea-tabung-brand-title span{
+  color:var(--ea-gold);
+  text-shadow:0 0 18px rgba(250,204,21,.22);
+}
+
+.ea-tabung-brand-sub{
+  margin-top:5px;
+  color:#d6a419;
+  font-size:10px;
+  font-weight:900;
+  letter-spacing:1.8px;
+  white-space:nowrap;
+}
+
+
+.ea-tabung-hero{
+  min-height:236px;
+  border:1px solid rgba(250,204,21,.25);
+  border-radius:26px;
+  background:
+    radial-gradient(circle at 83% 45%, rgba(250,204,21,.26), transparent 35%),
+    radial-gradient(circle at 35% 80%, rgba(245,158,11,.10), transparent 35%),
+    linear-gradient(135deg,rgba(255,255,255,.075),rgba(255,255,255,.028));
+  box-shadow:
+    0 20px 55px rgba(0,0,0,.38),
+    inset 0 1px 0 rgba(255,255,255,.08);
+  padding:18px;
+  position:relative;
+  overflow:hidden;
+  display:grid;
+  grid-template-columns:1.15fr .85fr;
+  align-items:center;
+  gap:8px;
+  margin-bottom:12px;
+}
+
+.ea-tabung-hero::before{
+  content:"";
+  position:absolute;
+  inset:0;
+  background:
+    linear-gradient(90deg,rgba(0,0,0,.26),transparent 64%),
+    radial-gradient(circle at 60% 60%, rgba(250,204,21,.14), transparent 30%);
+  pointer-events:none;
+}
+
+.ea-hero-copy{
+  position:relative;
+  z-index:2;
+  min-width:0;
+}
+
+.ea-hero-title{
+  font-size:27px;
+  line-height:1.05;
+  font-weight:950;
+  letter-spacing:.3px;
+  margin-bottom:7px;
+  color:#fff;
+}
+
+.ea-hero-title span{
+  color:var(--ea-gold);
+}
+
+.ea-hero-sub{
+  color:#e5e7eb;
+  font-size:13px;
+  line-height:1.35;
+  font-weight:700;
+  margin-bottom:18px;
+}
+
+.ea-hero-label{
+  color:#e5e7eb;
+  font-size:12px;
+  font-weight:950;
+  text-transform:uppercase;
+  letter-spacing:.2px;
+  margin-bottom:6px;
+}
+
+.ea-hero-balance{
+  font-size:58px;
+  line-height:.92;
+  font-weight:950;
+  color:#f8d66d;
+  text-shadow:0 0 25px rgba(250,204,21,.16);
+  letter-spacing:-2px;
+}
+
+.ea-hero-unit{
+  font-size:27px;
+  letter-spacing:0;
+  margin-left:2px;
+  color:#fff6c9;
+}
+
+.ea-hero-unit-text{
+  margin-top:9px;
+  color:#cbd5e1;
+  font-size:13px;
+  font-weight:800;
+}
+
+.ea-hero-time{
+  margin-top:13px;
+  display:inline-flex;
+  align-items:center;
+  gap:7px;
+  max-width:100%;
+  border:1px solid rgba(250,204,21,.30);
+  background:rgba(0,0,0,.22);
+  color:#e5e7eb;
+  border-radius:999px;
+  padding:8px 12px;
+  font-size:12px;
+  font-weight:850;
+  white-space:nowrap;
+}
+
+.ea-hero-visual{
+  position:relative;
+  z-index:1;
+  height:200px;
+  border-radius:28px;
+  background-image:
+    linear-gradient(to bottom, rgba(0,0,0,.04), rgba(0,0,0,.26)),
+    url("https://dduizetstqqjrpsezbpi.supabase.co/storage/v1/object/public/logo%20app/tabung.jpeg");
+  background-size:contain;
+  background-position:center;
+  background-repeat:no-repeat;
+  filter:drop-shadow(0 22px 38px rgba(0,0,0,.45));
+}
+
+.ea-hero-visual::before{
+  content:"";
+  position:absolute;
+  inset:24px 3px 10px;
+  border-radius:30px;
+  background:radial-gradient(circle at 50% 55%, rgba(250,204,21,.22), transparent 58%);
+  z-index:-1;
+}
+
+.ea-warning-card,
+.ea-sell-note{
+  border:1px solid rgba(250,204,21,.25);
+  border-radius:18px;
+  background:rgba(250,204,21,.09);
+  color:#fde68a;
+  padding:11px 13px;
+  font-size:12px;
+  line-height:1.45;
+  margin-bottom:13px;
+  box-shadow:0 10px 24px rgba(0,0,0,.20);
+}
+
+.ea-action-grid{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:10px;
+  margin-bottom:13px;
+}
+
+.action-item.ea-action-card,
+.ea-history-entry{
+  position:relative;
+  min-height:122px;
+  border:1px solid rgba(255,255,255,.13);
+  border-radius:20px;
+  background:
+    radial-gradient(circle at 50% 0%, rgba(250,204,21,.12), transparent 38%),
+    linear-gradient(180deg,rgba(255,255,255,.07),rgba(255,255,255,.025));
+  padding:14px;
+  color:#fff;
+  cursor:pointer;
+  box-shadow:0 14px 34px rgba(0,0,0,.30);
+  display:flex;
+  flex-direction:column;
+  justify-content:center;
+  align-items:flex-start;
+  gap:8px;
+  overflow:hidden;
+}
+
+.action-item.ea-action-card.buy{border-color:rgba(250,204,21,.55); background:radial-gradient(circle at 10% 0%, rgba(250,204,21,.28), transparent 52%),linear-gradient(180deg,rgba(250,204,21,.14),rgba(255,255,255,.025));}
+.action-item.ea-action-card.out{border-color:rgba(239,68,68,.35); background:radial-gradient(circle at 10% 0%, rgba(239,68,68,.20), transparent 52%),linear-gradient(180deg,rgba(255,255,255,.06),rgba(255,255,255,.025));}
+.action-item.ea-action-card.sell{border-color:rgba(34,197,94,.35); background:radial-gradient(circle at 10% 0%, rgba(34,197,94,.18), transparent 52%),linear-gradient(180deg,rgba(255,255,255,.06),rgba(255,255,255,.025));}
+.action-item.ea-action-card.convert{border-color:rgba(168,85,247,.35); background:radial-gradient(circle at 10% 0%, rgba(168,85,247,.20), transparent 52%),linear-gradient(180deg,rgba(255,255,255,.06),rgba(255,255,255,.025));}
+
+.ea-action-ico{
+  width:43px;
+  height:43px;
+  border-radius:16px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  background:rgba(255,255,255,.075);
+  font-size:24px;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.09);
+}
+
+.action-title{
+  font-size:15px;
+  font-weight:950;
+  color:#fff;
+  line-height:1.15;
+}
+
+.action-sub{
+  font-size:12px;
+  color:#d1d5db;
+  line-height:1.25;
+  margin-top:3px;
+}
+
+.action-item .chev,
+.ea-history-entry .chev{
+  position:absolute;
+  right:14px;
+  bottom:14px;
+  color:#facc15;
+  font-size:24px;
+  font-weight:500;
+}
+
+.ea-info-grid{
+  display:grid;
+  grid-template-columns:1fr;
+  gap:12px;
+  margin-bottom:13px;
+}
+
+.box.ea-dark-box{
+  border:1px solid rgba(255,255,255,.11) !important;
+  border-radius:22px !important;
+  background:
+    radial-gradient(circle at 90% 0%, rgba(250,204,21,.13), transparent 36%),
+    linear-gradient(180deg,rgba(255,255,255,.07),rgba(255,255,255,.025)) !important;
+  color:#f8fafc !important;
+  box-shadow:0 16px 38px rgba(0,0,0,.30);
+  padding:15px !important;
+}
+
+.ea-box-title{
+  color:#fff;
+  font-size:16px;
+  font-weight:950;
+  margin-bottom:13px;
+}
+
+.ea-current-price-row{
+  margin-bottom:12px;
+}
+
+.ea-price-update{
+  float:right;
+  display:inline-flex;
+  align-items:center;
+  gap:6px;
+
+  padding:8px 12px;
+  margin-bottom:12px;
+
+  border-radius:999px;
+  border:1px solid rgba(250,204,21,.25);
+
+  background:rgba(250,204,21,.08);
+
+  color:#fde68a;
+  font-size:12px;
+  font-weight:900;
+
+  box-shadow:0 6px 16px rgba(0,0,0,.18);
+}
+
+.ea-price-update span:first-child{
+  font-size:13px;
+}
+
+@media(max-width:420px){
+  .ea-price-update{
+    font-size:11px;
+    padding:7px 10px;
+  }
+}
+.ea-price-label-modern{
+  color:#cbd5e1;
+  font-size:12px;
+  font-weight:850;
+  margin-bottom:3px;
+}
+
+.price-lg{
+  color:#f8d66d !important;
+  font-size:30px !important;
+  font-weight:950 !important;
+  line-height:1.05;
+}
+
+.ea-price-two{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:10px;
+  border-top:1px solid rgba(255,255,255,.08);
+  padding-top:12px;
+}
+
+.ea-price-two b{
+  color:#facc15;
+  font-size:18px;
+}
+
+.ea-card-fee-line{
+  margin-top:11px;
+  color:#cbd5e1;
+  font-size:12px;
+  font-weight:750;
+}
+
+.ea-stock-panel{
+  border:1px solid rgba(255,255,255,.10);
+  border-radius:17px;
+  padding:14px;
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  gap:12px;
+  background:rgba(0,0,0,.18);
+}
+
+.ea-stock-value{
+  color:#facc15;
+  font-size:26px;
+  line-height:1.05;
+  font-weight:950;
+}
+
+.ea-stock-sub{
+  margin-top:5px;
+  color:#e5e7eb;
+  font-size:14px;
+  font-weight:850;
+}
+
+.ea-stock-info{
+  color:#cbd5e1;
+}
+
+.ea-stock-note{
+  margin-top:10px;
+  color:#9ca3af;
+  font-size:12px;
+  font-weight:750;
+}
+
+.panel.ea-dark-panel{
+  border:1px solid rgba(255,255,255,.12) !important;
+  border-radius:22px !important;
+  background:
+    radial-gradient(circle at 90% 0%, rgba(250,204,21,.12), transparent 36%),
+    linear-gradient(180deg,rgba(255,255,255,.075),rgba(255,255,255,.028)) !important;
+  color:#f8fafc !important;
+  box-shadow:0 18px 44px rgba(0,0,0,.35);
+  overflow:hidden;
+}
+
+.panel.ea-dark-panel .panel-h{
+  border-bottom:1px solid rgba(255,255,255,.09) !important;
+  padding:14px !important;
+}
+
+.panel.ea-dark-panel .panel-b{
+  padding:14px !important;
+}
+
+.ea-panel-close{
+  border:1px solid rgba(255,255,255,.14);
+  background:rgba(255,255,255,.06);
+  color:#e5e7eb;
+  border-radius:999px;
+  padding:7px 11px;
+  font-size:12px;
+  font-weight:900;
+}
+
+.ea-dark-panel .muted,
+.ea-dark-panel .form-text,
+.ea-dark-panel .xsmall{
+  color:#9ca3af !important;
+}
+
+.ea-dark-panel .form-control,
+.ea-dark-panel .form-select{
+  border:1px solid rgba(255,255,255,.12) !important;
+  border-radius:14px !important;
+  background:rgba(0,0,0,.24) !important;
+  color:#fff !important;
+  min-height:46px;
+}
+
+.ea-dark-panel .form-control::placeholder{
+  color:#9ca3af;
+}
+
+.ea-dark-panel .form-label{
+  color:#e5e7eb;
+  font-weight:800;
+}
+
+.btn-lgx{
+  border-radius:14px !important;
+  min-height:48px;
+  font-weight:950 !important;
+}
+
+.ea-history-entry{
+  min-height:78px;
+  display:grid;
+  grid-template-columns:46px 1fr 20px;
+  align-items:center;
+  gap:12px;
+  margin:0 0 13px;
+}
+
+.ea-history-entry .chev{
+  position:static;
+}
+
+.ea-history-panel{
+  margin-bottom:13px;
+}
+
+.ea-dark-table{
+  color:#e5e7eb !important;
+  --bs-table-bg:transparent;
+  --bs-table-color:#e5e7eb;
+  --bs-table-border-color:rgba(255,255,255,.09);
+}
+
+.ea-dark-table thead th{
+  color:#cbd5e1 !important;
+  background:rgba(255,255,255,.04) !important;
+  border-color:rgba(255,255,255,.09) !important;
+  font-size:12px;
+  font-weight:900;
+  white-space:nowrap;
+}
+
+.ea-dark-table td{
+  color:#e5e7eb !important;
+  border-color:rgba(255,255,255,.08) !important;
+  font-size:12px;
+  white-space:nowrap;
+}
+
+.ea-filter-group .btn,
+#btnRefreshHist{
+  border-radius:999px !important;
+  font-weight:850;
+}
+
+.pager .page{
+  background:rgba(255,255,255,.06) !important;
+  border-color:rgba(255,255,255,.12) !important;
+  color:#e5e7eb !important;
+}
+
+.pager .page.active{
+  background:#facc15 !important;
+  border-color:#facc15 !important;
+  color:#111827 !important;
+}
+
+.ea-info-row{
+  width:100%;
+  border:1px solid rgba(250,204,21,.25);
+  border-radius:22px;
+  background:
+    radial-gradient(circle at 0% 50%, rgba(250,204,21,.16), transparent 30%),
+    linear-gradient(180deg,rgba(255,255,255,.065),rgba(255,255,255,.025));
+  color:#fff;
+  padding:15px;
+  display:grid;
+  grid-template-columns:52px 1fr 20px;
+  align-items:center;
+  gap:12px;
+  text-align:left;
+  box-shadow:0 16px 36px rgba(0,0,0,.28);
+}
+
+.ea-info-row-ico{
+  width:46px;
+  height:46px;
+  border-radius:999px;
+  border:2px solid #facc15;
+  color:#facc15;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  font-family:Georgia,serif;
+  font-style:italic;
+  font-size:28px;
+  font-weight:900;
+}
+
+.ea-info-row b{
+  display:block;
+  font-size:16px;
+  font-weight:950;
+}
+
+.ea-info-row small{
+  display:block;
+  color:#cbd5e1;
+  margin-top:2px;
+  font-size:12px;
+  line-height:1.35;
+}
+
+.offcanvas{
+  background:#0b0f18 !important;
+  color:#f8fafc !important;
+}
+
+.offcanvas .btn-outline-secondary{
+  border-color:rgba(255,255,255,.14) !important;
+  color:#e5e7eb !important;
+  background:rgba(255,255,255,.04) !important;
+}
+
+.offcanvas .btn-close{
+  filter:invert(1);
+}
+
+.modal-content{
+  border-radius:22px !important;
+}
+
+@media(min-width:720px){
+  .ea-tabung-wrap{
+    max-width:760px;
+  }
+
+  .ea-info-grid{
+    grid-template-columns:1fr 1fr;
+  }
+}
+
+@media(max-width:420px){
+  .ea-tabung-topbar{
+    grid-template-columns:84px 1fr 84px;
+  }
+
+  .ea-round-btn{
+    width:40px;
+    height:40px;
+    border-radius:15px;
+  }
+
+  .ea-tabung-brand-title{
+    font-size:20px;
+  }
+
+  .ea-tabung-brand-sub{
+    font-size:9px;
+    letter-spacing:1.4px;
+  }
+
+  .ea-tabung-hero{
+    min-height:218px;
+    padding:16px;
+    grid-template-columns:1fr .62fr;
+  }
+
+  .ea-hero-title{
+    font-size:23px;
+  }
+
+  .ea-hero-balance{
+    font-size:52px;
+  }
+
+  .ea-hero-visual{
+    height:170px;
+    opacity:.96;
+  }
+
+  .ea-action-grid{
+    gap:9px;
+  }
+
+  .action-item.ea-action-card{
+    min-height:118px;
+    padding:13px;
+  }
+}
+
+@media(max-width:355px){
+  .ea-tabung-topbar{
+    grid-template-columns:80px 1fr 80px;
+    gap:6px;
+  }
+
+  .ea-tabung-brand-title{
+    font-size:18px;
+  }
+
+  .ea-tabung-brand-sub{
+    display:none;
+  }
+
+  .ea-tabung-hero{
+    grid-template-columns:1fr;
+  }
+
+  .ea-hero-visual{
+    display:none;
+  }
+
+  .ea-action-grid{
+    grid-template-columns:1fr;
+  }
+}
+
+
+
+/* ================== FIX UI TABUNG V2: ikut Index, popup jelas ================== */
+body{padding-bottom:128px !important;}
+.ea-tabung-wrap{padding-top:12px !important;}
+.ea-tabung-topbar{
+  grid-template-columns:92px 1fr 92px !important;
+  margin-bottom:12px !important;
+}
+.ea-tabung-brand-title{
+  font-size:22px !important;
+  text-transform:none !important;
+}
+.ea-tabung-brand-sub{
+  color:#cbd5e1 !important;
+  font-size:10px !important;
+  letter-spacing:.2px !important;
+  font-weight:800 !important;
+}
+.ea-round-btn{
+  width:46px !important;
+  height:46px !important;
+  border-radius:18px !important;
+}
+.ea-home-btn{
+  background:rgba(255,255,255,.07) !important;
+  color:#facc15 !important;
+  border-color:rgba(250,204,21,.28) !important;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.07) !important;
+}
+.ea-tabung-hero{
+  min-height:206px !important;
+  border-radius:24px !important;
+  margin-bottom:12px !important;
+}
+.ea-hero-title{font-size:25px !important;}
+.ea-hero-sub{font-size:12px !important;margin-bottom:13px !important;}
+.ea-hero-balance{font-size:52px !important;}
+.ea-hero-visual{height:160px !important;}
+.ea-action-grid{grid-template-columns:1fr 1fr !important;}
+.action-item.ea-action-card{min-height:110px !important;}
+.ea-info-grid{grid-template-columns:1fr !important;}
+@media(min-width:720px){.ea-info-grid{grid-template-columns:1fr 1fr !important;}}
+
+/* bottom nav sama Index - fixed mati bawah screen */
+body{
+  padding-bottom:calc(150px + env(safe-area-inset-bottom,0px)) !important;
+}
+.ea-bottom-nav{
+  position:fixed !important;
+  left:50% !important;
+  bottom:calc(18px + env(safe-area-inset-bottom,0px)) !important;
+  transform:translateX(-50%) !important;
+  width:min(520px,calc(100vw - 18px)) !important;
+  height:96px !important;
+  padding:12px 14px 14px !important;
+  z-index:1020 !important;
+  background:
+    linear-gradient(180deg,rgba(15,23,42,.88),rgba(3,4,10,.98)) !important;
+
+  border:1px solid rgba(255,255,255,.10) !important;
+  border-radius:24px !important;
+
+  backdrop-filter:blur(18px) !important;
+
+  display:grid !important;
+  grid-template-columns:repeat(5,1fr) !important;
+  gap:4px !important;
+
+  box-shadow:0 -18px 40px rgba(0,0,0,.38) !important;
+}
+.ea-nav-item{
+  color:#9ca3af !important;
+  display:flex !important;
+  flex-direction:column !important;
+  align-items:center !important;
+  justify-content:center !important;
+
+  gap:6px !important;
+
+  font-size:12px !important;
+
+  font-weight:900 !important;
+  position:relative !important;
+  text-decoration:none !important;
+}
+
+.ea-nav-item:hover{
+  color:#facc15 !important;
+}
+
+.ea-nav-ico{
+  font-size:28px !important;
+  line-height:1 !important;
+  filter:grayscale(.25) !important;
+}
+
+.ea-nav-item.active{
+  color:#facc15 !important;
+}
+
+.ea-nav-item.main{
+  transform:translateY(-17px) !important;
+}
+
+.ea-nav-item.main .ea-nav-main-circle{
+  width:66px !important;
+  height:66px !important;
+  border-radius:999px !important;
+  display:flex !important;
+  align-items:center !important;
+  justify-content:center !important;
+  overflow:hidden !important;
+  font-size:31px !important;
+  color:#111827 !important;
+  background:linear-gradient(135deg,#fff2a8,#d6a419,#f59e0b) !important;
+  box-shadow:
+    0 18px 36px rgba(245,158,11,.36),
+    0 0 0 8px rgba(250,204,21,.08) !important;
+  margin-bottom:-4px !important;
+}
+
+.ea-nav-main-img{
+  width:42px !important;
+  height:42px !important;
+  object-fit:contain !important;
+  filter:drop-shadow(0 2px 6px rgba(0,0,0,.35)) !important;
+}
+/* panel buka sebagai popup, bukan jatuh bawah */
+.ea-floating-panel.show{
+  position:fixed !important;
+  inset:0 !important;
+  z-index:10090 !important;
+  display:flex !important;
+  align-items:center !important;
+  justify-content:center !important;
+  padding:
+    calc(18px + env(safe-area-inset-top,0px))
+    12px
+    calc(130px + env(safe-area-inset-bottom,0px)) !important;
+  background:rgba(0,0,0,.62) !important;
+  backdrop-filter:blur(8px) !important;
+  overflow:auto !important;
+  overscroll-behavior:contain !important;
+}
+
+.ea-floating-panel.show > .panel{
+  width:min(520px,100%) !important;
+  max-height:calc(100dvh - 180px - env(safe-area-inset-bottom,0px)) !important;
+  overflow:auto !important;
+  border-radius:26px !important;
+  background:#0b0f18 !important;
+  color:#f8fafc !important;
+  box-shadow:0 26px 90px rgba(0,0,0,.62) !important;
+}.ea-floating-panel.show .panel-h{
+  position:sticky;
+  top:0;
+  z-index:2;
+  background:linear-gradient(180deg,#111827,#0b0f18) !important;
+}
+.ea-floating-panel.show .fw-semibold,
+.ea-floating-panel.show .form-label,
+.ea-floating-panel.show b{color:#f8fafc !important;}
+.ea-floating-panel.show .muted,
+.ea-floating-panel.show .form-text,
+.ea-floating-panel.show .small{color:#cbd5e1 !important;}
+.ea-floating-panel.show #buyTotal,
+.ea-floating-panel.show #sellTotal,
+.ea-floating-panel.show #convert916Total,
+.ea-floating-panel.show #outTotal{color:#facc15 !important;font-weight:950;}
+
+/* modal confirm/info/result mesti jelas */
+.modal{color:#111827 !important;}
+.modal-content{
+  background:#fff !important;
+  color:#111827 !important;
+  border:0 !important;
+  box-shadow:0 28px 90px rgba(0,0,0,.38) !important;
+}
+.modal-header,.modal-footer{background:#fff !important;border-color:#e5e7eb !important;}
+.modal-title{color:#111827 !important;font-weight:950 !important;}
+.modal-body,
+.modal-body p,
+.modal-body li,
+.modal-body div,
+.info-title,
+.info-sub,
+.info-list,
+.syariah-box{color:#374151 !important;}
+.modal-body b,.modal-body strong{color:#111827 !important;}
+.info-badge{color:#b45309 !important;font-weight:950 !important;}
+#confirmBody{font-size:15px;line-height:1.55;}
+#confirmBody b{color:#111827 !important;}
+#confirmProceedBtn{font-weight:900;border-radius:12px;}
+#confirmCancelBtn{font-weight:800;border-radius:12px;}
+.btn-close{opacity:.8 !important;}
+
+/* ayat dalam popup lebih terang */
+.ea-help-note{
+  margin-top:10px;
+  padding:10px 12px;
+  border:1px solid rgba(250,204,21,.24);
+  background:rgba(250,204,21,.08);
+  color:#fde68a !important;
+  border-radius:14px;
+  font-size:12px;
+  line-height:1.45;
+}
+
+@media(max-width:420px){
+  .ea-tabung-topbar{grid-template-columns:92px 1fr 92px !important;}
+  .ea-tabung-brand-title{font-size:19px !important;}
+  .ea-tabung-brand-sub{font-size:9px !important;}
+  .ea-tabung-hero{grid-template-columns:1fr .55fr !important;padding:15px !important;}
+  .ea-hero-title{font-size:22px !important;}
+  .ea-hero-balance{font-size:48px !important;}
+  .ea-hero-visual{height:140px !important;}
+}
+
+/* TOP ACCOUNT BAR ikut Index */
+.ea-top-actions{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:8px;
+  flex-wrap:wrap;
+  margin-bottom:14px;
+}
+
+.ea-login-row{
+  display:flex;
+  align-items:center;
+  gap:6px;
+  min-width:0;
+  flex:1;
+}
+
+.ea-pill{
+  display:inline-flex;
+  align-items:center;
+  gap:6px;
+  border:1px solid rgba(255,255,255,.12);
+  background:rgba(255,255,255,.06);
+  color:#e5e7eb;
+  border-radius:999px;
+  padding:7px 10px;
+  font-size:12px;
+  font-weight:700;
+  max-width:100%;
+  min-width:0;
+  white-space:nowrap;
+  overflow:hidden;
+  text-overflow:ellipsis;
+  backdrop-filter:blur(10px);
+}
+
+.ea-pill-admin{
+  background:rgba(34,197,94,.13);
+  border-color:rgba(34,197,94,.28);
+  color:#86efac;
+}
+
+.ea-chip-btn{
+  border-radius:999px;
+  padding:7px 10px;
+  font-size:12px;
+  font-weight:800;
+  border:1px solid rgba(255,255,255,.14);
+  color:#fff;
+  background:rgba(255,255,255,.06);
+  text-decoration:none;
+}
+
+.ea-chip-btn:hover{
+  color:#fff;
+  background:rgba(255,255,255,.10);
+}
+
+.ea-chip-danger{
+  border-color:rgba(244,63,94,.35);
+  color:#fecdd3;
+}
+/* Sejarah jangan popup - buka normal bawah sahaja */
+#panelHist{
+  position:static !important;
+  inset:auto !important;
+  z-index:auto !important;
+  display:none;
+  background:transparent !important;
+  backdrop-filter:none !important;
+  padding:0 !important;
+  overflow:visible !important;
+}
+
+#panelHist.show{
+  display:block !important;
+}
+
+#panelHist > .panel{
+  width:100% !important;
+  max-height:none !important;
+  overflow:visible !important;
+  border-radius:22px !important;
+  box-shadow:0 18px 44px rgba(0,0,0,.35) !important;
+}
+
+#panelHist .panel-h{
+  position:static !important;
+  background:transparent !important;
+}
+/* ================== PENYIMPAN AKTIF HERO ================== */
+.ea-savers-hero{
+  width:100%;
+  border:1px solid rgba(168,85,247,.45);
+  border-radius:22px;
+  background:
+    radial-gradient(circle at 0% 50%, rgba(168,85,247,.22), transparent 34%),
+    linear-gradient(180deg,rgba(255,255,255,.07),rgba(255,255,255,.025));
+  color:#fff;
+  padding:18px 20px;
+  display:grid;
+  grid-template-columns:62px 1fr 22px;
+  align-items:center;
+  gap:14px;
+ margin:13px 0 13px;
+  box-shadow:0 16px 36px rgba(0,0,0,.28);
+}
+
+.ea-savers-ico{
+  width:54px;
+  height:54px;
+  border-radius:18px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  background:rgba(168,85,247,.18);
+  font-size:34px;
+  filter:drop-shadow(0 8px 18px rgba(168,85,247,.25));
+}
+
+.ea-savers-title{
+  color:#fff;
+  font-size:18px;
+  font-weight:950;
+  line-height:1.15;
+}
+
+.ea-savers-title b{
+  color:#fff !important;
+  font-weight:950;
+}
+
+.ea-savers-sub{
+  color:#cbd5e1;
+  font-size:13px;
+  font-weight:750;
+  line-height:1.45;
+  margin-top:7px;
+}
+
+.ea-savers-chev{
+  color:#a855f7;
+  font-size:34px;
+  font-weight:700;
+  line-height:1;
+}
+
+@media(max-width:420px){
+  .ea-savers-hero{
+    grid-template-columns:50px 1fr 18px;
+    padding:15px;
+    gap:11px;
+  }
+
+  .ea-savers-ico{
+    width:46px;
+    height:46px;
+    font-size:28px;
+  }
+
+  .ea-savers-title{
+    font-size:16px;
+  }
+
+  .ea-savers-sub{
+    font-size:12px;
+  }
+}
+/* ================== AGIHAN PERANCANGAN BAWAH HERO ================== */
+.ea-plan-box{
+  border:1px solid rgba(250,204,21,.25);
+  border-radius:24px;
+  background:
+    radial-gradient(circle at 0% 0%, rgba(250,204,21,.15), transparent 34%),
+    linear-gradient(180deg,rgba(255,255,255,.07),rgba(255,255,255,.025));
+  box-shadow:0 18px 42px rgba(0,0,0,.32);
+  padding:15px;
+  margin-bottom:13px;
+}
+
+.ea-plan-head-new{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  gap:12px;
+  margin-bottom:12px;
+}
+
+.ea-plan-kicker{
+  color:#fff;
+  font-size:16px;
+  font-weight:950;
+}
+
+.ea-plan-desc{
+  color:#cbd5e1;
+  font-size:12px;
+  font-weight:700;
+  margin-top:3px;
+  line-height:1.35;
+}
+
+.ea-plan-edit-btn{
+  border:1px solid rgba(250,204,21,.35);
+  background:linear-gradient(135deg,#facc15,#f59e0b);
+  color:#111827;
+  border-radius:999px;
+  padding:8px 12px;
+  font-size:12px;
+  font-weight:950;
+  white-space:nowrap;
+}
+
+.ea-plan-list{
+  display:grid;
+  gap:9px;
+}
+
+.ea-plan-empty{
+  border:1px dashed rgba(255,255,255,.16);
+  border-radius:16px;
+  padding:13px;
+  color:#9ca3af;
+  font-size:12px;
+  font-weight:800;
+  text-align:center;
+}
+
+.ea-plan-item{
+  display:grid;
+  grid-template-columns:42px 1fr auto;
+  align-items:center;
+  gap:10px;
+  border:1px solid rgba(255,255,255,.10);
+  background:rgba(0,0,0,.18);
+  border-radius:17px;
+  padding:10px;
+  cursor:pointer;
+}
+
+.ea-plan-item:active{transform:scale(.995);}
+
+.ea-plan-item-ico{
+  width:38px;
+  height:38px;
+  border-radius:999px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  background:rgba(250,204,21,.12);
+  font-size:19px;
+}
+
+.ea-plan-item-name{
+  color:#fff;
+  font-size:13px;
+  font-weight:950;
+  line-height:1.1;
+}
+
+.ea-plan-item-sub{
+  color:#9ca3af;
+  font-size:11px;
+  font-weight:750;
+  margin-top:5px;
+}
+
+.ea-plan-bar{
+  height:7px;
+  border-radius:999px;
+  overflow:hidden;
+  background:rgba(255,255,255,.10);
+  margin-top:7px;
+}
+
+.ea-plan-bar span{
+  display:block;
+  height:100%;
+  border-radius:999px;
+  background:linear-gradient(90deg,#facc15,#f59e0b);
+  width:0%;
+}
+
+.ea-plan-bar.start span{background:linear-gradient(90deg,#fb923c,#facc15);}
+.ea-plan-bar.mid span{background:linear-gradient(90deg,#facc15,#f59e0b);}
+.ea-plan-bar.near span{background:linear-gradient(90deg,#84cc16,#22c55e);}
+.ea-plan-bar.done span{background:linear-gradient(90deg,#22c55e,#86efac);}
+
+.ea-plan-item-gram{
+  color:#facc15;
+  font-size:14px;
+  font-weight:950;
+  white-space:nowrap;
+}
+
+.ea-plan-item-target{
+  margin-top:3px;
+  color:#e5e7eb;
+  font-size:11px;
+  font-weight:850;
+}
+
+.ea-plan-item-remain{
+  display:inline-flex;
+  align-items:center;
+  gap:4px;
+  margin-top:6px;
+  border:1px solid rgba(250,204,21,.18);
+  background:rgba(250,204,21,.08);
+  color:#fde68a;
+  border-radius:999px;
+  padding:4px 8px;
+  font-size:10px;
+  font-weight:900;
+}
+
+.ea-plan-item-remain.done{
+  border-color:rgba(34,197,94,.28);
+  background:rgba(34,197,94,.11);
+  color:#86efac;
+}
+
+.ea-plan-target-strong{
+  color:#fff;
+}
+
+.ea-plan-summary{
+  margin-top:12px;
+  display:grid;
+  grid-template-columns:repeat(4,1fr);
+  gap:8px;
+}
+
+.ea-plan-summary div{
+  border:1px solid rgba(255,255,255,.10);
+  background:rgba(0,0,0,.16);
+  border-radius:15px;
+  padding:10px;
+}
+
+.ea-plan-summary span{
+  display:block;
+  color:#9ca3af;
+  font-size:10px;
+  font-weight:900;
+  text-transform:uppercase;
+  line-height:1.1;
+}
+
+.ea-plan-summary b{
+  display:block;
+  color:#facc15;
+  font-size:14px;
+  font-weight:950;
+  margin-top:5px;
+}
+
+.ea-plan-modal .modal-body,
+.ea-plan-modal .form-label{
+  color:#111827 !important;
+}
+
+.ea-plan-target-row{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:10px;
+}
+
+.ea-plan-modal-note{
+  margin-top:10px;
+  padding:10px 12px;
+  border-radius:14px;
+  background:#fffbeb;
+  border:1px solid #fde68a;
+  color:#92400e;
+  font-size:12px;
+  line-height:1.4;
+}
+
+@media(max-width:520px){
+  .ea-plan-summary{grid-template-columns:1fr 1fr;}
+}
+
+@media(max-width:420px){
+  .ea-plan-head-new{align-items:flex-start;}
+  .ea-plan-target-row{grid-template-columns:1fr;}
+}
+
+@media(max-width:340px){
+  .ea-plan-summary{grid-template-columns:1fr;}
+}
+</style>
 
   <!-- ❗❗ Gantikan dgn domain production (untuk link WhatsApp biru) -->
   <script>window.BASE_HOST='https://emasamir.app';</script>
@@ -211,166 +1557,199 @@ body.swipe-peek{
 
 <body>
 <div class="page-shell">
-<div class="wrap">
+<div class="wrap ea-tabung-wrap">
 
-  <!-- TOPBAR MINIMAL -->
-  <div class="topbar mb-3">
-    <div class="top-left">
-      <a href="index.html" class="btn btn-outline-secondary icon-btn">🏠</a>
-      <div>
-        <div class="brand-title">💰 Tabung Emas</div>
-        <div class="muted xsmall">Simpan • Keluar fizikal • Jual balik</div>
-      </div>
-      <span id="loginStatus" class="pill">Memuatkan…</span>
-    </div>
-
-    <div class="d-flex gap-2">
-      <button class="btn btn-outline-secondary icon-btn" type="button" data-bs-toggle="offcanvas" data-bs-target="#menuCanvas" aria-controls="menuCanvas">
-        ☰ Menu
-      </button>
-
-<button class="btn btn-warning icon-btn fw-bold" type="button" data-bs-toggle="modal" data-bs-target="#tabungInfoModal">
-  ℹ️ Info Tabung
-</button>
-      <button id="btnLogout" class="btn btn-outline-secondary icon-btn" type="button" style="display:none">Log keluar</button>
-    </div>
+  <!-- ACCOUNT / ADMIN BAR ikut Index -->
+<div class="ea-top-actions">
+  <div class="ea-login-row">
+    <span id="loginStatus" class="ea-pill">Memuatkan…</span>
+    <span id="adminBadge" class="ea-pill ea-pill-admin" style="display:none;">Admin ✅</span>
   </div>
 
- <!-- PRICE + BALANCE -->
-  <div class="mb-3">
-    <div class="box">
-      <div class="d-flex justify-content-between align-items-start gap-2 flex-wrap">
-        <div class="fw-semibold">Harga Semasa</div>
-        <div class="muted xsmall" id="priceTime">Memuatkan…</div>
-      </div>
+  <div class="d-flex align-items-center gap-1 flex-wrap justify-content-end">
+    <button id="btnAdmin" class="ea-chip-btn ea-chip-danger" type="button" style="display:none">Admin</button>
 
-      <div class="mt-2">
-        <div class="d-flex align-items-baseline gap-2 flex-wrap">
-          <div>1g (999.9):</div>
-          <div class="price-lg" id="p1g">-</div>
-        </div>
+    <a href="/account.html"
+       id="btnAccount"
+       class="ea-chip-btn"
+       style="display:none">
+      Akaun
+    </a>
 
-        <div class="mt-1">Harga beli 0.1g: <b id="p01g_buy">-</b></div>
-        <div class="mt-1">Harga <u>jual balik</u> 0.1g: <b id="p01g_sell">-</b></div>
-        <div class="mt-1 muted">Upah kad (default): <span id="cardFee">RM 15.00</span></div>
+    <a href="/login.html#login"
+       class="ea-chip-btn"
+       id="btnLogin">
+      Log masuk
+    </a>
 
-        <hr class="my-3">
+    <button id="btnLogout"
+            class="ea-chip-btn"
+            type="button"
+            style="display:none">
+      Log keluar
+    </button>
+  </div>
+</div>
+  <!-- HERO BAKI TABUNG -->
+<section class="ea-tabung-hero">
+  <div class="ea-hero-copy">
+    <div class="ea-hero-title">TABUNG <span>EMAS AMIR</span></div>
+    <div class="ea-hero-sub">Simpan • Keluar fizikal • Jual balik</div>
 
-        <div class="d-flex align-items-start gap-2">
-          <div aria-hidden="true" style="font-size:20px;line-height:1.1">🏪</div>
-          <div>
-            <div class="fw-semibold">Stok Kedai (untuk tabung)</div>
-            <div class="small">
-              <span id="stockUnits">-</span> unit • <span id="stockGrams">-</span> g
-              <span class="text-muted ms-1" data-bs-toggle="tooltip"
-                    title="Jumlah emas fizikal untuk Tabung Emas (semua pelanggan). Ini bukan baki akaun anda.">ℹ️</span>
-            </div>
-            <div class="text-muted xsmall">Bukan baki anda.</div>
-          </div>
-        </div>
+    <div class="ea-hero-label">👤 Baki Tabung Saya</div>
+    <div class="ea-hero-balance">
+      <span id="balGram">0.0</span><span class="ea-hero-unit">g</span>
+    </div>
+    <div class="ea-hero-unit-text">
+      <span id="balUnit">0</span> unit × 0.1g
+    </div>
 
-        <hr class="my-3">
+    <!-- dibuang sebab tarikh pindah ke Harga Semasa -->
+  </div>
 
-        <div class="d-flex justify-content-between align-items-end gap-3 flex-wrap">
-          <div>
-            <div class="fw-semibold">👤 Baki Tabung Saya</div>
-            <div class="muted xsmall">(0.1g = 1 unit)</div>
-          </div>
+  <div class="ea-hero-visual" aria-hidden="true"></div>
+</section>
 
-          <div class="balance-box text-center">
-            <div class="balance-main">
-              <span id="balGram">0.0</span><span class="balance-unit"> g</span>
-            </div>
-            <div class="muted">
-              <span id="balUnit">0</span> unit × 0.1g
-            </div>
-<div class="mt-2 p-2 rounded-3" style="background:#fff7ed;border:1px solid #fde68a;">
-  <div class="small" style="color:#92400e;">
+<section class="ea-plan-box" id="eaPlanBox">
+  <div class="ea-plan-head-new">
+    <div>
+      <div class="ea-plan-kicker">🎯 Agihan Perancangan</div>
+      <div class="ea-plan-desc">Bahagikan tabung ikut tujuan. Contoh: Umrah 0.10g, Kecemasan 0.05g.</div>
+    </div>
+
+    <button class="ea-plan-edit-btn" type="button" id="planAddBtn">
+      + Tambah
+    </button>
+  </div>
+
+  <div id="planList" class="ea-plan-list">
+    <div class="ea-plan-empty">Belum ada agihan. Tekan + Tambah untuk mula.</div>
+  </div>
+
+  <div class="ea-plan-summary">
+    <div>
+      <span>Jumlah Baki</span>
+      <b id="planBalanceGram">0.00g</b>
+    </div>
+    <div>
+      <span>Sudah Diagih</span>
+      <b id="planAllocatedGram">0.00g</b>
+    </div>
+    <div>
+      <span>Belum Diagih</span>
+      <b id="planUnusedGram">0.00g</b>
+    </div>
+    <div>
+      <span>Sasaran Siap</span>
+      <b id="planDoneCount">0/0</b>
+    </div>
+  </div>
+</section>
+
+  <div class="ea-warning-card">
     ⚠️ Emas daripada tebusan point / misi tidak boleh dijual kepada RM (tunai),
     tetapi boleh digunakan untuk keluar fizikal atau tukar ke barang kemas 916.
   </div>
-</div>          </div>
-        </div>
+
+  <!-- TINDAKAN -->
+  <section class="ea-action-grid">
+    <div class="action-item ea-action-card buy" data-open="panelBuy">
+      <div class="ea-action-ico">🛒</div>
+      <div>
+        <div class="action-title">Beli</div>
+        <div class="action-sub">Tambah gram / beli unit 0.1g</div>
       </div>
+      <div class="chev">›</div>
     </div>
-  </div>
 
-  <!-- ACTION LIST -->
-  <div class="box mb-3">
-    <div class="fw-semibold mb-2">Tindakan</div>
-
-    <div class="action-list">
-      <div class="action-item" data-open="panelBuy">
-        <div class="action-left">
-          <div class="action-ico">🛒</div>
-          <div>
-            <div class="action-title">Beli</div>
-            <div class="action-sub">Tambah gram / beli unit 0.1g</div>
-          </div>
-        </div>
-        <div class="chev">›</div>
+    <div class="action-item ea-action-card out" data-open="panelOut">
+      <div class="ea-action-ico">📦</div>
+      <div>
+        <div class="action-title">Keluar Fizikal</div>
+        <div class="action-sub">Pilih berat / cash-out fizikal</div>
       </div>
+      <div class="chev">›</div>
+    </div>
 
-      <div class="action-item" data-open="panelOut">
-        <div class="action-left">
-          <div class="action-ico">📦</div>
-          <div>
-            <div class="action-title">Keluar Fizikal</div>
-            <div class="action-sub">Pilih berat / cash-out fizikal</div>
-          </div>
-        </div>
-        <div class="chev">›</div>
+    <div class="action-item ea-action-card sell" data-open="panelSell">
+      <div class="ea-action-ico">💸</div>
+      <div>
+        <div class="action-title">Jual</div>
+        <div class="action-sub">Jualkan baki tabung emas</div>
       </div>
+      <div class="chev">›</div>
+    </div>
 
-      <div class="action-item" data-open="panelSell">
-        <div class="action-left">
-          <div class="action-ico">💸</div>
-          <div>
-            <div class="action-title">Jual</div>
-            <div class="action-sub">Jualkan baki tabung emas</div>
-          </div>
-<div class="mt-2 p-2 rounded-3" style="background:#fff7ed;border:1px solid #fde68a;">
-  <div class="small" style="color:#92400e;">
+    <div class="action-item ea-action-card convert" data-open="panelConvert916">
+      <div class="ea-action-ico">🔁</div>
+      <div>
+        <div class="action-title">Tukar ke Emas 916</div>
+        <div class="action-sub">Jual tabung untuk membeli barang kemas 916</div>
+      </div>
+      <div class="chev">›</div>
+    </div>
+  </section>
+
+  <div class="ea-sell-note">
     ⚠️ Hanya emas yang dibeli sendiri boleh dijual semula kepada RM (tunai).<br>
     Emas daripada tebusan point / misi tidak termasuk untuk jual.
   </div>
+
+  <!-- PRICE + STOCK -->
+  <section class="ea-info-grid">
+    <div class="box ea-dark-box ea-price-box-modern">
+  <div class="ea-box-title">📈 Harga Semasa</div>
+
+  <div class="ea-price-update">
+  <span>⏱</span>
+  <span id="priceTime">Memuatkan…</span>
 </div>
+
+  <div class="ea-current-price-row">
+        <div>
+          <div class="ea-price-label-modern">1g (999.9)</div>
+          <div class="price-lg" id="p1g">-</div>
         </div>
-        <div class="chev">›</div>
       </div>
 
-<div class="action-item" data-open="panelConvert916">
-  <div class="action-left">
-    <div class="action-ico">🔁</div>
-    <div>
-      <div class="action-title">Tukar ke Emas 916</div>
-      <div class="action-sub">Jual tabung untuk membeli barang kemas 916</div>
-    </div>
-  </div>
-  <div class="chev">›</div>
-</div>
-      <div class="action-item" data-open="panelHist">
-        <div class="action-left">
-          <div class="action-ico">🕘</div>
-          <div>
-            <div class="action-title">Sejarah</div>
-            <div class="action-sub">Lihat rekod transaksi tabung</div>
-          </div>
+      <div class="ea-price-two">
+        <div>
+          <div class="ea-price-label-modern">Harga beli 0.1g</div>
+          <b id="p01g_buy">-</b>
         </div>
-        <div class="chev">›</div>
+        <div>
+          <div class="ea-price-label-modern">Harga jual balik 0.1g</div>
+          <b id="p01g_sell">-</b>
+        </div>
       </div>
-    </div>
-  </div>
 
-  <!-- PANELS (collapsed) -->
-  <div class="collapse mb-3" id="panelBuy">
-    <div class="panel">
+      <div class="ea-card-fee-line">Upah kad (default): <span id="cardFee">RM 15.00</span></div>
+    </div>
+
+    <div class="box ea-dark-box ea-stock-box-modern">
+      <div class="ea-box-title">🏪 Stok Kedai (untuk tabung)</div>
+      <div class="ea-stock-panel">
+        <div>
+          <div class="ea-stock-value"><span id="stockUnits">-</span> unit</div>
+          <div class="ea-stock-sub"><span id="stockGrams">-</span> g</div>
+        </div>
+        <span class="ea-stock-info" data-bs-toggle="tooltip"
+              title="Jumlah emas fizikal untuk Tabung Emas (semua pelanggan). Ini bukan baki akaun anda.">ℹ️</span>
+      </div>
+     <div class="ea-stock-note">Bukan baki anda.</div>
+    </div>
+  </section>
+
+  <!-- PANEL BUY -->
+  <div class="collapse mb-3 ea-floating-panel" id="panelBuy">
+    <div class="panel ea-dark-panel">
       <div class="panel-h">
         <div class="fw-semibold">🛒 Beli</div>
-        <button class="btn btn-sm btn-outline-secondary" type="button" data-bs-toggle="collapse" data-bs-target="#panelBuy">Tutup</button>
+        <button class="ea-panel-close" type="button" data-bs-toggle="collapse" data-bs-target="#panelBuy">Tutup</button>
       </div>
       <div class="panel-b">
         <div class="muted mb-2">Min 1 unit (0.1g). Gandaan 1.</div>
+        <div class="ea-help-note">Pilih jumlah unit, kemudian tekan <b>Beli</b>. Sistem akan paparkan pengesahan dan jumlah bayaran sebelum terus ke Billplz.</div>
 
         <div class="row g-2 align-items-end">
           <div class="col-sm-6">
@@ -389,14 +1768,16 @@ body.swipe-peek{
     </div>
   </div>
 
-  <div class="collapse mb-3" id="panelOut">
-    <div class="panel">
+  <!-- PANEL OUT -->
+  <div class="collapse mb-3 ea-floating-panel" id="panelOut">
+    <div class="panel ea-dark-panel">
       <div class="panel-h">
         <div class="fw-semibold">📦 Keluar Fizikal</div>
-        <button class="btn btn-sm btn-outline-secondary" type="button" data-bs-toggle="collapse" data-bs-target="#panelOut">Tutup</button>
+        <button class="ea-panel-close" type="button" data-bs-toggle="collapse" data-bs-target="#panelOut">Tutup</button>
       </div>
       <div class="panel-b">
-        <div class="row g-2">
+        <div class="ea-help-note">Pilih berat emas fizikal yang ingin dikeluarkan. Pastikan baki tabung mencukupi sebelum hantar permohonan.</div>
+        <div class="row g-2 mt-1">
           <div class="col-md-6">
             <label class="form-label">Berat</label>
             <select id="outWeight" class="form-select">
@@ -423,14 +1804,16 @@ body.swipe-peek{
     </div>
   </div>
 
-  <div class="collapse mb-3" id="panelSell">
-    <div class="panel">
+  <!-- PANEL SELL -->
+  <div class="collapse mb-3 ea-floating-panel" id="panelSell">
+    <div class="panel ea-dark-panel">
       <div class="panel-h">
         <div class="fw-semibold">💸 Jual</div>
-        <button class="btn btn-sm btn-outline-secondary" type="button" data-bs-toggle="collapse" data-bs-target="#panelSell">Tutup</button>
+        <button class="ea-panel-close" type="button" data-bs-toggle="collapse" data-bs-target="#panelSell">Tutup</button>
       </div>
       <div class="panel-b">
-        <div class="row g-2">
+        <div class="ea-help-note">Jual bermaksud jual semula baki tabung kepada Emas Amir mengikut harga jual balik semasa. Admin akan semak sebelum bayaran dibuat.</div>
+        <div class="row g-2 mt-1">
           <div class="col-md-6">
             <label class="form-label">Unit (0.1g)</label>
             <input type="number" step="1" min="1" max="0" id="sellUnit" class="form-control" value="1" readonly inputmode="none">
@@ -451,51 +1834,64 @@ body.swipe-peek{
     </div>
   </div>
 
-<div class="collapse mb-3" id="panelConvert916">
-  <div class="panel">
-    <div class="panel-h">
-      <div class="fw-semibold">🔁 Tukar ke Emas 916</div>
-      <button class="btn btn-sm btn-outline-secondary" type="button" data-bs-toggle="collapse" data-bs-target="#panelConvert916">Tutup</button>
-    </div>
-
-    <div class="panel-b">
-      <div class="muted mb-2">
-        Min 1 unit (0.1g). Nilai tabung digunakan pada harga beli semasa.
+  <!-- PANEL CONVERT 916 -->
+  <div class="collapse mb-3 ea-floating-panel" id="panelConvert916">
+    <div class="panel ea-dark-panel">
+      <div class="panel-h">
+        <div class="fw-semibold">🔁 Tukar ke Emas 916</div>
+        <button class="ea-panel-close" type="button" data-bs-toggle="collapse" data-bs-target="#panelConvert916">Tutup</button>
       </div>
 
-      <div class="row g-2">
-        <div class="col-md-6">
-          <label class="form-label">Unit (0.1g)</label>
-          <input type="number" step="1" min="1" max="0" id="convert916Unit" class="form-control" value="1" readonly inputmode="none">
+      <div class="panel-b">
+        <div class="muted mb-2">
+          Min 1 unit (0.1g). Nilai tabung digunakan pada harga beli semasa.
+        </div>
+        <div class="ea-help-note">Tukar ke Emas 916 bermaksud nilai tabung digunakan untuk membeli barang kemas 916. Permohonan akan masuk untuk semakan admin.</div>
+
+        <div class="row g-2">
+          <div class="col-md-6">
+            <label class="form-label">Unit (0.1g)</label>
+            <input type="number" step="1" min="1" max="0" id="convert916Unit" class="form-control" value="1" readonly inputmode="none">
+          </div>
+
+          <div class="col-md-6">
+            <div class="fw-semibold">Dijual untuk membeli barang kemas 916</div>
+            <div class="mt-1"><b id="convert916Total">RM 0.00</b></div>
+          </div>
         </div>
 
-        <div class="col-md-6">
-          <div class="fw-semibold">Dijual untuk membeli barang kemas 916</div>
-          <div class="mt-1"><b id="convert916Total">RM 0.00</b></div>
-        </div>
+        <button id="btnConvert916" class="btn btn-warning w-100 btn-lgx mt-3">
+          Tukar Barang Kemas 916
+        </button>
+
+        <div id="convert916Msg" class="small muted mt-2"></div>
       </div>
-
-      <button id="btnConvert916" class="btn btn-warning w-100 btn-lgx mt-3">
-        Tukar Barang Kemas 916
-      </button>
-
-      <div id="convert916Msg" class="small muted mt-2"></div>
     </div>
   </div>
-</div>
+
+  
+  <!-- SEJARAH ACTION + PANEL -->
+  <div class="action-item ea-history-entry" data-open="panelHist">
+    <div class="ea-action-ico">🕘</div>
+    <div>
+      <div class="action-title">Sejarah</div>
+      <div class="action-sub">Lihat rekod transaksi tabung</div>
+    </div>
+    <div class="chev">›</div>
+  </div>
 
   <div class="collapse mb-2" id="panelHist">
-    <div class="panel">
+    <div class="panel ea-dark-panel ea-history-panel">
       <div class="panel-h">
         <div>
           <div class="fw-semibold">🕘 Sejarah Transaksi</div>
           <div class="muted xsmall">Transaksi PENDING direkod selepas admin sahkan.</div>
         </div>
-        <button class="btn btn-sm btn-outline-secondary" type="button" data-bs-toggle="collapse" data-bs-target="#panelHist">Tutup</button>
+        <button class="ea-panel-close" type="button" data-bs-toggle="collapse" data-bs-target="#panelHist">Tutup</button>
       </div>
       <div class="panel-b">
         <div class="d-flex justify-content-between flex-wrap align-items-center mb-2 gap-2">
-          <div class="btn-group btn-group-sm" role="group" aria-label="Penapis status">
+          <div class="btn-group btn-group-sm ea-filter-group" role="group" aria-label="Penapis status">
             <button type="button" class="btn btn-outline-secondary active" id="fltAll">Semua</button>
             <button type="button" class="btn btn-outline-success"  id="fltPaid">PAID</button>
             <button type="button" class="btn btn-outline-secondary" id="fltPending">PENDING</button>
@@ -504,8 +1900,8 @@ body.swipe-peek{
         </div>
 
         <div class="table-responsive">
-          <table class="table table-sm align-middle">
-            <thead class="table-light">
+          <table class="table table-sm align-middle ea-dark-table">
+            <thead>
               <tr>
                 <th>Tarikh</th>
                 <th>Jenis</th>
@@ -527,9 +1923,66 @@ body.swipe-peek{
     </div>
   </div>
 
-</div>
+  <button class="ea-info-row" type="button" data-bs-toggle="modal" data-bs-target="#tabungInfoModal">
+    <span class="ea-info-row-ico">i</span>
+    <span>
+      <b>Info Tabung</b>
+      <small>Tekan untuk faham cara simpan, keluar fizikal, jual dan tukar ke emas 916.</small>
+    </span>
+    <span class="chev">›</span>
+  </button>
+<!-- PENYIMPAN AKTIF HERO -->
+<section class="ea-savers-hero">
+  <div class="ea-savers-ico">👥</div>
+
+  <div class="ea-savers-copy">
+    <div class="ea-savers-title">
+      <b id="activeSaversCount">0</b> Penyimpan Aktif
+    </div>
+
+    <div class="ea-savers-sub">
+      Sudah mula membina simpanan emas bersama Emas Amir.<br>
+      Sertai mereka dengan simpanan serendah 0.1g.
+    </div>
+  </div>
+
+  <div class="ea-savers-chev">›</div>
+</section>
 </div>
 
+</div>
+
+<nav class="ea-bottom-nav" aria-label="Navigasi bawah">
+  <a class="ea-nav-item" href="/index.html">
+    <div class="ea-nav-ico">🏠</div>
+    <div>Utama</div>
+  </a>
+
+  <a class="ea-nav-item" href="/live-now.html">
+    <div class="ea-nav-ico">📺</div>
+    <div>Live</div>
+  </a>
+
+  <a class="ea-nav-item main active" href="/tabung.html">
+    <div class="ea-nav-main-circle">
+      <img
+        src="https://dduizetstqqjrpsezbpi.supabase.co/storage/v1/object/public/logo%20app/tabung.jpeg"
+        class="ea-nav-main-img"
+        alt="Simpan">
+    </div>
+    <div>Simpan</div>
+  </a>
+
+  <a class="ea-nav-item" href="/chat.html">
+    <div class="ea-nav-ico">💬</div>
+    <div>Chat</div>
+  </a>
+
+  <a class="ea-nav-item" href="/account.html">
+    <div class="ea-nav-ico">👤</div>
+    <div>Akaun</div>
+  </a>
+</nav>
 <!-- OFFCANVAS MENU -->
 <div class="offcanvas offcanvas-end" tabindex="-1" id="menuCanvas" aria-labelledby="menuCanvasLabel">
   <div class="offcanvas-header">
@@ -572,7 +2025,7 @@ body.swipe-peek{
             Jadi Emas Amir menyediakan kemudahan simpanan emas bermula serendah <b>0.1g</b> supaya lebih ramai rakyat Malaysia boleh mula menyimpan emas secara berperingkat.
           </div>
           <div class="mt-3 fw-bold">
-            Contoh: 0.1g Tabung = sekitar <span class="text-success">RM64.50</span> mengikut harga semasa.
+            Contoh: 0.1g Tabung = sekitar <span class="text-success" id="infoCurrent01g">-</span> mengikut harga semasa.
           </div>
         </div>
 
@@ -702,6 +2155,65 @@ body.swipe-peek{
       <button type="button" class="btn btn-success" id="payProceedBtn">Teruskan ke pembayaran</button>
     </div>
   </div></div>
+</div>
+
+<div class="modal fade" id="planEditModal" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content ea-plan-modal">
+      <div class="modal-header">
+        <h5 class="modal-title" id="planEditTitle">Tambah Agihan</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Tutup"></button>
+      </div>
+
+      <div class="modal-body">
+        <input type="hidden" id="planEditIndex" value="-1">
+
+        <label class="form-label">Nama agihan</label>
+        <input id="planNameInput" class="form-control" placeholder="cth: Umrah / Haji">
+
+        <label class="form-label mt-3">Ikon</label>
+<select id="planIconInput" class="form-select">
+  <option value="🕋">🕋 Umrah / Haji</option>
+  <option value="🐄">🐄 Korban</option>
+  <option value="✈️">✈️ Travel</option>
+  <option value="🎓">🎓 Pendidikan</option>
+  <option value="🏠">🏠 Rumah</option>
+  <option value="❤️">❤️ Kecemasan</option>
+  <option value="👶">👶 Anak</option>
+  <option value="💍">💍 Kahwin</option>
+  <option value="🚗">🚗 Kereta</option>
+  <option value="🏢">🏢 Bisnes</option>
+  <option value="🏖️">🏖️ Pencen</option>
+  <option value="🎁">🎁 Hadiah</option>
+  <option value="💰">💰 Simpanan</option>
+  <option value="⭐">⭐ Lain-lain</option>
+</select>
+
+        <div class="ea-plan-target-row mt-3">
+          <div>
+            <label class="form-label">Jumlah simpan sekarang (gram)</label>
+            <input id="planGramInput" class="form-control" type="number" min="0.01" step="0.01" placeholder="cth: 0.10">
+          </div>
+          <div>
+            <label class="form-label">Target simpan (gram)</label>
+            <input id="planTargetInput" class="form-control" type="number" min="0" step="0.01" placeholder="cth: 5.00">
+          </div>
+        </div>
+
+        <div class="ea-plan-modal-note">
+          Contoh: Umrah simpan sekarang 0.20g, target 5.00g. Sistem akan kira berapa % sudah capai dan baki lagi daripada target.
+        </div>
+
+        <div id="planEditMsg" class="small mt-2 text-danger"></div>
+      </div>
+
+      <div class="modal-footer">
+        <button type="button" class="btn btn-outline-danger me-auto" id="planDeleteBtn" style="display:none;">Delete</button>
+        <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Batal</button>
+        <button type="button" class="btn btn-warning fw-bold" id="planSaveBtn">Simpan</button>
+      </div>
+    </div>
+  </div>
 </div>
 
 <!-- ================== iOS Wheel Picker Modal (Alarm style) ================== -->
@@ -895,19 +2407,34 @@ const auser = (window.auth_get && window.auth_get()) || null;
 (function renderAuth(){
   const a  = auser;
   const ph = normalizeMsisdn(a?.phone || a?.msisdn || "");
-  $("loginStatus").textContent = a ? ("Log masuk sebagai " + (a.name || ph || "pengguna")) : "Tidak log masuk";
 
+  const loginStatus = $("loginStatus");
+  if (loginStatus){
+    loginStatus.textContent = a ? ("Log masuk sebagai " + (a.name || ph || "pengguna")) : "Tidak log masuk";
+  }
+
+  const btnLogin = $("btnLogin");
   const btnLogout = $("btnLogout");
-  if (a && btnLogout){
-    btnLogout.style.display = "";
-    btnLogout.onclick = async () => {
-      try { await sb.auth.signOut(); } catch {}
-      Object.keys(localStorage).forEach(k => { if (k.startsWith("sb-")) localStorage.removeItem(k); });
-      sessionStorage.clear();
-      localStorage.removeItem("tabung_uid_gabungan");
-      if (window.auth_clear) window.auth_clear();
-      location.href = "login.html#login";
-    };
+  const btnAccount = $("btnAccount");
+
+  if (a){
+    if (btnLogin) btnLogin.style.display = "none";
+    if (btnAccount) btnAccount.style.display = "";
+    if (btnLogout){
+      btnLogout.style.display = "";
+      btnLogout.onclick = async () => {
+        try { await sb.auth.signOut(); } catch {}
+        Object.keys(localStorage).forEach(k => { if (k.startsWith("sb-")) localStorage.removeItem(k); });
+        sessionStorage.clear();
+        localStorage.removeItem("tabung_uid_gabungan");
+        if (window.auth_clear) window.auth_clear();
+        location.href = "login.html#login";
+      };
+    }
+  }else{
+    if (btnLogin) btnLogin.style.display = "";
+    if (btnAccount) btnAccount.style.display = "none";
+    if (btnLogout) btnLogout.style.display = "none";
   }
 })();
 
@@ -978,10 +2505,16 @@ async function loadPrices(){
   if (a.error) throw a.error;
   const latest = a.data?.[0] || null;
   const p1g = Number(latest?.price_9999 || 0);
-  buyPrice01 = p1g/10;
-  $("p1g").textContent = money(p1g);
-  $("p01g_buy").textContent  = money(buyPrice01);
-  $("priceTime").textContent = latest ? fmtDT(latest.ddate) : "-";
+buyPrice01 = p1g/10;
+
+$("p1g").textContent = money(p1g);
+$("p01g_buy").textContent  = money(buyPrice01);
+
+if ($("infoCurrent01g")) {
+  $("infoCurrent01g").textContent = money(buyPrice01);
+}
+
+$("priceTime").textContent = latest ? fmtDT(latest.ddate) : "-";
 
   const b = await sb.from("gold_sell_prices").select("ddate, price_9999").order("ddate",{ascending:false}).limit(1);
   if (b.error) throw b.error;
@@ -993,10 +2526,11 @@ async function loadPrices(){
 
 async function loadBalance(){
   const uid = await getUidGabungan();
-  if (!uid){
-    window.myUnits = 0;
-    $("balUnit").textContent = 0;
-    $("balGram").textContent = "0.0";
+ if (!uid){
+  window.myUnits = 0;
+  $("balUnit").textContent = 0;
+  $("balGram").textContent = "0.0";
+  updatePlanAllocation(0);
 
     const su = $("sellUnit");
     const btnSell = $("btnSell");
@@ -1059,8 +2593,10 @@ if (cashableUnits < 0) cashableUnits = 0;
 
 window.myUnits = units;
 window.myCashableUnits = cashableUnits;
-  $("balUnit").textContent = units;
-  $("balGram").textContent = (units / 10).toFixed(1);
+$("balUnit").textContent = units;
+$("balGram").textContent = (units / 10).toFixed(1);
+
+updatePlanAllocation(units);
 
   const su = $("sellUnit");
 const btnSell = $("btnSell");
@@ -1280,11 +2816,21 @@ async function openPanel(id){
     await loadHistory();
   }
 
-  // scroll to it (nice)
-  setTimeout(()=>{
-    try{ el.scrollIntoView({ behavior:"smooth", block:"start" }); }catch{}
-  }, 150);
+  // Popup mode: tak perlu scroll ke bawah.
 }
+
+
+
+// Tutup popup bila tekan kawasan gelap belakang panel
+['panelBuy','panelOut','panelSell','panelConvert916','panelHist'].forEach(function(pid){
+  var el=document.getElementById(pid);
+  if(!el) return;
+  el.addEventListener('click', function(e){
+    if(e.target === el){
+      try{ bootstrap.Collapse.getOrCreateInstance(el,{toggle:false}).hide(); }catch{ el.classList.remove('show'); }
+    }
+  });
+});
 
 /* ================== Sejarah + pagination ================== */
 let currentFilter = "ALL", allRows=[], pageSize=5, currentPage=1;
@@ -1889,8 +3435,22 @@ $("btnOut").onclick = async () => {
   }
 };
 
-/* ================== Realtime + Filters ================== */
+async function loadActiveSavers(){
+  try{
+    const { data, error } = await sb.rpc("get_active_savers_count");
 
+    if(error) throw error;
+
+    const el = document.getElementById("activeSaversCount");
+    if(el){
+      el.textContent = Number(data || 0).toLocaleString("ms-MY");
+    }
+  }catch(err){
+    console.error("loadActiveSavers", err);
+  }
+}
+
+/* ================== Realtime + Filters ================== */
 async function initRealtime() {
   const uid = await getUidGabungan();
   if (!uid) return;
@@ -1908,6 +3468,7 @@ async function initRealtime() {
           bumpMine();
         }
         loadStock().catch(console.error);
+        loadActiveSavers().catch(console.error);
       })
     .subscribe();
 
@@ -1944,11 +3505,12 @@ function bindFilters(){
     });
 
     await loadPrices();
-    await loadBalance();
-    await prefillBank();
-    await loadStock();
-    recalc();
-    initRealtime();
+await loadBalance();
+await prefillBank();
+await loadStock();
+await loadActiveSavers();
+recalc();
+initRealtime();
 
     // ✅ attach wheel picker (Alarm style) untuk Unit
     attachPickerToInput(
@@ -2157,6 +3719,404 @@ window.addEventListener("load", ()=>{
     }, 800);
   }
 });
+
+let eaCurrentPlanUnits = 0;
+let eaPlanItemsLoaded = false;
+let eaPlanItems = [];
+let eaPlanUserAuthId = null;
+
+async function eaGetPlanUserAuthId(){
+  if (eaPlanUserAuthId) return eaPlanUserAuthId;
+
+  try{
+    const r = await sb.auth.getUser();
+    eaPlanUserAuthId = r?.data?.user?.id || null;
+  }catch{
+    eaPlanUserAuthId = null;
+  }
+
+  return eaPlanUserAuthId;
+}
+
+function eaPlanKey(){
+  const ph = normalizeMsisdn(auser?.phone || auser?.msisdn || "");
+  return "ea_tabung_plan_v3_target_" + (ph || "guest");
+}
+
+function eaOldPlanKey(){
+  const ph = normalizeMsisdn(auser?.phone || auser?.msisdn || "");
+  return "ea_tabung_plan_v2_" + (ph || "guest");
+}
+
+function eaCleanPlanItem(x){
+  const id = x?.id || null;
+  const name = String(x?.name || "").trim();
+  const icon = String(x?.icon || "🎯").trim() || "🎯";
+  const gram = Math.max(0, Number(x?.gram || 0));
+  const target = Math.max(0, Number(x?.target || 0));
+  return { id, name: name || "Agihan", icon, gram, target };
+}
+
+function eaLoadLocalPlanItems(){
+  try{
+    let raw = localStorage.getItem(eaPlanKey());
+
+    if (!raw){
+      raw = localStorage.getItem(eaOldPlanKey());
+      if (raw) localStorage.setItem(eaPlanKey(), raw);
+    }
+
+    const arr = JSON.parse(raw || "[]");
+    return Array.isArray(arr)
+      ? arr.map(eaCleanPlanItem).filter(x => Number(x.gram) > 0)
+      : [];
+  }catch{
+    return [];
+  }
+}
+
+function eaSaveLocalPlanItems(){
+  try{
+    localStorage.setItem(eaPlanKey(), JSON.stringify(eaPlanItems.map(eaCleanPlanItem)));
+  }catch{}
+}
+
+async function eaLoadPlanItems(){
+  if (eaPlanItemsLoaded) return;
+  eaPlanItemsLoaded = true;
+
+  const uid = await eaGetPlanUserAuthId();
+
+  if (!uid){
+    eaPlanItems = eaLoadLocalPlanItems();
+    return;
+  }
+
+  try{
+    const { data, error } = await sb
+      .from("tabung_goals")
+      .select("id,name,icon,gram,target,sort_order")
+      .eq("user_auth_id", uid)
+      .order("sort_order", { ascending:true })
+      .order("created_at", { ascending:true });
+
+    if (error) throw error;
+
+    eaPlanItems = Array.isArray(data)
+      ? data.map(eaCleanPlanItem).filter(x => Number(x.gram) > 0)
+      : [];
+
+    if (!eaPlanItems.length){
+      const localItems = eaLoadLocalPlanItems();
+
+      if (localItems.length){
+        const rows = localItems.map((x, idx)=>({
+          user_auth_id: uid,
+          name: x.name,
+          icon: x.icon,
+          gram: Number(x.gram || 0),
+          target: Number(x.target || 0),
+          sort_order: idx
+        }));
+
+        const ins = await sb
+          .from("tabung_goals")
+          .insert(rows)
+          .select("id,name,icon,gram,target,sort_order");
+
+        if (!ins.error && Array.isArray(ins.data)){
+          eaPlanItems = ins.data.map(eaCleanPlanItem);
+        }else{
+          eaPlanItems = localItems;
+        }
+      }
+    }
+  }catch(err){
+    console.warn("eaLoadPlanItems supabase fallback localStorage:", err);
+    eaPlanItems = eaLoadLocalPlanItems();
+  }
+}
+
+async function eaSavePlanItems(){
+  const uid = await eaGetPlanUserAuthId();
+
+  if (!uid){
+    eaSaveLocalPlanItems();
+    return;
+  }
+
+  try{
+    for (let i = 0; i < eaPlanItems.length; i++){
+      const x = eaCleanPlanItem(eaPlanItems[i]);
+
+      if (x.id){
+        const { error } = await sb
+          .from("tabung_goals")
+          .update({
+            name: x.name,
+            icon: x.icon,
+            gram: Number(x.gram || 0),
+            target: Number(x.target || 0),
+            sort_order: i,
+            updated_at: new Date().toISOString()
+          })
+          .eq("id", x.id)
+          .eq("user_auth_id", uid);
+
+        if (error) throw error;
+      }else{
+        const { data, error } = await sb
+          .from("tabung_goals")
+          .insert({
+            user_auth_id: uid,
+            name: x.name,
+            icon: x.icon,
+            gram: Number(x.gram || 0),
+            target: Number(x.target || 0),
+            sort_order: i
+          })
+          .select("id,name,icon,gram,target,sort_order")
+          .single();
+
+        if (error) throw error;
+        eaPlanItems[i] = eaCleanPlanItem(data);
+      }
+    }
+
+    eaSaveLocalPlanItems();
+  }catch(err){
+    console.error("eaSavePlanItems", err);
+    eaSaveLocalPlanItems();
+    alert("Agihan disimpan pada device sahaja. Semak table tabung_goals / RLS Supabase.");
+  }
+}
+
+async function eaDeletePlanItem(item){
+  const uid = await eaGetPlanUserAuthId();
+
+  if (uid && item?.id){
+    try{
+      const { error } = await sb
+        .from("tabung_goals")
+        .delete()
+        .eq("id", item.id)
+        .eq("user_auth_id", uid);
+
+      if (error) throw error;
+    }catch(err){
+      console.error("eaDeletePlanItem", err);
+      alert("Gagal delete agihan di database.");
+    }
+  }
+}
+
+function eaPlanTotalGram(){
+  return Math.max(0, Number(eaCurrentPlanUnits || 0) / 10);
+}
+
+function eaAllocatedGram(ignoreIndex){
+  return eaPlanItems.reduce((sum, item, idx)=>{
+    if (idx === ignoreIndex) return sum;
+    return sum + Number(item.gram || 0);
+  }, 0);
+}
+
+function eaPlanPct(gram, target){
+  gram = Number(gram || 0);
+  target = Number(target || 0);
+  if (target <= 0) return 0;
+  return Math.min(100, Math.max(0, (gram / target) * 100));
+}
+
+function eaPlanPctText(pct){
+  pct = Number(pct || 0);
+  if (pct > 0 && pct < 10) return pct.toFixed(1) + "%";
+  return pct.toFixed(0) + "%";
+}
+
+function eaPlanStatusClass(pct){
+  pct = Number(pct || 0);
+  if (pct >= 100) return "done";
+  if (pct >= 75) return "near";
+  if (pct >= 25) return "mid";
+  return "start";
+}
+
+async function updatePlanAllocation(units){
+  eaCurrentPlanUnits = Math.max(0, Number(units || 0));
+  await eaLoadPlanItems();
+
+  const totalGram = eaPlanTotalGram();
+  const allocated = eaAllocatedGram(-999);
+  const unused = Math.max(0, totalGram - allocated);
+
+  const targets = eaPlanItems.filter(x => Number(x.target || 0) > 0);
+  const doneTargets = targets.filter(x => Number(x.gram || 0) >= Number(x.target || 0)).length;
+
+  if ($("planBalanceGram")) $("planBalanceGram").textContent = totalGram.toFixed(2) + "g";
+  if ($("planAllocatedGram")) $("planAllocatedGram").textContent = allocated.toFixed(2) + "g";
+  if ($("planUnusedGram")) $("planUnusedGram").textContent = unused.toFixed(2) + "g";
+  if ($("planDoneCount")) $("planDoneCount").textContent = doneTargets + "/" + targets.length;
+
+  const list = $("planList");
+  if (!list) return;
+
+  if (!eaPlanItems.length){
+    list.innerHTML = `<div class="ea-plan-empty">Belum ada agihan. ${totalGram.toFixed(2)}g masih belum diagihkan.</div>`;
+    return;
+  }
+
+  list.innerHTML = eaPlanItems.map((rawItem, idx)=>{
+    const item = eaCleanPlanItem(rawItem);
+    const gram = Number(item.gram || 0);
+    const target = Number(item.target || 0);
+    const pctTarget = eaPlanPct(gram, target);
+    const pctBalance = totalGram > 0 ? Math.min(100, (gram / totalGram) * 100) : 0;
+    const statusClass = eaPlanStatusClass(pctTarget);
+    const name = String(item.name || "Agihan").replace(/</g,"&lt;").replace(/>/g,"&gt;");
+    const icon = String(item.icon || "🎯").replace(/</g,"&lt;").replace(/>/g,"&gt;");
+    const remain = Math.max(0, target - gram);
+
+    const targetLine = target > 0
+      ? `${gram.toFixed(2)}g / Target ${target.toFixed(2)}g`
+      : `${gram.toFixed(2)}g / Tiada target`;
+
+    const pctLine = target > 0
+      ? `${eaPlanPctText(pctTarget)} daripada target`
+      : `${pctBalance.toFixed(0)}% daripada baki tabung`;
+
+    const remainLine = target > 0
+      ? (
+          remain <= 0
+          ? `<div class="ea-plan-item-remain done">🏆 Sasaran tercapai</div>`
+          : `<div class="ea-plan-item-remain">Lagi ${remain.toFixed(2)}g untuk capai target</div>`
+        )
+      : `<div class="ea-plan-item-remain">Belum tetapkan target</div>`;
+
+    return `
+      <div class="ea-plan-item" data-plan-edit="${idx}">
+        <div class="ea-plan-item-ico">${icon}</div>
+        <div>
+          <div class="ea-plan-item-name">${name}</div>
+          <div class="ea-plan-item-sub">${pctLine}</div>
+          <div class="ea-plan-item-target">${targetLine}</div>
+          <div class="ea-plan-bar ${statusClass}">
+            <span style="width:${target > 0 ? pctTarget : pctBalance}%"></span>
+          </div>
+          ${remainLine}
+        </div>
+        <div class="ea-plan-item-gram">${gram.toFixed(2)}g</div>
+      </div>
+    `;
+  }).join("");
+
+  list.querySelectorAll("[data-plan-edit]").forEach(el=>{
+    el.addEventListener("click", ()=>{
+      openPlanEditor(Number(el.getAttribute("data-plan-edit")));
+    });
+  });
+}
+
+function openPlanEditor(index){
+  const isEdit = index >= 0 && eaPlanItems[index];
+
+  if ($("planEditTitle")) $("planEditTitle").textContent = isEdit ? "Edit Agihan" : "Tambah Agihan";
+  if ($("planEditIndex")) $("planEditIndex").value = isEdit ? String(index) : "-1";
+  if ($("planNameInput")) $("planNameInput").value = isEdit ? (eaPlanItems[index].name || "") : "";
+  if ($("planIconInput")) $("planIconInput").value = isEdit ? (eaPlanItems[index].icon || "🎯") : "🕋";
+  if ($("planGramInput")) $("planGramInput").value = isEdit ? Number(eaPlanItems[index].gram || 0).toFixed(2) : "";
+  if ($("planTargetInput")) $("planTargetInput").value = isEdit ? Number(eaPlanItems[index].target || 0).toFixed(2) : "";
+  if ($("planEditMsg")) $("planEditMsg").textContent = "";
+  if ($("planDeleteBtn")) $("planDeleteBtn").style.display = isEdit ? "" : "none";
+
+  const modalEl = $("planEditModal");
+  if (modalEl){
+    bootstrap.Modal.getOrCreateInstance(modalEl).show();
+  }
+}
+
+function closePlanEditor(){
+  const modalEl = $("planEditModal");
+  if (modalEl){
+    bootstrap.Modal.getOrCreateInstance(modalEl).hide();
+  }
+}
+
+function bindPlanEditor(){
+  const addBtn = $("planAddBtn");
+  if (addBtn && !addBtn.dataset.boundPlan){
+    addBtn.dataset.boundPlan = "1";
+    addBtn.addEventListener("click", ()=>openPlanEditor(-1));
+  }
+
+  const saveBtn = $("planSaveBtn");
+  if (saveBtn && !saveBtn.dataset.boundPlan){
+    saveBtn.dataset.boundPlan = "1";
+    saveBtn.addEventListener("click", async ()=>{
+      await eaLoadPlanItems();
+
+      const idx = Number($("planEditIndex")?.value || -1);
+      const name = String($("planNameInput")?.value || "").trim();
+      const icon = String($("planIconInput")?.value || "🎯").trim();
+      const gram = Number($("planGramInput")?.value || 0);
+      const target = Number($("planTargetInput")?.value || 0);
+      const totalGram = eaPlanTotalGram();
+
+      if (!name){
+        if ($("planEditMsg")) $("planEditMsg").textContent = "Masukkan nama agihan.";
+        return;
+      }
+
+      if (!gram || gram <= 0){
+        if ($("planEditMsg")) $("planEditMsg").textContent = "Masukkan jumlah gram yang betul.";
+        return;
+      }
+
+      if (target && target < gram){
+        if ($("planEditMsg")) $("planEditMsg").textContent = "Target tidak boleh kurang daripada jumlah simpan sekarang.";
+        return;
+      }
+
+      const allocatedOther = eaAllocatedGram(idx);
+      if ((allocatedOther + gram) > totalGram + 0.0001){
+        if ($("planEditMsg")) $("planEditMsg").textContent =
+          `Agihan melebihi baki tabung. Baki boleh diagih: ${Math.max(0,totalGram - allocatedOther).toFixed(2)}g`;
+        return;
+      }
+
+      const oldId = (idx >= 0 && eaPlanItems[idx]) ? eaPlanItems[idx].id : null;
+      const item = { id: oldId, name, icon, gram, target: Math.max(0, target || 0) };
+
+      if (idx >= 0 && eaPlanItems[idx]){
+        eaPlanItems[idx] = item;
+      }else{
+        eaPlanItems.push(item);
+      }
+
+      await eaSavePlanItems();
+      await updatePlanAllocation(eaCurrentPlanUnits);
+      closePlanEditor();
+    });
+  }
+
+  const delBtn = $("planDeleteBtn");
+  if (delBtn && !delBtn.dataset.boundPlan){
+    delBtn.dataset.boundPlan = "1";
+    delBtn.addEventListener("click", async ()=>{
+      const idx = Number($("planEditIndex")?.value || -1);
+      if (idx >= 0 && eaPlanItems[idx]){
+        const item = eaPlanItems[idx];
+        await eaDeletePlanItem(item);
+        eaPlanItems.splice(idx, 1);
+        await eaSavePlanItems();
+        await updatePlanAllocation(eaCurrentPlanUnits);
+      }
+      closePlanEditor();
+    });
+  }
+}
+
+bindPlanEditor();
 </script>
 </body>
 </html>

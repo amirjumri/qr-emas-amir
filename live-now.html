@@ -696,9 +696,139 @@ html,body{
   border-radius:12px;
   object-fit:cover;
   background:#e5e7eb;
-} 
-/* ===== FLOATING LIVE MINI VIDEO ===== */
-.live-mini-float{
+}
+
+/* ===== PENDING ORDER HERO LIVE NOW - SAMA MACAM CHAT ===== */
+.ea-chat-pending-card{
+  display:none;
+  margin:0 0 18px;
+  padding:16px;
+  border-radius:24px;
+  color:#fff;
+  background:
+    radial-gradient(circle at 90% 0%, rgba(250,204,21,.18), transparent 36%),
+    linear-gradient(180deg,#1f1b12,#08090f);
+  border:1px solid rgba(250,204,21,.28);
+  box-shadow:0 16px 42px rgba(0,0,0,.22);
+}
+
+.ea-chat-pending-card.show{
+  display:block;
+}
+
+.ea-chat-pending-title{
+  display:flex;
+  align-items:center;
+  gap:8px;
+  color:#fb7185;
+  font-size:20px;
+  font-weight:950;
+  margin-bottom:12px;
+}
+
+.ea-chat-pending-item{
+  display:flex;
+  gap:12px;
+  align-items:center;
+  margin-bottom:12px;
+}
+
+.ea-chat-pending-img{
+  width:92px;
+  height:92px;
+  border-radius:20px;
+  object-fit:cover;
+  background:#111827;
+  border:1px solid rgba(255,255,255,.14);
+}
+
+.ea-chat-pending-name{
+  font-size:16px;
+  font-weight:950;
+  line-height:1.2;
+}
+
+.ea-chat-pending-sub{
+  color:#cbd5e1;
+  font-size:13px;
+  margin-top:4px;
+}
+
+.ea-chat-pending-price{
+  color:#f8c94d;
+  font-size:26px;
+  font-weight:950;
+  margin-top:7px;
+}
+
+.ea-chat-bank-box{
+  margin-top:12px;
+  padding:12px;
+  border-radius:16px;
+  background:rgba(255,255,255,.08);
+  border:1px solid rgba(255,255,255,.12);
+}
+
+.ea-chat-bank-title{
+  color:#fde68a;
+  font-weight:950;
+  margin-bottom:6px;
+}
+
+.ea-chat-bank-line{
+  color:#f8fafc;
+  font-size:14px;
+  line-height:1.45;
+}
+
+.ea-chat-pending-note{
+  margin-top:12px;
+  background:rgba(225,29,72,.14);
+  border:1px solid rgba(225,29,72,.28);
+  color:#fecdd3;
+  border-radius:14px;
+  padding:10px 12px;
+  font-size:13px;
+  font-weight:800;
+}
+
+.ea-chat-pending-actions{
+  display:grid;
+  grid-template-columns:1fr;
+  gap:10px;
+  margin-top:12px;
+}
+
+.ea-chat-pending-btn{
+  width:100%;
+  min-height:48px;
+  border:0;
+  border-radius:14px;
+  background:linear-gradient(135deg,#e11d48,#be123c);
+  color:#fff;
+  font-size:14px;
+  font-weight:950;
+}
+
+.ea-chat-qr-btn{
+  width:100%;
+  min-height:46px;
+  border:1px solid rgba(250,204,21,.40);
+  border-radius:14px;
+  background:rgba(250,204,21,.12);
+  color:#fde68a;
+  font-size:14px;
+  font-weight:950;
+}
+
+.ea-live-lock-disabled-note{
+  margin-top:8px;
+  color:#fecaca;
+  font-size:12px;
+  font-weight:900;
+}
+
+/* ===== FLOATING LIVE MINI VIDEO ===== */.live-mini-float{
   position:fixed;
   right:14px;
   bottom:92px;
@@ -1751,7 +1881,16 @@ html,body{
         <span>GoldBar/Coin</span>
       </div>
     </div>
+   </div>
+
+<div id="eaLivePendingHero" class="ea-chat-pending-card">
+  <div class="ea-chat-pending-title">
+    <span id="eaLivePendingTitleIcon">⚠️</span>
+    <span id="eaLivePendingTitleText">ORDER BELUM BAYAR</span>
   </div>
+
+  <div id="eaLivePendingBody"></div>
+</div>
 
 <div class="app-download-box">
   <div class="app-download-sep">
@@ -2068,6 +2207,10 @@ Sayangi duit anda. RM200 pun tetap duit, RM20 pun tetap duit. Biarlah lambat sed
       Transfer
     </button>
 
+    <button id="lcPayBillplz" type="button" class="live-choice flex-fill" onclick="setLcPay('BILLPLZ')">
+      Billplz FPX
+    </button>
+
     <button id="lcPayTabung" type="button" class="live-choice flex-fill" onclick="setLcPay('TABUNG_TOPUP')">
       Tabung + Topup
     </button>
@@ -2303,11 +2446,15 @@ Sayangi duit anda. RM200 pun tetap duit, RM20 pun tetap duit. Biarlah lambat sed
 
 <script>
 const SB_URL = "https://dduizetstqqjrpsezbpi.supabase.co";
-const SB_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdWRkdWl6ZXRzdHFxanJwc2V6YnBpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTg3MzI0ODQsImV4cCI6MjA3NDMwODQ4NH0.CrlHXrmHtKgR9qc2192U6quRb5lpFEeOSgwG0Lb8KRM";
+const SB_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRkdWl6ZXRzdHFxanJwc2V6YnBpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTg3MzI0ODQsImV4cCI6MjA3NDMwODQ4NH0.CrlHXrmHtKgR9qc2192U6quRb5lpFEeOSgwG0Lb8KRM";
 
 window.sb = window.sb || supabase.createClient(SB_URL, SB_KEY);
 
 const sb = window.sb;
+
+const LIVE_BILLPLZ_CREATE_BILL_URL = SB_URL + "/functions/v1/create-bill-j916";
+const LIVE_GOLD_BILLPLZ_CREATE_BILL_URL = SB_URL + "/functions/v1/create-bill-j999";
+const LIVE_BILLPLZ_REDIRECT_URL = location.origin + "/live-now.html";
 
 const ADMIN_WA = "601113230198";
 const ONSEND_BASE  = "https://onsend.io/api/v1";
@@ -2370,25 +2517,383 @@ async function waNotify(to, text, label=""){
   return false;
 }
 
-let ALL_ROWS = [];let CURRENT_FILTER = "ALL"; 
-
+let ALL_ROWS = [];
+let CURRENT_FILTER = "ALL";
 let LIVE_ATOME_ENABLED = false;
+let LIVE_PAYMENT_SETTINGS = {
+  atome_enabled: false,
+  billplz_enabled: true,
+  qr_enabled: true,
+  transfer_enabled: true,
+  tabung_enabled: true
+};
+let EA_LIVE_HAS_PENDING = false;
+let EA_LIVE_PENDING_LIST = [];
+let EA_PAYMENT_COUNTDOWN_TIMER = null;
 
 async function loadLivePaymentSettings(){
   try{
     const { data, error } = await sb
       .from("live_payment_settings")
-      .select("atome_enabled")
+      .select(`
+        atome_enabled,
+        billplz_enabled,
+        qr_enabled,
+        transfer_enabled,
+        tabung_enabled
+      `)
       .eq("id", 1)
       .maybeSingle();
 
     if (error) throw error;
 
-    LIVE_ATOME_ENABLED = !!data?.atome_enabled;
+    LIVE_PAYMENT_SETTINGS = {
+      atome_enabled: data?.atome_enabled === true,
+      billplz_enabled: data?.billplz_enabled !== false,
+      qr_enabled: data?.qr_enabled !== false,
+      transfer_enabled: data?.transfer_enabled !== false,
+      tabung_enabled: data?.tabung_enabled !== false
+    };
+
+    LIVE_ATOME_ENABLED = LIVE_PAYMENT_SETTINGS.atome_enabled === true;
   }catch(e){
     console.warn("loadLivePaymentSettings error:", e);
+    LIVE_PAYMENT_SETTINGS = {
+      atome_enabled: false,
+      billplz_enabled: true,
+      qr_enabled: true,
+      transfer_enabled: true,
+      tabung_enabled: true
+    };
     LIVE_ATOME_ENABLED = false;
   }
+}
+
+function isLivePayEnabled(method){
+  method = String(method || "").toUpperCase();
+
+  if (method === "QR") return LIVE_PAYMENT_SETTINGS.qr_enabled !== false;
+  if (method === "TRANSFER") return LIVE_PAYMENT_SETTINGS.transfer_enabled !== false;
+  if (method === "BILLPLZ") return LIVE_PAYMENT_SETTINGS.billplz_enabled !== false;
+  if (method === "TABUNG_TOPUP") return LIVE_PAYMENT_SETTINGS.tabung_enabled !== false;
+  if (method === "ATOME") return LIVE_PAYMENT_SETTINGS.atome_enabled === true;
+
+  return true;
+}
+
+function getDefaultLivePay(){
+  if (lcState.type === "999"){
+    if (isLivePayEnabled("QR")) return "QR";
+    if (isLivePayEnabled("TRANSFER")) return "TRANSFER";
+    if (isLivePayEnabled("BILLPLZ")) return "BILLPLZ";
+    return "QR";
+  }
+
+  if (isLivePayEnabled("TRANSFER")) return "TRANSFER";
+  if (isLivePayEnabled("QR")) return "QR";
+  if (isLivePayEnabled("BILLPLZ")) return "BILLPLZ";
+  if (isLivePayEnabled("TABUNG_TOPUP")) return "TABUNG_TOPUP";
+  if (isLivePayEnabled("ATOME")) return "ATOME";
+
+  return "TRANSFER";
+}
+
+function renderLcPayActiveState(){
+  const v = String(lcState.pay || "").toUpperCase();
+
+  document.getElementById("lcPayQR")?.classList.toggle("active", v === "QR");
+  document.getElementById("lcPayTransfer")?.classList.toggle("active", v === "TRANSFER");
+  document.getElementById("lcPayBillplz")?.classList.toggle("active", v === "BILLPLZ");
+  document.getElementById("lcPayTabung")?.classList.toggle("active", v === "TABUNG_TOPUP");
+  document.getElementById("lcPayAtome")?.classList.toggle("active", v === "ATOME");
+}
+
+function applyLivePaymentVisibility(){
+  const payQR = document.getElementById("lcPayQR");
+  const payTransfer = document.getElementById("lcPayTransfer");
+  const payBillplz = document.getElementById("lcPayBillplz");
+  const payTabung = document.getElementById("lcPayTabung");
+  const payAtome = document.getElementById("lcPayAtome");
+
+  if (lcState.type === "916"){
+    if (payQR) payQR.style.display = isLivePayEnabled("QR") ? "" : "none";
+    if (payTransfer) payTransfer.style.display = isLivePayEnabled("TRANSFER") ? "" : "none";
+    if (payBillplz) payBillplz.style.display = isLivePayEnabled("BILLPLZ") ? "" : "none";
+    if (payTabung) payTabung.style.display = isLivePayEnabled("TABUNG_TOPUP") ? "" : "none";
+    if (payAtome) payAtome.style.display = isLivePayEnabled("ATOME") ? "" : "none";
+  }else{
+    if (payQR) payQR.style.display = isLivePayEnabled("QR") ? "" : "none";
+    if (payTransfer) payTransfer.style.display = isLivePayEnabled("TRANSFER") ? "" : "none";
+    if (payBillplz) payBillplz.style.display = isLivePayEnabled("BILLPLZ") ? "" : "none";
+    if (payTabung) payTabung.style.display = "none";
+    if (payAtome) payAtome.style.display = "none";
+  }
+
+  if (!isLivePayEnabled(lcState.pay)){
+    lcState.pay = getDefaultLivePay();
+  }
+
+  renderLcPayActiveState();
+}
+
+
+function getLivePhoneVariants(raw){
+  const d = String(raw || "").replace(/\D/g, "");
+  if (!d) return [];
+
+  const p60 = d.startsWith("60") ? d : (d.startsWith("0") ? "6" + d : "60" + d);
+  const p0 = p60.startsWith("60") ? "0" + p60.slice(2) : d;
+
+  return Array.from(new Set([raw, d, p0, p60, "+" + p60].filter(Boolean)));
+}
+
+async function attachLiveBillplzBill(refs, billId, billUrl){
+  const refList = Array.isArray(refs) ? refs : [refs];
+
+  for (const ref of refList){
+    const payload = {
+      pay_method: "FPX",
+      bill_id: billId || "",
+      bill_id_text: billId || "",
+      payment_url: billUrl || "",
+      updated_at: new Date().toISOString()
+    };
+
+    try { await sb.from("j916_orders").update(payload).eq("reference", ref); } catch(_) {}
+    try { await sb.from("j916_orders").update(payload).eq("reference_1", ref); } catch(_) {}
+    try { await sb.from("j916_orders").update(payload).eq("id", ref); } catch(_) {}
+  }
+}
+
+async function createLiveBillplzBill({ refs, amount, description, name, phone }){
+  const res = await fetch(LIVE_BILLPLZ_CREATE_BILL_URL, {
+    method:"POST",
+    headers:{"Content-Type":"application/json","Authorization":"Bearer "+SB_KEY},
+    body: JSON.stringify({
+      txn_id: refs.join(","),
+      amount: Number(Number(amount || 0).toFixed(2)),
+      description: description || "LIVE Barang Kemas 916",
+      redirect_url: LIVE_BILLPLZ_REDIRECT_URL,
+      name: name || phone || "Pelanggan",
+      email: "",
+      phone: phone || ""
+    })
+  });
+
+  const j = await res.json().catch(()=>({}));
+  if (!res.ok || !j?.ok || !j?.bill_url){
+    console.error("create live-now billplz response:", j);
+    throw new Error(j?.error || j?.message || "Billplz ralat.");
+  }
+
+  return j;
+}
+
+
+async function createLiveGoldBillplzBill({ refs, amount, description, name, phone }){
+  const res = await fetch(LIVE_GOLD_BILLPLZ_CREATE_BILL_URL, {
+    method:"POST",
+    headers:{"Content-Type":"application/json","Authorization":"Bearer "+SB_KEY},
+    body: JSON.stringify({
+      txn_id: refs.join(","),
+      amount: Number(Number(amount || 0).toFixed(2)),
+      description: description || "LIVE Gold 999.9",
+      redirect_url: LIVE_BILLPLZ_REDIRECT_URL,
+      name: name || phone || "Pelanggan",
+      email: "",
+      phone: phone || ""
+    })
+  });
+
+  const j = await res.json().catch(()=>({}));
+  if (!res.ok || !j?.ok || !j?.bill_url){
+    console.error("create live-now gold billplz response:", j);
+    throw new Error(j?.error || j?.message || "Billplz 999.9 ralat.");
+  }
+
+  return j;
+}
+
+async function attachLiveGoldBillplzBill(refs, billId, billUrl){
+  const refList = Array.isArray(refs) ? refs : [refs];
+
+  for (const ref of refList){
+    const payload = {
+      bill_id_text: billId || "",
+      bill_id: billId || "",
+      payment_url: billUrl || "",
+      pay_method: "FPX",
+      updated_at: new Date().toISOString()
+    };
+
+    try { await sb.from("goldbar_order").update(payload).eq("id", ref); } catch(_) {}
+    try { await sb.from("goldbar_order").update(payload).eq("reference_1", ref); } catch(_) {}
+    try { await sb.from("goldbar_order").update(payload).eq("reference", ref); } catch(_) {}
+  }
+}
+
+async function createLiveGoldBillplzOrderRefsDirect({ phone, name, ship, address, pickupWhen, totals }){
+  const row = lcState.row || {};
+
+  const { data, error } = await sb.rpc("goldbar_order_prepare_v1", {
+    p_kind: String(row.kind || "coin").toLowerCase(),
+    p_weight_g: Number(row.weight_g || 0),
+    p_design_id: row.design_id || null,
+    p_design_name: row.design_name || null,
+    p_card_type: String(row.card_type || "READY").toUpperCase(),
+    p_qty: 1,
+    p_price_per_g: Number(row.price_per_g || row.price_per_g_current || row.price_9999 || 0),
+    p_upah_rm: Number(row.upah_rm || row.upah || 0),
+    p_custom_fee_rm: Number(row.custom_fee_rm || row.extra_custom_fee_rm || 0)
+  });
+
+  if (error) throw error;
+
+  const raw = Array.isArray(data) ? data[0] : data;
+  const ref = (typeof raw === "string")
+    ? raw
+    : (raw?.reference_1 || raw?.reference || raw?.order_id || raw?.goldbar_order_id || raw?.id);
+
+  if (!ref) throw new Error("Rujukan order Billplz 999.9 tidak berjaya dibuat.");
+
+  const nowIso = new Date().toISOString();
+  const expIso = new Date(Date.now() + 30 * 60 * 1000).toISOString();
+
+  const patches = [
+    { customer_phone: String(phone || "").replace(/\D/g, "") },
+    { customer_name: name || "Pelanggan" },
+    { pay_method: "FPX" },
+    { payment_method: "FPX" },
+    { shipping_method: ship },
+    { shipping_address: ship === "POST" ? address : "" },
+    { pickup_when: ship === "PICKUP" ? pickupWhen : "" },
+    { shipping_rm: Number(totals?.ship || 0) },
+    { grand_total_rm: Number(totals?.grand || 0) },
+    { source: "live_now_999" },
+    { notes: "LIVE Now 999.9 - Billplz FPX" },
+    { lock_source: "live_now" },
+    { lock_pay_method: "FPX" },
+    { lock_status: "ACTIVE" },
+    { lock_minutes: 30 },
+    { lock_started_at: nowIso },
+    { lock_created_at: nowIso },
+    { lock_expires_at: expIso },
+    { expires_at: expIso },
+    { auto_cancel_at: expIso },
+    { payment_deadline_at: expIso },
+    { lock_until: expIso },
+    { is_live_lock: true },
+    { has_lock_flags: true }
+  ];
+
+  for (const patch of patches){
+    try { await sb.from("goldbar_order").update(patch).eq("id", ref); } catch(_) {}
+    try { await sb.from("goldbar_order").update(patch).eq("reference_1", ref); } catch(_) {}
+    try { await sb.from("goldbar_order").update(patch).eq("reference", ref); } catch(_) {}
+  }
+
+  return [ref];
+}
+
+async function createLiveBillplzOrderRefsDirect({ phone, name, ship, address, pickupWhen, totals, cut, cutFrom, cutTo }){
+  const row = lcState.row || {};
+  const code = String(lcState.code || "").toUpperCase().trim();
+  if (!code) throw new Error("Code barang tidak dijumpai.");
+
+  let item = null;
+  try{
+    const { data, error } = await sb
+      .from("j916_items")
+      .select("id,code,weight_g,length_cm,width_cm,upah_override_rm,design:j916_designs(name,wage_default)")
+      .eq("code", code)
+      .limit(1)
+      .maybeSingle();
+
+    if (!error && data) item = data;
+  }catch(e){
+    console.warn("live-now billplz item lookup error:", e);
+  }
+
+  const itemDesign = item?.design || {};
+  const itemId = item?.id || row?.item_id || row?.id || null;
+  const itemName = row?.name || row?.product_name || row?.design_name || itemDesign?.name || code;
+  const weightG = Number(row?.weight_g || item?.weight_g || 0);
+  const lengthCm = Number(row?.length_cm || row?.panjang_cm || row?.current_length_cm || item?.length_cm || 0);
+  const widthCm = Number(row?.width_cm || row?.lebar_cm || item?.width_cm || 0);
+  const upahRm = Number(row?.upah_rm || row?.base_upah_rm || row?.upah_default_rm || item?.upah_override_rm || itemDesign?.wage_default || 0);
+  const pricePerG = Number(row?.price_per_g_current || row?.base_price_per_g || row?.ov_price_per_g || row?.price_per_g_live || 0);
+
+  const checkoutGroup =
+    (window.crypto?.randomUUID && window.crypto.randomUUID()) ||
+    ("live-now-billplz-" + Date.now() + "-" + Math.random().toString(16).slice(2));
+
+  const { data, error } = await sb.rpc("j916_order_prepare_v1", {
+    p_code: code,
+    p_item_id: itemId,
+    p_name: itemName,
+    p_weight_g: weightG,
+    p_length_cm: lengthCm,
+    p_width_cm: widthCm,
+    p_upah_rm: upahRm,
+    p_price_per_g: pricePerG,
+    p_unit_rm: Number(lcState.price || 0),
+    p_qty: 1,
+    p_customer_id: null,
+    p_customer_name: name || phone || "Pelanggan",
+    p_phone: phone,
+    p_pay_method: "FPX",
+    p_subtotal_rm: Number(totals?.subtotal || lcState.price || 0),
+    p_shipping_rm: Number(totals?.ship || 0),
+    p_pay_disc_rm: 0,
+    p_coupon_disc_rm: 0,
+    p_grand_total_rm: Number(totals?.grand || 0),
+    p_checkout_group: checkoutGroup
+  });
+
+  if (error) throw error;
+
+  const ref = (typeof data === "string")
+    ? data
+    : (data?.reference_1 || data?.reference || data?.ref || data?.id);
+
+  if (!ref) throw new Error("Rujukan order Billplz tidak berjaya dibuat.");
+
+  const nowIso = new Date().toISOString();
+  const expIso = new Date(Date.now() + 30 * 60 * 1000).toISOString();
+
+  const metaPatches = [
+    { pay_method: "FPX" },
+    { payment_method: "FPX" },
+    { shipping_method: ship },
+    { shipping_address: ship === "POST" ? address : "" },
+    { pickup_when: ship === "PICKUP" ? pickupWhen : "" },
+    { cut_status: cut },
+    { cut_from: cut === "YES" ? cutFrom : "" },
+    { cut_to: cut === "YES" ? cutTo : "" },
+    { source: "live_now_916" },
+    { notes: "LIVE Now - Billplz FPX" },
+    { lock_source: "live_now" },
+    { lock_pay_method: "FPX" },
+    { lock_status: "ACTIVE" },
+    { lock_minutes: 30 },
+    { lock_started_at: nowIso },
+    { lock_created_at: nowIso },
+    { lock_expires_at: expIso },
+    { expires_at: expIso },
+    { auto_cancel_at: expIso },
+    { payment_deadline_at: expIso },
+    { lock_until: expIso },
+    { is_live_lock: true },
+    { has_lock_flags: true }
+  ];
+
+  for (const patch of metaPatches){
+    try { await sb.from("j916_orders").update(patch).eq("reference", ref); } catch(_) {}
+    try { await sb.from("j916_orders").update(patch).eq("reference_1", ref); } catch(_) {}
+    try { await sb.from("j916_orders").update(patch).eq("id", ref); } catch(_) {}
+  }
+
+  return [ref];
 }
 
 function money(n){
@@ -2588,12 +3093,26 @@ function setLcShip(mode){
 }
 
 async function setLcPay(v){
-  lcState.pay = v;
+  v = String(v || "").toUpperCase();
 
-  document.getElementById("lcPayQR")?.classList.toggle("active", v === "QR");
-  document.getElementById("lcPayTransfer")?.classList.toggle("active", v === "TRANSFER");
-  document.getElementById("lcPayTabung")?.classList.toggle("active", v === "TABUNG_TOPUP");
-  document.getElementById("lcPayAtome")?.classList.toggle("active", v === "ATOME");
+  const billplzBtn = document.getElementById("lcPayBillplz");
+  const billplzVisible = billplzBtn && billplzBtn.style.display !== "none";
+
+  if (!isLivePayEnabled(v)){
+    if (v === "BILLPLZ" && (lcState.type === "999" || billplzVisible)){
+      // Untuk 999.9, button Billplz memang wujud ikut flow live-lock.
+      // Jangan keluar alert OFF palsu bila button sedang dipilih.
+    }else{
+      if (v === "ATOME") alert("Atome LIVE sedang OFF buat masa ini.");
+      else if (v === "BILLPLZ") alert("Billplz FPX LIVE sedang OFF buat masa ini.");
+      else alert("Kaedah bayaran ini sedang OFF buat masa ini.");
+
+      v = getDefaultLivePay();
+    }
+  }
+
+  lcState.pay = v;
+  renderLcPayActiveState();
 
   const box = document.getElementById("lcTabungBox");
 
@@ -2904,9 +3423,17 @@ function lcRenderTotal(){
 
   const itemPriceText = document.getElementById("lcItemPriceText");
   if (itemPriceText){
-    itemPriceText.textContent = useAtome
-      ? lcMoney(total)
-      : lcMoney(itemPrice);
+    let itemDisplayPrice = itemPrice;
+
+    if (useAtome){
+      itemDisplayPrice = total;
+    }else if (lcState.type === "999" && !useTabung){
+      // 999.9: harga merah atas card ikut harga selepas diskaun,
+      // manakala pos kekal dikira di bahagian bawah.
+      itemDisplayPrice = Math.max(0, total - normalShipFee);
+    }
+
+    itemPriceText.textContent = lcMoney(itemDisplayPrice);
   }
 
   if (useTabung && tabungValue > 0 && shipEl){
@@ -3161,18 +3688,18 @@ document.getElementById("btnSubmitLiveCheckout").textContent =
     return;
   }
 
- lcState = {
+lcState = {
   type: t,
   code: c,
   price,
   ship: "POST",
-  pay: "TRANSFER",
+  pay: "",
   cut: "NO",
   length_cm: Number(row?.length_cm || row?.panjang_cm || row?.current_length_cm || row?.size || 0),
   row
 };
 
- document.getElementById("liveCheckoutItem").innerHTML = `
+document.getElementById("liveCheckoutItem").innerHTML = `
   <img class="live-checkout-img" src="${img || "https://placehold.co/200x200?text=" + encodeURIComponent(c)}" alt="${safeTxt(c)}">
   <div style="min-width:0;flex:1;">
     <div class="fw-bold">${safeTxt(itemName)}</div>
@@ -3182,47 +3709,32 @@ document.getElementById("btnSubmitLiveCheckout").textContent =
   </div>
 `;
 
-  document.getElementById("lcMsg").textContent = "";
-  document.getElementById("btnSubmitLiveCheckout").disabled = false;
+document.getElementById("lcMsg").textContent = "";
+document.getElementById("btnSubmitLiveCheckout").disabled = false;
 
-  setLcShip("POST");
-  setLcPay("TRANSFER"); 
+setLcShip("POST");
+
+applyLivePaymentVisibility();
+
+lcState.pay = getDefaultLivePay();
+renderLcPayActiveState();
+
 setLcCut("NO");
 
 document.getElementById("lcCutSection").style.display = t === "916" ? "" : "none"; 
 
-const payTabung = document.getElementById("lcPayTabung");
-const payAtome = document.getElementById("lcPayAtome");
-
-if (t === "916"){
-  if (payTabung) payTabung.style.display = "";
-
-  if (payAtome){
-    payAtome.style.display = LIVE_ATOME_ENABLED ? "" : "none";
-  }
-
-  if (!LIVE_ATOME_ENABLED && lcState.pay === "ATOME"){
-    lcState.pay = "TRANSFER";
-  }
-}else{  if (payTabung) payTabung.style.display = "none";
-  if (payAtome) payAtome.style.display = "none";
-
-  if (lcState.pay === "TABUNG_TOPUP" || lcState.pay === "ATOME"){
-    lcState.pay = "TRANSFER";
-  }
-}
-
 if (t === "916" && lcState.length_cm){
   document.getElementById("lcCurrentLen").value = lcState.length_cm + "cm";
 }
-  bindLiveAddressFee();
-  lcRenderTotal();
 
-  lcFillCustomerAddress();
+bindLiveAddressFee();
+lcRenderTotal();
+
+lcFillCustomerAddress();
 
 document.getElementById("liveCheckoutModal").style.display = "flex";
 hideFloatingButtons();
-  document.body.style.overflow = "hidden";
+document.body.style.overflow = "hidden";
 }
 async function chatSendLive(payload){
   const res = await fetch("/.netlify/functions/chat-send", {
@@ -3259,13 +3771,33 @@ function getLcConfirmDetail(){
   const tabungValueRm = useTabungTopup ? Number(window.__lcTabungValue || 0) : 0;
   const topupRm = useTabungTopup ? Number(window.__lcTopupValue || 0) : itemPrice;
 
-  const finalTotal = useTabungTopup
-    ? Number((topupRm + shipFee).toFixed(2))
-    : (
-        payMethod === "ATOME"
-          ? Math.round((itemPrice + shipFee) * 1.08)
-          : Number((itemPrice + shipFee).toFixed(2))
-      );
+  let finalTotal = useTabungTopup
+  ? Number((topupRm + shipFee).toFixed(2))
+  : (
+      payMethod === "ATOME"
+        ? Math.round((itemPrice + shipFee) * 1.08)
+        : Number((itemPrice + shipFee).toFixed(2))
+    );
+
+if (lcState.type === "999" && payMethod === "BILLPLZ"){
+  const row = lcState.row || {};
+
+  const payDisc = itemPrice * 0.05;
+  const afterPay = Math.max(0, itemPrice - payDisc);
+
+  const aiDanType = String(row.__ai_dan_discount_type || "").toUpperCase();
+  const aiDanValue = Number(row.__ai_dan_discount_value || 0);
+
+  let aiDanDisc = 0;
+
+  if (aiDanType === "PERCENT"){
+    aiDanDisc = afterPay * (aiDanValue / 100);
+  }else if (aiDanType === "AMOUNT" || aiDanType === "FIXED"){
+    aiDanDisc = Math.min(afterPay, aiDanValue);
+  }
+
+  finalTotal = Number(Math.max(0, itemPrice - payDisc - aiDanDisc + shipFee).toFixed(2));
+}
 
   let img = "";
   let name = "";
@@ -3328,15 +3860,15 @@ async function fetchLivePendingOrders(){
       .order("created_at", { ascending:false })
       .limit(10);
 
-    if (!error){
-      (data || []).forEach(r=>{
-        all.push({
-          __table:"j916_orders",
-          __type:"916",
-          ...r
-        });
+    if (error) throw error;
+
+    (data || []).forEach(r=>{
+      all.push({
+        __table:"j916_orders",
+        __type:"916",
+        ...r
       });
-    }
+    });
   }catch(e){
     console.warn("fetch pending j916_orders error:", e);
   }
@@ -3348,7 +3880,7 @@ async function fetchLivePendingOrders(){
 
   if (codes916.length){
     try{
-      const { data: itemRows, error } = await sb
+      const { data:itemRows } = await sb
         .from("j916_items")
         .select(`
           code,
@@ -3364,73 +3896,39 @@ async function fetchLivePendingOrders(){
         `)
         .in("code", codes916);
 
-      if (!error && Array.isArray(itemRows)){
-        const imgMap = new Map();
+      const imgMap = new Map();
 
-        itemRows.forEach(x=>{
-          const c = String(x.code || "").toUpperCase().trim();
-          const dsg = x.design || {};
+      (itemRows || []).forEach(x=>{
+        const c = String(x.code || "").toUpperCase().trim();
+        const dsg = x.design || {};
 
-          imgMap.set(c, {
-            name: dsg.name || "",
-            img:
-              dsg.img1_url ||
-              dsg.img1 ||
-              dsg.img2_url ||
-              dsg.img2 ||
-              dsg.img3_url ||
-              dsg.img3 ||
-              ""
-          });
+        imgMap.set(c, {
+          name: dsg.name || "",
+          img:
+            dsg.img1_url ||
+            dsg.img1 ||
+            dsg.img2_url ||
+            dsg.img2 ||
+            dsg.img3_url ||
+            dsg.img3 ||
+            ""
         });
+      });
 
-        all.forEach(r=>{
-          const c = String(r.code || "").toUpperCase().trim();
-          const m = imgMap.get(c);
+      all.forEach(r=>{
+        const c = String(r.code || "").toUpperCase().trim();
+        const m = imgMap.get(c);
 
-          if (m?.img) r.__pending_img = m.img;
-          if (m?.name && (!r.name || String(r.name).toUpperCase().startsWith("LIVE "))){
-            r.__pending_name = m.name;
-          }
-        });
-      }
+        if (m?.img) r.__pending_img = m.img;
+        if (m?.name) r.__pending_name = m.name;
+      });
     }catch(e){
       console.warn("attach pending 916 image error:", e);
     }
   }
 
-  try{
-    const { data, error } = await sb
-      .from("goldbar_order")
-      .select("*")
-      .or(`customer_phone.eq.${p60},customer_phone.eq.${p0},phone.eq.${p60},phone.eq.${p0}`)
-      .eq("status", "PENDING")
-      .order("created_at", { ascending:false })
-      .limit(10);
-
-    if (!error){
-      (data || []).forEach(r=>{
-        all.push({
-          __table:"goldbar_order",
-          __type:"999",
-          ...r
-        });
-      });
-    }
-  }catch(e){
-    console.warn("fetch pending goldbar_order error:", e);
-  }
-
-  const seen = new Set();
-
-  return all.filter(r=>{
-    const key = String(r.id || r.reference || r.order_code || r.code || JSON.stringify(r));
-    if (seen.has(key)) return false;
-    seen.add(key);
-    return true;
-  }).slice(0, 8);
-} 
-
+  return all.slice(0, 8);
+}
 function pendingOrderHTML(list){
   if (!list.length){
     return `
@@ -3503,6 +4001,285 @@ function pendingOrderHTML(list){
     `;
   }).join("");
 } 
+
+function eaStopPaymentCountdown(){
+  if (EA_PAYMENT_COUNTDOWN_TIMER){
+    clearInterval(EA_PAYMENT_COUNTDOWN_TIMER);
+    EA_PAYMENT_COUNTDOWN_TIMER = null;
+  }
+}
+
+function eaFormatLeft(ms){
+  const total = Math.max(0, Math.floor(ms / 1000));
+  const h = Math.floor(total / 3600);
+  const m = Math.floor((total % 3600) / 60);
+  const s = total % 60;
+
+  if (h > 0){
+    return `${h}j ${String(m).padStart(2,"0")}m ${String(s).padStart(2,"0")}s`;
+  }
+
+  return `${String(m).padStart(2,"0")}:${String(s).padStart(2,"0")}`;
+}
+
+function eaStartPaymentCountdown(deadlineAt){
+  eaStopPaymentCountdown();
+
+  const el = document.getElementById("eaPaymentCountdown");
+  if (!el || !deadlineAt) return;
+
+  const deadline = new Date(deadlineAt).getTime();
+  if (!Number.isFinite(deadline)) return;
+
+  function tick(){
+    const left = deadline - Date.now();
+
+    if (left <= 0){
+      el.textContent = "⏳ Masa bayaran telah tamat. Sila tunggu status dikemas kini.";
+      eaStopPaymentCountdown();
+      return;
+    }
+
+    el.textContent = "⏳ Masa bayaran berbaki: " + eaFormatLeft(left);
+  }
+
+  tick();
+  EA_PAYMENT_COUNTDOWN_TIMER = setInterval(tick, 1000);
+}
+
+function eaOpenLiveChat(){
+  window.location.href = "/chat.html";
+}
+
+function eaOpenLiveQr(){
+  window.location.href = "/qr-maybank.html";
+}
+
+async function eaLoadLivePendingHero(){
+  const hero = document.getElementById("eaLivePendingHero");
+  const body = document.getElementById("eaLivePendingBody");
+  const titleTextEl = document.getElementById("eaLivePendingTitleText");
+  const titleIconEl = document.getElementById("eaLivePendingTitleIcon");
+
+  EA_LIVE_HAS_PENDING = false;
+  EA_LIVE_PENDING_LIST = [];
+
+  if (!hero || !body) return;
+
+  hero.classList.remove("show");
+  body.innerHTML = "";
+
+  try{
+    const pendingList = await fetchLivePendingOrders();
+
+    EA_LIVE_PENDING_LIST = Array.isArray(pendingList) ? pendingList : [];
+    EA_LIVE_HAS_PENDING = EA_LIVE_PENDING_LIST.length > 0;
+
+    if (!EA_LIVE_HAS_PENDING){
+      eaStopPaymentCountdown();
+      renderGrid();
+      return;
+    }
+
+    const orderIds = EA_LIVE_PENDING_LIST
+      .map(o => String(o.id || "").trim())
+      .filter(Boolean);
+
+    const slipMap = new Map();
+
+    if (orderIds.length){
+      try{
+        const { data: slipRows } = await sb
+          .from("customer_slips")
+          .select("order_code,status,created_at")
+          .in("order_code", orderIds)
+          .order("created_at", { ascending:false });
+
+        (slipRows || []).forEach(s=>{
+          const oid = String(s.order_code || "").trim();
+          if (!oid) return;
+          if (!slipMap.has(oid)) slipMap.set(oid, s);
+        });
+      }catch(e){
+        console.warn("live pending slip check error:", e);
+      }
+    }
+
+    let paidChatRefs = [];
+
+    try{
+      const threadId =
+        localStorage.getItem("ea_chat_thread") ||
+        localStorage.getItem("ea_thread_id") ||
+        "";
+
+      if (threadId){
+        const { data: th } = await sb
+          .from("chat_threads")
+          .select("meta")
+          .eq("id", threadId)
+          .maybeSingle();
+
+        const meta = th && typeof th.meta === "object" ? th.meta : {};
+        paidChatRefs = Array.isArray(meta.paid_chat_order_refs)
+          ? meta.paid_chat_order_refs.map(x => String(x || "").trim())
+          : [];
+      }
+    }catch(e){
+      console.warn("live pending paid refs error:", e);
+    }
+
+    function orderHasSlip(order){
+      const oid = String(order.id || "").trim();
+      return oid && slipMap.has(oid);
+    }
+
+    function orderIsPaidChat(order){
+      const oc = String(order.order_code || "").trim();
+      const shortId = String(order.id || "").trim().slice(0, 7);
+      return paidChatRefs.includes(oc) || paidChatRefs.includes(shortId);
+    }
+
+    const hasAnyProof = EA_LIVE_PENDING_LIST.some(o => orderHasSlip(o) || orderIsPaidChat(o));
+
+    if (titleTextEl){
+      titleTextEl.textContent = hasAnyProof
+        ? "BUKTI BAYARAN DIHANTAR"
+        : "ORDER BELUM BAYAR";
+    }
+
+    if (titleIconEl){
+      titleIconEl.textContent = hasAnyProof ? "✅" : "⚠️";
+    }
+
+    const itemsHTML = EA_LIVE_PENDING_LIST.map(order=>{
+      const type = order.__type || "";
+      const code = String(order.code || order.live_code || order.item_code || order.order_code || "-");
+
+      const name = String(
+        order.__pending_name ||
+        order.name ||
+        order.item_name ||
+        order.product_name ||
+        order.design_name ||
+        order.title ||
+        (type === "999" ? "Gold 999.9" : "Barang LIVE 916")
+      );
+
+      const berat = Number(order.weight_g || order.berat || order.grams || 0);
+      const panjang = fmtCm(order.length_cm || order.panjang_cm || order.current_length_cm || 0);
+
+      const total = Number(
+        order.grand_total_rm ??
+        order.total_rm ??
+        order.unit_rm ??
+        order.price_rm ??
+        order.final_amount ??
+        order.amount_rm ??
+        order.total ??
+        0
+      );
+
+      const img = String(
+        order.__pending_img ||
+        order.image_url ||
+        order.img1_url ||
+        order.img_url ||
+        order.img ||
+        order.product_img1 ||
+        order.design_img1 ||
+        ""
+      );
+
+      const spec = [
+        berat > 0 ? "Berat " + berat.toFixed(2) + "g" : "",
+        panjang ? "Panjang " + panjang : ""
+      ].filter(Boolean).join(" • ");
+
+      const imgSrc = img || "https://placehold.co/200x200?text=" + encodeURIComponent(code || "ITEM");
+
+      return `
+        <div class="ea-chat-pending-item">
+          <img class="ea-chat-pending-img"
+               src="${safeTxt(imgSrc)}"
+               alt="${safeTxt(code)}"
+               onerror="this.onerror=null;this.src='https://placehold.co/200x200?text=${encodeURIComponent(code || "ITEM")}'">
+
+          <div style="min-width:0;flex:1;">
+            <div class="ea-chat-pending-name">${safeTxt(name)}</div>
+            <div class="ea-chat-pending-sub">${safeTxt(code)}</div>
+            <div class="ea-chat-pending-sub">${safeTxt(spec || "Order pending")}</div>
+            <div class="ea-chat-pending-price">${total > 0 ? lcMoney(total) : "RM -"}</div>
+          </div>
+        </div>
+      `;
+    }).join("");
+
+    body.innerHTML = `
+      ${itemsHTML}
+
+      <div class="ea-chat-bank-box">
+        <div class="ea-chat-bank-title">🏦 Maklumat Bayaran Rasmi</div>
+        <div class="ea-chat-bank-line">Bank: <b>MAYBANK</b></div>
+        <div class="ea-chat-bank-line">Nama Akaun: <b>EMAS AMIR SDN BHD</b></div>
+        <div class="ea-chat-bank-line">No Akaun: <b class="mono">552031155695</b></div>
+      </div>
+
+      ${
+        hasAnyProof
+          ? `
+            <div class="ea-chat-pending-note" style="background:rgba(22,163,74,.16);border-color:rgba(34,197,94,.35);color:#bbf7d0">
+              ✅ Bukti bayaran sudah dihantar. Sila tunggu admin semak dan paid-kan order anda.
+            </div>
+          `
+          : `
+            <div class="ea-chat-pending-note">
+  Anda ada <b>${EA_LIVE_PENDING_LIST.length}</b> order belum bayar.
+  Sila sambung bayaran atau buka Chat untuk hantar slip bayaran bagi mempercepatkan semakan.
+
+  Jika anda belum bersedia untuk membuat bayaran sekarang, sila chat admin terlebih dahulu untuk memohon tambahan masa. Ini bagi mengelakkan order anda dibatalkan secara automatik apabila tempoh bayaran tamat.
+
+  <div id="eaPaymentCountdown" style="margin-top:8px;color:#fde68a;font-weight:950"></div>
+</div>
+          `
+      }
+
+      <div class="ea-chat-pending-actions">
+        <button type="button" class="ea-chat-qr-btn" onclick="eaOpenLiveQr()">
+          🧾 Buka QR Maybank
+        </button>
+
+        <button type="button" class="ea-chat-pending-btn" onclick="eaOpenLiveChat()">
+          💬 Buka Chat / Hantar Slip
+        </button>
+      </div>
+    `;
+
+    hero.classList.add("show");
+
+    const countdownOrder = EA_LIVE_PENDING_LIST.find(o =>
+      !orderHasSlip(o) &&
+      !orderIsPaidChat(o) &&
+      o.payment_timer_disabled !== true &&
+      o.payment_deadline_at
+    );
+
+    if (countdownOrder){
+      eaStartPaymentCountdown(countdownOrder.payment_deadline_at);
+    }else{
+      eaStopPaymentCountdown();
+    }
+
+    renderGrid();
+
+  }catch(e){
+    console.warn("eaLoadLivePendingHero error:", e);
+    EA_LIVE_HAS_PENDING = false;
+    EA_LIVE_PENDING_LIST = [];
+    hero.classList.remove("show");
+    eaStopPaymentCountdown();
+  }
+}
 async function submitLiveCheckoutToAiDan(){
   const btn = document.getElementById("btnSubmitLiveCheckout");
   const msg = document.getElementById("lcMsg");
@@ -3571,6 +4348,18 @@ const pendingLimitReached = pending.length >= 2;
 
     ⚠️ Order akan dibatalkan secara automatik selepas 30 minit jika pembayaran Atome tidak berjaya diselesaikan dan tiada tambahan masa diberikan oleh admin.
   `;
+}else if (d.payMethod === "BILLPLZ"){
+  payNote = `
+    Ini adalah bayaran <b>Billplz FPX</b>.<br>
+    Selepas tekan teruskan, sistem akan bawa anda ke halaman bayaran Billplz.<br><br>
+
+    Sila buat bayaran terus di Billplz. Jika anda membuka dari browser TikTok, disarankan download dan guna aplikasi Emas Amir dahulu untuk proses bayaran lebih lancar.<br><br>
+
+    Jika status masih <b>PENDING</b>, ini bermaksud bayaran Billplz belum berjaya diselesaikan.
+    Selepas bayaran berjaya, order akan bertukar kepada <b>PAID</b> secara automatik.<br><br>
+
+    Sekiranya terkeluar semasa bayaran Billplz, sila buka Chat Ai-Dan dan tekan semula link Billplz untuk sambung bayaran.
+  `;
 }else{
   payNote = `
     Ini adalah <b>belian tunai</b>.<br>
@@ -3590,25 +4379,54 @@ const pendingLimitReached = pending.length >= 2;
             <div class="fw-bold">${safeTxt(d.name)}</div>
             <div class="small text-muted">${safeTxt(d.code)}</div>
             <div class="small text-muted">${safeTxt(d.detail || "-")}</div>
-            <div class="fw-black text-danger mt-1" style="font-weight:950;">${lcMoney(d.itemPrice)}</div>
+            <div class="fw-black text-danger mt-1" style="font-weight:950;">${
+              lcMoney(
+                d.payMethod === "ATOME"
+                  ? d.finalTotal
+                  : (
+                      d.row?.__table === "gold999_live_now" || lcState.type === "999"
+                        ? Math.max(0, d.finalTotal - d.shipFee)
+                        : d.itemPrice
+                    )
+              )
+            }</div>
           </div>
         </div>
 
         <div class="rounded-4 p-3 mb-3" style="background:#f9fafb;border:1px solid #e5e7eb;">
-          <div class="d-flex justify-content-between">
-            <span>Subtotal</span>
-            <b>${lcMoney(d.itemPrice)}</b>
-          </div>
-          <div class="d-flex justify-content-between">
-            <span>Caj pos</span>
-            <b>${lcMoney(d.shipFee)}</b>
-          </div>
-          <hr>
-          <div class="d-flex justify-content-between fs-5">
-            <b>Total anggaran</b>
-            <b class="text-danger">${lcMoney(d.finalTotal)}</b>
-          </div>
+  <div class="d-flex justify-content-between">
+    <span>Subtotal</span>
+    <b>${lcMoney(d.finalTotal - d.shipFee)}</b>
+  </div>
+
+  <div class="d-flex justify-content-between">
+    <span>Caj pos</span>
+    <b>${lcMoney(d.shipFee)}</b>
+  </div>
+
+  ${
+    (d.row?.__table === "gold999_live_now" || lcState.type === "999")
+      ? `
+        <div class="d-flex justify-content-between text-success">
+          <span>Diskaun bayaran</span>
+          <b>- ${lcMoney(Math.max(0, Number(d.itemPrice || 0) * 0.05))}</b>
         </div>
+
+        <div class="d-flex justify-content-between text-success">
+          <span>Diskaun Ai-Dan</span>
+          <b>- ${lcMoney(Math.max(0, Number(d.itemPrice || 0) - (d.finalTotal - d.shipFee) - (Number(d.itemPrice || 0) * 0.05)))}</b>
+        </div>
+      `
+      : ""
+  }
+
+  <hr>
+
+  <div class="d-flex justify-content-between fs-5">
+    <b>Total anggaran</b>
+    <b class="text-danger">${lcMoney(d.finalTotal)}</b>
+  </div>
+</div>
 
         <div class="live-confirm-note mb-3">
           ${payNote}
@@ -3667,6 +4485,8 @@ async function submitLiveCheckoutConfirmed(){
     const payMethod = String(lcState.pay || "TRANSFER").toUpperCase();
 
     const useTabungTopup = payMethod === "TABUNG_TOPUP";
+    const useAtome = payMethod === "ATOME";
+    const useBillplz = payMethod === "BILLPLZ";
 
     const tabungUnitsUsed = useTabungTopup
       ? Number(window.__lcTabungUnits || 0)
@@ -3683,12 +4503,12 @@ async function submitLiveCheckoutConfirmed(){
     const shipFee = getLiveShipFee();
 
     const finalTopupRm = useTabungTopup
-  ? Number((topupRm + shipFee).toFixed(2))
-  : (
-      payMethod === "ATOME"
-        ? Math.round((Number(lcState.price || 0) + shipFee) * 1.08)
-        : Number((Number(lcState.price || 0) + shipFee).toFixed(2))
-    );
+      ? Number((topupRm + shipFee).toFixed(2))
+      : (
+          useAtome
+            ? Math.round((Number(lcState.price || 0) + shipFee) * 1.08)
+            : Number((Number(lcState.price || 0) + shipFee).toFixed(2))
+        );
 
     const address = String(document.getElementById("lcAddress")?.value || "").trim();
     const pickupWhen = String(document.getElementById("lcPickupWhen")?.value || "").trim();
@@ -3712,11 +4532,11 @@ async function submitLiveCheckoutConfirmed(){
     if (btn) btn.disabled = true;
     if (msg) msg.textContent = useTabungTopup
       ? "Sedang buat permohonan Tabung + Topup…"
-      : "Sedang submit lock ke Ai-Dan…";
+      : (useBillplz ? "Sedang jana link Billplz FPX…" : "Sedang submit lock ke Ai-Dan…");
 
     let tabungRequestId = "";
 
-       if (useTabungTopup && tabungUnitsUsed > 0){
+    if (useTabungTopup && tabungUnitsUsed > 0){
       const authId = await getAuthUidForTabungLive();
       if (!authId) throw new Error("Sesi login tamat. Sila login semula.");
 
@@ -3849,6 +4669,14 @@ async function submitLiveCheckoutConfirmed(){
         }
       }
 
+      const cleanCutTo = cut === "YES"
+        ? String(cutTo || "").replace(/cm/gi, "").trim()
+        : "";
+
+      const cleanCutFrom = cut === "YES"
+        ? String(currentLength || lcState.length_cm || "").replace(/cm/gi, "").trim()
+        : "";
+
       payload = {
         phone,
         name: auth?.name || "Pelanggan",
@@ -3856,15 +4684,18 @@ async function submitLiveCheckoutConfirmed(){
         action: "live_checkout_submit",
         source: "live_now_916",
 
-       message:
-  "LIVE_CHECKOUT_SUBMIT" +
-  "|code=" + encodeURIComponent(String(lcState.code || "")) +
-  "|price_rm=" + encodeURIComponent(String(lcState.price || 0)) +
+        message:
+          "LIVE_CHECKOUT_SUBMIT" +
+          "|code=" + encodeURIComponent(String(lcState.code || "")) +
+          "|price_rm=" + encodeURIComponent(String(lcState.price || 0)) +
           "|ship=" + encodeURIComponent(ship) +
           "|address=" + encodeURIComponent(ship === "POST" ? address : "") +
           "|pickup_when=" + encodeURIComponent(ship === "PICKUP" ? pickupWhen : "") +
           "|cut=" + encodeURIComponent(cut) +
-          "|cut_to=" + encodeURIComponent(cut === "YES" ? cutTo : "") +
+          "|cut_from=" + encodeURIComponent(cleanCutFrom) +
+          "|cut_to=" + encodeURIComponent(cleanCutTo) +
+          "|cut_to_cm=" + encodeURIComponent(cleanCutTo) +
+          "|wants_cut=" + encodeURIComponent(cut === "YES" ? "true" : "false") +
           "|pay_method=" + encodeURIComponent(payMethod) +
           "|tabung_request_id=" + encodeURIComponent(tabungRequestId || "") +
           "|tabung_units=" + encodeURIComponent(String(tabungUnitsUsed || 0)) +
@@ -3877,14 +4708,176 @@ async function submitLiveCheckoutConfirmed(){
         address: ship === "POST" ? address : "",
         pickup_when: ship === "PICKUP" ? pickupWhen : "",
         cut,
-        cut_to: cut === "YES" ? cutTo : "",
+        cut_from: cleanCutFrom,
+        cut_to: cleanCutTo,
+        cut_to_cm: cleanCutTo,
+        wants_cut: cut === "YES",
         pay_method: payMethod,
 
         tabung_request_id: tabungRequestId || "",
         tabung_units: Number(tabungUnitsUsed || 0),
+        tabung_units_used: Number(tabungUnitsUsed || 0),
         tabung_value_rm: Number(tabungValueRm || 0),
         topup_rm: Number(finalTopupRm || 0)
       };
+    }
+
+    const selectedPay = String(lcState.pay || "").toUpperCase();
+
+    if (selectedPay === "BILLPLZ" && lcState.type === "999"){
+      if (msg) msg.textContent = "Sedang jana link Billplz FPX 999.9…";
+
+      const d = getLcConfirmDetail();
+      const row = lcState.row || {};
+      const refs = await createLiveGoldBillplzOrderRefsDirect({
+        phone,
+        name: auth?.name || "Pelanggan",
+        ship,
+        address,
+        pickupWhen,
+        totals: {
+          subtotal: Number(d.itemPrice || lcState.price || 0),
+          ship: Number(d.shipFee || 0),
+          grand: Number(d.finalTotal || 0)
+        }
+      });
+
+      const bill = await createLiveGoldBillplzBill({
+        refs,
+        amount: d.finalTotal,
+        description: `LIVE Gold 999.9 ${String(d.name || row.design_name || lcState.code || "")} + shipping`,
+        name: auth?.name || "Pelanggan",
+        phone
+      });
+
+      await attachLiveGoldBillplzBill(refs, bill.bill_id || "", bill.bill_url || "");
+
+      try{
+        await chatSendLive({
+          phone,
+          name: auth?.name || "Pelanggan",
+          is_logged_in: true,
+          action: "customer_message",
+          source: "live_now_999_billplz",
+          pay_method: "BILLPLZ",
+          live_code: String(row.live_code || lcState.code || ""),
+          kind: String(row.kind || ""),
+          weight_g: Number(row.weight_g || 0),
+          design_id: String(row.design_id || ""),
+          design_name: String(row.design_name || ""),
+          card_type: String(row.card_type || "READY"),
+          price_rm: Number(d.finalTotal || 0),
+          billplz_url: bill.bill_url,
+          bill_id: bill.bill_id || "",
+          refs,
+          message: [
+            "Saya pilih bayaran Billplz FPX untuk lock LIVE 999.9.",
+            "",
+            `Order code: ${refs.join(", ")}`,
+            `Item: ${String(d.name || row.design_name || "Gold 999.9")}`,
+            `Detail: ${String(d.detail || "-")}`,
+            `Jumlah: ${lcMoney(d.finalTotal)}`,
+            "",
+            "Link bayaran Billplz FPX:",
+            bill.bill_url,
+            "",
+            "Bayaran Billplz akan auto update kepada PAID selepas pembayaran berjaya."
+          ].join("\n")
+        });
+      }catch(chatErr){
+        console.warn("Live Now 999 Billplz chat link error:", chatErr);
+      }
+
+      if (msg) msg.textContent = "Berjaya ✅ Membuka Billplz FPX…";
+
+      closeLiveConfirmModal();
+      closeLiveCheckout();
+
+      setTimeout(()=>{
+        window.location.href = bill.bill_url;
+      }, 300);
+
+      return;
+    }
+
+    if (selectedPay === "BILLPLZ" && lcState.type === "916"){
+      if (msg) msg.textContent = "Sedang jana link Billplz FPX…";
+
+      const d = getLcConfirmDetail();
+      const cut = String(lcState.cut || "NO").toUpperCase();
+      const currentLength = String(document.getElementById("lcCurrentLen")?.value || "").trim();
+      const cutTo = String(document.getElementById("lcCutTo")?.value || "").trim();
+
+      const refs = await createLiveBillplzOrderRefsDirect({
+        phone,
+        name: auth?.name || "Pelanggan",
+        ship,
+        address,
+        pickupWhen,
+        totals: {
+          subtotal: Number(lcState.price || 0),
+          ship: Number(d.shipFee || 0),
+          grand: Number(d.finalTotal || 0)
+        },
+        cut,
+        cutFrom: currentLength,
+        cutTo
+      });
+
+      const bill = await createLiveBillplzBill({
+        refs,
+        amount: d.finalTotal,
+        description: `LIVE Barang Kemas 916 ${String(lcState.code || "")} + shipping`,
+        name: auth?.name || "Pelanggan",
+        phone
+      });
+
+      await attachLiveBillplzBill(refs, bill.bill_id || "", bill.bill_url || "");
+
+      try{
+        await chatSendLive({
+          phone,
+          name: auth?.name || "Pelanggan",
+          is_logged_in: true,
+          action: "customer_message",
+          source: "live_now_billplz",
+          pay_method: "BILLPLZ",
+          code: String(lcState.code || ""),
+          price_rm: Number(lcState.price || 0),
+          billplz_url: bill.bill_url,
+          bill_id: bill.bill_id || "",
+          refs,
+          message: [
+            "Saya pilih bayaran Billplz FPX untuk lock 916.",
+            "",
+            `Order code: ${refs.join(", ")}`,
+            `Item: ${String(lcState.code || "-")}`,
+            `Jumlah: ${lcMoney(d.finalTotal)}`,
+            "",
+            cut === "YES"
+              ? `Potong Panjang: YA\nPanjang Asal: ${currentLength || "-"}\nPotong Jadi: ${cutTo || "-"}cm`
+              : `Potong Panjang: TIDAK\nPanjang Asal: ${currentLength || "-"}`,
+            "",
+            "Link bayaran Billplz FPX:",
+            bill.bill_url,
+            "",
+            "Bayaran Billplz akan auto update kepada PAID selepas pembayaran berjaya."
+          ].join("\n")
+        });
+      }catch(chatErr){
+        console.warn("Live Now Billplz chat link error:", chatErr);
+      }
+
+      if (msg) msg.textContent = "Berjaya ✅ Membuka Billplz FPX…";
+
+      closeLiveConfirmModal();
+      closeLiveCheckout();
+
+      setTimeout(()=>{
+        window.location.href = bill.bill_url;
+      }, 300);
+
+      return;
     }
 
     if (msg) msg.textContent = "Sedang submit lock ke Ai-Dan…";
@@ -3894,9 +4887,11 @@ async function submitLiveCheckoutConfirmed(){
     const threadId = res.thread_id;
     if (!threadId) throw new Error("Thread ID tidak diterima.");
 
-    if (msg) msg.textContent = useTabungTopup
-      ? "Berjaya ✅ Permohonan Tabung + Topup dibuat. Buka Ai-Dan untuk detail bayaran."
-      : "Berjaya ✅ Buka Ai-Dan untuk detail bayaran.";
+    if (msg){
+      msg.textContent = selectedPay === "TABUNG_TOPUP"
+        ? "Berjaya ✅ Permohonan Tabung + Topup dibuat. Membuka Ai-Dan..."
+        : "Berjaya ✅ Membuka Ai-Dan...";
+    }
 
     setTimeout(()=>{
       closeLiveConfirmModal();
@@ -3907,13 +4902,16 @@ async function submitLiveCheckoutConfirmed(){
       }else{
         location.href = "/chat.html?thread=" + encodeURIComponent(threadId) + "&live_checkout_done=1";
       }
-    }, 600);
+    }, 300);
+
+    return;
 
   }catch(e){
     if (msg) msg.textContent = "❌ " + (e?.message || e);
     if (btn) btn.disabled = false;
   }
 }
+
 function fixMediaUrl(url){
   if(!url) return "";
   url = String(url).trim();
@@ -4213,11 +5211,38 @@ function render916Card(row){
         <div class="price-new">RM ${money(liveRM)}</div>
         <div class="save">${jimat > 0 ? "Jimat RM " + money(jimat) : "&nbsp;"}</div>
 
-        <div class="card-actions">
-          <button type="button" class="btn btn-danger"
-            onclick="openLiveLock('916','${codeSafe}')">
-            Lock Sekarang
-          </button>
+             <div class="card-actions">
+          ${
+            EA_LIVE_HAS_PENDING
+              ? `
+                <div class="ea-live-lock-disabled-note">
+   Ada order pending di atas. Selesaikan dulu sebelum lock baru.
+  Jika tersalah lock atau perlukan bantuan,
+</div>
+
+<div style="margin-top:8px">
+  <a href="#"
+     onclick="eaOpenLiveChat();return false;"
+     style="
+       display:inline-block;
+       background:#facc15;
+       color:#111827;
+       font-weight:900;
+       padding:6px 12px;
+       border-radius:999px;
+       text-decoration:none;
+     ">
+     💬 Chat Admin
+  </a>
+</div>
+              `
+              : `
+                <button type="button" class="btn btn-danger"
+                  onclick="openLiveLock('916','${codeSafe}')">
+                  Lock Sekarang
+                </button>
+              `
+          }
         </div>
       </div>
     </div>
@@ -4276,11 +5301,24 @@ function render999Card(row){
         <div class="price-new">RM ${money(live)}</div>
         <div class="save">${jimat > 0 ? "Jimat RM " + money(jimat) : "&nbsp;"}</div>
 
-        <div class="card-actions">
-          <button type="button" class="btn btn-warning fw-bold"
-            onclick="openLiveLock('999','${lockCodeSafe}')">
-            Beli Sekarang
-          </button>
+                <div class="card-actions">
+          ${
+            EA_LIVE_HAS_PENDING
+              ? `
+                <button type="button" class="btn btn-secondary" disabled>
+                  Selesaikan Pending Dulu
+                </button>
+                <div class="ea-live-lock-disabled-note">
+                  Ada order pending di atas. Selesaikan dulu sebelum beli baru.
+                </div>
+              `
+              : `
+                <button type="button" class="btn btn-warning fw-bold"
+                  onclick="openLiveLock('999','${lockCodeSafe}')">
+                  Beli Sekarang
+                </button>
+              `
+          }
         </div>
       </div>
     </div>
@@ -4452,7 +5490,8 @@ ALL_ROWS = [
     document.getElementById("total916").textContent = unique916.length;
     document.getElementById("total999").textContent = live999.length;
 
-    buildSmartLiveFilter();
+       buildSmartLiveFilter();
+    await eaLoadLivePendingHero();
     renderGrid();
 
     if (lastLoad){
@@ -5296,8 +6335,13 @@ async function liveMiniConnectSocket(){
 }
 
 async function liveMiniSendComment(msg){
-  const auth = getLiveUser();
+  if (EA_LIVE_HAS_PENDING){
+    alert("Anda masih ada order pending. Sila selesaikan / hantar slip dulu dalam Chat.");
+    eaOpenLiveChat();
+    return;
+  }
 
+  const auth = getLiveUser();
   if (!auth){
     window.__pendingMiniComment = msg;
     openInlineLoginModal();
@@ -5494,7 +6538,7 @@ function closeLiveCheckout(){
 }
 
 const LOCK_VIDEO_URL =
-"https://player.mediadelivery.net/play/649973/bf7757ba-7904-4646-bf8d-830358569ae5";
+"https://player.mediadelivery.net/play/649973/fcc2c690-ebf7-4053-9190-0f6e7f0507c1";
 
 function openLockVideoPopup(){
   const modal = document.getElementById("lockVideoPopup");

@@ -53,6 +53,7 @@
       <a class="btn btn-outline-secondary btn-chip" href="admin-j999.html">Admin 999</a>
       <a class="btn btn-outline-secondary btn-chip" href="admin-j916.html">Admin 916</a>
       <a class="btn btn-outline-secondary btn-chip" href="admintabung-simpan.html">Admin Tabung</a>
+      <a class="btn btn-outline-secondary btn-chip" href="admin-audit-log.html">Audit Log</a>
       <a class="btn btn-outline-secondary btn-chip" href="account.html">Akaun</a>
       <button id="btnLogin"  class="btn btn-outline-secondary btn-chip" type="button">Log masuk</button>
       <button id="btnLogout" class="btn btn-outline-secondary btn-chip" type="button" style="display:none">Log keluar</button>
@@ -758,6 +759,54 @@ function updateBulkUI(){
       : `Lock & Buat Order (Walk-In)`;
   }
 }
+
+/* =========================================================
+   ✅ ADMIN AUDIT LOG - rekod edit/delete stok 916
+   ========================================================= */
+function getAdminActor(){
+  try{
+    const a = (window.auth_get && window.auth_get()) || {};
+    return {
+      admin_phone: a.phone || a.msisdn || a.username || null,
+      admin_name: a.name || a.full_name || null
+    };
+  }catch(_){
+    return { admin_phone:null, admin_name:null };
+  }
+}
+
+function normalizeAuditData(obj){
+  if (!obj) return null;
+  try{ return JSON.parse(JSON.stringify(obj)); }
+  catch(_){ return obj; }
+}
+
+async function saveAdminAuditLog({
+  action,
+  tableName,
+  recordId,
+  recordCode,
+  reason,
+  beforeData,
+  afterData
+}){
+  const actor = getAdminActor();
+
+  const { error } = await sb.from('admin_audit_logs').insert({
+    action: String(action || '').toUpperCase(),
+    table_name: tableName || '',
+    record_id: recordId ? String(recordId) : null,
+    record_code: recordCode || null,
+    reason: reason || '',
+    before_data: normalizeAuditData(beforeData),
+    after_data: normalizeAuditData(afterData),
+    admin_phone: actor.admin_phone,
+    admin_name: actor.admin_name
+  });
+
+  if (error) throw error;
+}
+
 /* Topbar */
 (function(){
   const pill=$('authStatus'), login=$('btnLogin'), logout=$('btnLogout');
@@ -1635,6 +1684,7 @@ function resetItemForm(){
   $('i_status').value  = 'AVAILABLE';
   $('i_active').value  = 'true';
   $('itemMsg').textContent = '';
+  window._editingItemBefore = null;
 }
 async function loadItems(){
   const q = ($('q').value||'').trim();
@@ -1724,9 +1774,12 @@ async function loadItems(){
     const r   = viewRows.find(x => String(x.id) === String(id));
     if (!r) return;
 
+    // ✅ simpan data asal untuk audit bila tekan Simpan Item nanti
+    window._editingItemBefore = normalizeAuditData(r);
+
     $('i_id').value        = r.id;
     $('i_code').value      = r.code || '';
-    $('i_rfid').value      = r.rfid || '';          // 🆕 isi RFID kalau ada
+    $('i_rfid').value      = r.rfid_epc || r.rfid || ''; // ✅ ambik RFID betul
     $('i_design_id').value = r.design_id || '';
 
     $('i_weight').value    = r.weight_g || '';
@@ -1751,9 +1804,43 @@ async function loadItems(){
 
     document.querySelectorAll('[data-del]').forEach(b=>{
       b.addEventListener('click',async ()=>{
-        const id=b.getAttribute('data-del'); if(!confirm('Padam item ini?')) return; b.disabled=true;
-        try{ const {error}=await sb.rpc('j916_admin_items_delete_v1',{p_item_id:id}); if(error) throw error; await loadItems(); }
-        catch(e){ alert('Ralat padam: '+(e?.message||e)); } finally{ b.disabled=false; }
+        const id = b.getAttribute('data-del');
+        const row = viewRows.find(x => String(x.id) === String(id))
+          || (window._itemsByQuery || []).find(x => String(x.id) === String(id));
+
+        const reason = prompt(
+          `Sebab delete item ${row?.code || id}?\n\nContoh: duplicate / salah berat / tersalah masuk stok`
+        );
+
+        if(!reason || !reason.trim()){
+          alert('Wajib isi sebab delete.');
+          return;
+        }
+
+        if(!confirm(`Padam item ${row?.code || id}?\n\nSebab: ${reason.trim()}`)) return;
+
+        b.disabled = true;
+        try{
+          await saveAdminAuditLog({
+            action: 'DELETE',
+            tableName: 'j916_items',
+            recordId: id,
+            recordCode: row?.code || null,
+            reason: reason.trim(),
+            beforeData: row || { id },
+            afterData: null
+          });
+
+          const { error } = await sb.rpc('j916_admin_items_delete_v1', { p_item_id:id });
+          if(error) throw error;
+
+          await loadItems();
+          alert('Item dipadam & audit log disimpan.');
+        }catch(e){
+          alert('Ralat padam: ' + (e?.message || e));
+        }finally{
+          b.disabled = false;
+        }
       });
     });
 
@@ -1806,6 +1893,26 @@ async function saveItem(){
     // 🆕 HANTAR RFID KE SQL (j916_admin_items_upsert_v1)
     p_rfid: ((get('i_rfid')?.value || '').trim() || null)
   };
+
+  const isEditMode = !!payload.p_id;
+  const beforeEditData = isEditMode
+    ? (window._editingItemBefore
+        || (window._itemsByQuery || []).find(x => String(x.id) === String(payload.p_id))
+        || null)
+    : null;
+
+  let editReason = '';
+  if (isEditMode){
+    editReason = prompt(
+      `Sebab edit item ${beforeEditData?.code || payload.p_code}?\n\nContoh: betulkan berat / betulkan upah / update RFID`
+    );
+
+    if(!editReason || !editReason.trim()){
+      alert('Wajib isi sebab edit.');
+      return;
+    }
+  }
+
   if(!payload.p_code){ alert('Kod unik diperlukan.'); return; }
   if(!payload.p_design_id){ alert('Pilih design.'); return; }
   if(payload.p_weight_g<=0){ alert('Berat tidak sah.'); return; }
@@ -1816,14 +1923,35 @@ async function saveItem(){
     const {error}=await sb.rpc('j916_admin_items_upsert_v1',payload);
     if(error) throw error;
 
-    msg.textContent='Disimpan.';
+    if(isEditMode){
+      await saveAdminAuditLog({
+        action: 'EDIT',
+        tableName: 'j916_items',
+        recordId: payload.p_id,
+        recordCode: payload.p_code,
+        reason: editReason.trim(),
+        beforeData: beforeEditData,
+        afterData: {
+          id: payload.p_id,
+          code: payload.p_code,
+          design_id: payload.p_design_id,
+          rfid_epc: payload.p_rfid,
+          weight_g: payload.p_weight_g,
+          length_cm: payload.p_length_cm,
+          width_cm: payload.p_width_cm,
+          upah_override_rm: payload.p_upah_override_rm,
+          status: payload.p_status,
+          is_active: payload.p_is_active
+        }
+      });
+    }
 
-   
+    msg.textContent = isEditMode ? 'Disimpan & audit log direkod.' : 'Disimpan.';
 
     // Kumpul data sebelum reset & masukkan ke Senarai Tambah (sesi ini)
     const newCode   = ($('i_code')?.value || '').trim();
     const newWeight = Number($('i_weight')?.value || 0);
-    if(newCode){
+    if(newCode && !isEditMode){
       _sessAdded.push({ code:newCode, weight_g:newWeight, ts:Date.now() });
       renderSessAdded();
     }
@@ -1851,6 +1979,7 @@ async function saveItem(){
 
     // Reset borang selepas simpan
     resetItemForm();
+    await loadItems();
   }catch(e){
     msg.textContent='';
     alert('Ralat: '+(e?.message||e));
@@ -2092,16 +2221,50 @@ function stopScan(){
 
 async function bulkDeleteSelected(){
   if (_selectedIds.size===0) return;
+
   const ids = [..._selectedIds];
-  if (!confirm(`Padam ${ids.length} item terpilih?`)) return;
+  const rows = (window._itemsByQuery || []).filter(r => ids.includes(String(r.id)));
+
+  const reason = prompt(
+    `Sebab padam ${ids.length} item terpilih?\n\nContoh: duplicate import / salah batch / test stok`
+  );
+
+  if(!reason || !reason.trim()){
+    alert('Wajib isi sebab bulk delete.');
+    return;
+  }
+
+  const listTxt = rows.map(r => r.code).filter(Boolean).join(', ');
+  if (!confirm(
+    `Padam ${ids.length} item terpilih?\n\n` +
+    `Item: ${listTxt || ids.join(', ')}\n\n` +
+    `Sebab: ${reason.trim()}`
+  )) return;
 
   let ok=0, fail=0;
+
   for (const id of ids){
+    const row = rows.find(r => String(r.id) === String(id));
+
     try{
+      await saveAdminAuditLog({
+        action: 'DELETE',
+        tableName: 'j916_items',
+        recordId: id,
+        recordCode: row?.code || null,
+        reason: reason.trim(),
+        beforeData: row || { id },
+        afterData: null
+      });
+
       const { error } = await sb.rpc('j916_admin_items_delete_v1', { p_item_id: id });
       if (error) throw error;
+
       ok++;
-    }catch(_){ fail++; }
+    }catch(e){
+      console.warn('bulk delete gagal:', id, e);
+      fail++;
+    }
   }
 
   _selectedIds.clear();

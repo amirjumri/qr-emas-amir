@@ -918,6 +918,34 @@ body.chat-popup-open .order-chat-list{
     Benarkan Atome di checkout LIVE
   </label>
 </div>
+
+<div class="form-check form-switch mt-2">
+  <input id="billplzLiveInput" class="form-check-input" type="checkbox">
+  <label class="form-check-label small text-light" for="billplzLiveInput">
+    Benarkan Billplz FPX di checkout LIVE
+  </label>
+</div>
+
+<div class="form-check form-switch mt-2">
+  <input id="qrLiveInput" class="form-check-input" type="checkbox">
+  <label class="form-check-label small text-light" for="qrLiveInput">
+    Benarkan QR di checkout LIVE
+  </label>
+</div>
+
+<div class="form-check form-switch mt-2">
+  <input id="transferLiveInput" class="form-check-input" type="checkbox">
+  <label class="form-check-label small text-light" for="transferLiveInput">
+    Benarkan Transfer di checkout LIVE
+  </label>
+</div>
+
+<div class="form-check form-switch mt-2">
+  <input id="tabungLiveInput" class="form-check-input" type="checkbox">
+  <label class="form-check-label small text-light" for="tabungLiveInput">
+    Benarkan Tabung + Topup di checkout LIVE
+  </label>
+</div>
           </div>
 
           <div class="active-live-item">
@@ -1792,15 +1820,38 @@ async function saveYoutubeConfig(){
 async function loadAtomeLiveSetting(){
   try{
     const { data, error } = await sb
-      .from("live_payment_settings")
-      .select("atome_enabled")
-      .eq("id", 1)
-      .maybeSingle();
+  .from("live_payment_settings")
+  .select(`
+    atome_enabled,
+    billplz_enabled,
+    qr_enabled,
+    transfer_enabled,
+    tabung_enabled
+  `)
+  .eq("id", 1)
+  .maybeSingle();
 
-    if (error) throw error;
+if (error) throw error;
 
-    const el = $("atomeLiveInput");
-    if (el) el.checked = data?.atome_enabled === true;
+if ($("atomeLiveInput")) {
+  $("atomeLiveInput").checked = data?.atome_enabled === true;
+}
+
+if ($("billplzLiveInput")) {
+  $("billplzLiveInput").checked = data?.billplz_enabled === true;
+}
+
+if ($("qrLiveInput")) {
+  $("qrLiveInput").checked = data?.qr_enabled === true;
+}
+
+if ($("transferLiveInput")) {
+  $("transferLiveInput").checked = data?.transfer_enabled === true;
+}
+
+if ($("tabungLiveInput")) {
+  $("tabungLiveInput").checked = data?.tabung_enabled === true;
+}
   }catch(e){
     console.warn("loadAtomeLiveSetting error:", e);
 
@@ -1809,26 +1860,25 @@ async function loadAtomeLiveSetting(){
   }
 }
 
-async function saveAtomeLiveSetting(){
-  const enabled = $("atomeLiveInput")?.checked === true;
-
+async function savePaymentSettings(){
   try{
     const { error } = await sb
       .from("live_payment_settings")
       .upsert({
         id: 1,
-        atome_enabled: enabled,
+        atome_enabled: $("atomeLiveInput")?.checked === true,
+        billplz_enabled: $("billplzLiveInput")?.checked === true,
+        qr_enabled: $("qrLiveInput")?.checked === true,
+        transfer_enabled: $("transferLiveInput")?.checked === true,
+        tabung_enabled: $("tabungLiveInput")?.checked === true,
         updated_at: new Date().toISOString()
       });
 
     if (error) throw error;
-
-    alert(enabled ? "Atome LIVE sudah ON." : "Atome LIVE sudah OFF.");
   }catch(e){
-    alert("Gagal simpan Atome LIVE: " + (e?.message || e));
+    alert("Gagal simpan setting bayaran LIVE: " + (e?.message || e));
   }
 }
-
 function buildDesignFilterOptions(){
   const sel = $("filterDesign");
   if (!sel) return;
@@ -3743,8 +3793,14 @@ async function quickSaveStock(goLive){
 function setupEvents(){
   $("btnReloadVideo")?.addEventListener("click", loadYoutubeConfig);
   $("btnSaveYt")?.addEventListener("click", saveYoutubeConfig);
-$("atomeLiveInput")?.addEventListener("change", saveAtomeLiveSetting);
-$("btnReloadOrderChats")?.addEventListener("click", loadRecentOrderChats);
+
+  $("atomeLiveInput")?.addEventListener("change", savePaymentSettings);
+  $("billplzLiveInput")?.addEventListener("change", savePaymentSettings);
+  $("qrLiveInput")?.addEventListener("change", savePaymentSettings);
+  $("transferLiveInput")?.addEventListener("change", savePaymentSettings);
+  $("tabungLiveInput")?.addEventListener("change", savePaymentSettings);
+
+  $("btnReloadOrderChats")?.addEventListener("click", loadRecentOrderChats);
   $("btnReloadStock")?.addEventListener("click", () => loadStock(true));
 $("chatPopupSend")?.addEventListener("click", sendThreadMessage);
 

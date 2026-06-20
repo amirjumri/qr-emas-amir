@@ -1674,7 +1674,19 @@ els.dm_total.textContent = money(row.total_rm);
       }
     });
 
-   els.btnOpenSvg.addEventListener('click', async ()=>{
+   function buildSvgFromCurrentPreview(row){
+  const svgEl = document.getElementById('jobStageSvg');
+  if (!svgEl) throw new Error('Preview SVG tidak dijumpai.');
+
+  const clone = svgEl.cloneNode(true);
+  clone.setAttribute('xmlns', 'http://www.w3.org/2000/svg');
+  clone.setAttribute('width', '980');
+  clone.setAttribute('height', '620');
+
+  return `<?xml version="1.0" encoding="UTF-8"?>\n${clone.outerHTML}`;
+}
+
+els.btnOpenSvg.addEventListener('click', async ()=>{
   try{
     if (!_currentId){
       showToast('Order belum dipilih.');
@@ -1687,12 +1699,20 @@ els.dm_total.textContent = money(row.total_rm);
       return;
     }
 
-    const svgText = await buildProductionSvgText(row);
+    let svgText = '';
+
+    try{
+      svgText = await buildProductionSvgText(row);
+    }catch(err){
+      console.warn('SVG outline gagal, guna preview SVG:', err);
+      svgText = buildSvgFromCurrentPreview(row);
+    }
+
     const blob = new Blob([svgText], { type: 'image/svg+xml;charset=utf-8' });
     downloadBlobFile(blob, `${buildSafeFileBase(row)}.svg`);
-    showToast('SVG berjaya dijana.');
+    showToast('SVG berjaya download.');
   }catch(e){
-    alert('Ralat generate SVG: ' + (e?.message || e));
+    alert('Ralat download SVG: ' + (e?.message || e));
   }
 });
 
@@ -1709,15 +1729,9 @@ els.btnOpenPlt.addEventListener('click', async ()=>{
       return;
     }
 
-    const svgText = await buildProductionSvgText(row);
-    const pathD = extractPathFromSvg(svgText);
-    const pltText = buildProductionPltTextFromPath(pathD);
-
-    const blob = new Blob([pltText], { type: 'text/plain;charset=utf-8' });
-    downloadBlobFile(blob, `${buildSafeFileBase(row)}.plt`);
-    showToast('PLT berjaya dijana.');
+    alert('PLT belum aktif sepenuhnya. Guna Download SVG dulu untuk production/laser.');
   }catch(e){
-    alert('Ralat generate PLT: ' + (e?.message || e));
+    alert('Ralat download PLT: ' + (e?.message || e));
   }
 });
     els.btnPrintSheet.addEventListener('click', ()=>{
