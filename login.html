@@ -464,9 +464,9 @@ body.swipe-peek{
     <div class="desc">Ikut langkah ini satu per satu ya:</div>
     <div class="otp-guide-steps">
       <div>1. Isi nombor telefon, nama, IC dan alamat</div>
-      <div>2. Tekan <b>Minta OTP (AI-DAN)</b></div>
-      <div>3. Masukkan OTP 6 digit</div>
-      <div>4. Tetapkan password minimum 6 aksara</div>
+      <div>2. Tetapkan password minimum 6 aksara</div>
+<div>3. Tekan <b>Daftar & log masuk</b></div>
+<div>4. Akaun siap dan boleh terus guna</div>
     </div>
   </div>
 
@@ -500,15 +500,7 @@ body.swipe-peek{
     </div>
   </div>
 
-  <div class="section">
-    <div class="row" style="align-items:end">
-      <div><button id="su_btnOtp" class="btn" type="button">Minta OTP (AI-DAN)</button></div>
-      <div>
-        <label>OTP (6 digit)</label>
-        <input id="su_otp" maxlength="6" inputmode="numeric" placeholder="••••••" />
-      </div>
-    </div>
-
+  
     <div class="row">
       <div>
         <label>Password</label>
@@ -998,13 +990,19 @@ const KEY_LOGIN_INTRO_SEEN = "ea_login_intro_seen_v1";
   }
 
   function setThreadId(tid){
-    const v = String(tid || "").trim();
-    if(!v) return;
-    $("su_btnOtp").dataset.threadId = v;
-    $("rp_btnOtp").dataset.threadId = v;
-    $("su_btnCreate").dataset.threadId = v;
-    $("rp_btnDo").dataset.threadId = v;
-  }
+  const v = String(tid || "").trim();
+  if(!v) return;
+
+  const suBtnOtp = $("su_btnOtp");
+  const rpBtnOtp = $("rp_btnOtp");
+  const suBtnCreate = $("su_btnCreate");
+  const rpBtnDo = $("rp_btnDo");
+
+  if (suBtnOtp) suBtnOtp.dataset.threadId = v;
+  if (rpBtnOtp) rpBtnOtp.dataset.threadId = v;
+  if (suBtnCreate) suBtnCreate.dataset.threadId = v;
+  if (rpBtnDo) rpBtnDo.dataset.threadId = v;
+}
 
   async function postJson(url, payload){
     const r = await fetch(url, {
@@ -1373,68 +1371,10 @@ try{
     }
   };
 
-$("su_btnOtp").onclick = async ()=>{
- let phone = onlyDigits($("su_phone").value);
+// Daftar baru sekarang tanpa OTP.
+// Button su_btnOtp dan input su_otp sudah dibuang dari UI.
+// Reset password masih kekal guna OTP.
 
-// tukar 6013 → 013
-if (phone.startsWith("60")) {
-  phone = "0" + phone.slice(2);
-}
-  const last4 = onlyDigits($("su_last4").value);
-  const name  = $("su_name").value.trim();
-  const st    = $("su_status");
-  const agentSlug = getAgentSlug();
-
-  if(!/^\d{9,12}$/.test(phone)) return st.textContent = "Nombor telefon tak sah.";
-  if(phone.slice(-4) !== last4) return st.textContent = "4 digit terakhir tak padan.";
-
-  const variants = window.phoneVariants ? window.phoneVariants(phone) : [phone];
-  const { data: existsRows, error: existsErr } = await sb
-    .from("customers")
-    .select("id, phone")
-    .in("phone", variants)
-    .limit(1);
-
-  if (existsErr) {
-    st.textContent = "Tak dapat semak nombor sekarang. Cuba lagi.";
-    return;
-  }
-
-  if (Array.isArray(existsRows) && existsRows.length > 0) {
-    st.textContent = "Nombor ini sudah berdaftar. Sila log masuk atau reset password.";
-    return;
-  }
-
-  try{
-    st.textContent = "Menjana OTP melalui AI-DAN…";
-
-    const res = await postJson(OTP_START_URL, {
-      purpose: "signup",
-      phone,
-      last4,
-      name,
-      thread_id: getThreadId() || null,
-      agent_slug: agentSlug || null
-    });
-
-    if(!res.ok || res.data?.ok !== true){
-      st.textContent = res.data?.error || "Gagal jana OTP.";
-      return;
-    }
-
-    const otp = String(res.data?.otp || "");
-    const threadId = String(res.data?.thread_id || "");
-
-    if (threadId) setThreadId(threadId);
-    if (/^\d{6}$/.test(otp)) $("su_otp").value = otp;
-
-    st.textContent = "OTP berjaya dijana ✅ Seterusnya, masukkan OTP 6 digit dan tetapkan password.";
-    $("su_otp").focus();
-  }catch(e){
-    console.error(e);
-    st.textContent = "Gagal jana OTP.";
-  }
-};
  $("su_btnCreate").onclick = async () => {
     let phone = onlyDigits($("su_phone").value);
 
@@ -1448,13 +1388,13 @@ if (phone.startsWith("60")) {
     const alamat = $("su_alamat").value.trim();
     const p1     = $("su_pass").value;
     const p2     = $("su_pass2").value;
-    const code   = onlyDigits($("su_otp").value);
+    const code   = "";
     const st     = $("su_status");
     const agentSlug = getAgentSlug();
 
     if (!/^\d{9,12}$/.test(phone)) return st.textContent = "Nombor telefon tak sah.";
     if (phone.slice(-4) !== last4) return st.textContent = "4 digit terakhir tak padan.";
-    if (!/^\d{6}$/.test(code))     return st.textContent = "Isi OTP 6 digit.";
+
     if (p1.length < 6 || p1 !== p2) return st.textContent = "Password tak sah / tak sepadan.";
     if (ic && ic.length !== 12)    return st.textContent = "IC perlu 12 digit atau kosong.";
 

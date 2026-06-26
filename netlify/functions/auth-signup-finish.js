@@ -75,6 +75,7 @@ exports.handler = async function handler(event) {
     const ic = String(body.ic || "").replace(/\D+/g, "");
     const alamat = String(body.alamat || "").trim();
     const otp = String(body.otp || "").replace(/\D+/g, "");
+const skipOtp = true;
     const password = String(body.password || "");
     const threadIdIn = String(body.thread_id || "").trim();
     const agentSlugIn = String(body.agent_slug || "").trim();
@@ -86,21 +87,25 @@ exports.handler = async function handler(event) {
     if (!phone) return json(400, { ok: false, error: "Nombor telefon tak sah." });
     if (!/^\d{4}$/.test(last4)) return json(400, { ok: false, error: "4 digit terakhir tak sah." });
     if (!phone.endsWith(last4)) return json(400, { ok: false, error: "4 digit terakhir tak padan." });
-    if (!/^\d{6}$/.test(otp)) return json(400, { ok: false, error: "OTP mesti 6 digit." });
+if (!skipOtp && !/^\d{6}$/.test(otp)) return json(400, { ok: false, error: "OTP mesti 6 digit." });
     if (password.length < 6) return json(400, { ok: false, error: "Password minima 6 aksara." });
     if (ic && ic.length !== 12) return json(400, { ok: false, error: "IC perlu 12 digit atau kosong." });
 
     const supabase = getSupabaseAdmin();
 
-    const checked = await verifyOtpInput(supabase, {
-      phone,
-      purpose: "signup",
-      otp
-    });
+let checked = null;
 
-    if (!checked.ok) {
-      return json(400, { ok: false, error: checked.error || "OTP tidak sah." });
-    }
+if (!skipOtp) {
+  checked = await verifyOtpInput(supabase, {
+    phone,
+    purpose: "signup",
+    otp
+  });
+
+  if (!checked.ok) {
+    return json(400, { ok: false, error: checked.error || "OTP tidak sah." });
+  }
+}
 
     const existingCustomer = await findCustomerByPhoneCandidates(supabase, phone);
 
@@ -197,11 +202,13 @@ exports.handler = async function handler(event) {
       }
     }
 
-    await consumeOtp(supabase, checked.record.id);
+    if (!skipOtp && checked?.record?.id) {
+  await consumeOtp(supabase, checked.record.id);
+}
 
    const thread = await getOrCreateThread(supabase, {
       phone: finalPhone,
-      threadId: threadIdIn || checked.record.thread_id || null,
+      threadId: threadIdIn || checked?.record?.thread_id || null,
       status: "OPEN",
       meta: {
         ...(agentSlugIn ? { agent_slug: agentSlugIn } : {})

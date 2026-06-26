@@ -2218,12 +2218,17 @@ function orderIsPaidChat(order){
       </div>
 
       ${(() => {
-  const hasAnyProof = pendingList.some(o => orderHasSlip(o) || orderIsPaidChat(o));
+ const hasOrderLinkPaid = pendingList.some(o => {
+  const note = String(o.payment_timer_note || "").toUpperCase();
+  return note.includes("ORDER LINK") || note.includes("BAYAR MELALUI ORDER LINK");
+});
+
+const hasAnyProof = pendingList.some(o => orderHasSlip(o) || orderIsPaidChat(o));
 
 if (titleTextEl){
-  titleTextEl.textContent = hasAnyProof
-    ? "BUKTI BAYARAN DIHANTAR"
-    : "ORDER BELUM BAYAR";
+  titleTextEl.textContent = hasOrderLinkPaid
+    ? "RESIT BAYARAN SUDAH DITERIMA"
+    : (hasAnyProof ? "BUKTI BAYARAN DIHANTAR" : "ORDER BELUM BAYAR");
 }
 
 if (titleIconEl){
@@ -2231,13 +2236,22 @@ if (titleIconEl){
     ? "✅"
     : "⚠️";
 }
-  if (hasAnyProof){
-    return `
-      <div class="ea-chat-pending-note" style="background:rgba(22,163,74,.16);border-color:rgba(34,197,94,.35);color:#bbf7d0">
-        ✅ Bukti bayaran sudah dihantar. Sila tunggu admin semak dan paid-kan order anda.
-      </div>
-    `;
-  }
+  if (hasOrderLinkPaid){
+  return `
+    <div class="ea-chat-pending-note" style="background:rgba(22,163,74,.16);border-color:rgba(34,197,94,.35);color:#bbf7d0">
+      ✅ Resit bayaran sudah diterima. Order anda sedang diproses oleh admin Emas Amir. 
+      Resit rasmi dan nombor tracking akan diberi dalam chat selepas parcel diproses.
+    </div>
+  `;
+}
+
+if (hasAnyProof){
+  return `
+    <div class="ea-chat-pending-note" style="background:rgba(22,163,74,.16);border-color:rgba(34,197,94,.35);color:#bbf7d0">
+      ✅ Bukti bayaran sudah dihantar. Sila tunggu admin semak dan paid-kan order anda.
+    </div>
+  `;
+}
 
   return `
     <div class="ea-chat-pending-note">

@@ -1,0 +1,1107 @@
+<!doctype html>
+<html lang="ms">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <link rel="stylesheet" href="/global.css">
+
+  <title>Admin Order Link • Emas Amir</title>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="auth.js?v=13.1"></script>
+  <script src="admin-guard.js?v=1"></script>
+
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+
+  <style>
+    *{box-sizing:border-box}
+    body{
+      margin:0;
+      background:#f6f7f9;
+      color:#111827;
+      font-family:system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+    }
+    .page{
+      max-width:720px;
+      margin:0 auto;
+      min-height:100vh;
+      background:#fff;
+    }
+    .top{
+      position:sticky;
+      top:0;
+      z-index:20;
+      background:#fff;
+      border-bottom:1px solid #eef2f7;
+      padding:14px 16px;
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+      gap:10px;
+    }
+    .title{
+      font-size:22px;
+      font-weight:950;
+      line-height:1.1;
+    }
+    .sub{
+      color:#6b7280;
+      font-size:13px;
+      margin-top:3px;
+    }
+    .content{padding:16px}
+    .cardx{
+      border:1px solid #e5e7eb;
+      background:#fff;
+      border-radius:20px;
+      padding:16px;
+      box-shadow:0 12px 30px rgba(15,23,42,.05);
+      margin-bottom:14px;
+    }
+    .labelx{
+      font-weight:850;
+      margin-bottom:6px;
+      font-size:14px;
+    }
+    .hint{
+      font-size:12px;
+      color:#6b7280;
+      margin-top:5px;
+    }
+    .item-card{
+      display:flex;
+      gap:12px;
+      align-items:center;
+      border:1px solid #e5e7eb;
+      background:#f9fafb;
+      border-radius:18px;
+      padding:12px;
+      margin-top:12px;
+    }
+    .item-img{
+      width:94px;
+      height:94px;
+      border-radius:16px;
+      object-fit:cover;
+      background:#e5e7eb;
+      flex:0 0 auto;
+    }
+    .mono{
+      font-family:ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,"Liberation Mono","Courier New",monospace;
+    }
+    .pill{
+      display:inline-flex;
+      align-items:center;
+      border-radius:999px;
+      padding:5px 10px;
+      background:#f3f4f6;
+      color:#374151;
+      font-weight:850;
+      font-size:12px;
+    }
+    .big-btn{
+      border-radius:999px;
+      padding:14px 18px;
+      font-weight:900;
+      font-size:16px;
+    }
+    .result-box{
+      display:none;
+      border:1px solid #bbf7d0;
+      background:#f0fdf4;
+      border-radius:20px;
+      padding:16px;
+      margin-top:14px;
+    }
+    .warn-box{
+      border:1px solid #fde68a;
+      background:#fffbeb;
+      color:#92400e;
+      border-radius:16px;
+      padding:12px;
+      font-size:13px;
+      line-height:1.45;
+    }
+    .error-box{
+      display:none;
+      border:1px solid #fecaca;
+      background:#fff1f2;
+      color:#991b1b;
+      border-radius:16px;
+      padding:12px;
+      font-size:13px;
+      line-height:1.45;
+      margin-top:12px;
+    }
+    .scanner-box{
+      display:none;
+      margin-top:10px;
+      border:1px solid #e5e7eb;
+      border-radius:18px;
+      overflow:hidden;
+      background:#000;
+    }
+    #scannerVideo{
+      width:100%;
+      max-height:280px;
+      object-fit:cover;
+      display:block;
+      background:#000;
+    }
+    .pay-grid{
+      display:grid;
+      grid-template-columns:repeat(2,minmax(0,1fr));
+      gap:8px;
+    }
+    .pay-btn{
+      border:1px solid #d1d5db;
+      border-radius:16px;
+      background:#fff;
+      padding:12px 10px;
+      font-weight:900;
+      color:#0d6efd;
+    }
+    .pay-btn.active{
+      border-color:#dc3545;
+      background:#fff1f2;
+      color:#be123c;
+    }
+    .ship-row{
+      display:flex;
+      gap:8px;
+    }
+    .ship-btn{
+      flex:1;
+      border:1px solid #d1d5db;
+      border-radius:16px;
+      background:#fff;
+      padding:12px 10px;
+      font-weight:900;
+      color:#0d6efd;
+    }
+    .ship-btn.active{
+      border-color:#dc3545;
+      background:#fff1f2;
+      color:#be123c;
+    }
+    .cut-row{
+      display:flex;
+      gap:8px;
+    }
+    .cut-btn{
+      flex:1;
+      border:1px solid #d1d5db;
+      border-radius:16px;
+      background:#fff;
+      padding:12px 10px;
+      font-weight:900;
+      color:#0d6efd;
+    }
+    .cut-btn.active{
+      border-color:#dc3545;
+      background:#fff1f2;
+      color:#be123c;
+    }
+    .cut-box{
+      display:none;
+      margin-top:10px;
+      border:1px solid #fde68a;
+      background:#fffbeb;
+      border-radius:18px;
+      padding:12px;
+    }
+    .copybox{
+      background:#fff;
+      border:1px solid #d1fae5;
+      border-radius:14px;
+      padding:10px;
+      word-break:break-all;
+      font-size:13px;
+    }
+    .price-panel{
+      margin-top:10px;
+      display:grid;
+      grid-template-columns:repeat(2,minmax(0,1fr));
+      gap:8px;
+    }
+    .price-mini{
+      border:1px solid #e5e7eb;
+      background:#fff;
+      border-radius:16px;
+      padding:10px;
+    }
+    .price-mini .k{
+      font-size:12px;
+      color:#6b7280;
+      font-weight:700;
+    }
+    .price-mini .v{
+      font-size:20px;
+      font-weight:950;
+      color:#dc3545;
+      line-height:1.1;
+      margin-top:3px;
+    }
+    .sticky-submit{
+      position:sticky;
+      bottom:0;
+      z-index:30;
+      background:#fff;
+      border-top:1px solid #eef2f7;
+      padding:12px 16px calc(12px + env(safe-area-inset-bottom,0px));
+    }
+    @media(max-width:420px){
+      .pay-grid{grid-template-columns:1fr}
+      .item-img{width:84px;height:84px}
+    }
+  </style>
+</head>
+
+<body>
+<div class="page">
+  <div class="top">
+    <div>
+      <div class="title">Admin Order Link</div>
+      <div class="sub">Scan / isi code → order terus masuk → customer claim alamat</div>
+    </div>
+    <a class="btn btn-light rounded-pill fw-bold" href="admin-j916.html">Order</a>
+  </div>
+
+  <div class="content">
+
+    <div class="warn-box mb-3">
+      Flow ini untuk customer yang sudah lock di TikTok/WhatsApp dan sudah bayar kepada admin.
+      Bila admin tekan Jana Order Link, sistem hanya simpan <b>order claim link</b> dan item jadi <b>PENDING</b>.
+      Bila customer buka link, login/daftar dan tekan sahkan, barulah order sebenar akan dibuat terus sebagai <b>PAID</b>.
+    </div>
+
+    <div class="cardx">
+      <div class="labelx">Code barang / barcode</div>
+
+      <div class="input-group">
+        <input id="itemCode" class="form-control form-control-lg mono"
+               placeholder="Contoh RT1000240"
+               autocomplete="off"
+               autocapitalize="characters">
+        <button class="btn btn-dark fw-bold" type="button" onclick="lookupItem()">
+          Cari
+        </button>
+      </div>
+
+      <div class="d-flex gap-2 mt-2">
+        <button class="btn btn-outline-secondary rounded-pill fw-bold flex-fill" type="button" onclick="startScanner()">
+          Scan Barcode
+        </button>
+        <button class="btn btn-outline-secondary rounded-pill fw-bold flex-fill" type="button" onclick="stopScanner()">
+          Stop Scan
+        </button>
+      </div>
+
+      <div id="scannerBox" class="scanner-box">
+        <video id="scannerVideo" playsinline></video>
+      </div>
+
+      <div class="hint">
+        Boleh scan barcode guna kamera phone/tablet atau isi manual code barang.
+      </div>
+
+      <div id="itemPreview"></div>
+      <div id="errBox" class="error-box"></div>
+    </div>
+
+    <div class="cardx">
+      <div class="row g-2">
+        <div class="col-12 col-md-6">
+          <div class="labelx">No WhatsApp customer</div>
+          <input id="custPhone" class="form-control form-control-lg"
+                 placeholder="Contoh 60123456789"
+                 inputmode="tel">
+        </div>
+
+        <div class="col-12 col-md-6">
+          <div class="labelx">Harga override / sudah bayar</div>
+          <div class="input-group input-group-lg">
+            <span class="input-group-text">RM</span>
+            <input id="paidAmount" class="form-control"
+                   placeholder="Auto ikut harga asal, boleh ubah"
+                   inputmode="decimal"
+                   type="number"
+                   step="0.01">
+          </div>
+        </div>
+      </div>
+
+      <div class="mt-3">
+        <div class="labelx">Cara bayar</div>
+        <div class="pay-grid">
+          <button id="pay_MANUAL_MAYBANK" class="pay-btn active" type="button" onclick="setPay('MANUAL_MAYBANK')">Maybank Transfer</button>
+          <button id="pay_QR" class="pay-btn" type="button" onclick="setPay('QR')">QR</button>
+          <button id="pay_MANUAL_CASH" class="pay-btn" type="button" onclick="setPay('MANUAL_CASH')">Cash</button>
+          <button id="pay_MANUAL_CARD" class="pay-btn" type="button" onclick="setPay('MANUAL_CARD')">Card</button>
+          <button id="pay_MANUAL_ATOME" class="pay-btn" type="button" onclick="setPay('MANUAL_ATOME')">Atome</button>
+          <button id="pay_OTHER" class="pay-btn" type="button" onclick="setPay('OTHER')">Lain-lain</button>
+        </div>
+      </div>
+
+      <div class="mt-3">
+        <div class="labelx">Penghantaran awal</div>
+        <div class="ship-row">
+          <button id="ship_POST" class="ship-btn active" type="button" onclick="setShip('POST')">Pos</button>
+          <button id="ship_PICKUP" class="ship-btn" type="button" onclick="setShip('PICKUP')">Ambil Kedai</button>
+        </div>
+        <div class="hint">
+          Customer masih boleh lengkapkan alamat masa buka link claim.
+        </div>
+      </div>
+
+      <div class="mt-3">
+        <div class="labelx">Potong panjang?</div>
+        <div class="cut-row">
+          <button id="cut_NO" class="cut-btn active" type="button" onclick="setCut('NO')">Tak Potong</button>
+          <button id="cut_YES" class="cut-btn" type="button" onclick="setCut('YES')">Potong</button>
+        </div>
+
+        <div id="cutBox" class="cut-box">
+          <div class="row g-2">
+            <div class="col-6">
+              <div class="labelx mb-1">Panjang asal</div>
+              <input id="cutFrom" class="form-control fw-bold bg-light" readonly placeholder="Auto">
+            </div>
+            <div class="col-6">
+              <div class="labelx mb-1">Potong jadi</div>
+              <input id="cutTo" class="form-control" placeholder="Contoh 16cm / 16" inputmode="decimal">
+            </div>
+          </div>
+          <div class="hint">
+            Jika customer minta potong masa live/WhatsApp, pilih Potong dan isi panjang baru. Maklumat ini akan muncul pada halaman claim sebelum customer sahkan order.
+          </div>
+        </div>
+      </div>
+    </div>
+
+
+    <div id="resultBox" class="result-box">
+      <div class="fw-black fw-bold fs-5 mb-2">Order link berjaya dibuat</div>
+      <div class="small text-muted mb-2">Claim link sudah dibuat. Order sebenar akan masuk sebagai PAID selepas customer sahkan.</div>
+
+      <div class="copybox mono mb-2" id="claimLinkText"></div>
+
+      <div class="d-grid gap-2">
+  <button class="btn btn-success big-btn" type="button" onclick="sendClaimWhatsapp()">
+    Hantar WhatsApp Customer
+  </button>
+
+  <button class="btn btn-outline-dark big-btn" type="button" onclick="copyClaimLink()">
+    Copy Link
+  </button>
+
+  <a id="openClaimLink" class="btn btn-outline-primary big-btn" target="_blank">
+    Buka Link Claim
+  </a>
+
+  <button class="btn btn-outline-danger big-btn" type="button" onclick="resetFormOrderLink()">
+    Reset & Buat Order Baru
+  </button>
+</div>
+    </div>
+  </div>
+
+  <div class="sticky-submit">
+    <button id="createBtn" class="btn btn-danger big-btn w-100" type="button" onclick="createOrderLink()">
+      Jana Order Link
+    </button>
+  </div>
+</div>
+
+<script>
+const SB_URL = "https://dduizetstqqjrpsezbpi.supabase.co";
+const SB_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRkdWl6ZXRzdHFxanJwc2V6YnBpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTg3MzI0ODQsImV4cCI6MjA3NDMwODQ4NH0.CrlHXrmHtKgR9qc2192U6quRb5lpFEeOSgwG0Lb8KRM";
+
+const sb = window.supabase.createClient(SB_URL, SB_KEY);
+
+const ONSEND_BASE = "https://onsend.io/api/v1";
+const ONSEND_TOKEN = "4b879470cc16ca8f06c5ab9878a4578880cfd0fd7b7cfe0121499f3ab017dd04";
+
+let selectedItem = null;
+let selectedPay = "MANUAL_MAYBANK";
+let selectedShip = "POST";
+let selectedCut = "NO";
+let createdClaim = null;
+
+let scannerStream = null;
+let scannerTimer = null;
+
+function $(id){ return document.getElementById(id); }
+
+function safeTxt(v){
+  return String(v || "")
+    .replace(/&/g,"&amp;")
+    .replace(/</g,"&lt;")
+    .replace(/>/g,"&gt;")
+    .replace(/"/g,"&quot;")
+    .replace(/'/g,"&#039;");
+}
+
+function money(n){
+  return "RM " + Number(n || 0).toFixed(2);
+}
+
+function showErr(msg){
+  const box = $("errBox");
+  box.style.display = msg ? "block" : "none";
+  box.innerHTML = msg || "";
+}
+
+function normalizePhone(msisdn){
+  let x = String(msisdn || "").replace(/\D/g,"");
+  if (!x) return "";
+  if (x.startsWith("60")) return x;
+  if (x.startsWith("0")) return "6" + x;
+  return "60" + x;
+}
+
+function newToken(len = 28){
+  const chars = "ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz23456789";
+  let out = "";
+  const arr = new Uint32Array(len);
+  crypto.getRandomValues(arr);
+  for (let i=0;i<len;i++) out += chars[arr[i] % chars.length];
+  return out;
+}
+
+function shortOrderCode(){
+  const chars = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
+  let out = "";
+  const arr = new Uint32Array(7);
+  crypto.getRandomValues(arr);
+  for (let i=0;i<arr.length;i++) out += chars[arr[i] % chars.length];
+  return out;
+}
+
+function setPay(method){
+  selectedPay = method;
+  ["MANUAL_MAYBANK","QR","MANUAL_CASH","MANUAL_CARD","MANUAL_ATOME","OTHER"].forEach(m=>{
+    $("pay_"+m)?.classList.toggle("active", m === method);
+  });
+}
+
+function setShip(method){
+  selectedShip = method;
+  $("ship_POST")?.classList.toggle("active", method === "POST");
+  $("ship_PICKUP")?.classList.toggle("active", method === "PICKUP");
+}
+
+function setCut(method){
+  selectedCut = String(method || "NO").toUpperCase() === "YES" ? "YES" : "NO";
+
+  $("cut_NO")?.classList.toggle("active", selectedCut === "NO");
+  $("cut_YES")?.classList.toggle("active", selectedCut === "YES");
+
+  const box = $("cutBox");
+  if (box) box.style.display = selectedCut === "YES" ? "block" : "none";
+
+  if (selectedCut === "YES") updateCutFromFromItem();
+}
+
+function fmtLen(v){
+  const n = Number(String(v || "").replace(/[^0-9.]/g,""));
+  if (!Number.isFinite(n) || n <= 0) return "";
+  return n.toFixed(1).replace(/\.0$/, "") + "cm";
+}
+
+function updateCutFromFromItem(){
+  const len = Number(selectedItem?.length_cm || selectedItem?.panjang_cm || selectedItem?.current_length_cm || 0);
+  const el = $("cutFrom");
+  if (el && len > 0) el.value = fmtLen(len);
+}
+
+function getCutInfo(){
+  const cutStatus = selectedCut === "YES" ? "YES" : "NO";
+  const cutFrom = cutStatus === "YES" ? (String($("cutFrom")?.value || "").trim() || fmtLen(selectedItem?.length_cm)) : "";
+  const cutTo = cutStatus === "YES" ? String($("cutTo")?.value || "").trim() : "";
+
+  return {
+    cut_status: cutStatus,
+    cut_from: cutFrom,
+    cut_to: cutTo
+  };
+}
+
+function first916Img(row){
+  const d = row?.design || {};
+  const raw =
+    row?.img1 ||
+    row?.img1_url ||
+    row?.image_url ||
+    row?.product_image ||
+    d?.img1 ||
+    d?.img1_url ||
+    d?.img2 ||
+    d?.img2_url ||
+    d?.img3 ||
+    d?.img3_url ||
+    "";
+
+  if (!raw) return "";
+  if (String(raw).startsWith("http")) return raw;
+  return String(raw).startsWith("/")
+    ? (SB_URL + "/storage/v1/object" + raw)
+    : raw;
+}
+
+function itemName(row){
+  const d = row?.design || {};
+  return row?.name || row?.item_name || row?.product_name || row?.design_name || d?.name || row?.code || "Barang 916";
+}
+
+function itemUpah(row){
+  const d = row?.design || {};
+  return Number(
+    row?.upah_override_rm ??
+    row?.upah_default_rm ??
+    row?.upah_rm ??
+    row?.wage_default ??
+    d?.upah_default_rm ??
+    d?.wage_default ??
+    0
+  );
+}
+
+function calc916OriginalPrice(row){
+  const harga916 = Number(window._price916 || 0);
+  const berat = Number(row?.weight_g || 0);
+  const upah = itemUpah(row);
+  return ((harga916 * berat) + upah) * 1.08;
+}
+
+function renderItem(row){
+  if (!row){
+    $("itemPreview").innerHTML = "";
+    return;
+  }
+
+  const img = first916Img(row);
+  const name = itemName(row);
+  const code = row.code || "";
+  const weight = Number(row.weight_g || 0);
+  const length = Number(row.length_cm || 0);
+  const width = Number(row.width_cm || 0);
+  const status = String(row.status || "").toUpperCase();
+
+  const upahDefault = Number(row?.upah_default_rm ?? row?.wage_default ?? row?.design?.upah_default_rm ?? row?.design?.wage_default ?? 0);
+  const hasOverride = row?.upah_override_rm !== null && row?.upah_override_rm !== undefined && row?.upah_override_rm !== "";
+  const upahOverride = hasOverride ? Number(row.upah_override_rm) : null;
+  const upahGuna = itemUpah(row);
+
+  const harga916 = Number(window._price916 || 0);
+  const hargaAsal = calc916OriginalPrice(row);
+
+  updateCutFromFromItem();
+
+  $("itemPreview").innerHTML = `
+    <div class="item-card">
+      <img class="item-img" src="${safeTxt(img)}" onerror="this.style.display='none'">
+
+      <div class="flex-grow-1">
+        <div class="d-flex align-items-center gap-2 flex-wrap mb-1">
+          <div class="fw-bold mono">${safeTxt(code)}</div>
+          <span class="pill">${safeTxt(status || "UNKNOWN")}</span>
+        </div>
+
+        <div class="fw-bold">${safeTxt(name)}</div>
+
+        <div class="small text-muted mt-1">
+          Berat: <b>${weight ? weight.toFixed(3).replace(/\.?0+$/,'') : "-"}g</b>
+          • Panjang: <b>${length || "-"}cm</b>
+          • Lebar: <b>${width || "-"}cm</b>
+        </div>
+
+        <div class="small text-muted mt-1">
+          Harga 916: <b>${money(harga916)} / g</b>
+          • Upah guna: <b>${money(upahGuna)}</b>
+        </div>
+
+        <div class="small text-muted">
+          Upah default: <b>${money(upahDefault)}</b>
+          ${upahOverride !== null ? ` • Override: <b>${money(upahOverride)}</b>` : ""}
+        </div>
+
+        <div class="price-panel">
+          <div class="price-mini">
+            <div class="k">Harga asal sistem</div>
+            <div class="v">${money(hargaAsal)}</div>
+          </div>
+          <div class="price-mini">
+            <div class="k">Formula</div>
+            <div class="small fw-bold mt-1">((harga × berat) + upah) × 1.08</div>
+          </div>
+        </div>
+
+        <div class="small text-muted mt-2">
+          Harga override / jumlah customer sudah bayar boleh ubah di bawah.
+        </div>
+      </div>
+    </div>
+  `;
+}
+
+async function lookupItem(){
+  showErr("");
+  createdClaim = null;
+  $("resultBox").style.display = "none";
+
+  const code = String($("itemCode").value || "").trim().toUpperCase();
+  $("itemCode").value = code;
+
+  if (!code){
+    selectedItem = null;
+    renderItem(null);
+    showErr("Sila isi atau scan code barang.");
+    return null;
+  }
+
+  try{
+    if (!Number(window._price916 || 0)){
+      await loadPrice916();
+    }
+
+    const { data, error } = await sb.rpc("j916_admin_items_list_v1", {
+      p_query: code
+    });
+
+    if (error) throw error;
+
+    const rows = Array.isArray(data) ? data : [];
+    const item = rows.find(r => String(r.code || "").toUpperCase() === code) || null;
+
+    if (!item){
+      selectedItem = null;
+      renderItem(null);
+      showErr("Code barang tidak dijumpai.");
+      return null;
+    }
+
+    selectedItem = item;
+    renderItem(item);
+
+    const asal = calc916OriginalPrice(item);
+    const paidInput = $("paidAmount");
+    if (paidInput && !String(paidInput.value || "").trim() && asal > 0){
+      paidInput.value = asal.toFixed(2);
+    }
+
+    const st = String(item.status || "").toUpperCase();
+    if (st && st !== "AVAILABLE"){
+      showErr("Perhatian: status barang sekarang ialah <b>"+safeTxt(st)+"</b>. Kalau teruskan, sistem akan reserve sebagai PENDING.");
+    }
+
+    return item;
+  }catch(e){
+    selectedItem = null;
+    renderItem(null);
+    showErr("Ralat cari item: " + safeTxt(e?.message || e));
+    return null;
+  }
+}
+
+async function startScanner(){
+  showErr("");
+
+  if (!("BarcodeDetector" in window)){
+    showErr("Browser ini belum support barcode scanner. Isi code manual dahulu.");
+    return;
+  }
+
+  try{
+    stopScanner();
+
+    scannerStream = await navigator.mediaDevices.getUserMedia({
+      video:{ facingMode:{ ideal:"environment" } },
+      audio:false
+    });
+
+    const video = $("scannerVideo");
+    video.srcObject = scannerStream;
+    await video.play();
+
+    $("scannerBox").style.display = "block";
+
+    const detector = new BarcodeDetector({
+      formats:["code_128","code_39","ean_13","ean_8","qr_code"]
+    });
+
+    scannerTimer = setInterval(async ()=>{
+      try{
+        const codes = await detector.detect(video);
+        if (codes && codes.length){
+          const raw = String(codes[0].rawValue || "").trim();
+          if (raw){
+            $("itemCode").value = raw.toUpperCase();
+            stopScanner();
+            await lookupItem();
+          }
+        }
+      }catch(_){}
+    }, 500);
+  }catch(e){
+    showErr("Scanner tidak boleh dibuka. Pastikan permission kamera dibenarkan.");
+  }
+}
+
+function stopScanner(){
+  if (scannerTimer){
+    clearInterval(scannerTimer);
+    scannerTimer = null;
+  }
+
+  if (scannerStream){
+    scannerStream.getTracks().forEach(t=>t.stop());
+    scannerStream = null;
+  }
+
+  const video = $("scannerVideo");
+  if (video){
+    video.pause();
+    video.srcObject = null;
+  }
+
+  $("scannerBox").style.display = "none";
+}
+
+function buildClaimLink(token){
+  return location.origin + "/order-claim.html?t=" + encodeURIComponent(token);
+}
+
+async function getAdminPhone(){
+  try{
+    const a = (window.auth_get && window.auth_get()) || {};
+    return normalizePhone(a.phone || a.msisdn || a.username || "");
+  }catch(_){
+    return "";
+  }
+}
+
+async function createOrderLink(){
+  showErr("");
+
+  const btn = $("createBtn");
+  const oldTxt = btn.textContent;
+
+  try{
+    btn.disabled = true;
+    btn.textContent = "Sedang jana link…";
+
+    let item = selectedItem;
+    if (!item){
+      item = await lookupItem();
+    }
+
+    if (!item) throw new Error("Barang belum dijumpai.");
+
+    const code = String(item.code || $("itemCode").value || "").trim().toUpperCase();
+    const phone = normalizePhone($("custPhone").value);
+    const paidAmount = Number($("paidAmount").value || 0);
+    const payMethod = selectedPay;
+    const ship = selectedShip;
+    const cutInfo = getCutInfo();
+
+    if (!phone) throw new Error("No WhatsApp customer wajib isi.");
+    if (!paidAmount || paidAmount <= 0) throw new Error("Harga override / sudah bayar wajib isi.");
+    if (cutInfo.cut_status === "YES" && !cutInfo.cut_to){
+      throw new Error("Sila isi panjang Potong jadi.");
+    }
+
+    const st = String(item.status || "").toUpperCase();
+    if (st === "PAID" || st === "SOLD" || st === "COMPLETED"){
+      throw new Error("Barang ini sudah PAID/SOLD. Tidak boleh jana link.");
+    }
+
+    const token = newToken(32);
+    const orderCode = shortOrderCode();
+    const adminPhone = await getAdminPhone();
+
+    await saveClaimLink({
+      token,
+      orderCode,
+      code,
+      phone,
+      paidAmount,
+      payMethod,
+      ship,
+      cutInfo,
+      item,
+      orderId: null,
+      adminPhone
+    });
+
+    await reserveItemPending(code, {
+      order_code: orderCode,
+      token,
+      phone,
+      paidAmount,
+      payMethod,
+      cutInfo,
+      adminPhone
+    });
+
+    createdClaim = {
+      token,
+      orderCode,
+      code,
+      phone,
+      paidAmount,
+      payMethod,
+      ship,
+      cutInfo,
+      link: buildClaimLink(token)
+    };
+
+    renderResult(createdClaim);
+
+    btn.textContent = "Hantar WhatsApp…";
+    await sendClaimWhatsapp(true);
+
+  }catch(e){
+    showErr(safeTxt(e?.message || e));
+  }finally{
+    btn.disabled = false;
+    btn.textContent = oldTxt;
+  }
+}
+
+async function reserveItemPending(code, meta){
+  const patchList = [
+    {
+      status: "PENDING",
+      updated_at: new Date().toISOString()
+    },
+    {
+      status: "PENDING",
+      lock_source: "admin_order_link",
+      pending_order_code: meta.order_code,
+      pending_phone: meta.phone,
+      updated_at: new Date().toISOString()
+    },
+    {
+      status: "PENDING"
+    }
+  ];
+
+  for (const patch of patchList){
+    try{
+      const { error } = await sb
+        .from("j916_items")
+        .update(patch)
+        .eq("code", code);
+
+      if (!error) return;
+    }catch(_){}
+  }
+}
+
+async function saveClaimLink(obj){
+  const item = obj.item || {};
+
+  const payload = {
+    token: obj.token,
+    item_code: obj.code,
+    phone: obj.phone,
+    price_paid_rm: obj.paidAmount,
+    amount_cents: Math.round(Number(obj.paidAmount || 0) * 100),
+    pay_method: obj.payMethod,
+    shipping_method: obj.ship,
+    status: "WAITING_CUSTOMER",
+    item_snapshot: {
+      code: obj.code,
+      name: itemName(item),
+      image_url: first916Img(item),
+      weight_g: Number(item.weight_g || 0),
+      length_cm: Number(item.length_cm || 0),
+      width_cm: Number(item.width_cm || 0),
+      upah_rm: itemUpah(item),
+      cut_status: obj.cutInfo?.cut_status || "NO",
+      cut_from: obj.cutInfo?.cut_from || "",
+      cut_to: obj.cutInfo?.cut_to || ""
+    },
+    created_at: new Date().toISOString(),
+    updated_at: new Date().toISOString()
+  };
+
+  const { error } = await sb.from("order_claim_links").insert(payload);
+
+  if (error){
+    throw new Error("Gagal simpan claim link: " + error.message);
+  }
+}
+function renderResult(c){
+  $("claimLinkText").textContent = c.link;
+  $("openClaimLink").href = c.link;
+  $("resultBox").style.display = "block";
+  $("resultBox").scrollIntoView({behavior:"smooth", block:"start"});
+}
+
+async function copyClaimLink(){
+  if (!createdClaim?.link) return;
+  try{
+    await navigator.clipboard.writeText(createdClaim.link);
+    alert("Link sudah copy.");
+  }catch(_){
+    prompt("Copy link ini:", createdClaim.link);
+  }
+}
+
+function buildWhatsappMessage(){
+  const c = createdClaim;
+  if (!c) return "";
+
+  return [
+    "Assalamualaikum.",
+    "",
+    "Terima kasih kerana membuat bayaran kepada Emas Amir.",
+    "",
+    "Untuk melengkapkan order anda dan membolehkan sistem mengeluarkan resit rasmi serta nombor tracking penghantaran, sila tekan link di bawah dan lengkapkan maklumat yang diperlukan:",
+    "",
+    c.link,
+    "",
+    "Butiran pembelian:",
+    "Code: " + c.code,
+    "Jumlah dibayar: RM " + Number(c.paidAmount || 0).toFixed(2),
+    ...(c.cutInfo && c.cutInfo.cut_status === "YES" ? [
+      "Potong: Ya",
+      "Panjang asal: " + (c.cutInfo.cut_from || "-"),
+      "Potong jadi: " + (c.cutInfo.cut_to || "-")
+    ] : []),
+    "",
+    "Jika anda sudah mempunyai akaun Emas Amir, sila login sahaja.",
+    "Jika anda belum mempunyai akaun, sila daftar terlebih dahulu.",
+    "",
+    "Sila lengkapkan maklumat secepat mungkin supaya proses resit dan penghantaran tidak tertangguh.",
+    "",
+    "Jangan lupa install app Emas Amir untuk semak resit, status order dan tracking dengan lebih mudah.",
+    "",
+    "App Store:",
+    "https://apps.apple.com/my/app/emas-amir/id6761734657",
+    "",
+    "Google Play Store:",
+    "https://play.google.com/store/apps/details?id=com.emasamir.app",
+    "",
+    "Terima kasih atas sokongan anda kepada Emas Amir."
+  ].join("\n");
+}
+
+async function sendClaimWhatsapp(autoSend = false){
+  if (!createdClaim) return;
+
+  const msg = buildWhatsappMessage();
+  const phone_number = normalizePhone(createdClaim.phone);
+
+  try{
+    const r = await fetch(ONSEND_BASE + "/send", {
+      method:"POST",
+      headers:{
+        Accept:"application/json",
+        "Content-Type":"application/json",
+        Authorization:"Bearer " + ONSEND_TOKEN
+      },
+      body:JSON.stringify({
+        phone_number,
+        message:msg,
+        type:"text"
+      })
+    });
+
+    const j = await r.json().catch(()=>({}));
+
+    if (r.ok && j.success === true){
+      try{
+        await sb
+          .from("order_claim_links")
+          .update({
+            sent_at: new Date().toISOString(),
+            updated_at: new Date().toISOString()
+          })
+          .eq("token", createdClaim.token);
+      }catch(_){}
+
+      if (!autoSend) alert("WhatsApp berjaya dihantar.");
+    }else{
+      throw new Error("OnSend gagal.");
+    }
+  }catch(e){
+    if (autoSend){
+      showErr("Link berjaya dibuat, tetapi OnSend gagal hantar WhatsApp. Tekan butang Hantar WhatsApp Customer untuk cuba semula.");
+      return;
+    }
+
+    const wa = "https://wa.me/" + encodeURIComponent(phone_number) + "?text=" + encodeURIComponent(msg);
+    window.open(wa, "_blank");
+  }
+}
+
+async function loadPrice916(){
+  try{
+    const { data, error } = await sb.rpc("price_916_current_v1");
+    if (error) throw error;
+
+    const row = Array.isArray(data) ? data[0] : data;
+    window._price916 = Number(row?.price_per_g || 0);
+  }catch(e){
+    console.warn("loadPrice916 error:", e);
+    window._price916 = 0;
+  }
+}
+
+function resetFormOrderLink(){
+
+  selectedItem = null;
+  createdClaim = null;
+
+  $("itemCode").value = "";
+  $("custPhone").value = "";
+  $("paidAmount").value = "";
+
+  $("cutTo").value = "";
+  $("cutFrom").value = "";
+
+  setPay("MANUAL_MAYBANK");
+  setShip("POST");
+  setCut("NO");
+
+  $("itemPreview").innerHTML = "";
+  $("claimLinkText").textContent = "";
+
+  $("resultBox").style.display = "none";
+  $("openClaimLink").removeAttribute("href");
+
+  showErr("");
+
+  window.scrollTo({
+    top: 0,
+    behavior: "smooth"
+  });
+
+  $("itemCode").focus();
+}
+
+$("itemCode").addEventListener("keydown", function(e){
+  if (e.key === "Enter") lookupItem();
+});
+
+$("itemCode").addEventListener("input", function(){
+  this.value = this.value.toUpperCase();
+});
+
+window.addEventListener("beforeunload", stopScanner);
+
+(async function init(){
+  try{
+    if (window.requireAdmin){
+      await window.requireAdmin();
+    }
+  }catch(_){}
+
+  await loadPrice916();
+})();
+</script>
+</body>
+</html>

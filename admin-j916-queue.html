@@ -645,10 +645,17 @@ function getSlip(o){
   return SLIP_BY_ORDER_ID[oid] || null;
 }
 function slipBadgeHtml(o){
+  const note = String(o?.payment_timer_note || "").toUpperCase();
+
+  if (note.includes("ORDER LINK") || note.includes("BAYAR MELALUI ORDER LINK")){
+    return `<span class="badge bg-success me-1">resit✅ bayar link</span>`;
+  }
+
   const slip = getSlip(o);
   if(!slip){
     return `<span class="badge bg-danger me-1">resit❌</span>`;
   }
+
   const st = upper(slip.status || '');
   if(st === 'PENDING_MATCH'){
     return `<span class="badge bg-warning text-dark me-1">resit✅</span>`;
@@ -656,10 +663,9 @@ function slipBadgeHtml(o){
   if(st === 'MATCHED'){
     return `<span class="badge bg-success me-1">match✅</span>`;
   }
-  // fallback status lain
+
   return `<span class="badge bg-secondary me-1">${(st||'RESIT')}</span>`;
 }
-
 /* ===== Bucket logic ===== */
 function getPayMethod(o){
   const oc = getOrderCode(o);

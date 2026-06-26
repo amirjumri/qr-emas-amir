@@ -1,0 +1,1003 @@
+<!doctype html>
+<html lang="ms">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <link rel="stylesheet" href="/global.css">
+  <title>Lengkapkan Order • Emas Amir</title>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="auth.js?v=13.1"></script>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+
+  <style>
+    *{box-sizing:border-box}
+    body{margin:0;background:#f6f7f9;color:#111827;font-family:system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
+    .page{max-width:520px;margin:0 auto;min-height:100vh;background:#fff}
+    .top{position:sticky;top:0;z-index:20;background:#fff;border-bottom:1px solid #eef2f7;padding:14px 16px;display:flex;align-items:center;justify-content:space-between;gap:10px}
+    .top-actions{display:flex;align-items:center;justify-content:flex-end;gap:7px;flex-wrap:wrap}
+    .top-btn{border:1px solid #e5e7eb;background:#f8fafc;color:#111827;border-radius:999px;padding:8px 12px;font-weight:900;font-size:13px;text-decoration:none}
+    .top-btn.home{background:#fff}
+    .login-status{font-size:12px;color:#6b7280;margin-top:6px;font-weight:800}
+    .title{font-size:22px;font-weight:950;line-height:1.1}
+    .sub{font-size:13px;color:#6b7280;margin-top:3px}
+    .content{padding:16px}
+    .cardx{border:1px solid #e5e7eb;background:#fff;border-radius:20px;padding:16px;box-shadow:0 12px 30px rgba(15,23,42,.05);margin-bottom:14px}
+    .item-card{display:flex;gap:12px;align-items:center;border:1px solid #e5e7eb;background:#f9fafb;border-radius:18px;padding:12px}
+    .item-img{width:92px;height:92px;border-radius:16px;object-fit:cover;background:#e5e7eb;flex:0 0 auto}
+    .mono{font-family:ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,"Liberation Mono","Courier New",monospace}
+    .pill{display:inline-flex;border-radius:999px;padding:5px 10px;background:#f3f4f6;color:#374151;font-weight:850;font-size:12px}
+    .labelx{font-weight:850;margin-bottom:6px;font-size:14px}
+    .hint{font-size:12px;color:#6b7280;margin-top:5px}
+    .price-box{border:1px solid #fee2e2;background:#fff1f2;border-radius:18px;padding:14px;margin-top:12px}
+    .price-big{font-size:26px;font-weight:950;color:#dc3545;line-height:1}
+    .big-btn{border-radius:999px;padding:15px 18px;font-weight:900;font-size:16px}
+    .login-box{border:1px solid #fecaca;background:#fff1f2;border-radius:18px;padding:16px}
+    .err{border:1px solid #fecaca;background:#fff1f2;color:#991b1b;border-radius:16px;padding:12px;font-size:13px;line-height:1.45}
+    .ok{border:1px solid #bbf7d0;background:#f0fdf4;color:#166534;border-radius:16px;padding:12px;font-size:13px;line-height:1.45}
+    .sticky-submit{position:sticky;bottom:0;z-index:30;background:#fff;border-top:1px solid #eef2f7;padding:12px 16px calc(12px + env(safe-area-inset-bottom,0px))}
+    .store-row{display:flex;gap:10px;margin-top:12px}
+    .store-row a{flex:1;text-align:center;text-decoration:none;font-weight:900;color:#dc3545;font-size:13px}
+    .store-badge{width:100%;max-width:165px;height:auto;border-radius:10px}
+    .loading{padding:50px 16px;text-align:center;color:#6b7280}
+  </style>
+</head>
+
+<body>
+<div class="page">
+  <div class="top">
+    <div>
+      <div class="title">Lengkapkan Order</div>
+      <div class="sub">Untuk resit rasmi & nombor tracking</div>
+      <div id="loginStatus" class="login-status">Memuatkan…</div>
+    </div>
+    <div class="top-actions">
+      <a id="btnAccount" class="top-btn" href="account.html" style="display:none">Akaun</a>
+      <a id="btnLogin" class="top-btn" href="login.html#login">Login</a>
+      <button id="btnLogout" class="top-btn" type="button" style="display:none">Logout</button>
+      <a class="top-btn home" href="index.html">Utama</a>
+    </div>
+  </div>
+
+  <div id="loadingBox" class="loading">Memuatkan order…</div>
+
+  <div id="errorBox" class="content" style="display:none;">
+    <div class="err" id="errorText">Link tidak sah.</div>
+  </div>
+
+  <div id="loginBox" class="content" style="display:none;">
+    <div class="login-box">
+      <h5 class="fw-bold mb-2">Login / Daftar dahulu</h5>
+      <div class="small text-muted mb-3">
+        Sila login atau daftar akaun Emas Amir untuk lengkapkan order, dapatkan resit rasmi dan nombor tracking.
+      </div>
+      <div id="loginPreview" class="mb-3"></div>
+      <div class="d-grid gap-2">
+        <button class="btn btn-danger big-btn" onclick="goLogin('signup')">Daftar Baru</button>
+        <button class="btn btn-outline-danger big-btn" onclick="goLogin('login')">Saya Dah Ada Akaun</button>
+        <button class="btn btn-light big-btn" onclick="location.reload()">Saya Dah Login, Refresh</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="claimBox" style="display:none;">
+    <div class="content">
+      <div class="cardx">
+        <div class="fw-bold mb-2">Order anda</div>
+        <div id="itemBox"></div>
+        <div class="price-box">
+          <div class="small text-muted fw-bold">Jumlah sudah dibayar</div>
+          <div class="price-big" id="paidAmountShow">RM 0.00</div>
+          <div class="small text-muted mt-1" id="payMethodShow"></div>
+        </div>
+      </div>
+
+      <div class="cardx">
+        <div class="fw-bold mb-2">Maklumat pelanggan</div>
+
+        <div class="mb-2">
+          <div class="labelx">Nama penerima</div>
+          <input id="custName" class="form-control form-control-lg" placeholder="Nama penuh">
+        </div>
+
+        <div class="mb-2">
+          <div class="labelx">No WhatsApp</div>
+          <input id="custPhone" class="form-control form-control-lg" inputmode="tel" placeholder="60123456789">
+        </div>
+
+        <div id="addressWrap">
+          <div class="mb-2">
+            <div class="labelx">Alamat penuh</div>
+            <textarea id="addr1" class="form-control" rows="3" placeholder="Alamat penuh"></textarea>
+          </div>
+
+          <div class="row g-2">
+            <div class="col-4">
+              <div class="labelx">Poskod</div>
+              <input id="postcode" class="form-control" inputmode="numeric">
+            </div>
+            <div class="col-4">
+              <div class="labelx">Bandar</div>
+              <input id="city" class="form-control">
+            </div>
+            <div class="col-4">
+              <div class="labelx">Negeri</div>
+              <input id="stateName" class="form-control">
+            </div>
+          </div>
+          <div class="hint">Maklumat ini digunakan untuk resit dan proses tracking penghantaran.</div>
+        </div>
+
+        <div id="pickupWrap" class="ok" style="display:none;">
+          Order ini dipilih sebagai <b>Ambil Kedai</b>. Sila sahkan order untuk sistem keluarkan resit.
+        </div>
+      </div>
+
+      <div id="msgBox"></div>
+    </div>
+
+    <div class="sticky-submit">
+      <button id="confirmBtn" class="btn btn-danger big-btn w-100" onclick="confirmClaimOrder()">
+        Sahkan Order & Dapatkan Resit
+      </button>
+    </div>
+  </div>
+
+  <div id="successBox" class="content" style="display:none;">
+<div class="ok">
+  <h5 class="fw-bold mb-2">Order berjaya disahkan</h5>
+
+ <div>
+  Terima kasih kerana melengkapkan order anda.
+  Resit rasmi dan nombor tracking akan diberikan melalui Chat Emas Amir selepas semakan dan proses penghantaran dibuat.
+</div>
+
+<div style="margin-top:10px">
+  Jika order anda tidak melibatkan potong panjang, bayaran akan terus disahkan secara automatik dan order akan diproses.
+</div>
+
+<div style="margin-top:10px">
+  Jika order anda melibatkan potong panjang, status order akan kekal PENDING(Resit bayaran sudah diterima) sementara proses potong dibuat. Admin akan menyemak dan mengesahkan bayaran selepas proses potong selesai.
+</div>
+
+<div style="margin-top:10px">
+  Jika anda belum memasang aplikasi Emas Amir, sila muat turun aplikasi melalui App Store atau Play Store di bawah.
+</div>
+
+<div style="margin-top:10px">
+  Selepas memasang aplikasi, pastikan notifikasi diaktifkan supaya anda tidak terlepas maklumat resit, nombor tracking, status penghantaran dan kemas kini order anda.
+</div>
+
+
+
+    <div class="d-grid gap-2 mt-3">
+  <a class="btn btn-danger big-btn" href="chat.html">
+    Buka Chat Emas Amir
+  </a>
+
+  <a class="btn btn-outline-dark big-btn" href="account.html">
+    Buka Akaun
+  </a>
+</div>
+
+    <div class="cardx mt-3">
+      <div class="fw-bold">Install App Emas Amir</div>
+      <div class="small text-muted mt-1">Lebih mudah semak resit, status order dan tracking.</div>
+      <div class="store-row">
+        <a href="https://apps.apple.com/my/app/emas-amir/id6761734657" target="_blank" rel="noopener">
+          App Store
+        </a>
+        <a href="https://play.google.com/store/apps/details?id=com.emasamir.app" target="_blank" rel="noopener">
+          Play Store
+        </a>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+const SB_URL = "https://dduizetstqqjrpsezbpi.supabase.co";
+const SB_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRkdWl6ZXRzdHFxanJwc2V6YnBpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTg3MzI0ODQsImV4cCI6MjA3NDMwODQ4NH0.CrlHXrmHtKgR9qc2192U6quRb5lpFEeOSgwG0Lb8KRM";
+const sb = window.supabase.createClient(SB_URL, SB_KEY);
+
+const qs = new URLSearchParams(location.search);
+const TOKEN = String(qs.get("t") || "").trim();
+
+let CLAIM = null;
+let AUTH = null;
+let CUSTOMER = null;
+
+function $(id){ return document.getElementById(id); }
+
+function safeTxt(v){
+  return String(v || "")
+    .replace(/&/g,"&amp;")
+    .replace(/</g,"&lt;")
+    .replace(/>/g,"&gt;")
+    .replace(/"/g,"&quot;")
+    .replace(/'/g,"&#039;");
+}
+
+function money(n){
+  return "RM " + Number(n || 0).toFixed(2);
+}
+
+function normalizePhone(v){
+  let x = String(v || "").replace(/\D/g,"");
+  if (!x) return "";
+  if (x.startsWith("60")) return x;
+  if (x.startsWith("0")) return "6" + x;
+  return "60" + x;
+}
+
+function hideAll(){
+  ["loadingBox","errorBox","loginBox","claimBox","successBox"].forEach(id=>{
+    const el = $(id);
+    if (el) el.style.display = "none";
+  });
+}
+
+function showError(msg){
+  hideAll();
+  $("errorText").innerHTML = safeTxt(msg || "Link tidak sah.");
+  $("errorBox").style.display = "block";
+}
+
+function getAuth(){
+  try{
+    return (window.auth_get && window.auth_get()) || null;
+  }catch(_){
+    return null;
+  }
+}
+
+function goLogin(mode){
+  const back = encodeURIComponent(location.pathname + location.search);
+  location.href = "login.html?next=" + back + "#" + (mode || "login");
+}
+
+function setupAccountBar(){
+  const auth = getAuth();
+  const loginStatus = $("loginStatus");
+  const btnAccount = $("btnAccount");
+  const btnLogin = $("btnLogin");
+  const btnLogout = $("btnLogout");
+  const who = auth ? (auth.name || auth.full_name || auth.phone || auth.msisdn || "Akaun") : "Tidak log masuk";
+
+  if (loginStatus) loginStatus.textContent = auth ? ("Log masuk sebagai " + who) : "Tidak log masuk";
+
+  if (auth){
+    if (btnAccount) btnAccount.style.display = "";
+    if (btnLogin) btnLogin.style.display = "none";
+    if (btnLogout){
+      btnLogout.style.display = "";
+      btnLogout.onclick = () => {
+        window.auth_clear && window.auth_clear();
+        location.reload();
+      };
+    }
+  }else{
+    if (btnAccount) btnAccount.style.display = "none";
+    if (btnLogin) btnLogin.style.display = "";
+    if (btnLogout) btnLogout.style.display = "none";
+  }
+}
+
+function claimSnapshot(){
+  let s = CLAIM?.item_snapshot || {};
+  if (typeof s === "string"){
+    try{ s = JSON.parse(s); }catch(_){ s = {}; }
+  }
+  return s || {};
+}
+
+function itemImage(){
+  const s = claimSnapshot();
+  return s.image_url || s.img1 || s.img1_url || "";
+}
+
+function itemName(){
+  const s = claimSnapshot();
+  return s.name || CLAIM?.item_name || CLAIM?.item_code || "Barang 916";
+}
+
+function renderClaimPreview(targetId){
+  const s = claimSnapshot();
+  const img = itemImage();
+  const code = CLAIM?.item_code || s.code || "";
+  const weight = Number(s.weight_g || CLAIM?.weight_g || 0);
+  const length = Number(s.length_cm || CLAIM?.length_cm || 0);
+  const width = Number(s.width_cm || CLAIM?.width_cm || 0);
+
+const cutStatus =
+  s.cut_status ||
+  CLAIM?.cut_status ||
+  "NO";
+
+const cutFrom =
+  s.cut_from ||
+  CLAIM?.cut_from ||
+  "";
+
+const cutTo =
+  s.cut_to ||
+  CLAIM?.cut_to ||
+  "";
+
+  $(targetId).innerHTML = `
+    <div class="item-card">
+      <img class="item-img" src="${safeTxt(img)}" onerror="this.style.display='none'">
+      <div class="flex-grow-1">
+        <div class="d-flex align-items-center gap-2 flex-wrap mb-1">
+          <div class="fw-bold mono">${safeTxt(code)}</div>
+          <span class="pill">${safeTxt(CLAIM?.shipping_method || "POST")}</span>
+        </div>
+        <div class="fw-bold">${safeTxt(itemName())}</div>
+        <div class="small text-muted mt-1">
+  Berat: <b>${weight || "-"}g</b> • Panjang: <b>${length || "-"}cm</b> • Lebar: <b>${width || "-"}cm</b>
+</div>
+
+${
+  String(cutStatus).toUpperCase() === "YES"
+    ? `
+      <div class="mt-2">
+        <span class="badge text-bg-warning">
+          Potong: ${cutFrom || "-"}cm → ${cutTo || "-"}cm
+        </span>
+      </div>
+    `
+    : ""
+}
+      </div>
+    </div>
+  `;
+}
+
+async function loadClaim(){
+  if (!TOKEN){
+    showError("Link tidak lengkap.");
+    return false;
+  }
+
+  try{
+    const { data, error } = await sb
+      .from("order_claim_links")
+      .select("*")
+      .eq("token", TOKEN)
+      .maybeSingle();
+
+    if (error) throw error;
+    if (!data){
+      showError("Link tidak sah atau sudah tidak wujud.");
+      return false;
+    }
+
+    CLAIM = data;
+
+    const st = String(CLAIM.status || CLAIM.claim_status || "").toUpperCase();
+    if (st === "CLAIMED"){
+      hideAll();
+      $("successBox").style.display = "block";
+      return false;
+    }
+
+    if (st === "EXPIRED" || st === "CANCELLED"){
+      showError("Link ini sudah tamat tempoh atau dibatalkan. Sila hubungi admin Emas Amir.");
+      return false;
+    }
+
+    return true;
+  }catch(e){
+    showError("Ralat buka link: " + (e?.message || e));
+    return false;
+  }
+}
+
+function getClaimPhoneVariants(raw){
+  const d = String(raw || "").replace(/\D/g, "");
+  if (!d) return [];
+
+  const p60 = d.startsWith("60")
+    ? d
+    : (d.startsWith("0") ? "6" + d : "60" + d);
+
+  const p0 = p60.startsWith("60") ? ("0" + p60.slice(2)) : d;
+
+  return Array.from(new Set([
+    d,
+    p60,
+    "+" + p60,
+    p0
+  ].filter(Boolean)));
+}
+
+async function findCustomer(){
+  AUTH = getAuth();
+  if (!AUTH) return null;
+
+  const variants = [];
+
+  [
+    AUTH.phone,
+    AUTH.msisdn,
+    CLAIM?.phone
+  ].forEach(v=>{
+    getClaimPhoneVariants(v).forEach(x=>variants.push(x));
+  });
+
+  try{
+    const phoneList = Array.from(new Set(variants.filter(Boolean)));
+
+    for (const ph of phoneList){
+      const { data, error } = await sb
+        .from("customers")
+        .select("*")
+        .eq("phone", ph)
+        .limit(1)
+        .maybeSingle();
+
+      if (!error && data) return data;
+    }
+
+    if (AUTH.id){
+      try{
+        const { data } = await sb
+          .from("customers")
+          .select("*")
+          .eq("auth_user_id", AUTH.id)
+          .maybeSingle();
+
+        if (data) return data;
+      }catch(_){}
+    }
+  }catch(e){
+    console.warn("findCustomer error:", e);
+  }
+
+  return {
+    id: AUTH.id || null,
+    name: AUTH.name || AUTH.full_name || "",
+    phone: normalizePhone(AUTH.phone || AUTH.msisdn || CLAIM?.phone || "")
+  };
+}
+
+function buildFullAddressFromCustomer(c){
+  const alamat = String(
+    c.alamat ||
+    c.address ||
+    c.address_full ||
+    c.full_address ||
+    c.shipping_address ||
+    c.shipping_address1 ||
+    c.address1 ||
+    ""
+  ).trim();
+
+  const postcode = String(c.postcode || c.poskod || c.zip || "").trim();
+  const city = String(c.city || c.bandar || "").trim();
+  const stateName = String(c.state || c.negeri || "").trim();
+
+  let addr = alamat;
+
+  if (postcode && !addr.includes(postcode)){
+    addr += (addr ? ", " : "") + postcode;
+  }
+
+  if (city && !addr.toLowerCase().includes(city.toLowerCase())){
+    addr += (addr ? ", " : "") + city;
+  }
+
+  if (stateName && !addr.toLowerCase().includes(stateName.toLowerCase())){
+    addr += (addr ? ", " : "") + stateName;
+  }
+
+  return addr;
+}
+
+function fillCustomerForm(){
+  const c = CUSTOMER || {};
+
+  $("custName").value =
+    c.name ||
+    c.full_name ||
+    c.customer_name ||
+    AUTH?.name ||
+    "";
+
+  $("custPhone").value = normalizePhone(
+    c.phone ||
+    AUTH?.phone ||
+    AUTH?.msisdn ||
+    CLAIM?.phone ||
+    ""
+  );
+
+  $("addr1").value = buildFullAddressFromCustomer(c);
+
+  $("postcode").value =
+    c.postcode ||
+    c.poskod ||
+    c.zip ||
+    "";
+
+  $("city").value =
+    c.city ||
+    c.bandar ||
+    "";
+
+  $("stateName").value =
+    c.state ||
+    c.negeri ||
+    "";
+}
+function renderClaimPage(){
+  hideAll();
+  $("claimBox").style.display = "block";
+
+  renderClaimPreview("itemBox");
+  $("paidAmountShow").textContent = money(CLAIM.price_paid_rm || (Number(CLAIM.amount_cents || 0) / 100));
+  $("payMethodShow").textContent = "Cara bayar: " + (CLAIM.pay_method || "-");
+
+  const ship = String(CLAIM.shipping_method || "POST").toUpperCase();
+  if (ship === "PICKUP"){
+    $("addressWrap").style.display = "none";
+    $("pickupWrap").style.display = "block";
+  }else{
+    $("addressWrap").style.display = "block";
+    $("pickupWrap").style.display = "none";
+  }
+}
+
+function makeOrderCode(){
+  const chars = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
+  let out = "";
+  const arr = new Uint32Array(7);
+  crypto.getRandomValues(arr);
+  for (let i=0;i<arr.length;i++) out += chars[arr[i] % chars.length];
+  return out;
+}
+
+async function updateCustomerAddress(customerId, phone, payload){
+  try{
+    if (customerId){
+      await sb.from("customers").update(payload).eq("id", customerId);
+    }else if (phone){
+      await sb.from("customers").update(payload).eq("phone", phone);
+    }
+  }catch(e){
+    console.warn("update customer address ignored:", e);
+  }
+}
+
+async function createPaidOrder(orderPayload){
+  const attempts = [];
+
+  attempts.push(orderPayload);
+
+  attempts.push({
+    order_code: orderPayload.order_code,
+    code: orderPayload.code,
+    item_code: orderPayload.item_code,
+    item_name: orderPayload.item_name,
+    weight_g: orderPayload.weight_g,
+    length_cm: orderPayload.length_cm,
+    width_cm: orderPayload.width_cm,
+    qty: 1,
+    customer_name: orderPayload.customer_name,
+    phone: orderPayload.phone,
+    status: "PAID",
+    pay_method: orderPayload.pay_method,
+    method: orderPayload.method,
+    amount_cents: orderPayload.amount_cents,
+    grand_total_rm: orderPayload.grand_total_rm,
+    subtotal_rm: orderPayload.subtotal_rm,
+    unit_rm: orderPayload.unit_rm,
+    shipping_rm: 0,
+    shipping_method: orderPayload.shipping_method,
+    shipping_address1: orderPayload.shipping_address1,
+    postcode: orderPayload.postcode,
+    city: orderPayload.city,
+    state: orderPayload.state,
+    source: "ORDER_CLAIM",
+    created_at: orderPayload.created_at,
+    updated_at: orderPayload.updated_at
+  });
+
+  attempts.push({
+    order_code: orderPayload.order_code,
+    code: orderPayload.code,
+    item_code: orderPayload.item_code,
+    customer_name: orderPayload.customer_name,
+    phone: orderPayload.phone,
+    status: "PAID",
+    pay_method: orderPayload.pay_method,
+    amount_cents: orderPayload.amount_cents,
+    grand_total_rm: orderPayload.grand_total_rm,
+    subtotal_rm: orderPayload.subtotal_rm,
+    unit_rm: orderPayload.unit_rm,
+    shipping_method: orderPayload.shipping_method,
+    source: "ORDER_CLAIM",
+    created_at: orderPayload.created_at,
+    updated_at: orderPayload.updated_at
+  });
+
+  let lastError = null;
+
+  for (const payload of attempts){
+    const clean = {};
+    Object.keys(payload).forEach(k=>{
+      if (payload[k] !== undefined) clean[k] = payload[k];
+    });
+
+    const { data, error } = await sb
+      .from("j916_orders")
+      .insert(clean)
+      .select("*")
+      .single();
+
+    if (!error) return data;
+    lastError = error;
+
+    const msg = String(error.message || "");
+    if (!msg.includes("schema cache") && !msg.includes("column") && !msg.includes("Could not find")){
+      throw error;
+    }
+  }
+
+  throw lastError || new Error("Gagal create order.");
+}
+
+async function updateClaimSafe(orderCode, customerId){
+  const base = {
+    status:"CLAIMED",
+    claimed_at:new Date().toISOString(),
+    order_code: orderCode,
+    updated_at:new Date().toISOString()
+  };
+
+  const attempts = [
+    {...base, claim_status:"CLAIMED", customer_id: customerId || null},
+    {...base, customer_id: customerId || null},
+    base
+  ];
+
+  for (const patch of attempts){
+    const { error } = await sb.from("order_claim_links").update(patch).eq("token", TOKEN);
+    if (!error) return;
+  }
+}
+
+async function chatSendClaim(payload){
+  const res = await fetch("/.netlify/functions/chat-send", {
+    method:"POST",
+    headers:{ "Content-Type":"application/json" },
+    body: JSON.stringify(payload)
+  });
+
+  const raw = await res.text();
+  let j = {};
+  try{ j = JSON.parse(raw); }catch(e){}
+
+  if (!res.ok || !j.ok){
+    throw new Error(j.error || j.message || raw || "Chat-send gagal.");
+  }
+
+  return j;
+}
+
+async function orderClaimAutoPaid({ token, code, phone, amount }){
+  const res = await fetch("/.netlify/functions/order-claim-auto-paid", {
+    method:"POST",
+    headers:{ "Content-Type":"application/json" },
+    body: JSON.stringify({ token, code, phone, amount })
+  });
+
+  const raw = await res.text();
+  let j = {};
+  try{ j = JSON.parse(raw); }catch(e){}
+
+  if (!res.ok || !j.ok){
+    throw new Error(j.error || j.message || raw || "Auto paid gagal.");
+  }
+
+  return j;
+}
+
+function sleep(ms){
+  return new Promise(resolve => setTimeout(resolve, ms));
+}
+
+function cleanPhoneDigits(v){
+  return String(v || "").replace(/\D/g, "");
+}
+
+function payMethodForChat(v){
+  const m = String(v || "").toUpperCase();
+  if (m.includes("MAYBANK") || m.includes("TRANSFER")) return "TRANSFER";
+  if (m.includes("QR")) return "QR";
+  if (m.includes("CASH")) return "CASH";
+  if (m.includes("CARD")) return "CARD";
+  if (m.includes("ATOME")) return "ATOME";
+  return m || "TRANSFER";
+}
+
+function orderIdFromRow(r){
+  return String(r?.reference_1 || r?.reference || r?.order_code || r?.id || "").trim();
+}
+
+async function findLatestClaimOrder({ phone, code }){
+  const phoneList = getClaimPhoneVariants(phone);
+  const codeText = String(code || "").toUpperCase().trim();
+  const found = [];
+
+  async function queryField(field){
+    if (!phoneList.length || !codeText) return;
+    try{
+      const { data, error } = await sb
+        .from("j916_orders")
+        .select("id,reference,reference_1,order_code,code,status,created_at")
+        .in(field, phoneList)
+        .eq("code", codeText)
+        .order("created_at", { ascending:false })
+        .limit(10);
+
+      if (!error && Array.isArray(data)){
+        data.forEach(r=>found.push(r));
+      }
+    }catch(e){
+      console.warn("findLatestClaimOrder ignored field:", field, e);
+    }
+  }
+
+  await queryField("phone");
+  await queryField("customer_phone");
+  await queryField("user_phone");
+  await queryField("phone_e164");
+
+  found.sort((a,b)=> new Date(b.created_at || 0) - new Date(a.created_at || 0));
+  return found[0] || null;
+}
+
+async function patchClaimOrderPaid(ref, payload){
+  if (!ref) return;
+
+  const refText = String(ref || "").trim();
+  const keys = ["reference", "reference_1", "order_code", "id"];
+
+  async function tryPatch(patch){
+    for (const key of keys){
+      try{
+        const { error } = await sb.from("j916_orders").update(patch).eq(key, refText);
+        if (!error) return true;
+      }catch(_){ }
+    }
+    return false;
+  }
+
+  const patches = [
+    { status:"PAID", updated_at:new Date().toISOString() },
+    { pay_method:payload.pay_method, updated_at:new Date().toISOString() },
+    { method:payload.pay_method, updated_at:new Date().toISOString() },
+    { grand_total_rm:payload.amount_rm, updated_at:new Date().toISOString() },
+    { subtotal_rm:payload.amount_rm, updated_at:new Date().toISOString() },
+    { unit_rm:payload.amount_rm, updated_at:new Date().toISOString() },
+    { amount_cents:Math.round(Number(payload.amount_rm || 0) * 100), updated_at:new Date().toISOString() },
+    { shipping_method:payload.ship, updated_at:new Date().toISOString() },
+    { shipping_address:payload.address || "", updated_at:new Date().toISOString() },
+    { shipping_address1:payload.address || "", updated_at:new Date().toISOString() },
+    { pickup_when:payload.pickup_when || "", updated_at:new Date().toISOString() },
+    { source:"ORDER_CLAIM", updated_at:new Date().toISOString() },
+    { notes:"Order claim - customer sudah bayar kepada admin", updated_at:new Date().toISOString() }
+  ];
+
+  for (const patch of patches){
+    await tryPatch(patch);
+  }
+}
+
+async function confirmClaimOrder(){
+  const btn = $("confirmBtn");
+  const old = btn.textContent;
+
+  try{
+    btn.disabled = true;
+    btn.textContent = "Sedang create order…";
+    $("msgBox").innerHTML = "";
+
+    AUTH = getAuth();
+    if (!AUTH) throw new Error("Sila login dahulu sebelum sahkan order.");
+
+    const ship = String(CLAIM.shipping_method || "POST").toUpperCase();
+    const name = String($("custName").value || "").trim();
+    const phone = normalizePhone($("custPhone").value || CLAIM.phone || "");
+    const alamat = String($("addr1").value || "").trim();
+    const postcode = String($("postcode").value || "").trim();
+    const city = String($("city").value || "").trim();
+    const negeri = String($("stateName").value || "").trim();
+
+    if (!name) throw new Error("Sila isi nama penerima.");
+    if (!phone) throw new Error("Sila isi no WhatsApp.");
+
+    if (ship !== "PICKUP"){
+      if (!alamat || !postcode || !city || !negeri){
+        throw new Error("Sila lengkapkan alamat, poskod, bandar dan negeri.");
+      }
+    }
+
+    const { data: latest, error: latestErr } = await sb
+      .from("order_claim_links")
+      .select("status,order_code,item_code")
+      .eq("token", TOKEN)
+      .maybeSingle();
+
+    if (latestErr) throw latestErr;
+
+    const latestStatus = String(latest?.status || "").toUpperCase();
+    if (latestStatus === "CLAIMED"){
+      throw new Error("Order ini sudah disahkan sebelum ini.");
+    }
+
+    const s = claimSnapshot();
+    const itemCode = CLAIM.item_code || s.code || "";
+    if (!itemCode) throw new Error("Code barang tidak lengkap dalam claim link.");
+
+    const orderCode = makeOrderCode();
+    const amountRm = Number(CLAIM.price_paid_rm || (Number(CLAIM.amount_cents || 0) / 100) || 0);
+    const amountCents = Math.round(amountRm * 100);
+    const nowIso = new Date().toISOString();
+    const customerId = CUSTOMER?.id || null;
+
+    const payMethod = payMethodForChat(CLAIM.pay_method || "MANUAL_MAYBANK");
+    const fullAddress = ship === "POST"
+      ? [alamat, postcode, city, negeri].filter(Boolean).join(", ")
+      : "";
+
+   
+const claimCutRaw =
+  s.cut_status ||
+  CLAIM.cut_status ||
+  "";
+
+const claimCutFrom =
+  s.cut_from ||
+  CLAIM.cut_from ||
+  s.length_cm ||
+  CLAIM.length_cm ||
+  "";
+
+const claimCutTo =
+  s.cut_to ||
+  CLAIM.cut_to ||
+  "";
+
+const cutStatus =
+  String(claimCutRaw).toUpperCase() === "YES" && String(claimCutTo).trim()
+    ? "YES"
+    : "NO";
+
+const cutFrom = String(claimCutFrom || "").trim();
+const cutTo = String(claimCutTo || "").trim();
+const wantsCut = cutStatus === "YES";
+
+const claimMessage =
+  "LIVE_CHECKOUT_SUBMIT" +
+  "|code=" + encodeURIComponent(itemCode) +
+  "|price_rm=" + encodeURIComponent(String(amountRm || 0)) +
+  "|ship=" + encodeURIComponent(ship) +
+  "|address=" + encodeURIComponent(fullAddress) +
+  "|pickup_when=" + encodeURIComponent(ship === "PICKUP" ? "Ambil Kedai" : "") +
+  "|cut=" + encodeURIComponent(cutStatus) +
+  "|cut_from=" + encodeURIComponent(cutFrom) +
+  "|cut_to=" + encodeURIComponent(cutTo) +
+  "|cut_to_cm=" + encodeURIComponent(cutTo) +
+  "|wants_cut=" + encodeURIComponent(wantsCut ? "true" : "false") +
+  "|pay_method=" + encodeURIComponent(payMethod) +
+  "|order_claim_token=" + encodeURIComponent(TOKEN) +
+  "|already_paid=true";
+
+const chatPayload = {
+  phone,
+  name,
+  is_logged_in: true,
+  action: "live_checkout_submit",
+  source: "order_claim_916",
+  message: claimMessage,
+
+  code: itemCode,
+  price_rm: Number(amountRm || 0),
+  ship,
+  address: fullAddress,
+  pickup_when: ship === "PICKUP" ? "Ambil Kedai" : "",
+  cut: cutStatus,
+  cut_from: cutFrom,
+  cut_to: cutTo,
+  cut_to_cm: cutTo,
+  wants_cut: wantsCut,
+  pay_method: payMethod,
+  order_claim_token: TOKEN,
+  already_paid: true
+};
+    btn.textContent = "Sedang hantar ke Ai-Dan…";
+    await chatSendClaim(chatPayload);
+
+    btn.textContent = "Sedang set order PAID…";
+
+    let paidRes = null;
+    let paidErr = null;
+
+    for (let i = 0; i < 6; i++){
+      try{
+        if (i > 0) await sleep(700);
+        paidRes = await orderClaimAutoPaid({
+          token: TOKEN,
+          code: itemCode,
+          phone,
+          amount: amountRm
+        });
+        paidErr = null;
+        break;
+      }catch(e){
+        paidErr = e;
+        console.warn("orderClaimAutoPaid retry", i + 1, e?.message || e);
+      }
+    }
+
+    if (!paidRes){
+      throw paidErr || new Error("Auto paid gagal.");
+    }
+
+    const finalOrderRef =
+      paidRes.reference ||
+      paidRes.order_code ||
+      paidRes.order_id ||
+      orderCode;
+
+    if (ship !== "PICKUP"){
+      await updateCustomerAddress(customerId, phone, {
+        name,
+        phone,
+        alamat,
+        postcode,
+        city,
+        state: negeri
+      });
+    }
+
+    hideAll();
+    $("successBox").style.display = "block";
+    
+
+  }catch(e){
+    $("msgBox").innerHTML = `<div class="err">${safeTxt(e?.message || e)}</div>`;
+  }finally{
+    btn.disabled = false;
+    btn.textContent = old;
+  }
+}
+
+async function init(){
+  setupAccountBar();
+  hideAll();
+  $("loadingBox").style.display = "block";
+
+  const ok = await loadClaim();
+  if (!ok) return;
+
+  AUTH = getAuth();
+
+  if (!AUTH){
+    hideAll();
+    $("loginBox").style.display = "block";
+    renderClaimPreview("loginPreview");
+    return;
+  }
+
+  CUSTOMER = await findCustomer();
+  renderClaimPage();
+  fillCustomerForm();
+}
+
+init();
+</script>
+</body>
+</html>
