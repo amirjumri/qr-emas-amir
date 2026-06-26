@@ -26,7 +26,7 @@ exports.handler = async function(event) {
     const orderNo = q.orderNo || ("FPXUAT" + Date.now());
 
     const directUrl = "https://emasamir.app/.netlify/functions/fpx-direct-ac";
-   const indirectUrl = "https://emasamir.app/fpx/indirect";
+   const indirectUrl = "https://emasamir.app/.netlify/functions/fpx-indirect";
 
     const fields = {
       fpx_msgType: "AR",
