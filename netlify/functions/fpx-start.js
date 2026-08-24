@@ -73,8 +73,8 @@ exports.handler = async function(event) {
       fields.fpx_sellerTxnTime,
       fields.fpx_txnAmount,
       fields.fpx_txnCurrency,
-      fields.fpx_version,
-      fields.fpx_url
+      fields.fpx_version
+      
     ].join("|");
 
     fields.fpx_checkSum = signData(checksumSource);
