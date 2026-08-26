@@ -4,7 +4,7 @@ const FPX_BE_URL =
 
 exports.handler = async () => {
   try {
-    // BE = Bank List Enquiry, 01 = B2C / Retail
+
     const fields = {
       fpx_msgType: "BE",
       fpx_msgToken: "01",
@@ -20,24 +20,64 @@ exports.handler = async () => {
       body: new URLSearchParams(fields).toString()
     });
 
-    const responseText = await response.text();
+    const raw = await response.text();
 
-    // PayNet BC response is form-urlencoded
-    const params = new URLSearchParams(responseText);
+    console.log("RAW PAYNET BC:", raw);
 
-    const msgType = params.get("fpx_msgType") || "";
-    const msgToken = params.get("fpx_msgToken") || "";
-    const exchangeId = params.get("fpx_sellerExId") || "";
-    const rawBankList = params.get("fpx_bankList") || "";
+    // Decode HTML entities if PayNet response contains them
+    const cleaned = raw
+      .replace(/&amp;/g, "&")
+      .replace(/&#38;/g, "&")
+      .trim();
 
-    if (msgType !== "BC") {
+    // Extract values directly from raw response
+    const getValue = (name) => {
+      const match = cleaned.match(
+        new RegExp("(?:^|[?&])" + name + "=([^&]*)", "i")
+      );
+
+      return match
+        ? decodeURIComponent(match[1].replace(/\+/g, " "))
+        : "";
+    };
+
+    let msgType = getValue("fpx_msgType");
+    let msgToken = getValue("fpx_msgToken");
+    let exchangeId = getValue("fpx_sellerExId");
+    let rawBankList = getValue("fpx_bankList");
+
+    /*
+      Fallback:
+      Some FPX responses may not contain the usual &
+      separators in the form we expect.
+    */
+    if (!rawBankList) {
+      const match = cleaned.match(
+        /fpx_bankList=([\s\S]*?)(?:&fpx_|$)/i
+      );
+
+      if (match) {
+        rawBankList = decodeURIComponent(
+          match[1].replace(/\+/g, " ")
+        );
+      }
+    }
+
+    if (!msgType && /fpx_msgType=BC/i.test(cleaned)) {
+      msgType = "BC";
+    }
+
+    if (!msgToken) msgToken = "01";
+    if (!exchangeId) exchangeId = EXCHANGE_ID;
+
+    if (!rawBankList) {
       throw new Error(
-        "Expected BC response from PayNet. Received: " + msgType
+        "PayNet BC received but fpx_bankList could not be extracted."
       );
     }
 
     /*
-      FPX bank list format contains:
+      PayNet format:
       BANKID~A = Online
       BANKID~B = Offline
     */
@@ -47,15 +87,26 @@ exports.handler = async () => {
       TEST0022: "SBI BANK B"
     };
 
-    const banks = rawBankList
-      .split(/[,;]/)
-      .map(x => x.trim())
-      .filter(Boolean)
+    /*
+      Bank list may be separated by comma,
+      semicolon OR pipe depending on response.
+    */
+
+    const entries = rawBankList
+      .split(/[,;|]/)
+      .map(v => v.trim())
+      .filter(Boolean);
+
+    const banks = entries
       .map(item => {
+
         const parts = item.split("~");
 
         const id = (parts[0] || "").trim();
-        const status = (parts[1] || "").trim().toUpperCase();
+        const status =
+          (parts[1] || "").trim().toUpperCase();
+
+        if (!id) return null;
 
         let name = nameMap[id] || id;
 
@@ -69,7 +120,7 @@ exports.handler = async () => {
           status
         };
       })
-      .filter(bank => bank.id)
+      .filter(Boolean)
       .sort((a, b) =>
         a.name.localeCompare(b.name, "en", {
           sensitivity: "base"
@@ -78,8 +129,10 @@ exports.handler = async () => {
 
     return {
       statusCode: 200,
+
       headers: {
-        "Content-Type": "application/json; charset=utf-8",
+        "Content-Type":
+          "application/json; charset=utf-8",
         "Cache-Control": "no-store"
       },
 
@@ -98,17 +151,25 @@ exports.handler = async () => {
     };
 
   } catch (err) {
+
     console.error("FPX BANK LIST ERROR:", err);
 
     return {
       statusCode: 500,
+
       headers: {
-        "Content-Type": "application/json; charset=utf-8"
+        "Content-Type":
+          "application/json; charset=utf-8"
       },
-      body: JSON.stringify({
-        ok: false,
-        error: err.message
-      })
+
+      body: JSON.stringify(
+        {
+          ok: false,
+          error: err.message
+        },
+        null,
+        2
+      )
     };
   }
 };
