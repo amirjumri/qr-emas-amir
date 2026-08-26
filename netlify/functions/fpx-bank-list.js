@@ -57,19 +57,37 @@ exports.handler = async () => {
     }
 
     const bankNameMap = {
-      TEST0001: "Affin Bank",
-      TEST0002: "Alliance Bank",
-      TEST0003: "AmBank",
-      TEST0004: "Bank Islam",
-      TEST0005: "Bank Muamalat",
-      TEST0006: "Bank Rakyat",
-      TEST0007: "BSN",
-      TEST0008: "CIMB Clicks",
-      TEST0009: "Hong Leong Bank",
-      TEST0010: "Maybank2u",
-      TEST0021: "SBI BANK A",
-      TEST0022: "SBI BANK B"
-    };
+  ABB0233: "Affin Bank",
+  ABB0234: "Affin B2C - Test ID",
+  ABMB0212: "Alliance Bank (Personal)",
+  AGRO01: "AGRONet",
+  AMBB0209: "AmBank",
+  BCBB0235: "CIMB Clicks",
+  BIMB0340: "Bank Islam",
+  BKRM0602: "Bank Rakyat",
+  BMMB0341: "Bank Muamalat",
+  BOCM01: "Bank Of China",
+  BSN0601: "BSN",
+  CIT0219: "Citibank",
+  GXBANK01: "GXBank",
+  HLB0224: "Hong Leong Bank",
+  HSBC0223: "HSBC Bank",
+  KAFB01: "KAF Digital Bank",
+  KFH0346: "KFH",
+  LOAD001: "Load Test Bank",
+  MB2U0227: "Maybank2U",
+  MBB0228: "Maybank2E",
+  MBBM2U2: "Maybank Test Bank",
+  MBSB001: "MBSB Bank",
+  OCBC0229: "OCBC Bank",
+  PBB0233: "Public Bank",
+  RHB0218: "RHB Bank",
+  SCB0216: "Standard Chartered",
+  TEST0021: "SBI BANK A",
+  TEST0022: "SBI BANK B",
+  TEST0023: "SBI BANK C",
+  UOB0226: "UOB Bank"
+};
 
     const banks = rawBankList
       .split(",")
