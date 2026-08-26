@@ -1,4 +1,5 @@
 const EXCHANGE_ID = "EX00040523";
+
 const FPX_BE_URL =
   "https://uat.mepsfpx.com.my/FPXMain/RetrieveBankList";
 
@@ -15,7 +16,7 @@ exports.handler = async () => {
       method: "POST",
       headers: {
         "Content-Type": "application/x-www-form-urlencoded",
-        Accept: "*/*"
+        "Accept": "*/*"
       },
       body: new URLSearchParams(fields).toString()
     });
@@ -24,72 +25,100 @@ exports.handler = async () => {
 
     console.log("RAW PAYNET BC:", raw);
 
-    // Decode HTML entities if PayNet response contains them
-    const cleaned = raw
-      .replace(/&amp;/g, "&")
-      .replace(/&#38;/g, "&")
+    /*
+      Normalize response.
+      PayNet may return plain form-urlencoded text
+      and browser/log output can contain line breaks
+      or HTML entities.
+    */
+    const cleaned = String(raw || "")
+      .replace(/&amp;/gi, "&")
+      .replace(/&#38;/gi, "&")
+      .replace(/<br\s*\/?>/gi, "")
+      .replace(/\r/g, "")
+      .replace(/\n/g, "")
       .trim();
 
-    // Extract values directly from raw response
-    const getValue = (name) => {
-      const match = cleaned.match(
-        new RegExp("(?:^|[?&])" + name + "=([^&]*)", "i")
-      );
-
-      return match
-        ? decodeURIComponent(match[1].replace(/\+/g, " "))
-        : "";
-    };
-
-    let msgType = getValue("fpx_msgType");
-    let msgToken = getValue("fpx_msgToken");
-    let exchangeId = getValue("fpx_sellerExId");
-    let rawBankList = getValue("fpx_bankList");
-
     /*
-      Fallback:
-      Some FPX responses may not contain the usual &
-      separators in the form we expect.
+      Extract a field without assuming that the response
+      begins exactly with &field=...
     */
-    if (!rawBankList) {
-      const match = cleaned.match(
-        /fpx_bankList=([\s\S]*?)(?:&fpx_|$)/i
+    function extractField(name) {
+
+      const re = new RegExp(
+        name + "\\s*=\\s*([^&<]*)",
+        "i"
       );
 
-      if (match) {
-        rawBankList = decodeURIComponent(
+      const match = cleaned.match(re);
+
+      if (!match) return "";
+
+      try {
+        return decodeURIComponent(
           match[1].replace(/\+/g, " ")
-        );
+        ).trim();
+      } catch {
+        return match[1].trim();
       }
     }
 
-    if (!msgType && /fpx_msgType=BC/i.test(cleaned)) {
-      msgType = "BC";
-    }
+    const msgType =
+      extractField("fpx_msgType") ||
+      (/fpx_msgType\s*=\s*BC/i.test(cleaned) ? "BC" : "");
 
-    if (!msgToken) msgToken = "01";
-    if (!exchangeId) exchangeId = EXCHANGE_ID;
+    const msgToken =
+      extractField("fpx_msgToken") || "01";
+
+    const exchangeId =
+      extractField("fpx_sellerExId") || EXCHANGE_ID;
+
+    const rawBankList =
+      extractField("fpx_bankList");
 
     if (!rawBankList) {
+      console.error(
+        "FPX BANK LIST NOT FOUND. RAW:",
+        cleaned
+      );
+
       throw new Error(
-        "PayNet BC received but fpx_bankList could not be extracted."
+        "BC response received but fpx_bankList is empty."
       );
     }
 
     /*
-      PayNet format:
-      BANKID~A = Online
-      BANKID~B = Offline
+      PayNet:
+      ~A = Online
+      ~B = Offline
+
+      Unknown bank short names are allowed to be
+      displayed using Bank ID.
     */
 
-    const nameMap = {
+    const bankNameMap = {
+
+      TEST0001: "Affin Bank",
+      TEST0002: "Alliance Bank",
+      TEST0003: "AmBank",
+      TEST0004: "Bank Islam",
+      TEST0005: "Bank Muamalat",
+      TEST0006: "Bank Rakyat",
+      TEST0007: "BSN",
+      TEST0008: "CIMB Clicks",
+      TEST0009: "Hong Leong Bank",
+      TEST0010: "Maybank2u",
+
       TEST0021: "SBI BANK A",
       TEST0022: "SBI BANK B"
     };
 
     /*
-      Bank list may be separated by comma,
-      semicolon OR pipe depending on response.
+      Actual BC list observed:
+      TEST0001~A,TEST0002~A,...
+
+      We still support comma / semicolon / pipe
+      just in case.
     */
 
     const entries = rawBankList
@@ -97,35 +126,57 @@ exports.handler = async () => {
       .map(v => v.trim())
       .filter(Boolean);
 
-    const banks = entries
-      .map(item => {
+    const banks = [];
 
-        const parts = item.split("~");
+    for (const entry of entries) {
 
-        const id = (parts[0] || "").trim();
-        const status =
-          (parts[1] || "").trim().toUpperCase();
+      const match =
+        entry.match(/^([^~\s]+)\s*~\s*([AB])$/i);
 
-        if (!id) return null;
+      if (!match) {
+        console.log(
+          "SKIP UNKNOWN BANK ENTRY:",
+          entry
+        );
+        continue;
+      }
 
-        let name = nameMap[id] || id;
+      const id = match[1].trim();
+      const status = match[2].toUpperCase();
 
-        if (status === "B") {
-          name += " (Offline)";
-        }
+      let name =
+        bankNameMap[id] || id;
 
-        return {
-          id,
-          name,
-          status
-        };
-      })
-      .filter(Boolean)
-      .sort((a, b) =>
-        a.name.localeCompare(b.name, "en", {
-          sensitivity: "base"
-        })
+      if (status === "B") {
+        name += " (Offline)";
+      }
+
+      banks.push({
+        id,
+        name,
+        status,
+        online: status === "A"
+      });
+    }
+
+    /*
+      PayNet requires alphabetical order
+      based on displayed bank short name.
+    */
+
+    banks.sort((a, b) =>
+      a.name.localeCompare(
+        b.name,
+        "en",
+        { sensitivity: "base" }
+      )
+    );
+
+    if (!banks.length) {
+      throw new Error(
+        "fpx_bankList was received but no valid bank entries were parsed."
       );
+    }
 
     return {
       statusCode: 200,
@@ -133,16 +184,21 @@ exports.handler = async () => {
       headers: {
         "Content-Type":
           "application/json; charset=utf-8",
-        "Cache-Control": "no-store"
+
+        "Cache-Control":
+          "no-store, no-cache, must-revalidate"
       },
 
       body: JSON.stringify(
         {
           ok: true,
+
           messageType: msgType,
           msgToken,
           exchangeId,
+
           bankCount: banks.length,
+
           banks
         },
         null,
@@ -152,14 +208,19 @@ exports.handler = async () => {
 
   } catch (err) {
 
-    console.error("FPX BANK LIST ERROR:", err);
+    console.error(
+      "FPX BANK LIST ERROR:",
+      err
+    );
 
     return {
       statusCode: 500,
 
       headers: {
         "Content-Type":
-          "application/json; charset=utf-8"
+          "application/json; charset=utf-8",
+
+        "Cache-Control": "no-store"
       },
 
       body: JSON.stringify(
