@@ -22,6 +22,8 @@ exports.handler = async function (event) {
 
     const orderNo = q.orderNo || "";
     const txnTime = q.txnTime || "";
+    const amount = Number(q.amount || 1).toFixed(2);
+    const bank = q.bank || "TEST0021";
 
     if (!orderNo) {
       throw new Error("orderNo is required");
@@ -32,32 +34,53 @@ exports.handler = async function (event) {
     }
 
     const fields = {
+      fpx_buyerAccNo: "",
+      fpx_buyerBankBranch: "",
+      fpx_buyerBankId: bank,
+      fpx_buyerEmail: "test@emasamir.app",
+      fpx_buyerIban: "",
+      fpx_buyerId: "",
+      fpx_buyerName: "UAT Buyer",
+      fpx_makerName: "",
+
       fpx_msgToken: "01",
       fpx_msgType: "AE",
+
+      fpx_productDesc: "EMAS AMIR FPX UAT",
+
+      fpx_sellerBankCode: "01",
       fpx_sellerExId: EXCHANGE_ID,
+      fpx_sellerExOrderNo: orderNo,
       fpx_sellerId: SELLER_ID,
       fpx_sellerOrderNo: orderNo,
       fpx_sellerTxnTime: txnTime,
+
+      fpx_txnAmount: amount,
+      fpx_txnCurrency: "MYR",
       fpx_version: "7.0"
     };
 
-    // Alphabetical by field name:
-    //
-    // fpx_msgToken
-    // fpx_msgType
-    // fpx_sellerExId
-    // fpx_sellerId
-    // fpx_sellerOrderNo
-    // fpx_sellerTxnTime
-    // fpx_version
-
+    // Semua field request, ascending ikut nama field
     const checksumSource = [
+      fields.fpx_buyerAccNo,
+      fields.fpx_buyerBankBranch,
+      fields.fpx_buyerBankId,
+      fields.fpx_buyerEmail,
+      fields.fpx_buyerIban,
+      fields.fpx_buyerId,
+      fields.fpx_buyerName,
+      fields.fpx_makerName,
       fields.fpx_msgToken,
       fields.fpx_msgType,
+      fields.fpx_productDesc,
+      fields.fpx_sellerBankCode,
       fields.fpx_sellerExId,
+      fields.fpx_sellerExOrderNo,
       fields.fpx_sellerId,
       fields.fpx_sellerOrderNo,
       fields.fpx_sellerTxnTime,
+      fields.fpx_txnAmount,
+      fields.fpx_txnCurrency,
       fields.fpx_version
     ].join("|");
 
@@ -74,7 +97,6 @@ exports.handler = async function (event) {
 
     const raw = await response.text();
 
-    console.log("FPX AE REQUEST:", fields);
     console.log("FPX AE CHECKSUM SOURCE:", checksumSource);
     console.log("FPX AE RAW RESPONSE:", raw);
 
@@ -84,18 +106,16 @@ exports.handler = async function (event) {
         "Content-Type": "application/json; charset=utf-8",
         "Cache-Control": "no-store"
       },
-      body: JSON.stringify(
-        {
-          ok: true,
-          orderNo,
-          txnTime,
-          checksumSource,
-          httpStatus: response.status,
-          response: raw
-        },
-        null,
-        2
-      )
+      body: JSON.stringify({
+        ok: true,
+        orderNo,
+        txnTime,
+        amount,
+        bank,
+        checksumSource,
+        httpStatus: response.status,
+        response: raw
+      }, null, 2)
     };
 
   } catch (err) {
@@ -106,14 +126,10 @@ exports.handler = async function (event) {
       headers: {
         "Content-Type": "application/json; charset=utf-8"
       },
-      body: JSON.stringify(
-        {
-          ok: false,
-          error: err.message
-        },
-        null,
-        2
-      )
+      body: JSON.stringify({
+        ok: false,
+        error: err.message
+      }, null, 2)
     };
   }
 };
