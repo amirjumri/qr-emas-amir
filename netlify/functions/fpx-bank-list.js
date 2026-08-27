@@ -57,36 +57,51 @@ exports.handler = async () => {
     }
 
     const bankNameMap = {
-  ABB0233: "Affin Bank",
   ABB0234: "Affin B2C - Test ID",
+  ABB0233: "Affin Bank",
   ABMB0212: "Alliance Bank (Personal)",
   AGRO01: "AGRONet",
   AMBB0209: "AmBank",
-  BCBB0235: "CIMB Clicks",
   BIMB0340: "Bank Islam",
-  BKRM0602: "Bank Rakyat",
   BMMB0341: "Bank Muamalat",
+  BKRM0602: "Bank Rakyat",
   BOCM01: "Bank Of China",
   BSN0601: "BSN",
+  BCBB0235: "CIMB Clicks",
   CIT0219: "Citibank",
-  GXBANK01: "GXBank",
+
+  // Bank IDs returned by BC but not shown in the
+  // PayNet SMI reference supplied to us.
+  // PayNet instructed merchant to display Bank ID
+  // when short/display name is not maintained.
+  GXBANK01: "GXBANK01",
+
   HLB0224: "Hong Leong Bank",
   HSBC0223: "HSBC Bank",
-  KAFB01: "KAF Digital Bank",
+
+  KAFB01: "KAFB01",
+
   KFH0346: "KFH",
-  LOAD001: "Load Test Bank",
-  MB2U0227: "Maybank2U",
+
+  LOAD001: "LOAD001",
+
   MBB0228: "Maybank2E",
-  MBBM2U2: "Maybank Test Bank",
-  MBSB001: "MBSB Bank",
+  MB2U0227: "Maybank2U",
+
+  MBBM2U2: "MBBM2U2",
+  MBSB001: "MBSB001",
+
   OCBC0229: "OCBC Bank",
   PBB0233: "Public Bank",
   RHB0218: "RHB Bank",
+
+  TEST0021: "SBI Bank A",
+  TEST0022: "SBI Bank B",
+  TEST0023: "SBI Bank C",
+
   SCB0216: "Standard Chartered",
-  TEST0021: "SBI BANK A",
-  TEST0022: "SBI BANK B",
-  TEST0023: "SBI BANK C",
-  UOB0226: "UOB Bank"
+  UOB0226: "UOB Bank",
+  UOB0229: "UOB Bank - Test ID"
 };
 
     const banks = rawBankList
