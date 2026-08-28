@@ -74,12 +74,12 @@ exports.handler = async () => {
   // PayNet SMI reference supplied to us.
   // PayNet instructed merchant to display Bank ID
   // when short/display name is not maintained.
-  GXBANK01: "GXBANK01",
+  GXBANK01: "GXBank",
 
   HLB0224: "Hong Leong Bank",
   HSBC0223: "HSBC Bank",
 
-  KAFB01: "KAFB01",
+  KAFB01: "KAF Bank",
 
   KFH0346: "KFH",
 
